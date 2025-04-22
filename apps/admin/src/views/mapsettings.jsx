@@ -2288,7 +2288,7 @@ class Menu extends Component {
                   />
                 </label>
               </div>
-              <div>
+              {/* <div>
                 <input
                   id="cqlFilterVisible"
                   name="cqlFilterVisible"
@@ -2305,7 +2305,7 @@ class Menu extends Component {
                     title="När rutan är ikryssad visas ett fält för CQL-filter. Inställningen är global och visas för alla lager när rutan är ikryssad."
                   />
                 </label>
-              </div>
+              </div> */}
               <div className="row">
                 <div className="col-sm-12">
                   <label htmlFor="instruction">Instruktion</label>

@@ -81,7 +81,7 @@ const defaultState = {
   infoClickSortDesc: true,
   infoclickIcon: "",
   rotateMap: "n",
-  cqlFilter: "",
+  cqlLayerFilter: "",
   hideExpandArrow: false,
   style: [],
   workspaceList: [],
@@ -1022,7 +1022,7 @@ class WMSLayerForm extends Component {
           infoClickSortProperty: layer.infoClickSortProperty ?? "",
           infoClickSortType: layer.infoClickSortType ?? "string",
           rotateMap: layer.rotateMap ?? "n",
-          cqlFilter: layer.cqlFilter ?? "",
+          cqlLayerFilter: layer.cqlLayerFilter ?? "",
           hideExpandArrow: layer.hideExpandArrow ?? false,
           minMaxZoomAlertOnToggleOnly:
             layer.minMaxZoomAlertOnToggleOnly ?? false,
@@ -1338,7 +1338,7 @@ class WMSLayerForm extends Component {
   }
 
   getLayer() {
-    const cql = this.getValue("cqlFilter");
+    const cql = this.getValue("cqlLayerFilter");
 
     const o = {
       type: this.state.layerType,
@@ -1399,7 +1399,7 @@ class WMSLayerForm extends Component {
       infoClickSortDesc: this.getValue("infoClickSortDesc"),
       infoClickSortType: this.getValue("infoClickSortType"),
       rotateMap: this.getValue("rotateMap"),
-      ...(cql?.length > 0 && { cqlFilter: cql }),
+      ...(cql?.length > 0 && { cqlLayerFilter: cql }),
       // infoclickIcon: this.getValue("infoclickIcon"),
       hideExpandArrow: this.getValue("hideExpandArrow"),
       // style: this.getValue("style"),
@@ -2221,11 +2221,11 @@ class WMSLayerForm extends Component {
           <label>CQL-filter:</label>
           <input
             className="control-fixed-width"
-            ref="input_cqlFilter"
+            ref="input_cqlLayerFilter"
             placeholder="foo='bar' AND fii='baz'"
-            value={this.state.cqlFilter}
+            value={this.state.cqlLayerFilter}
             onChange={(e) => {
-              this.setState({ cqlFilter: e.target.value });
+              this.setState({ cqlLayerFilter: e.target.value });
             }}
           />
         </div>
