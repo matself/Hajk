@@ -81,7 +81,7 @@ const defaultState = {
   infoClickSortDesc: true,
   infoclickIcon: "",
   rotateMap: "n",
-  cqlLayerFilter: "",
+  defaultCqlFilter: "",
   hideExpandArrow: false,
   style: [],
   workspaceList: [],
@@ -1022,7 +1022,7 @@ class WMSLayerForm extends Component {
           infoClickSortProperty: layer.infoClickSortProperty ?? "",
           infoClickSortType: layer.infoClickSortType ?? "string",
           rotateMap: layer.rotateMap ?? "n",
-          cqlLayerFilter: layer.cqlLayerFilter ?? "",
+          defaultCqlFilter: layer.defaultCqlFilter ?? "",
           hideExpandArrow: layer.hideExpandArrow ?? false,
           minMaxZoomAlertOnToggleOnly:
             layer.minMaxZoomAlertOnToggleOnly ?? false,
@@ -1338,7 +1338,7 @@ class WMSLayerForm extends Component {
   }
 
   getLayer() {
-    const cql = this.getValue("cqlLayerFilter");
+    const cql = this.getValue("defaultCqlFilter");
 
     const o = {
       type: this.state.layerType,
@@ -1399,7 +1399,7 @@ class WMSLayerForm extends Component {
       infoClickSortDesc: this.getValue("infoClickSortDesc"),
       infoClickSortType: this.getValue("infoClickSortType"),
       rotateMap: this.getValue("rotateMap"),
-      ...(cql?.length > 0 && { cqlLayerFilter: cql }),
+      ...(cql?.length > 0 && { defaultCqlFilter: cql }),
       // infoclickIcon: this.getValue("infoclickIcon"),
       hideExpandArrow: this.getValue("hideExpandArrow"),
       // style: this.getValue("style"),
@@ -2221,11 +2221,11 @@ class WMSLayerForm extends Component {
           <label>CQL-filter:</label>
           <input
             className="control-fixed-width"
-            ref="input_cqlLayerFilter"
+            ref="input_defaultCqlFilter"
             placeholder="foo='bar' AND fii='baz'"
-            value={this.state.cqlLayerFilter}
+            value={this.state.defaultCqlFilter}
             onChange={(e) => {
-              this.setState({ cqlLayerFilter: e.target.value });
+              this.setState({ defaultCqlFilter: e.target.value });
             }}
           />
         </div>
