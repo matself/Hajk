@@ -78,11 +78,10 @@ const QuickAccessView = ({
 
   return (
     <Box
-      sx={{
-        display: show ? "block" : "none",
-        borderBottom: (theme) =>
-          `${theme.spacing(quickAccessSectionExpanded ? 0.2 : 0.0)} solid ${theme.palette.divider}`,
-      }}
+      id="quick-access-view"
+      sx={(theme) => ({
+        borderBottom: `${theme.spacing(quickAccessSectionExpanded ? 0.2 : 0.0)} solid ${theme.palette.divider}`,
+      })}
     >
       <ListItemButton
         disableRipple
@@ -92,19 +91,26 @@ const QuickAccessView = ({
           }
           setQuickAccessSectionExpanded(!quickAccessSectionExpanded);
         }}
-        sx={{
+        sx={(theme) => ({
           p: 0,
-          borderBottom: (theme) =>
-            `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
-        }}
+          borderBottom: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
+        })}
         dense
       >
         <LsIconButton
           size="small"
-          sx={{
-            pr: 0,
-            visibility: qaLayers?.length > 0 ? "visible" : "hidden",
-          }}
+          sx={[
+            {
+              pr: 0,
+            },
+            qaLayers?.length > 0
+              ? {
+                  visibility: "visible",
+                }
+              : {
+                  visibility: "hidden",
+                },
+          ]}
           disableRipple
         >
           <KeyboardArrowRightOutlinedIcon
@@ -129,17 +135,22 @@ const QuickAccessView = ({
           </LsIconButton>
 
           <ListItemText
-            primaryTypographyProps={{
-              variant: "body1",
-              fontWeight: hasVisibleLayers ? "bold" : "inherit",
-            }}
             primary="Snabbåtkomst"
+            slotProps={{
+              primary: {
+                variant: "body1",
+                fontWeight: hasVisibleLayers ? "bold" : "inherit",
+              },
+            }}
           />
 
           <ListItemSecondaryAction sx={{ right: "4px" }}>
             {enableQuickAccessPresets && (
               <HajkTooltip title="Teman">
-                <LsIconButton onClick={handleQuickAccessPresetsToggle}>
+                <LsIconButton
+                  id="quick-access-theme-button"
+                  onClick={handleQuickAccessPresetsToggle}
+                >
                   <TopicOutlinedIcon fontSize="small"></TopicOutlinedIcon>
                 </LsIconButton>
               </HajkTooltip>
@@ -175,7 +186,6 @@ const QuickAccessView = ({
           ></QuickAccessLayers>
         </Box>
       </Collapse>
-
       <ConfirmationDialog
         open={showDeleteConfirmation === true}
         titleName="Rensa allt"

@@ -203,27 +203,36 @@ function DrawOrder({ display, app, map, localObserver, options }) {
       // This class is used to style specific elements when the tab is active
       // If you search for this class in the codebase, you can find related style-fixes.
       className={"ls-draworder-tab-view"}
-      sx={{
-        display: display ? "block" : "none",
-        height: "inherit",
-        maxHeight: "inherit",
-        overflowY: "auto",
-      }}
+      sx={[
+        {
+          height: "inherit",
+          maxHeight: "inherit",
+          overflowY: "auto",
+        },
+        display
+          ? {
+              display: "block",
+            }
+          : {
+              display: "none",
+            },
+      ]}
     >
       <Box
-        sx={{
+        sx={(theme) => ({
           pr: 2,
           pl: 2,
           py: 1,
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark" ? "#373737" : theme.palette.grey[100],
-          borderBottom: (theme) =>
-            `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
-        }}
+          backgroundColor: theme.palette.grey[100],
+          borderBottom: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
+          ...theme.applyStyles("dark", {
+            backgroundColor: "#373737",
+          }),
+        })}
       >
         <Stack direction="row" alignItems="center">
           {options.enableSystemLayersSwitch && (
-            <FormGroup>
+            <FormGroup id="draw-order-switch">
               <FormControlLabel
                 control={
                   <Switch
@@ -256,7 +265,7 @@ function DrawOrder({ display, app, map, localObserver, options }) {
           </Box>
         </Collapse>
       </Box>
-      <List sx={{ pt: 0 }}>
+      <List className="draw-order-list" sx={{ pt: 0 }}>
         <Container
           lockAxis="y"
           getChildPayload={(i) => sortedLayers[i]}

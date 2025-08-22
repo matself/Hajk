@@ -154,6 +154,8 @@ const LayerGroup = ({
   layersState,
   filterHits,
   filterValue,
+  isFirstGroup,
+  isFirstChild,
 }) => {
   const children = staticGroupTree.children;
 
@@ -217,6 +219,8 @@ const LayerGroup = ({
 
   return (
     <LayerGroupAccordion
+      isFirstGroup={isFirstGroup}
+      isFirstChild={isFirstChild}
       display={groupIsFiltered ? "none" : "block"}
       toggleable={groupIsToggable}
       expanded={filterActiveAndHasHits || groupIsExpanded}
@@ -247,14 +251,16 @@ const LayerGroup = ({
               infogroupowner={infogroupowner}
             />
             <ListItemText
-              primaryTypographyProps={{
-                pb: "2px", // jesade-vbg compact mode, added line.
-                py: groupIsToggable ? 0 : getIsMobile() ? "3px" : "1px", // jesade-vbg compact mode
-                pl: groupIsToggable ? 0 : "3px",
-                variant: "body1",
-                fontWeight: isToggled || isSemiToggled ? "bold" : "inherit",
-              }}
               primary={name}
+              slotProps={{
+                primary: {
+                  pb: "2px", // jesade-vbg compact mode, added line.
+                  py: groupIsToggable ? 0 : getIsMobile() ? "3px" : "1px", // jesade-vbg compact mode
+                  pl: groupIsToggable ? 0 : "3px",
+                  variant: "body1",
+                  fontWeight: isToggled || isSemiToggled ? "bold" : "inherit",
+                },
+              }}
             />
           </div>
           <GroupInfoDetails
@@ -271,11 +277,10 @@ const LayerGroup = ({
       }
     >
       <div>
-        {children?.map((child) => {
+        {children?.map((child, index) => {
           const layerId = child.id;
-
           const layerState = layersState[layerId];
-
+          const isFirstChild = index === 0;
           const layerSettings = staticLayerConfig[layerId];
           if (!layerSettings) {
             return null;
@@ -295,6 +300,7 @@ const LayerGroup = ({
                 layersState={layersState}
                 filterHits={filterHits}
                 filterValue={filterValue}
+                isFirstChild={isFirstChild}
               />
             );
           }
