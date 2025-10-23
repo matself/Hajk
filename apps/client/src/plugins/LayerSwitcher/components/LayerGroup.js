@@ -1,16 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import LayerItem from "./LayerItem";
 import GroupLayer from "./GroupLayer";
 import LayerGroupAccordion from "./LayerGroupAccordion.js";
-import { Typography, ListItemText, Link } from "@mui/material";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import InfoIcon from "@mui/icons-material/Info";
-import HajkToolTip from "components/HajkToolTip";
-import LsIconButton from "./LsIconButton";
+import { ListItemText } from "@mui/material";
 import LsCheckBox from "./LsCheckBox";
 
 import { useLayerSwitcherDispatch } from "../LayerSwitcherProvider";
 import { getIsMobile } from "../LayerSwitcherUtils";
+import BtnShowDetails from "./BtnShowDetails";
 
 /**
  * If Group has "toggleable" property enabled, render the toggle all checkbox.
@@ -32,61 +29,9 @@ const ToggleAllComponent = ({ toggleable, toggleState, clickHandler }) => {
   );
 };
 
-const GroupInfoDetails = ({
-  name,
-  infoVisible,
-  infogrouptitle = "",
-  infogrouptext = "",
-  infogroupurl = "",
-  infogroupurltext = "",
-  infogroupopendatalink = "",
-  infogroupowner = "",
-}) => {
-  if (!infoVisible) {
-    return null;
-  }
-  return (
-    <div>
-      {infogrouptitle && (
-        <Typography variant="subtitle2">{infogrouptitle}</Typography>
-      )}
-      {infogrouptext && (
-        <Typography
-          variant="body2"
-          dangerouslySetInnerHTML={{ __html: infogrouptext }}
-        ></Typography>
-      )}
-      {infogroupurl && (
-        <Typography variant="body2" sx={{ fontWeight: 500, mt: 1, mb: 1 }}>
-          <Link href={infogroupurl || null} target="_blank" rel="noreferrer">
-            {infogroupurltext}
-          </Link>
-        </Typography>
-      )}
-      {infogroupopendatalink && (
-        <Typography variant="body2" sx={{ fontWeight: 500, mt: 1, mb: 1 }}>
-          <Link
-            href={infogroupopendatalink || null}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Öppna data: {name}
-          </Link>
-        </Typography>
-      )}
-      {infogroupowner && (
-        <Typography
-          variant="body2"
-          dangerouslySetInnerHTML={{ __html: infogroupowner }}
-        ></Typography>
-      )}
-    </div>
-  );
-};
-
 const GroupInfoToggler = ({
-  clickHandler,
-  infoVisible,
+  globalObserver,
+  infogroupname = "",
   infogrouptitle = "",
   infogrouptext = "",
   infogroupurl = "",
@@ -106,29 +51,22 @@ const GroupInfoToggler = ({
   ) {
     return null;
   }
-  // Render icons only if one of the states above has a value
+  // If any of the above variables arent mising, render the show details button
   return (
-    <HajkToolTip title="Mer information om gruppen" placement="left">
-      <LsIconButton
-        size="small"
-        sx={{
-          p: 0.25,
-          mt: "1px",
-          mr: "5px",
-          "& .MuiTouchRipple-root": { display: "none" },
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          clickHandler();
-        }}
-      >
-        {infoVisible ? (
-          <RemoveCircleIcon fontSize="small" />
-        ) : (
-          <InfoIcon fontSize="small" />
-        )}
-      </LsIconButton>
-    </HajkToolTip>
+    <BtnShowDetails
+      onClick={(e) => {
+        e.stopPropagation();
+        globalObserver.publish("setLayerDetails", {
+          infogroupname,
+          infogrouptitle,
+          infogrouptext,
+          infogroupurl,
+          infogroupurltext,
+          infogroupopendatalink,
+          infogroupowner,
+        });
+      }}
+    />
   );
 };
 
@@ -147,6 +85,17 @@ const getAllLayerIdsInGroup = (group) => {
   }
 };
 
+// Collect all child ids (both group and layer nodes) from a parent group
+const getAllChildIdsInGroup = (group) => {
+  if (!group) {
+    return [];
+  }
+  if (!group.children) {
+    return [group.id];
+  }
+  return [group.id, ...group.children.flatMap((c) => getAllChildIdsInGroup(c))];
+};
+
 const LayerGroup = ({
   globalObserver,
   staticGroupTree,
@@ -156,6 +105,7 @@ const LayerGroup = ({
   filterValue,
   isFirstGroup,
   isFirstChild,
+  parentGroupHit,
 }) => {
   const children = staticGroupTree.children;
 
@@ -176,18 +126,33 @@ const LayerGroup = ({
   const infogroupopendatalink = groupConfig?.infogroupopendatalink;
   const infogroupowner = groupConfig?.infogroupowner;
 
-  const [infoVisible, setInfoVisible] = useState(false);
-
   const layerSwitcherDispatch = useLayerSwitcherDispatch();
 
   const allLeafLayersInGroup = getAllLayerIdsInGroup(staticGroupTree);
+  const allChildIdsInGroup = getAllChildIdsInGroup(staticGroupTree);
 
-  const filterHitsInGroup =
-    filterHits && filterHits.intersection(new Set(allLeafLayersInGroup));
-  // hasFilterHits === null means that the filter isn't active
-  const hasNoFilterHits = filterHitsInGroup && filterHitsInGroup?.size === 0;
-  const filterActiveAndHasHits = filterHits && !hasNoFilterHits;
-  if (hasNoFilterHits) {
+  // Determine if this group itself is a direct hit and whether we should skip filtering for it and its descendants
+  const groupHit = filterHits ? filterHits.has(groupId) : false;
+  const skipFilter = parentGroupHit || groupHit;
+
+  // Compute intersection manually between filterHits and ids relevant to this group
+  // Count hits when not skipping due to an ancestor match
+  let hasNoFilterHits = false;
+  let hasFilterHits = false;
+  if (filterHits && !skipFilter) {
+    const candidateIds = new Set([
+      ...allLeafLayersInGroup,
+      ...allChildIdsInGroup,
+    ]);
+    const hitsInGroupCount = [...filterHits].reduce(
+      (count, id) => (candidateIds.has(id) ? count + 1 : count),
+      0
+    );
+    hasNoFilterHits = hitsInGroupCount === 0;
+    hasFilterHits = hitsInGroupCount > 0;
+  }
+
+  if (filterHits && !skipFilter && hasNoFilterHits) {
     return null;
   }
 
@@ -200,10 +165,6 @@ const LayerGroup = ({
 
   const isToggled = hasAllLayersVisible;
   const isSemiToggled = hasVisibleLayer && !hasAllLayersVisible;
-
-  const toggleInfo = () => {
-    setInfoVisible(!infoVisible);
-  };
 
   // TODO Refactor the expand close to state
   let groupsExpanded = false;
@@ -218,39 +179,30 @@ const LayerGroup = ({
       : "unchecked";
 
   return (
-    <LayerGroupAccordion
-      isFirstGroup={isFirstGroup}
-      isFirstChild={isFirstChild}
-      display={groupIsFiltered ? "none" : "block"}
-      toggleable={groupIsToggable}
-      expanded={filterActiveAndHasHits || groupIsExpanded}
-      toggleDetails={
-        <ToggleAllComponent
-          toggleable={groupIsToggable}
-          toggleState={toggleState}
-          clickHandler={() => {
-            if (isToggled) {
-              layerSwitcherDispatch.setGroupVisibility(groupId, false);
-            } else {
-              layerSwitcherDispatch.setGroupVisibility(groupId, true);
-            }
-          }}
-        />
-      }
-      layerGroupTitle={
-        <div>
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <GroupInfoToggler
-              clickHandler={() => toggleInfo()}
-              infoVisible={infoVisible}
-              infogrouptitle={infogrouptitle}
-              infogrouptext={infogrouptext}
-              infogroupurl={infogroupurl}
-              infogroupurltext={infogroupurltext}
-              infogroupopendatalink={infogroupopendatalink}
-              infogroupowner={infogroupowner}
-            />
+    <div>
+      <LayerGroupAccordion
+        isFirstGroup={isFirstGroup}
+        isFirstChild={isFirstChild}
+        display={groupIsFiltered ? "none" : "block"}
+        toggleable={groupIsToggable}
+        expanded={groupHit || hasFilterHits || groupIsExpanded}
+        toggleDetails={
+          <ToggleAllComponent
+            toggleable={groupIsToggable}
+            toggleState={toggleState}
+            clickHandler={() => {
+              if (isToggled) {
+                layerSwitcherDispatch.setGroupVisibility(groupId, false);
+              } else {
+                layerSwitcherDispatch.setGroupVisibility(groupId, true);
+              }
+            }}
+          />
+        }
+        layerGroupTitle={
+          <div style={{ width: "100%", display: "flex", flexDirection: "row" }}>
             <ListItemText
+              style={{ flex: 1 }}
               primary={name}
               slotProps={{
                 primary: {
@@ -262,79 +214,81 @@ const LayerGroup = ({
                 },
               }}
             />
+            <GroupInfoToggler
+              globalObserver={globalObserver}
+              infogroupname={groupName}
+              infogrouptitle={infogrouptitle}
+              infogrouptext={infogrouptext}
+              infogroupurl={infogroupurl}
+              infogroupurltext={infogroupurltext}
+              infogroupopendatalink={infogroupopendatalink}
+              infogroupowner={infogroupowner}
+            />
           </div>
-          <GroupInfoDetails
-            name={groupName}
-            infoVisible={infoVisible}
-            infogrouptitle={infogrouptitle}
-            infogrouptext={infogrouptext}
-            infogroupurl={infogroupurl}
-            infogroupurltext={infogroupurltext}
-            infogroupopendatalink={infogroupopendatalink}
-            infogroupowner={infogroupowner}
-          />
-        </div>
-      }
-    >
-      <div>
-        {children?.map((child, index) => {
-          const layerId = child.id;
-          const layerState = layersState[layerId];
-          const isFirstChild = index === 0;
-          const layerSettings = staticLayerConfig[layerId];
-          if (!layerSettings) {
-            return null;
-          }
+        }
+      >
+        <div>
+          {children?.map((child, index) => {
+            const layerId = child.id;
 
-          if (layerSettings.layerType === "group") {
-            // The LayerGroup components check the filter to see if it should
-            // display itself or not. So we always have to render it regardless
-            // of the filter.
-            return (
-              <LayerGroup
-                expanded={groupsExpanded === layerId}
+            const layerState = layersState[layerId];
+            const isFirstChild = index === 0;
+            const layerSettings = staticLayerConfig[layerId];
+            if (!layerSettings) {
+              return null;
+            }
+
+            if (layerSettings.layerType === "group") {
+              // The LayerGroup components check the filter to see if it should
+              // display itself or not. So we always have to render it regardless
+              // of the filter.
+              return (
+                <LayerGroup
+                  expanded={groupsExpanded === layerId}
+                  key={layerId}
+                  globalObserver={globalObserver}
+                  staticLayerConfig={staticLayerConfig}
+                  staticGroupTree={children?.find((g) => g?.id === layerId)}
+                  layersState={layersState}
+                  filterHits={filterHits}
+                  filterValue={filterValue}
+                  parentGroupHit={skipFilter}
+                />
+              );
+            }
+
+            if (filterHits && !skipFilter && !filterHits.has(layerId)) {
+              // The filter is active and this layer is not a hit.
+              return null;
+            }
+
+            return layerSettings.layerType === "groupLayer" ? (
+              <GroupLayer
                 key={layerId}
+                layerState={layerState}
+                layerConfig={layerSettings}
+                draggable={false}
+                toggleable={true}
                 globalObserver={globalObserver}
-                staticLayerConfig={staticLayerConfig}
-                staticGroupTree={children?.find((g) => g?.id === layerId)}
-                layersState={layersState}
                 filterHits={filterHits}
                 filterValue={filterValue}
                 isFirstChild={isFirstChild}
               />
+            ) : (
+              <LayerItem
+                key={layerId}
+                layerState={layerState}
+                layerConfig={layerSettings}
+                draggable={false}
+                toggleable={true}
+                globalObserver={globalObserver}
+                filterValue={filterValue}
+              />
             );
-          }
-
-          if (filterHits && !filterHits.has(layerId)) {
-            // The filter is active and this layer is not a hit.
-            return null;
-          }
-
-          return layerSettings.layerType === "groupLayer" ? (
-            <GroupLayer
-              key={layerId}
-              layerState={layerState}
-              layerConfig={layerSettings}
-              draggable={false}
-              toggleable={true}
-              globalObserver={globalObserver}
-              filterHits={filterHits}
-              filterValue={filterValue}
-            />
-          ) : (
-            <LayerItem
-              key={layerId}
-              layerState={layerState}
-              layerConfig={layerSettings}
-              draggable={false}
-              toggleable={true}
-              globalObserver={globalObserver}
-              filterValue={filterValue}
-            />
-          );
-        })}
-      </div>
-    </LayerGroupAccordion>
+          })}
+        </div>
+      </LayerGroupAccordion>
+    </div>
   );
 };
 

@@ -281,7 +281,7 @@ class Introduction extends React.PureComponent {
     const filters = [
       {
         condition: !this.showDrawOrderView,
-        elements: ["#draw-order-tab", "#draw-order-switch", ".draw-order-list"],
+        elements: ["#draw-order-tab", "#draw-order-switch", "#draw-order-list"],
       },
       {
         condition: !this.showFavorites,
@@ -290,7 +290,7 @@ class Introduction extends React.PureComponent {
           "#favorites-menu",
           "#edit-favorites",
           "#import-favorites-button",
-          ".favorites-list-view",
+          "#favorites-list-view",
           "#favorites-list-options-button",
           "#favorites-list-options-menu",
         ],
@@ -302,7 +302,7 @@ class Introduction extends React.PureComponent {
           "#favorites-menu",
           "#edit-favorites",
           "#import-favorites-button",
-          ".favorites-list-view",
+          "#favorites-list-view",
           "#favorites-list-options-button",
           "#favorites-list-options-menu",
         ],
@@ -312,7 +312,7 @@ class Introduction extends React.PureComponent {
         elements: ["#quick-access-theme-button", "#quick-access-presets-view"],
       },
       {
-        condition: this.quickAccessList.length === 0,
+        condition: this.quickAccessList?.length === 0,
         elements: ["#quick-access-presets-view"],
       },
       {
@@ -326,7 +326,7 @@ class Introduction extends React.PureComponent {
       {
         condition: !this.searchPlugin,
         elements: [
-          ".MuiAutocomplete-inputRoot",
+          "#search-bar",
           "#search-options-button",
           "#search-tools-menu",
         ],
@@ -453,17 +453,10 @@ class Introduction extends React.PureComponent {
   }
 
   handleDrawerTransition = (previousStep, currentStep) => {
-    const isDrawerPermanent =
-      window.localStorage.getItem("drawerPermanent") === "true";
-
-    // Skip drawer transitions if drawer is permanent
-    if (isDrawerPermanent) {
-      return false;
-    }
-
+    // Always allow drawer transitions regardless of permanence
     // Open drawer transitions
     if (
-      (previousStep?.element === "header > div:first-child" &&
+      (previousStep?.element === "#drawer-toggle-button-group" &&
         currentStep?.element === "#drawer-content") ||
       (previousStep?.element === "#drawer-content" &&
         currentStep?.element === "#toggle-drawer-permanent")
@@ -472,19 +465,21 @@ class Introduction extends React.PureComponent {
       return true;
     }
 
-    // Close drawer transitions
+    // Close drawer transitions (only if drawer is not permanent)
     if (
       (previousStep?.title === "Välkommen" &&
-        currentStep?.element === "header > div:first-child") ||
+        currentStep?.element === "#drawer-toggle-button-group") ||
       (previousStep?.element === "#toggle-drawer-permanent" &&
-        currentStep?.element === ".MuiAutocomplete-inputRoot") ||
+        currentStep?.element === "#search-bar") ||
       (previousStep?.element === "#toggle-drawer-permanent" &&
         currentStep?.element === "#controls-column" &&
-        !this.state.steps.some(
-          (s) => s.element === ".MuiAutocomplete-inputRoot"
-        ))
+        !this.state.steps.some((s) => s.element === "#search-bar"))
     ) {
-      this.props.globalObserver.publish("core.hideDrawer");
+      const isDrawerPermanent =
+        window.localStorage.getItem("drawerPermanent") === "true";
+      if (!isDrawerPermanent) {
+        this.props.globalObserver.publish("core.hideDrawer");
+      }
       return true;
     }
 
@@ -676,7 +671,7 @@ class Introduction extends React.PureComponent {
     // Handle Ritordning tab switch
     if (
       step?.element === "#draw-order-tab" ||
-      step?.element === ".draw-order-list"
+      step?.element === "#draw-order-list"
     ) {
       const tabs = document.querySelector(
         "#layer-switcher-tab-panel .MuiTabs-root"
@@ -806,6 +801,54 @@ class Introduction extends React.PureComponent {
         return;
       }
 
+      if (
+        step?.element === "#drawer-content" &&
+        step?.title === "Kartverktyg" &&
+        previousStep?.element === "#drawer-toggle-button-group"
+      ) {
+        this.props.globalObserver.publish(
+          "core.drawerContentChanged",
+          "plugins"
+        );
+        setTimeout(() => {
+          updateStepElement();
+          resolve();
+        }, Introduction.CONSTANTS.DRAWER_TRANSITION_DELAY);
+        return;
+      }
+
+      if (
+        step?.element === "#drawer-content" &&
+        step?.title === "Dokumenthanteraren" &&
+        previousStep?.element === "#toggle-drawer-permanent"
+      ) {
+        this.props.globalObserver.publish(
+          "core.drawerContentChanged",
+          "documenthandler"
+        );
+        setTimeout(() => {
+          updateStepElement();
+          resolve();
+        }, Introduction.CONSTANTS.DRAWER_TRANSITION_DELAY);
+        return;
+      }
+
+      if (
+        step?.element === "#search-bar" &&
+        previousStep?.title === "Dokumenthanteraren"
+      ) {
+        const isDrawerPermanent =
+          window.localStorage.getItem("drawerPermanent") === "true";
+        if (!isDrawerPermanent) {
+          this.props.globalObserver.publish("core.hideDrawer");
+        }
+        setTimeout(() => {
+          updateStepElement();
+          resolve();
+        }, Introduction.CONSTANTS.DRAWER_TRANSITION_DELAY);
+        return;
+      }
+
       // Handle tab switching
       if (this.handleTabSwitching(step, goingForward, goingBackward)) {
         resolve();
@@ -815,11 +858,11 @@ class Introduction extends React.PureComponent {
       // Handle drawer transitions
       if (this.handleDrawerTransition(previousStep, step)) {
         const needsDelay =
-          (previousStep?.element === "header > div:first-child" &&
+          (previousStep?.element === "#drawer-toggle-button-group" &&
             step?.element === "#drawer-content" &&
             goingForward) ||
           (step?.element === "#toggle-drawer-permanent" &&
-            nextStep?.element === ".MuiAutocomplete-inputRoot" &&
+            nextStep?.element === "#search-bar" &&
             goingBackward) ||
           (step?.element === "#toggle-drawer-permanent" &&
             nextStep?.element === "#controls-column" &&
@@ -1049,6 +1092,15 @@ class Introduction extends React.PureComponent {
       return;
     }
 
+    // Ensure drawer is closed on Sökruta (only if drawer is not permanent)
+    if (step?.element === "#search-bar") {
+      const isDrawerPermanent =
+        window.localStorage.getItem("drawerPermanent") === "true";
+      if (!isDrawerPermanent) {
+        this.props.globalObserver.publish("core.hideDrawer");
+      }
+    }
+
     if (
       step?.element === "#layerGroup-accordion-arrow-button" ||
       step?.element === "#layerswitcher-actions-menu-button"
@@ -1160,7 +1212,7 @@ class Introduction extends React.PureComponent {
     exitOnOverlayClick: false,
     nextLabel: "Nästa",
     prevLabel: "Föregående",
-    doneLabel: "Avlsuta",
+    doneLabel: "Avsluta",
     showBullets: false,
     showProgress: true,
   });
