@@ -1,5 +1,4 @@
 import * as svc from "../../services/ogc.service.js";
-import ad from "../../services/activedirectory.service.js";
 import log4js from "log4js";
 
 const log = log4js.getLogger("ogc.v2");
@@ -20,7 +19,7 @@ export class Controller {
   // GET /api/v2/ogc/wfst
   async listWFSTLayers(req, res) {
     try {
-      const user = ad.getUserFromRequestHeader(req);
+      const user = res.locals.authUser;
       const layers = await svc.listWFSTLayers({
         fields: req.query.fields,
         user,
@@ -34,12 +33,11 @@ export class Controller {
   // GET /api/v2/ogc/wfst/:id
   async getWFSTLayer(req, res) {
     try {
-      const user = ad.getUserFromRequestHeader(req);
+      const user = res.locals.authUser;
       const layer = await svc.getWFSTLayer({
         id: req.params.id,
         fields: req.query.fields,
         user,
-        washContent: req.query.washContent,
       });
       return res.json(layer);
     } catch (e) {
