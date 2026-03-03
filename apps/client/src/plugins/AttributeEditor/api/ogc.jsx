@@ -16,7 +16,8 @@ const geojsonFormat = new GeoJSON();
  *   the backend proxy (relative URL), and parsed client-side using OpenLayers
  *   (supports both GeoJSON and GML responses).
  * - WFS-T transactions are built client-side with OpenLayers and
- *   forwarded through the backend proxy.
+ *   sent to layer.url (direct for absolute URLs, via backend proxy
+ *   for relative URLs) — same routing as feature fetching.
  *
  * All HTTP calls use hfetch (FetchWrapper) for correct credential
  * handling, including NTLM/Kerberos when behind IIS.
