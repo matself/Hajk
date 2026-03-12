@@ -13,9 +13,9 @@ import { isMobile } from "../utils/IsMobile";
 import { getMergedSearchAndHashParams } from "../utils/getMergedSearchAndHashParams";
 // import ArcGISLayer from "./layers/ArcGISLayer.js";
 // import DataLayer from "./layers/DataLayer.js";
-import WMSLayer from "./layers/WMSLayer.js";
-import WMTSLayer from "./layers/WMTSLayer.js";
-import WFSVectorLayer from "./layers/VectorLayer.js";
+import WMSLayer from "./layers/WMSLayer";
+import WMTSLayer from "./layers/WMTSLayer";
+import WFSVectorLayer from "./layers/VectorLayer";
 import OSM from "ol/source/OSM";
 import TileLayer from "ol/layer/Tile";
 import { mapDirectionToAngle } from "../utils/mapDirectionToAngle";
@@ -248,10 +248,15 @@ class AppModel {
    */
   loadPlugins(plugins) {
     const promises = [];
+    const modules = import.meta.glob([
+      "../components/Search/*.j*",
+      "../plugins/*/*.j*",
+    ]);
     plugins.forEach((plugin) => {
       const dir = ["Search"].includes(plugin) ? "components" : "plugins";
-      const prom = import(`../${dir}/${plugin}/${plugin}.js`)
-        .then((module) => {
+
+      const prom = modules[`../${dir}/${plugin}/${plugin}.jsx`]()
+        ?.then((module) => {
           const toolConfig =
             this.config.mapConfig.tools.find(
               (plug) => plug.type.toLowerCase() === plugin.toLowerCase()
@@ -571,8 +576,16 @@ class AppModel {
       name: "-3",
       caption: "OpenStreetMap",
       layerInfo: {
-        caption: "OpenStreetMap",
+        infoText:
+          "OpenStreetMap är en öppen, användargenererad karta där vem som helst kan bidra med information. Innehållet är inte kvalitetssäkrat, granskat eller godkänt av Lantmäteriet.",
+        infoTitle: "Om OpenStreetMap",
+        infoUrl:
+          "https://wiki.openstreetmap.org/wiki/OpenStreetMap_Carto/Symbols",
+        infoUrlText: "Länk till teckenförklaring",
+        information: "Här finns mer info",
         layerType: "base",
+        hideExpandArrow: false,
+        showAttributeTableButton: false,
       },
     });
 
