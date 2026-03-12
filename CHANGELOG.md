@@ -20,11 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client/Print: Print tool's components changed. We managed to replace two large, rather old, dependencies with one modern PDF library + native rendering of the PNG files, see issue [#1757](https://github.com/hajkmap/Hajk/issues/1757).
 - Backend: Refactored and consolidated logging. All log messages are now automatically decorated with username (if AD lookup is active, else "-"). As a result of this, the default log level for most messages has changed from `TRACE` to `DEBUG`. If you see too much info in the production log, ensure not to use `TRACE` there (which isn't a good idea for production anyway, except for hunting down runtime issues). See [issue #1764](https://github.com/hajkmap/Hajk/issues/1764) and [PR #1765](https://github.com/hajkmap/Hajk/pull/1765) for more details.
 - Client: LayerSwitcher's search box now has the same styling as the app's regular search box. See issue [#1645](https://github.com/hajkmap/Hajk/issues/1645) and PR [#1768](https://github.com/hajkmap/Hajk/pull/1768).
+- Backend: The proxy mechanism now properly sets X-Forwarded headers, see ([commit](https://github.com/hajkmap/Hajk/commit/c38339b5a0675911d2625c4b29b107c9ea802ac4)).
 
 ### Fixed
 
 - Font size and weight for Print's text output can now be correctly set in Admin, see issue [#1752](https://github.com/hajkmap/Hajk/issues/1752).
 - Backend: Attempt to load the process with a missing or empty `.env` results in an error being thrown early. See [commit](https://github.com/hajkmap/Hajk/commit/6e0d39a1c1347a8c75a626b6f219b09117ac5d5b).
+- DocumentHandler/Print: Fix styling to correctly position images that use float positioning ([commit](https://github.com/hajkmap/Hajk/commit/f0a44d0249110d4b4965c15c2c5c09878775d41c)).
+- DocumentHandler/Print: Include blockquote background colors ([commit](https://github.com/hajkmap/Hajk/commit/bbd726d3be8062a3173773f72fb86b7420ea2fd5)).
+- LayerSwitcher: Expand Quick Access automatically when loading theme presets ([commit](https://github.com/hajkmap/Hajk/commit/29405a36bb54eedf98ec9c72119c771e5e984784)).
+- LayerSwitcher: Save loaded favorites to `localStorage` ([commit](https://github.com/hajkmap/Hajk/commit/b4741f25f9ca6bd633276ce16707fac22335e993)).
 
 ## [4.2.0] - 2026-01-23
 
