@@ -67,9 +67,15 @@ const PluginSheet = ({ isOpen, onClose, title, globalObserver, disablePadding, c
           </Box>
         </Sheet.Header>
         <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-          <Box sx={{ padding: disablePadding ? 0 : 2 }}>{children}</Box>
+          <Box sx={{
+            padding: disablePadding ? 0 : 2,
+            userSelect: "none",
+            outline: "none",
+            "& a:not([class*='Mui'])": { color: theme.palette.primary.light, }
+          }}>{children}</Box>
         </Sheet.Content>
       </Sheet.Container>
+
     </Sheet>
   );
 };
@@ -345,7 +351,7 @@ class BaseWindowPlugin extends React.PureComponent {
         sx={{
           display:
             this.pluginIsWidget(this.props.options.target) ||
-            this.props.options.target === "control"
+              this.props.options.target === "control"
               ? { xs: "block", md: "none" }
               : "initial",
         }}

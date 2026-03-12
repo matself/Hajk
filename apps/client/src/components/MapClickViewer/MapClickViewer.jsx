@@ -73,7 +73,7 @@ const MapClickViewer = (props) => {
         if (fc.length > 0) {
           setFeatureCollections(fc);
           setOpen(true);
-          if(isMobile) {
+          if (isMobile) {
             panMapAboveSheet(currentSnapRef.current);
             globalObserver.publish("core.focusMapClick");
           }
@@ -90,8 +90,8 @@ const MapClickViewer = (props) => {
 
     const focusWindowObserver = isMobile
       ? globalObserver.subscribe("core.focusWindow", () => {
-          closeWindow();
-        })
+        closeWindow();
+      })
       : null;
 
     return () => {
@@ -148,7 +148,12 @@ const MapClickViewer = (props) => {
             </Box>
           </Sheet.Header>
           <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-            <Box sx={{ padding: 2 }}>
+            <Box sx={{
+              padding: 2,
+              userSelect: "none",
+              outline: "none",
+              "& a:not([class*='Mui'])": { color: theme.palette.primary.light, }
+            }}>
               <MapClickViewerContext.Provider value={contextValue}>
                 <MapClickViewerView featureCollections={featureCollections} />
               </MapClickViewerContext.Provider>
