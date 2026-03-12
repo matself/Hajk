@@ -28,6 +28,13 @@ class AlertView extends React.PureComponent {
     } = this.props;
     return (
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}      
         open={open}
         onClose={this.handleClose}
         aria-labelledby="alert-dialog-title"

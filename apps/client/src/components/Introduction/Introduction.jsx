@@ -44,6 +44,7 @@ const IntroSelectionScreen = ({ onSelect, onClose, layerSwitcherPlugin }) => {
       slotProps={{
         paper: {
           sx: {
+            margin: { xs: 1, sm: 2 },
             "& .MuiButton-root": {
               color: isDarkMode
                 ? theme.palette.text.primary

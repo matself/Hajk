@@ -1329,10 +1329,12 @@ class App extends React.PureComponent {
                   },
                 }}
               >
-                <Zoom
-                  map={this.appModel.getMap()}
-                  mapConfig={this.appModel.config.mapConfig.map}
-                />
+                {!isMobile && (
+                  <Zoom
+                    map={this.appModel.getMap()}
+                    mapConfig={this.appModel.config.mapConfig.map}
+                  />
+                )}
                 {clean === false && (
                   <CookieNoticeButton appModel={this.appModel} />
                 )}

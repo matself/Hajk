@@ -450,6 +450,13 @@ function Favorites({
   const renderMissingLayersDialog = () => {
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         open={missingLayersConfirmation ? true : false}
         onClose={handleMissingLayersConfirmationAbort}
         onMouseDown={(e) => {
@@ -506,6 +513,13 @@ function Favorites({
   const renderAddFavoriteDialog = () => {
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         open={saveFavoriteDialog}
         aria-labelledby="saveFavorite-dialog-title"
         aria-describedby="save-favorite-dialog-description"

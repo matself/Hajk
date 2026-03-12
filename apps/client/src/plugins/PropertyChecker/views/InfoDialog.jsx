@@ -30,6 +30,13 @@ function InfoDialog({ localObserver }) {
 
   return (
     <Dialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+          },
+        },
+      }}
       open={clearDialogVisible}
       onClose={handleClose}
       scroll="body"

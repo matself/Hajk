@@ -421,7 +421,7 @@ class SearchBar extends React.PureComponent {
           input: {
             ...params.InputProps,
             ...disableUnderline,
-            style: { margin: 0 },
+            style: { margin: 0, ...(isMobile && { height: "46px" }) },
             notched: isMobile ? null : false,
             "aria-label": "Sök i webbplatsens innehåll",
             endAdornment: (

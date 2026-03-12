@@ -61,6 +61,13 @@ export default function ResponsiveDialog(props) {
         sx={{
           zIndex: props.type === "Information" ? 1301 : undefined,
         }}
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         aria-labelledby="responsive-dialog-title"
         aria-describedby="responsive-dialog-content"
         fullScreen={fullScreen}
@@ -74,7 +81,7 @@ export default function ResponsiveDialog(props) {
         {headerText && (
           <DialogTitle id="responsive-dialog-title">{headerText}</DialogTitle>
         )}
-        <DialogContent id="responsive-dialog-content">
+        <DialogContent  id="responsive-dialog-content">
           {children}
           {useLegacyNonMarkdownRenderer === true ? (
             <LegacyNonMarkdownRenderer text={text} />

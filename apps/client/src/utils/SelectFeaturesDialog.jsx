@@ -116,6 +116,13 @@ export default function SelectFeaturesDialog({ localObserver, drawModel }) {
 
   return createPortal(
     <Dialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+          },
+        },
+      }}
       open={state.clickedFeatures.length > 1}
       onClose={handleAbort}
       // Must stop event-bubbling. Otherwise the parent element in react can be dragged etc.

@@ -886,15 +886,16 @@ class AppModel {
         features = Array.isArray(features) ? features : [features];
         this.highlightSource.addFeatures(features);
 
-        if (window.innerWidth < 600) {
-          // Do we have any geometries? It's needed if you want to get a center.
-          if (features[0].getGeometry()) {
-            // Use the source extent to get a good center.
-            this.map
-              .getView()
-              .setCenter(this.getCenter(this.highlightSource.getExtent()));
-          }
-        }
+        // jesade: disabled and moved center calculation to MapClickViewer.jsx
+        // if (window.innerWidth < 600) {
+        //   // Do we have any geometries? It's needed if you want to get a center.
+        //   if (features[0].getGeometry()) {
+        //     // Use the source extent to get a good center.
+        //     this.map
+        //       .getView()
+        //       .setCenter(this.getCenter(this.highlightSource.getExtent()));
+        //   }
+        // }
       }
     }
   }

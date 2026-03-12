@@ -76,6 +76,13 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 function HelpDialog(props) {
   return (
     <Dialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+          },
+        },
+      }}
       open={props.open}
       onClose={() => {
         props.setShowHelp(false);

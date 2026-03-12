@@ -2,13 +2,77 @@ import React from "react";
 import propTypes from "prop-types";
 import { isMobile } from "./../utils/IsMobile";
 import { createPortal } from "react-dom";
-import { ListItemIcon, ListItemText } from "@mui/material";
+import { Box, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
+import ListItemButton from "@mui/material/ListItemButton";
+import { Sheet } from "react-modal-sheet";
+import { useTransform } from "motion/react";
+
 import Window from "../components/Window";
 import Card from "../components/Card";
 import PluginControlButton from "../components/PluginControlButton";
-import { Box } from "@mui/material";
 
-import ListItemButton from "@mui/material/ListItemButton";
+const SHEET_MIN_HEIGHT = 48;
+
+const PluginSheet = ({ isOpen, onClose, title, globalObserver, disablePadding, children }) => {
+  const theme = useTheme();
+  const sheetRef = React.useRef(null);
+  const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
+
+  const minSnap = SHEET_MIN_HEIGHT / window.innerHeight;
+  const snapPoints = [0, minSnap, 0.4, 0.7, 1];
+
+  React.useEffect(() => {
+    if (!globalObserver) return;
+    const sub = globalObserver.subscribe("core.focusMapClick", () => {
+      if (isOpen) {
+        sheetRef.current?.snapTo(1);
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [globalObserver, isOpen]);
+
+  return (
+    <Sheet
+      ref={sheetRef}
+      isOpen={isOpen}
+      onClose={onClose}
+      snapPoints={snapPoints}
+      initialSnap={2}
+      detent="full"
+      disableScrollLocking
+      style={{ zIndex: 1198 }}
+    >
+      <Sheet.Container
+        style={{
+          backgroundColor: `color-mix(in srgb, ${theme.palette.background.paper} 90%, transparent)`,
+          backdropFilter: "blur(12px)",
+          color: theme.palette.text.primary,
+          boxShadow: theme.shadows[24],
+        }}
+      >
+        <Sheet.Header>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              pt: 1,
+              pb: 0.5,
+            }}
+          >
+            <Sheet.DragIndicator />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 0.5 }}>
+              {title}
+            </Typography>
+          </Box>
+        </Sheet.Header>
+        <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
+          <Box sx={{ padding: disablePadding ? 0 : 2 }}>{children}</Box>
+        </Sheet.Content>
+      </Sheet.Container>
+    </Sheet>
+  );
+};
 
 class BaseWindowPlugin extends React.PureComponent {
   static propTypes = {
@@ -69,6 +133,7 @@ class BaseWindowPlugin extends React.PureComponent {
     this.width = props.options.width || props.custom.width || 400;
     this.height = props.options.height || props.custom.height || "auto";
     this.position = props.options.position || props.custom.position || "left";
+
 
     // Register Window in our global register
     props.app.registerWindowPlugin(this);
@@ -211,47 +276,56 @@ class BaseWindowPlugin extends React.PureComponent {
       // That includes rendering the plugin Window itself, as well as a
       // button (that will trigger opening of the plugin Window).
       <>
-        <Window
-          componentId={this.type}
-          globalObserver={this.props.app.globalObserver}
-          title={this.state.title}
-          color={this.state.color}
-          onClose={this.closeWindowClick}
-          open={this.state.windowVisible}
-          onResize={this.props.custom.onResize}
-          onMaximize={this.props.custom.onMaximize}
-          onMinimize={this.props.custom.onMinimize}
-          draggingEnabled={this.props.custom.draggingEnabled}
-          customPanelHeaderButtons={this.props.custom.customPanelHeaderButtons}
-          resizingEnabled={this.props.custom.resizingEnabled}
-          scrollable={this.props.custom.scrollable}
-          allowMaximizedWindow={this.props.custom.allowMaximizedWindow}
-          disablePadding={this.props.custom.disablePadding}
-          width={this.width}
-          height={this.height}
-          position={this.position}
-          mode="window"
-          layerswitcherConfig={this.props.app.config.mapConfig.tools.find(
-            (t) => t.type === "layerswitcher"
-          )}
-        >
-          {/* We have to pass windowVisible down to the children so that we can conditionally render
-          the <Tabs /> component, since it does not accept components with display: "none". We use the
-          windowVisible-prop to make sure that we don't render the <Tabs /> when the window
-          is not visible.*/}
-          {React.cloneElement(this.props.children, {
-            windowVisible: this.state.windowVisible,
-          })}
-        </Window>
-        {/* Always render a Drawer button unless its target is "hidden". 
-              It's a backup for plugins render elsewhere: we hide 
-              Widget and Control buttons on small screens and fall 
-              back to Drawer button). */}
+        {isMobile ? (
+          <PluginSheet
+            isOpen={this.state.windowVisible}
+            onClose={this.closeWindowClick}
+            title={this.state.title}
+            globalObserver={this.props.app.globalObserver}
+            disablePadding={this.props.custom.disablePadding}
+          >
+            <section id={this.type}>
+              {React.cloneElement(this.props.children, {
+                windowVisible: this.state.windowVisible,
+              })}
+            </section>
+
+          </PluginSheet>
+        ) : (
+          <Window
+            componentId={this.type}
+            globalObserver={this.props.app.globalObserver}
+            title={this.state.title}
+            color={this.state.color}
+            onClose={this.closeWindowClick}
+            open={this.state.windowVisible}
+            onResize={this.props.custom.onResize}
+            onMaximize={this.props.custom.onMaximize}
+            onMinimize={this.props.custom.onMinimize}
+            draggingEnabled={this.props.custom.draggingEnabled}
+            customPanelHeaderButtons={
+              this.props.custom.customPanelHeaderButtons
+            }
+            resizingEnabled={this.props.custom.resizingEnabled}
+            scrollable={this.props.custom.scrollable}
+            allowMaximizedWindow={this.props.custom.allowMaximizedWindow}
+            disablePadding={this.props.custom.disablePadding}
+            width={this.width}
+            height={this.height}
+            position={this.position}
+            mode="window"
+            layerswitcherConfig={this.props.app.config.mapConfig.tools.find(
+              (t) => t.type === "layerswitcher"
+            )}
+          >
+            {React.cloneElement(this.props.children, {
+              windowVisible: this.state.windowVisible,
+            })}
+          </Window>
+        )}
         {target !== "hidden" && this.renderDrawerButton()}
-        {/* Widget buttons must also render a Widget */}
         {this.pluginIsWidget(target) &&
           this.renderWidgetButton(`${target}-column`)}
-        {/* Finally, render a Control button if target has that value */}
         {target === "control" && this.renderControlButton()}
       </>
     );

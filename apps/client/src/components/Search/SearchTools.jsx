@@ -66,6 +66,13 @@ class SearchTools extends React.PureComponent {
     if (settingsDialog) {
       return createPortal(
         <Dialog
+          slotProps={{
+            paper: {
+              sx: {
+                margin: { xs: 1, sm: 2 },
+              },
+            },
+          }}
           options={{
             text: (
               <SearchSettings

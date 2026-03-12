@@ -75,6 +75,13 @@ class Information extends React.PureComponent {
     const { headerText, text, buttonText } = this.props.options;
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         type={this.type}
         options={{
           headerText,

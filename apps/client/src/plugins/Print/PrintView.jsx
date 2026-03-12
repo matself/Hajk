@@ -127,6 +127,18 @@ class PrintView extends React.PureComponent {
     });
   }
 
+  componentDidMount() {
+    // On mobile the Sheet unmounts children when closed and remounts them
+    // when opened. By that time the "showPrintPreview" event has already
+    // been published (and missed), so we trigger the preview here instead.
+    if (this.props.windowVisible) {
+      const scale = this.model.getFittingScale();
+      this.setState({ previewLayerVisible: true, scale: scale }, () => {
+        this.handlePotentialPrintOptionError();
+      });
+    }
+  }
+
   initiatePrint = (e) => {
     // Print can be initiated by submitting the <form>. In that case, we must prevent default behavior.
     e.preventDefault();

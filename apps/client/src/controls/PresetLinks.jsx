@@ -198,6 +198,13 @@ class Preset extends React.PureComponent {
     if (this.state.dialogOpen) {
       return createPortal(
         <Dialog
+          slotProps={{
+            paper: {
+              sx: {
+                margin: { xs: 1, sm: 2 },
+              },
+            },
+          }}
           options={{
             text: "Alla tända lager i kartan kommer nu att släckas. Snabbvalets fördefinierade lager tänds istället.",
             headerText: "Visa snabbval",

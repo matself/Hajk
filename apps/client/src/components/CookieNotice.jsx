@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Box,
   Button,
   Checkbox,
   Dialog,
@@ -11,7 +12,6 @@ import {
   Link,
   Slide,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import {
   functionalOk,
   setLevel,
@@ -25,17 +25,8 @@ const DEFAULT_MESSAGE =
 const DEFAULT_URL =
   "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/";
 
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  [theme.breakpoints.up("sm")]: {
-    "& .MuiDialog-container": {
-      alignItems: "flex-end",
-      padding: "16px 20px",
-    },
-  },
-}));
-
 // We're using several labeled checkboxes, let's create a component so that we keep DRY.
-const LabeledCheckbox = ({ checked, disabled, label, onChange }) => {
+const LabeledCheckbox = ({ checked, disabled, label, onChange,  }) => {
   return (
     <FormControlLabel
       control={
@@ -73,7 +64,7 @@ function CookieNotice({ globalObserver, appModel }) {
 
   // We're subscribing to the globalObserver-events in an useEffect so that we can
   // make sure to clean up subscriptions on unMount. (The return-statement of useEffect).
-  React.useEffect(() => {
+  React.useEffect(() => { 
     // An event that allows other components to show the cookie-notice so that
     // the user can re-think their decision...
     globalObserver.subscribe("core.showCookieBanner", () => {
@@ -126,10 +117,17 @@ function CookieNotice({ globalObserver, appModel }) {
   }, [showThirdPartCheckbox]);
 
   return (
-    <StyledDialog
+    <Dialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+            width: { xs: "calc(100% - 16px)", sm: "calc(100% - 32px)" },
+            maxWidth: "md",
+          },
+        },
+      }}
       sx={{ zIndex: "9999" }}
-      fullWidth={true}
-      maxWidth={"md"}
       open={open}
       TransitionComponent={Transition}
       keepMounted
@@ -158,9 +156,13 @@ function CookieNotice({ globalObserver, appModel }) {
         }}
       >
         <FormGroup
-          sx={{
-            flexDirection: { xs: "column", sm: "row" },
-          }}
+          row={true}
+          sx={(theme) => ({
+            // For some weird reason, the last checkbox is not getting the correct margin-right on mobile. And the only way to fix it is to use a media query and forced css.
+            [theme.breakpoints.down("sm")]: {
+              ".MuiFormControlLabel-root:last-child": { mr: 0 },
+            },
+          })}
         >
           <LabeledCheckbox
             disabled={true}
@@ -176,6 +178,7 @@ function CookieNotice({ globalObserver, appModel }) {
           />
           {showThirdPartCheckbox && (
             <LabeledCheckbox
+
               onChange={(event) => {
                 setThirdPartChecked(event.target.checked);
               }}
@@ -184,23 +187,25 @@ function CookieNotice({ globalObserver, appModel }) {
             />
           )}
         </FormGroup>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={handleAllowSelectedClick}
-        >
-          {"Tillåt valda"}
-        </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={handleAllowAllClick}
-          sx={{ margin: [1, 1] }}
-        >
-          {"Tillåt Alla"}
-        </Button>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: 1, pt: 1, pb: 2, "&&": { ml: 0 } }}>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleAllowSelectedClick}
+          >
+            {"Tillåt valda"}
+          </Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleAllowAllClick}
+            sx={{ mr: { sm: 2 } }}
+          >
+            {"Tillåt Alla"}
+          </Button>
+        </Box>
       </DialogActions>
-    </StyledDialog>
+    </Dialog>
   );
 }
 

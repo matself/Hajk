@@ -324,6 +324,13 @@ function QuickAccessPresets({
   const renderInfoDialog = () => {
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         open={loadLpInfoConfirmation ? true : false}
         onClose={handleLoadConfirmationAbort}
         onMouseDown={(e) => {
@@ -376,6 +383,13 @@ function QuickAccessPresets({
   const renderLoadDialog = () => {
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         open={loadLpConfirmation ? true : false}
         onClose={handleLoadConfirmationAbort}
         closeAfterTransition={false}
@@ -410,6 +424,13 @@ function QuickAccessPresets({
   const renderMissingLayersDialog = () => {
     return createPortal(
       <Dialog
+        slotProps={{
+          paper: {
+            sx: {
+              margin: { xs: 1, sm: 2 },
+            },
+          },
+        }}
         open={missingLayersConfirmation ? true : false}
         onClose={handleMissingLayersConfirmationAbort}
         closeAfterTransition={false}

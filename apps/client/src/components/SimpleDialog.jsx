@@ -42,6 +42,13 @@ export default function SimpleDialog({ globalObserver }) {
 
   return (
     <Dialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+          },
+        },
+      }}
       onClose={handleClose}
       open={open}
       fullScreen
