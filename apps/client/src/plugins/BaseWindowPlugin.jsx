@@ -2,109 +2,15 @@ import React from "react";
 import propTypes from "prop-types";
 import { isMobile } from "./../utils/IsMobile";
 import { createPortal } from "react-dom";
-import {
-  Box,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, ListItemIcon, ListItemText } from "@mui/material";
 import ListItemButton from "@mui/material/ListItemButton";
-import { Sheet } from "react-modal-sheet";
-import { useTransform } from "motion/react";
 
 import Window from "../components/Window";
+import WindowSheet from "../components/WindowSheet";
 import Card from "../components/Card";
 import PluginControlButton from "../components/PluginControlButton";
 
 const SHEET_MIN_HEIGHT = 54;
-
-const PluginSheet = ({
-  isOpen,
-  onClose,
-  title,
-  globalObserver,
-  disablePadding,
-  children,
-}) => {
-  const theme = useTheme();
-  const sheetRef = React.useRef(null);
-  const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
-
-  const minSnap = SHEET_MIN_HEIGHT / window.innerHeight;
-  const snapPoints = [0, minSnap, 0.4, 0.7, 1];
-
-  React.useEffect(() => {
-    if (!globalObserver) return;
-    const sub = globalObserver.subscribe("core.focusMapClick", () => {
-      if (isOpen) {
-        sheetRef.current?.snapTo(1);
-      }
-    });
-    return () => sub.unsubscribe();
-  }, [globalObserver, isOpen]);
-
-  return (
-    <Sheet
-      ref={sheetRef}
-      isOpen={isOpen}
-      onClose={onClose}
-      snapPoints={snapPoints}
-      initialSnap={2}
-      detent="full"
-      disableScrollLocking
-      style={{ zIndex: 1198 }}
-    >
-      <Sheet.Container
-        style={{
-          backgroundColor: `color-mix(in srgb, ${theme.palette.background.paper} 90%, transparent)`,
-          backdropFilter: "blur(12px)",
-          color: theme.palette.text.primary,
-          boxShadow: theme.shadows[24],
-        }}
-      >
-        <Sheet.Header>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              pt: 1,
-              pb: 0.5,
-            }}
-          >
-            <Sheet.DragIndicator />
-            <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: 600, mt: 0.5, mb: 1 }}
-            >
-              {title}
-            </Typography>
-            <div
-              style={{
-                height: "2px",
-                width: "100%",
-                backgroundColor: theme.palette.primary.main,
-              }}
-            />
-          </Box>
-        </Sheet.Header>
-        <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-          <Box
-            sx={{
-              padding: disablePadding ? 0 : 2,
-              userSelect: "none",
-              outline: "none",
-              "& a:not([class*='Mui'])": { color: theme.palette.primary.light },
-            }}
-          >
-            {children}
-          </Box>
-        </Sheet.Content>
-      </Sheet.Container>
-    </Sheet>
-  );
-};
 
 class BaseWindowPlugin extends React.PureComponent {
   static propTypes = {
@@ -308,11 +214,20 @@ class BaseWindowPlugin extends React.PureComponent {
       // button (that will trigger opening of the plugin Window).
       <>
         {isMobile ? (
-          <PluginSheet
+          <WindowSheet
             isOpen={this.state.windowVisible}
             onClose={this.closeWindowClick}
             title={this.state.title}
+            snapPoints={[
+              0,
+              SHEET_MIN_HEIGHT / window.innerHeight,
+              0.4,
+              0.7,
+              1,
+            ]}
+            initialSnap={2}
             globalObserver={this.props.app.globalObserver}
+            minimizeOnFocusMapClick
             disablePadding={this.props.custom.disablePadding}
           >
             <section id={this.type}>
@@ -320,7 +235,7 @@ class BaseWindowPlugin extends React.PureComponent {
                 windowVisible: this.state.windowVisible,
               })}
             </section>
-          </PluginSheet>
+          </WindowSheet>
         ) : (
           <Window
             componentId={this.type}

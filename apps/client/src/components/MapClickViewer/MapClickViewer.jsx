@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
-import { Sheet } from "react-modal-sheet";
-import { useTransform } from "motion/react";
 
 import { isMobile } from "../../utils/IsMobile";
 import Window from "../../components/Window";
+import WindowSheet from "../../components/WindowSheet";
 import FeaturePropsParsing from "../../components/FeatureInfo/FeaturePropsParsing";
 
 import MapClickViewerView from "./MapClickViewerView";
@@ -15,14 +13,11 @@ const snapPoints = [0, 0.4, 0.7, 1];
 const MapClickViewer = (props) => {
   const { appModel, globalObserver, infoclickOptions } = props;
   const { activeMap } = appModel.config;
-  const theme = useTheme();
 
   const [open, setOpen] = useState(false);
   const [featureCollections, setFeatureCollections] = useState([]);
 
-  const sheetRef = useRef(null);
   const currentSnapRef = useRef(1);
-  const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
 
   const featurePropsParsing = useRef();
 
@@ -109,69 +104,19 @@ const MapClickViewer = (props) => {
 
   if (isMobile) {
     return (
-      <Sheet
-        ref={sheetRef}
+      <WindowSheet
         isOpen={open}
         onClose={closeWindow}
+        title={title}
         snapPoints={snapPoints}
         initialSnap={1}
-        detent="full"
-        disableScrollLocking
+        zIndex={1199}
         onSnap={panMapAboveSheet}
-        style={{ zIndex: 1199 }}
       >
-        <Sheet.Container
-          style={{
-            backgroundColor: `color-mix(in srgb, ${theme.palette.background.paper} 90%, transparent)`,
-            backdropFilter: "blur(12px)",
-            color: theme.palette.text.primary,
-            boxShadow: theme.shadows[24],
-          }}
-        >
-          <Sheet.Header>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                pt: 1,
-                pb: 0.5,
-              }}
-            >
-              <Sheet.DragIndicator />
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, mt: 0.5, mb: 1 }}
-              >
-                {title}
-              </Typography>
-              <div
-                style={{
-                  height: "2px",
-                  width: "100%",
-                  backgroundColor: theme.palette.primary.main,
-                }}
-              />
-            </Box>
-          </Sheet.Header>
-          <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-            <Box
-              sx={{
-                padding: 2,
-                userSelect: "none",
-                outline: "none",
-                "& a:not([class*='Mui'])": {
-                  color: theme.palette.primary.light,
-                },
-              }}
-            >
-              <MapClickViewerContext.Provider value={contextValue}>
-                <MapClickViewerView featureCollections={featureCollections} />
-              </MapClickViewerContext.Provider>
-            </Box>
-          </Sheet.Content>
-        </Sheet.Container>
-      </Sheet>
+        <MapClickViewerContext.Provider value={contextValue}>
+          <MapClickViewerView featureCollections={featureCollections} />
+        </MapClickViewerContext.Provider>
+      </WindowSheet>
     );
   }
 
