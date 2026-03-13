@@ -85,7 +85,7 @@ function getTheme(config, customTheme) {
       },
     },
     shape: {
-      borderRadius: 2,
+      borderRadius: 8,
     },
   };
 
