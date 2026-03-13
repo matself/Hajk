@@ -73,14 +73,17 @@ class AnchorView extends React.PureComponent {
   async componentDidMount() {
     // Subscribe to changes to anchor URL caused by other components. This ensure
     // that we have a live update of the anchor whether user does anything in the map.
-    this.props.globalObserver.subscribe("core.mapUpdated", ({ url }) => {
-      this.generateQr(url).then((data) => {
-        this.setState({
-          anchor: this.appendCleanModeIfActive(url),
-          qrCode: data,
+    this.mapUpdatedSubscription = this.props.globalObserver.subscribe(
+      "core.mapUpdated",
+      ({ url }) => {
+        this.generateQr(url).then((data) => {
+          this.setState({
+            anchor: this.appendCleanModeIfActive(url),
+            qrCode: data,
+          });
         });
-      });
-    });
+      }
+    );
 
     // Initiate the anchor-url on mount
     const a = await this.props.model.getAnchor();
@@ -89,6 +92,10 @@ class AnchorView extends React.PureComponent {
       anchor: a,
       qrCode: qrData,
     });
+  }
+
+  componentWillUnmount() {
+    this.mapUpdatedSubscription?.unsubscribe();
   }
 
   generateQr = (url) => {

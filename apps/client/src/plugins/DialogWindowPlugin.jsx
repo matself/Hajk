@@ -158,7 +158,7 @@ class DialogWindowPlugin extends React.PureComponent {
         onAbort={this.#onAbort}
         onVisibilityChanged={this.opts.onVisibilityChanged}
       >
-        {this.props.children}
+        {this.state.dialogOpen && this.props.children}
       </Dialog>,
       document.getElementById("windows-container")
     );
