@@ -2,7 +2,13 @@ import React from "react";
 import propTypes from "prop-types";
 import { isMobile } from "./../utils/IsMobile";
 import { createPortal } from "react-dom";
-import { Box, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import ListItemButton from "@mui/material/ListItemButton";
 import { Sheet } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -13,7 +19,14 @@ import PluginControlButton from "../components/PluginControlButton";
 
 const SHEET_MIN_HEIGHT = 48;
 
-const PluginSheet = ({ isOpen, onClose, title, globalObserver, disablePadding, children }) => {
+const PluginSheet = ({
+  isOpen,
+  onClose,
+  title,
+  globalObserver,
+  disablePadding,
+  children,
+}) => {
   const theme = useTheme();
   const sheetRef = React.useRef(null);
   const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
@@ -67,15 +80,18 @@ const PluginSheet = ({ isOpen, onClose, title, globalObserver, disablePadding, c
           </Box>
         </Sheet.Header>
         <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-          <Box sx={{
-            padding: disablePadding ? 0 : 2,
-            userSelect: "none",
-            outline: "none",
-            "& a:not([class*='Mui'])": { color: theme.palette.primary.light, }
-          }}>{children}</Box>
+          <Box
+            sx={{
+              padding: disablePadding ? 0 : 2,
+              userSelect: "none",
+              outline: "none",
+              "& a:not([class*='Mui'])": { color: theme.palette.primary.light },
+            }}
+          >
+            {children}
+          </Box>
         </Sheet.Content>
       </Sheet.Container>
-
     </Sheet>
   );
 };
@@ -139,7 +155,6 @@ class BaseWindowPlugin extends React.PureComponent {
     this.width = props.options.width || props.custom.width || 400;
     this.height = props.options.height || props.custom.height || "auto";
     this.position = props.options.position || props.custom.position || "left";
-
 
     // Register Window in our global register
     props.app.registerWindowPlugin(this);
@@ -295,7 +310,6 @@ class BaseWindowPlugin extends React.PureComponent {
                 windowVisible: this.state.windowVisible,
               })}
             </section>
-
           </PluginSheet>
         ) : (
           <Window
@@ -351,7 +365,7 @@ class BaseWindowPlugin extends React.PureComponent {
         sx={{
           display:
             this.pluginIsWidget(this.props.options.target) ||
-              this.props.options.target === "control"
+            this.props.options.target === "control"
               ? { xs: "block", md: "none" }
               : "initial",
         }}

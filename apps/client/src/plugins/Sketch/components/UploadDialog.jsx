@@ -52,13 +52,17 @@ const UploadDialog = (props) => {
   };
 
   return (
-    <StyledDialog slotProps={{
-      paper: {
-        sx: {
-          margin: { xs: 1, sm: 2 },
+    <StyledDialog
+      slotProps={{
+        paper: {
+          sx: {
+            margin: { xs: 1, sm: 2 },
+          },
         },
-      },
-    }} open={props.open} onClose={() => props.setOpen(false)}>
+      }}
+      open={props.open}
+      onClose={() => props.setOpen(false)}
+    >
       <DialogTitle>Importera ritobjekt</DialogTitle>
       <DialogContent>
         <StyledFileInput>

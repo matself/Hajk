@@ -26,7 +26,7 @@ const DEFAULT_URL =
   "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/";
 
 // We're using several labeled checkboxes, let's create a component so that we keep DRY.
-const LabeledCheckbox = ({ checked, disabled, label, onChange,  }) => {
+const LabeledCheckbox = ({ checked, disabled, label, onChange }) => {
   return (
     <FormControlLabel
       control={
@@ -64,7 +64,7 @@ function CookieNotice({ globalObserver, appModel }) {
 
   // We're subscribing to the globalObserver-events in an useEffect so that we can
   // make sure to clean up subscriptions on unMount. (The return-statement of useEffect).
-  React.useEffect(() => { 
+  React.useEffect(() => {
     // An event that allows other components to show the cookie-notice so that
     // the user can re-think their decision...
     globalObserver.subscribe("core.showCookieBanner", () => {
@@ -178,7 +178,6 @@ function CookieNotice({ globalObserver, appModel }) {
           />
           {showThirdPartCheckbox && (
             <LabeledCheckbox
-
               onChange={(event) => {
                 setThirdPartChecked(event.target.checked);
               }}
@@ -187,7 +186,16 @@ function CookieNotice({ globalObserver, appModel }) {
             />
           )}
         </FormGroup>
-        <Box sx={{ display: "flex", flexDirection: "row", gap: 1, pt: 1, pb: 2, "&&": { ml: 0 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 1,
+            pt: 1,
+            pb: 2,
+            "&&": { ml: 0 },
+          }}
+        >
           <Button
             color="primary"
             variant="contained"

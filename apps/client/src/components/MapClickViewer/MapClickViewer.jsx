@@ -90,8 +90,8 @@ const MapClickViewer = (props) => {
 
     const focusWindowObserver = isMobile
       ? globalObserver.subscribe("core.focusWindow", () => {
-        closeWindow();
-      })
+          closeWindow();
+        })
       : null;
 
     return () => {
@@ -139,21 +139,22 @@ const MapClickViewer = (props) => {
               }}
             >
               <Sheet.DragIndicator />
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, mt: 0.5 }}
-              >
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 0.5 }}>
                 {title || "Information"}
               </Typography>
             </Box>
           </Sheet.Header>
           <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
-            <Box sx={{
-              padding: 2,
-              userSelect: "none",
-              outline: "none",
-              "& a:not([class*='Mui'])": { color: theme.palette.primary.light, }
-            }}>
+            <Box
+              sx={{
+                padding: 2,
+                userSelect: "none",
+                outline: "none",
+                "& a:not([class*='Mui'])": {
+                  color: theme.palette.primary.light,
+                },
+              }}
+            >
               <MapClickViewerContext.Provider value={contextValue}>
                 <MapClickViewerView featureCollections={featureCollections} />
               </MapClickViewerContext.Provider>

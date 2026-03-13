@@ -24,7 +24,9 @@ class PrintDialog extends React.PureComponent {
             },
           },
         }}
-        disableEscapeKeyDown={true} open={open}>
+        disableEscapeKeyDown={true}
+        open={open}
+      >
         <LinearProgress />
         <DialogTitle>Din {`${saveAsType}`} skapas</DialogTitle>
         <DialogContent>
