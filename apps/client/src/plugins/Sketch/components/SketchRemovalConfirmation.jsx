@@ -14,13 +14,6 @@ import {
 const SketchRemovalConfirmation = ({ open, handleConfirm, handleAbort }) => {
   return createPortal(
     <Dialog
-      slotProps={{
-        paper: {
-          sx: {
-            margin: { xs: 1, sm: 2 },
-          },
-        },
-      }}
       open={open}
       onClose={handleAbort}
       onMouseDown={(e) => {

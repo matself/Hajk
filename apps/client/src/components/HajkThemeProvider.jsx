@@ -78,7 +78,17 @@ function getTheme(config, customTheme) {
   );
   // Setup some app-wide defaults that differ from MUI's defaults:
   const hardCodedDefaults = {
-    components: {},
+    components: {
+      MuiDialog: {
+        styleOverrides: {
+          paper: ({ theme }) => ({
+            [theme.breakpoints.down("sm")]: {
+              margin: theme.spacing(1),
+            },
+          }),
+        },
+      },
+    },
     palette: {
       mode: colorScheme,
       action: {

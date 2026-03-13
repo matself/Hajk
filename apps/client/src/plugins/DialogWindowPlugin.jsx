@@ -145,13 +145,6 @@ class DialogWindowPlugin extends React.PureComponent {
   renderDialog() {
     return createPortal(
       <Dialog
-        slotProps={{
-          paper: {
-            sx: {
-              margin: { xs: 1, sm: 2 },
-            },
-          },
-        }}
         options={this.opts}
         open={this.state.dialogOpen}
         onClose={this.#onClose}

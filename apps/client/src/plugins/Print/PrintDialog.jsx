@@ -17,13 +17,6 @@ class PrintDialog extends React.PureComponent {
     const { cancelPrint, open, saveAsType } = this.props;
     return createPortal(
       <Dialog
-        slotProps={{
-          paper: {
-            sx: {
-              margin: { xs: 1, sm: 2 },
-            },
-          },
-        }}
         disableEscapeKeyDown={true}
         open={open}
       >

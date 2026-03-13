@@ -53,13 +53,6 @@ const UploadDialog = (props) => {
 
   return (
     <StyledDialog
-      slotProps={{
-        paper: {
-          sx: {
-            margin: { xs: 1, sm: 2 },
-          },
-        },
-      }}
       open={props.open}
       onClose={() => props.setOpen(false)}
     >

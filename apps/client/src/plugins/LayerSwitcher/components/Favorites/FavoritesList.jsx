@@ -138,13 +138,6 @@ function FavoritesList({
   const renderInfoDialog = () => {
     return createPortal(
       <Dialog
-        slotProps={{
-          paper: {
-            sx: {
-              margin: { xs: 1, sm: 2 },
-            },
-          },
-        }}
         open={infoAlert}
         aria-labelledby="infoalert-dialog-title"
         aria-describedby="infoalert-dialog-description"
@@ -206,13 +199,6 @@ function FavoritesList({
   const renderEditDialog = () => {
     return createPortal(
       <Dialog
-        slotProps={{
-          paper: {
-            sx: {
-              margin: { xs: 1, sm: 2 },
-            },
-          },
-        }}
         open={editAlert}
         aria-labelledby="editalert-dialog-title"
         aria-describedby="editalert-dialog-description"
