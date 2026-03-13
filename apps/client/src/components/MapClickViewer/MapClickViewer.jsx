@@ -139,9 +139,19 @@ const MapClickViewer = (props) => {
               }}
             >
               <Sheet.DragIndicator />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                {title || "Information"}
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, mt: 0.5, mb: 1 }}
+              >
+                {title}
               </Typography>
+              <div
+                style={{
+                  height: "2px",
+                  width: "100%",
+                  backgroundColor: theme.palette.primary.main,
+                }}
+              />
             </Box>
           </Sheet.Header>
           <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>

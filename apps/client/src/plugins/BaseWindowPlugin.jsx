@@ -17,7 +17,7 @@ import Window from "../components/Window";
 import Card from "../components/Card";
 import PluginControlButton from "../components/PluginControlButton";
 
-const SHEET_MIN_HEIGHT = 48;
+const SHEET_MIN_HEIGHT = 54;
 
 const PluginSheet = ({
   isOpen,
@@ -74,9 +74,19 @@ const PluginSheet = ({
             }}
           >
             <Sheet.DragIndicator />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 0.5 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 600, mt: 0.5, mb: 1 }}
+            >
               {title}
             </Typography>
+            <div
+              style={{
+                height: "2px",
+                width: "100%",
+                backgroundColor: theme.palette.primary.main,
+              }}
+            />
           </Box>
         </Sheet.Header>
         <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>

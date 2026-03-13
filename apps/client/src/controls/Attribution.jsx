@@ -21,8 +21,6 @@ const Root = styled("div")(({ theme }) => ({
   },
   "& .ol-attribution": {
     background: theme.palette.background.paper,
-    // boxShadow: theme.shadows[4],
-    // borderRadius: theme.shape.borderRadius,
     height: "25px",
     overflow: "auto",
     whiteSpace: "nowrap",
