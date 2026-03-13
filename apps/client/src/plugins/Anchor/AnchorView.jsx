@@ -5,7 +5,7 @@ import withSnackbar from "components/WithSnackbar";
 import QRCode from "qrcode";
 import HajkToolTip from "components/HajkToolTip";
 import ShareIcon from "@mui/icons-material/Share";
-import Collapse from "@mui/material/Collapse";
+
 import Alert from "@mui/material/Alert";
 
 import {
@@ -15,8 +15,8 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Box,
   Paper,
-  Switch,
 } from "@mui/material";
 
 import FileCopyIcon from "@mui/icons-material/FileCopy";
@@ -67,7 +67,6 @@ class AnchorView extends React.PureComponent {
     anchor: "",
     cleanUrl: false,
     qrCode: null,
-    showQr: false,
   };
 
   async componentDidMount() {
@@ -100,10 +99,6 @@ class AnchorView extends React.PureComponent {
 
   generateQr = (url) => {
     return QRCode.toDataURL(this.appendCleanModeIfActive(url));
-  };
-
-  toggleShowQr = () => {
-    this.setState({ showQr: !this.state.showQr });
   };
 
   appendCleanModeIfActive = (url) =>
@@ -235,35 +230,15 @@ class AnchorView extends React.PureComponent {
         {appStateInHashEnabled && (
           <Grid>
             <Paper sx={{ p: 1, mt: 2 }}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Grid size={6}>
-                  Slå på QR-kod
-                </Grid>
-                <Grid size={6} style={{ textAlign: "end" }}>
-                  <HajkToolTip title="Slå på QR-kod">
-                    <Switch
-                      variant="contained"
-                      color="primary"
-                      onClick={this.toggleShowQr}
-                    />
-                  </HajkToolTip>
+              <Grid container justifyContent="center">
+                <Grid size={12}>
+                  <Box sx={{ minHeight: 200, display: "flex", justifyContent: "center" }}>
+                    {this.state.qrCode && (
+                      <img src={this.state.qrCode} alt="QR-kod" />
+                    )}
+                  </Box>
                 </Grid>
               </Grid>
-              <Collapse in={this.state.showQr} unmountOnExit>
-                <Grid container justifyContent="center">
-                  <Grid size={12} style={{ textAlign: "center" }}>
-                    <img
-                      src={this.state.qrCode}
-                      alt=""
-                      style={{ minHeight: "200px" }}
-                    />
-                  </Grid>
-                </Grid>
-              </Collapse>
             </Paper>
           </Grid>
         )}
