@@ -78,6 +78,7 @@ function getTheme(config, customTheme) {
   );
   // Setup some app-wide defaults that differ from MUI's defaults:
   const hardCodedDefaults = {
+    components: {},
     palette: {
       mode: colorScheme,
       action: {
