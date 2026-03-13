@@ -8,7 +8,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 export const StyledControlButton = styled(IconButton)(({ theme }) => ({
   minWidth: "unset",
-  // Tried to set this the "correct" MUI way in the custom theme, but it didn't work after trying for x hours...
+  // Tried to set this the "correct" MUI way in the custom theme, but it didn't work after trying for x hours.
   borderRadius: `${theme.shape.borderRadius}px`,
   ".MuiTouchRipple-root": {
     borderRadius: `${theme.shape.borderRadius}px !important`,
