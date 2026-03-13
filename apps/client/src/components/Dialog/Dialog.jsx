@@ -61,13 +61,6 @@ export default function ResponsiveDialog(props) {
         sx={{
           zIndex: props.type === "Information" ? 1301 : undefined,
         }}
-        slotProps={{
-          paper: {
-            sx: {
-              margin: { xs: 1, sm: 2 },
-            },
-          },
-        }}
         aria-labelledby="responsive-dialog-title"
         aria-describedby="responsive-dialog-content"
         fullScreen={fullScreen}
@@ -121,7 +114,7 @@ export default function ResponsiveDialog(props) {
           <Button
             onClick={handleClose}
             variant={primaryButtonVariant || "text"}
-            sx={{ color: "text.primary" }}
+            color="primary"
           >
             {buttonText}
           </Button>
