@@ -13,14 +13,13 @@ import AdvancedOptions from "./AdvancedOptions";
 import HajkToolTip from "components/HajkToolTip";
 
 const Root = styled("div")(() => ({
-  margin: -10,
   display: "flex",
   flexDirection: "column",
   height: "100%",
 }));
 
 const StyledAppBar = styled(AppBar)(() => ({
-  top: -10,
+  top: 0,
 }));
 
 const TabContent = styled("div")(({ theme }) => ({

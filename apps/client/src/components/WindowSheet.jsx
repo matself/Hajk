@@ -56,8 +56,8 @@ const WindowSheet = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              pt: 1,
-              pb: 0.5,
+              paddingTop: 1,
+              paddingBottom: 0,
             }}
           >
             <Sheet.DragIndicator />
@@ -78,6 +78,7 @@ const WindowSheet = ({
         </Sheet.Header>
         <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
           <Box
+            className="window-sheet-content"
             sx={{
               padding: disablePadding ? 0 : 2,
               userSelect: "none",

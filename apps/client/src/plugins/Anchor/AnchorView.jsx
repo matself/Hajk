@@ -240,7 +240,11 @@ class AnchorView extends React.PureComponent {
                     }}
                   >
                     {this.state.qrCode && (
-                      <img src={this.state.qrCode} alt="QR-kod" />
+                      <img
+                        src={this.state.qrCode}
+                        alt="QR-kod"
+                        style={{ minHeight: 200 }}
+                      />
                     )}
                   </Box>
                 </Grid>
