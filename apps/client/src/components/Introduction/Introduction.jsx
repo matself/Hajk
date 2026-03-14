@@ -94,7 +94,7 @@ const IntroSelectionScreen = ({ onSelect, onClose, layerSwitcherPlugin }) => {
           </Button>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 1 }}>
+      <DialogActions>
         <Button onClick={handleClose}>Avbryt</Button>
       </DialogActions>
     </Dialog>

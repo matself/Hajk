@@ -88,6 +88,15 @@ function getTheme(config, customTheme) {
           }),
         },
       },
+      MuiDialogActions: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            paddingLeft: theme.spacing(3),
+            paddingRight: theme.spacing(3),
+            paddingBottom: theme.spacing(2),
+          }),
+        },
+      },
     },
     palette: {
       mode: colorScheme,

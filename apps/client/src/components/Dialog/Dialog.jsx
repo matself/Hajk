@@ -110,7 +110,7 @@ export default function ResponsiveDialog(props) {
             </form>
           )}
         </DialogContent>
-        <DialogActions sx={{ pl: 3, pr: 3, pb: 2 }}>
+        <DialogActions>
           <Button
             onClick={handleClose}
             variant={primaryButtonVariant || "text"}
