@@ -433,8 +433,9 @@ export default class AttributeEditorModel {
   #fieldMeta;
   #ogc;
   #layerProjection = null;
-
-  _lastFeatureCollection = null;
+  #lastFeatureCollection = null;
+  #listeners = new Set();
+  #state = { ...initialState };
 
   constructor(settings) {
     this.#ogc = settings.ogc || null;
@@ -443,27 +444,22 @@ export default class AttributeEditorModel {
     this.#localObserver = settings.localObserver;
     this.#storageKey = "AttributeEditor";
     this.#fieldMeta = settings.fieldMeta || null;
-    this._listeners = new Set();
     const initFeatures = settings.initialFeatures || [];
     const numericInit = initFeatures
       .map((f) => Number(f.id))
       .filter((n) => Number.isFinite(n));
     const max = numericInit.length ? Math.max(...numericInit) : 0;
 
-    this._state = {
-      ...initialState,
-      features: initFeatures,
-      nextId: max + 1,
-    };
+    this.#state = { ...initialState, features: initFeatures, nextId: max + 1 };
 
     this.#initSubscriptions();
   }
 
   // === Getters/setters ===
   getFieldMetadata = () => this.#fieldMeta || [];
-  getFeatureCollection = () => this._lastFeatureCollection;
+  getFeatureCollection = () => this.#lastFeatureCollection;
   clearFeatureCollection = () => {
-    this._lastFeatureCollection = null;
+    this.#lastFeatureCollection = null;
   };
   getLayerProjection = () => this.#layerProjection || "EPSG:3006";
 
@@ -568,7 +564,7 @@ export default class AttributeEditorModel {
 
     if (signal?.aborted) return null;
 
-    this._lastFeatureCollection = payload;
+    this.#lastFeatureCollection = payload;
 
     // Store layer's native projection for coordinate transformations
     // Backend provides: layerProjection (from layer config) or crsName (actual data CRS)
@@ -581,11 +577,11 @@ export default class AttributeEditorModel {
 
     if (signal?.aborted) return null;
 
-    this._state = reducer(this._state, { type: Action.INIT, features: rows });
+    this.#state = reducer(this.#state, { type: Action.INIT, features: rows });
 
     this.setFieldMetadata(fieldMeta);
 
-    this._emit();
+    this.#emit();
 
     return { features: rows, fieldMeta, featureCollection: payload };
   };
@@ -619,13 +615,13 @@ export default class AttributeEditorModel {
       ? this.#fieldMeta.filter((m) => m.readOnly).map((m) => m.key)
       : [];
 
-  getSnapshot = () => this._state;
+  getSnapshot = () => this.#state;
   subscribe = (listener) => {
-    this._listeners.add(listener);
-    return () => this._listeners.delete(listener);
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);
   };
-  _emit() {
-    this._listeners.forEach((fn) => {
+  #emit() {
+    this.#listeners.forEach((fn) => {
       try {
         fn();
       } catch (e) {
@@ -635,14 +631,14 @@ export default class AttributeEditorModel {
   }
 
   dispatch = (action) => {
-    const next = reducer(this._state, action);
-    if (next !== this._state) {
-      this._state = next;
-      this._emit();
+    const next = reducer(this.#state, action);
+    if (next !== this.#state) {
+      this.#state = next;
+      this.#emit();
     }
   };
 
-  _makeDraftFromFeature = (feature, fieldMeta = []) => {
+  #makeDraftFromFeature = (feature, fieldMeta = []) => {
     const props = feature?.getProperties ? feature.getProperties() : {};
     const { geometry, ...rest } = props;
     const fmKeys = Array.isArray(fieldMeta) ? fieldMeta.map((m) => m.key) : [];
@@ -663,9 +659,9 @@ export default class AttributeEditorModel {
   };
 
   addDraftFromFeature = (feature) => {
-    const draft = this._makeDraftFromFeature(feature, this.#fieldMeta);
+    const draft = this.#makeDraftFromFeature(feature, this.#fieldMeta);
     this.dispatch({ type: Action.CREATE_DRAFTS, rows: [draft] });
     // temp-id just created = nextTempId + 1 (we decremented in the reducer)
-    return this._state.nextTempId + 1; // negativt id: -1, -2, ...
+    return this.#state.nextTempId + 1; // negativt id: -1, -2, ...
   };
 }
