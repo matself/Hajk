@@ -299,6 +299,7 @@ class BaseWindowPlugin extends React.PureComponent {
           divider={true}
           selected={this.state.windowVisible}
           onClick={this.handleButtonClick}
+          alignItems="flex-start"
         >
           <ListItemIcon>{this.props.custom.icon}</ListItemIcon>
           <ListItemText primary={this.title} />

@@ -180,6 +180,7 @@ class DialogWindowPlugin extends React.PureComponent {
           divider={true}
           selected={this.state.dialogOpen}
           onClick={this.#handleButtonClick}
+          alignItems="flex-start"
         >
           <ListItemIcon>{this.icon}</ListItemIcon>
           <ListItemText primary={this.title} />
