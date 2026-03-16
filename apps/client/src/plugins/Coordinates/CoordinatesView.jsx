@@ -81,6 +81,26 @@ class CoordinatesView extends React.PureComponent {
     });
   }
 
+  componentDidMount() {
+    this.#publishInitialCoordinates();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.windowVisible && this.props.windowVisible) {
+      this.#publishInitialCoordinates();
+    }
+  }
+
+  #publishInitialCoordinates() {
+    if (this.props.windowVisible && this.model.showFieldsOnStart) {
+      this.localObserver.publish("newCoordinates", {
+        coordinates: this.model.map.getView().getCenter(),
+        proj: this.model.map.getView().getProjection().getCode(),
+        force: true,
+      });
+    }
+  }
+
   componentWillUnmount() {
     this.model.deactivate();
   }
