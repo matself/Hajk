@@ -1,7 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Sheet } from "react-modal-sheet";
 import { useTransform } from "motion/react";
+import { isMobile } from "../utils/IsMobile";
+
+const KEYBOARD_EXPAND_THRESHOLD = 0.4;
+
+const isTextInput = (el) =>
+  el?.tagName === "INPUT" ||
+  el?.tagName === "TEXTAREA" ||
+  el?.isContentEditable;
 
 const WindowSheet = ({
   isOpen,
@@ -11,6 +19,7 @@ const WindowSheet = ({
   initialSnap = 1,
   zIndex = 1198,
   onSnap,
+  avoidKeyboard = true,
   disablePadding = false,
   globalObserver,
   minimizeOnFocusMapClick = false,
@@ -18,7 +27,47 @@ const WindowSheet = ({
 }) => {
   const theme = useTheme();
   const sheetRef = useRef(null);
+  const currentSnapIndex = useRef(initialSnap);
   const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
+  const [keyboardActive, setKeyboardActive] = useState(false);
+
+  const handleSnap = useCallback(
+    (index) => {
+      currentSnapIndex.current = index;
+      onSnap?.(index);
+    },
+    [onSnap]
+  );
+
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+
+    const onFocusIn = (e) => {
+      if (!isTextInput(e.target)) return;
+      setKeyboardActive(true);
+
+      const cur = currentSnapIndex.current;
+      if (snapPoints[cur] !== KEYBOARD_EXPAND_THRESHOLD) return;
+      const next = cur + 1;
+      if (next >= snapPoints.length) return;
+      sheetRef.current?.snapTo(next);
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: "smooth", block: "bottom" });
+      }, 350);
+    };
+
+    const onFocusOut = (e) => {
+      if (isTextInput(e.target)) setKeyboardActive(false);
+    };
+
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
+    return () => {
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+      setKeyboardActive(false);
+    };
+  }, [isOpen, snapPoints]);
 
   useEffect(() => {
     if (!minimizeOnFocusMapClick || !globalObserver) return;
@@ -38,8 +87,9 @@ const WindowSheet = ({
       snapPoints={snapPoints}
       initialSnap={initialSnap}
       detent="full"
+      avoidKeyboard
       disableScrollLocking
-      onSnap={onSnap}
+      onSnap={handleSnap}
       style={{ zIndex }}
     >
       <Sheet.Container
@@ -80,6 +130,7 @@ const WindowSheet = ({
           <Box
             className="window-sheet-content"
             sx={{
+              minHeight: isMobile && keyboardActive ? "200%" : undefined,
               padding: disablePadding ? 0 : 2,
               userSelect: "none",
               outline: "none",
