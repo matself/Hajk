@@ -30,7 +30,7 @@ const WindowSheet = ({
   const currentSnapIndex = useRef(initialSnap);
   const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
   const [keyboardActive, setKeyboardActive] = useState(false);
-
+  const scrollContainerRef = useRef(null);
   const handleSnap = useCallback(
     (index) => {
       currentSnapIndex.current = index;
@@ -52,8 +52,17 @@ const WindowSheet = ({
       if (next >= snapPoints.length) return;
       sheetRef.current?.snapTo(next);
       setTimeout(() => {
-        e.target.scrollIntoView({ behavior: "smooth", block: "bottom" });
-      }, 350);
+        const sc = scrollContainerRef.current;
+
+        // Just ignore if it has tabs like Print plugin etc, the textfield will not be visible (placed under the tabs).
+        // Will not add more logic to handle every occation of this, maybe newer versions of
+        // the Sheet component will handle this better/correct.
+        if (!sc || sc.querySelector(".MuiTabs-fixed")) return;
+
+        const targetRect = e.target.getBoundingClientRect();
+        const offset = targetRect.top - sc.getBoundingClientRect().top;
+        sc.scrollTo({ top: Math.abs(offset) - 4, behavior: "smooth" });
+      }, 305);
     };
 
     const onFocusOut = (e) => {
@@ -89,6 +98,8 @@ const WindowSheet = ({
       detent="full"
       avoidKeyboard
       disableScrollLocking
+      dragVelocityThreshold={700}
+      dragCloseThreshold={1.5}
       onSnap={handleSnap}
       style={{ zIndex }}
     >
@@ -129,6 +140,9 @@ const WindowSheet = ({
         <Sheet.Content disableDrag scrollStyle={{ paddingBottom }}>
           <Box
             className="window-sheet-content"
+            ref={(node) => {
+              scrollContainerRef.current = node?.parentElement ?? null;
+            }}
             sx={{
               minHeight: isMobile && keyboardActive ? "200%" : undefined,
               padding: disablePadding ? 0 : 2,
