@@ -73,14 +73,7 @@ export default function ResponsiveDialog(props) {
       {headerText && (
         <DialogTitle id="responsive-dialog-title">{headerText}</DialogTitle>
       )}
-      <DialogContent
-        id="responsive-dialog-content"
-        sx={{
-          '& a:not([class*="Mui"])': {
-            color: "primary.light",
-          },
-        }}
-      >
+      <DialogContent id="responsive-dialog-content">
         {children}
         {useLegacyNonMarkdownRenderer === true ? (
           <LegacyNonMarkdownRenderer text={text} />

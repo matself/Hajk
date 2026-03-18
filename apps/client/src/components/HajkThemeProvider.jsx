@@ -88,6 +88,15 @@ function getTheme(config, customTheme) {
           }),
         },
       },
+      MuiDialogContent: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            '& a:not([class*="Mui"])': {
+              color: theme.palette.primary.light,
+            },
+          }),
+        },
+      },
       MuiDialogActions: {
         styleOverrides: {
           root: ({ theme }) => ({
