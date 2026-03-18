@@ -1,5 +1,55 @@
 import { pdfjs } from "react-pdf";
-import { flattenOutlineAsync } from "./PdfTOC";
+
+/**
+ * Flattens a PDF outline (table of contents) into a flat list with page numbers,
+ * preserving hierarchical order so buildTOCTree can reconstruct the tree.
+ */
+export async function flattenOutlineAsync(
+  outlineArray,
+  pdf,
+  prefix = "",
+  level = 0
+) {
+  const result = [];
+  for (let i = 0; i < outlineArray.length; i++) {
+    const item = outlineArray[i];
+    const id = prefix ? `${prefix}-${i}` : `${i}`;
+    let pageNumber = null;
+    if (item.dest) {
+      try {
+        const pageIndex = await pdf.getPageIndex(item.dest[0]);
+        pageNumber = pageIndex + 1;
+      } catch (error) {
+        console.error("Error computing page number in flattenOutline:", error);
+      }
+    }
+    result.push({ id, title: item.title, page: pageNumber, level });
+    if (item.items && item.items.length > 0) {
+      const children = await flattenOutlineAsync(item.items, pdf, id, level + 1);
+      result.push(...children);
+    }
+  }
+  return result;
+}
+
+export function buildTOCTree(flatItems, maxDepth) {
+  const tree = [];
+  const stack = [];
+  flatItems.forEach((item) => {
+    if (item.level >= maxDepth) return;
+    const newItem = { ...item, children: [] };
+    while (stack.length && stack[stack.length - 1].level >= newItem.level) {
+      stack.pop();
+    }
+    if (stack.length === 0) {
+      tree.push(newItem);
+    } else {
+      stack[stack.length - 1].children.push(newItem);
+    }
+    stack.push(newItem);
+  });
+  return tree;
+}
 
 /**
  * Parses a PDF from a blob object and returns a list of chapters.
@@ -7,6 +57,10 @@ import { flattenOutlineAsync } from "./PdfTOC";
  * @returns {Promise<Array<Object>>} - A list of JSON-structured chapters.
  */
 export async function parsePdf(pdfBlob) {
+  // Counter is created per parsePdf call so IDs reset between documents.
+  let idCounter = 0;
+  const getUniqueId = () => idCounter++;
+
   try {
     const arrayBuffer = await pdfBlob.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
@@ -14,7 +68,7 @@ export async function parsePdf(pdfBlob) {
     // Build chapters per page with headings (e.g. "Sida 1") and add outline data as keywords
     const pdfChapters = await buildChaptersPerPage(pdf);
     const mappedChapters = pdfChapters.map((chapter) =>
-      transformPdfChapterToJsonChapter(chapter)
+      transformPdfChapterToJsonChapter(chapter, getUniqueId)
     );
     return mappedChapters;
   } catch (error) {
@@ -23,57 +77,42 @@ export async function parsePdf(pdfBlob) {
   }
 }
 
-// Helper function for unique IDs
-const createUniqueIdGenerator = () => {
-  let counter = 0;
-  return () => counter++;
-};
-
 async function buildChaptersPerPage(pdf) {
   const numPages = pdf.numPages;
+  const outline = await pdf.getOutline();
+  const flatOutline = outline ? await flattenOutlineAsync(outline, pdf) : [];
   const chapters = [];
 
-  // Get outline data (table of contents) if it exists
-  const outline = await pdf.getOutline();
-  let flatOutline = [];
-  if (outline) {
-    flatOutline = await flattenOutlineAsync(outline, pdf);
-  }
-
   for (let i = 1; i <= numPages; i++) {
-    // Create a chapter per page with the heading "Sida i"
-    const header = `Sida ${i}`;
-    // Get outline items that belong to the page and use the headings as keywords
     const keywords = flatOutline
       .filter((item) => item.page === i)
       .map((item) => item.title);
 
-    // Not fetching content?!
     chapters.push({
-      title: header,
-      content: "", // Empty content for now
+      title: `Sida ${i}`,
+      pageNumber: i,
+      content: "", // PDF text content is not extracted
       chapters: [],
-      keywords: keywords,
+      keywords,
     });
   }
 
   return chapters;
 }
 
-const getUniqueId = createUniqueIdGenerator();
-
-// Function to map each PDF chapter to a JSON structure with a unique headerIdentifier
-function transformPdfChapterToJsonChapter(pdfChapter) {
+function transformPdfChapterToJsonChapter(pdfChapter, getUniqueId) {
   const currentId = getUniqueId();
   return {
     header: pdfChapter.title,
+    pageNumber: pdfChapter.pageNumber,
     headerIdentifier: `pdf_chapter_${currentId}`,
     html: pdfChapter.content,
     components: [],
     geoObjects: [],
-    keywords: pdfChapter.keywords || [],
-    parent: undefined,
+    keywords: pdfChapter.keywords,
     id: currentId,
-    chapters: pdfChapter.chapters.map(transformPdfChapterToJsonChapter),
+    chapters: pdfChapter.chapters.map((c) =>
+      transformPdfChapterToJsonChapter(c, getUniqueId)
+    ),
   };
 }

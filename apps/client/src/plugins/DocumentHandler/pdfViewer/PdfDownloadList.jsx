@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { PDFDocument } from "pdf-lib";
 import {
   Box,
@@ -9,16 +9,32 @@ import {
   Checkbox,
   Button,
   Typography,
+  Alert,
 } from "@mui/material";
+
+function ToolButton({ label, onClick, disabled }) {
+  return (
+    <Button variant="text" onClick={onClick} disabled={disabled} sx={{ mr: 1 }}>
+      <Typography fontWeight="bold" textTransform="none">
+        {label}
+      </Typography>
+    </Button>
+  );
+}
 
 const PdfDownloadList = ({ pdfFiles = [], options = {} }) => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() => new Set());
+  const [mergeError, setMergeError] = useState(null);
 
+  // Build lookup: documentFileName → menu item display title.
+  // Flattens nested menus so sub-menu documents are included.
   const menuLookup = useMemo(() => {
+    const flatten = (items) =>
+      items.flatMap((m) => [m, ...(m.menu?.length ? flatten(m.menu) : [])]);
     const lookup = {};
-    options?.menuConfig?.menu?.forEach((m) => {
-      lookup[m.document] = m.title;
+    flatten(options?.menuConfig?.menu ?? []).forEach((m) => {
+      if (m.document) lookup[m.document] = m.title;
     });
     return lookup;
   }, [options]);
@@ -27,36 +43,41 @@ const PdfDownloadList = ({ pdfFiles = [], options = {} }) => {
     const term = search.trim().toLowerCase();
     if (!term) return pdfFiles;
     return pdfFiles.filter((f) => {
-      const titleMatch = f.title.toLowerCase().includes(term);
-      const menuMatch = (menuLookup[f.title]?.toLowerCase() || "").includes(
-        term
-      );
+      const titleMatch = f.documentTitle.toLowerCase().includes(term);
+      const menuMatch = (
+        menuLookup[f.documentFileName]?.toLowerCase() || ""
+      ).includes(term);
       return titleMatch || menuMatch;
     });
   }, [pdfFiles, search, menuLookup]);
 
-  // --------------------------- Handlers ---------------------------
-  const toggleOne = useCallback((title) => {
+  const toggleOne = useCallback((fileName) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(title) ? next.delete(title) : next.add(title);
+      if (next.has(fileName)) {
+        next.delete(fileName);
+      } else {
+        next.add(fileName);
+      }
       return next;
     });
   }, []);
 
   const selectAllFiltered = useCallback(() => {
-    setSelected((prev) => new Set([...prev, ...filtered.map((f) => f.title)]));
+    setSelected(
+      (prev) => new Set([...prev, ...filtered.map((f) => f.documentFileName)])
+    );
   }, [filtered]);
 
   const clearSelection = useCallback(() => setSelected(new Set()), []);
 
   const downloadSelected = useCallback(() => {
     pdfFiles.forEach((file) => {
-      if (selected.has(file.title)) {
+      if (selected.has(file.documentFileName)) {
         const url = URL.createObjectURL(file.blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${file.title}.pdf`;
+        a.download = file.documentFileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -67,44 +88,40 @@ const PdfDownloadList = ({ pdfFiles = [], options = {} }) => {
 
   const downloadMerged = useCallback(async () => {
     if (selected.size === 0) return;
+    setMergeError(null);
 
-    // Create empty PDF-file
-    const mergedPdf = await PDFDocument.create();
+    try {
+      const mergedPdf = await PDFDocument.create();
 
-    // Add all pages frpm selected PDF-file (list order)
-    for (const file of pdfFiles) {
-      if (selected.has(file.title)) {
-        const srcBytes = await file.blob.arrayBuffer();
-        const srcPdf = await PDFDocument.load(srcBytes);
-        const pages = await mergedPdf.copyPages(
-          srcPdf,
-          srcPdf.getPageIndices()
-        );
-        pages.forEach((p) => mergedPdf.addPage(p));
+      for (const file of pdfFiles) {
+        if (selected.has(file.documentFileName)) {
+          const srcBytes = await file.blob.arrayBuffer();
+          const srcPdf = await PDFDocument.load(srcBytes);
+          const pages = await mergedPdf.copyPages(
+            srcPdf,
+            srcPdf.getPageIndices()
+          );
+          pages.forEach((p) => mergedPdf.addPage(p));
+        }
       }
+
+      const mergedBytes = await mergedPdf.save();
+      const blob = new Blob([mergedBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "sammanfogad.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Fel vid sammanslagning av PDF-filer:", err);
+      setMergeError(
+        "Kunde inte slå samman PDF-filerna. Kontrollera att alla valda filer är giltiga."
+      );
     }
-
-    // Save and download
-    const mergedBytes = await mergedPdf.save();
-    const blob = new Blob([mergedBytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sammanfogad.pdf";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }, [pdfFiles, selected]);
-
-  // --------------------------- Helper ---------------------------
-  const toolBtn = (label, onClick, disabled = false) => (
-    <Button variant="text" onClick={onClick} disabled={disabled} sx={{ mr: 1 }}>
-      <Typography fontWeight="bold" textTransform="none">
-        {label}
-      </Typography>
-    </Button>
-  );
 
   return (
     <Box>
@@ -118,8 +135,16 @@ const PdfDownloadList = ({ pdfFiles = [], options = {} }) => {
       />
 
       <Box sx={{ mb: 2 }}>
-        {toolBtn("Välj alla", selectAllFiltered, filtered.length === 0)}
-        {toolBtn("Rensa val", clearSelection, selected.size === 0)}
+        <ToolButton
+          label="Välj alla"
+          onClick={selectAllFiltered}
+          disabled={filtered.length === 0}
+        />
+        <ToolButton
+          label="Rensa val"
+          onClick={clearSelection}
+          disabled={selected.size === 0}
+        />
       </Box>
 
       <List dense>
@@ -129,19 +154,30 @@ const PdfDownloadList = ({ pdfFiles = [], options = {} }) => {
           </Typography>
         )}
         {filtered.map((file) => (
-          <ListItem key={file.title} disableGutters dense sx={{ py: 0 }}>
+          <ListItem
+            key={file.documentFileName}
+            disableGutters
+            dense
+            sx={{ py: 0 }}
+          >
             <Checkbox
               edge="start"
-              checked={selected.has(file.title)}
-              onChange={() => toggleOne(file.title)}
+              checked={selected.has(file.documentFileName)}
+              onChange={() => toggleOne(file.documentFileName)}
               sx={{ mr: 1 }}
             />
             <ListItemText
-              primary={`${file.title}${menuLookup[file.title] ? ` (${menuLookup[file.title]})` : ""}`}
+              primary={`${file.documentTitle}${menuLookup[file.documentFileName] ? ` (${menuLookup[file.documentFileName]})` : ""}`}
             />
           </ListItem>
         ))}
       </List>
+
+      {mergeError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {mergeError}
+        </Alert>
+      )}
 
       <Button
         variant="contained"

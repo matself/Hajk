@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { Document, Page } from "react-pdf";
 import { styled } from "@mui/material/styles";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import IconButton from "@mui/material/IconButton";
-import { scroller, animateScroll as scroll } from "react-scroll";
-import { Element } from "react-scroll";
+import { scroller, animateScroll as scroll, Element } from "react-scroll";
 import ScrollToTop from "../documentWindow/ScrollToTop";
 import PdfDownloadDialog from "./PdfDownloadDialog";
 import PdfTOC from "./PdfTOC";
@@ -19,7 +18,7 @@ const PdfContainer = styled("div")(() => ({
   overflowY: "auto",
   overflowX: "auto",
   userSelect: "text",
-  padding: "0rem",
+  padding: 0,
   position: "relative",
 }));
 
@@ -29,7 +28,7 @@ const StickyTopBar = styled("div")(() => ({
   zIndex: 1000,
   display: "flex",
   alignItems: "center",
-  padding: "0rem",
+  padding: 0,
 }));
 
 const TOCContainer = styled("div")(() => ({
@@ -40,12 +39,25 @@ const StickyTOCWrapper = styled("div")(() => ({
   position: "sticky",
   top: 40,
   zIndex: 1000,
-  padding: "0rem",
+  padding: 0,
 }));
+
+const SCROLL_LIMIT = 400;
+
+function cleanHash() {
+  const p = new URLSearchParams(window.location.hash.slice(1));
+  p.delete("page");
+  if (p.has("title")) {
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}${p.toString() ? "#" + p : ""}`
+    );
+  }
+}
 
 function PdfViewerWithTOC({
   document,
-  maximized,
   customTheme,
   showDownloadWindow,
   toggleDownloadWindow,
@@ -59,26 +71,84 @@ function PdfViewerWithTOC({
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [collapsedItems, setCollapsedItems] = useState({});
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const scrollLimit = 400;
   const containerRef = useRef(null);
   const timerRef = useRef(null);
   const [scale, setScale] = useState(1.0);
   const [menuOpen, setMenuOpen] = useState(
-    options.tableOfContents.expanded || false
+    options.tableOfContents.expanded ?? false
   );
   const [pageWidth, setPageWidth] = useState(0);
-  const pageRefs = useRef({});
   const disconnectors = useRef({});
 
-  const [docBlob, setDocBlob] = useState(document.blob);
   const [pendingPage, setPendingPage] = useState(document.targetPage ?? null);
   const currentTitle = document.title ?? "";
 
-  useEffect(() => {
-    setDocBlob(document.blob);
-    setPendingPage(window.pendingPage ?? null);
-    window.pendingPage = null;
+  // Stores a requested page number across document transitions.
+  const pendingPageRef = useRef(null);
+
+  // Allows scrollToChapterHandler (stale closure) to read the current numPages
+  // without being in its dependency array. When null, the PDF is not yet rendered.
+  const numPagesRef = useRef(null);
+  numPagesRef.current = numPages;
+
+  const customScrollToPage = useCallback((pageNumber) => {
+    if (!pageNumber) return;
+    scroller.scrollTo(`page-${pageNumber}`, {
+      containerId: "pdfViewer",
+      smooth: true,
+      duration: 600,
+      offset: -5,
+    });
+  }, []);
+
+  // Reset numPages and pdfInstance synchronously when the document changes.
+  // useLayoutEffect fires before the setState callback that triggers
+  // scrollToChapterHandler, so numPagesRef.current is guaranteed to be null
+  // by the time that handler runs — preventing it from scrolling into the old PDF.
+  useLayoutEffect(() => {
+    setNumPages(null);
+    setPdfInstance(null);
   }, [document]);
+
+  useEffect(() => {
+    // pendingPageRef is set by handlePdfLink (internal PDF links).
+    // window.pendingPage is set by DocumentWindowBase.handleHashChange (URL hash).
+    const page = pendingPageRef.current ?? window.pendingPage ?? null;
+    window.pendingPage = null;
+    pendingPageRef.current = null;
+    setPendingPage(null); // clear any stale value so onRenderSuccess stays quiet
+
+    if (page == null) return;
+
+    // Poll until every page from 1 up to (and including) the target has a
+    // rendered canvas. All those pages' heights must be correct before we scroll,
+    // because the scroll position of page N is determined by the combined height
+    // of pages 1…N-1. Gives up after 3 s so there is no leak if the PDF never
+    // loads.
+    let timerId;
+    let attempts = 0;
+    const tryScroll = () => {
+      const container = containerRef.current;
+      if (container) {
+        let allReady = true;
+        for (let p = 1; p <= page; p++) {
+          if (!container.querySelector(`[name="page-${p}"] canvas`)) {
+            allReady = false;
+            break;
+          }
+        }
+        if (allReady) {
+          customScrollToPage(page);
+          return;
+        }
+      }
+      if (++attempts < 30) {
+        timerId = setTimeout(tryScroll, 100);
+      }
+    };
+    timerId = setTimeout(tryScroll, 0);
+    return () => clearTimeout(timerId);
+  }, [document, customScrollToPage]);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -98,14 +168,19 @@ function PdfViewerWithTOC({
       e.preventDefault();
       e.stopPropagation();
 
-      // Save the page number globally
-      window.pendingPage = pageStr ? Number(pageStr) : null;
+      const targetPage = pageStr ? Number(pageStr) : null;
 
       if (title === currentTitle && folder == null) {
-        localObserver.publish("document-page-change", {
-          page: window.pendingPage,
+        // Same document — publish immediately so the subscriber can scroll.
+        app.globalObserver.publish("document-page-change", {
+          page: targetPage,
         });
       } else {
+        // Different document — store the page so useEffect([document]) picks
+        // it up after the new document prop arrives. Do NOT publish
+        // document-page-change here; the document hasn't loaded yet.
+        pendingPageRef.current = targetPage;
+
         localObserver.publish("set-active-document", {
           documentName: title,
           headerIdentifier: null,
@@ -116,36 +191,12 @@ function PdfViewerWithTOC({
           headerIdentifier: null,
           folder,
         });
-        localObserver.publish("document-page-change", {
-          page: window.pendingPage,
-        });
       }
     };
 
     node.addEventListener("click", handlePdfLink, true);
     return () => node.removeEventListener("click", handlePdfLink, true);
-  }, [localObserver, currentTitle]);
-
-  function cleanHash() {
-    const p = new URLSearchParams(window.location.hash.slice(1));
-    if ((p.delete("page"), p.has("title"))) {
-      window.history.replaceState(
-        null,
-        "",
-        `${window.location.pathname}${window.location.search}${p.toString() ? "#" + p : ""}`
-      );
-    }
-  }
-
-  const customScrollToPage = React.useCallback((pageNumber) => {
-    if (!pageNumber) return;
-    scroller.scrollTo(`page-${pageNumber}`, {
-      containerId: "pdfViewer",
-      smooth: true,
-      duration: 600,
-      offset: -5,
-    });
-  }, []);
+  }, [localObserver, currentTitle, app]);
 
   useEffect(() => {
     let t;
@@ -164,8 +215,6 @@ function PdfViewerWithTOC({
     };
   }, [app.globalObserver, customScrollToPage]);
 
-  //--------------------------------------------------------------------------
-
   useLayoutEffect(() => {
     if (showDownloadWindow) return;
     const el = containerRef.current;
@@ -173,7 +222,7 @@ function PdfViewerWithTOC({
 
     const updateWidth = () => {
       if (!containerRef.current) return;
-      setPageWidth(containerRef.current.getBoundingClientRect().width - 19);
+      setPageWidth(containerRef.current.clientWidth);
     };
 
     const debouncedUpdate = () => {
@@ -194,18 +243,22 @@ function PdfViewerWithTOC({
   }, [showDownloadWindow]);
 
   useEffect(() => {
-    const scrollToChapterHandler = async (chapter) => {
-      await new Promise((r) => setTimeout(r, 100));
-      const match = /Sida\s+(\d+)/i.exec(chapter.header);
-      if (match) {
-        const pageNumber = parseInt(match[1], 10);
-        scroller.scrollTo(`page-${pageNumber}`, {
-          containerId: "pdfViewer",
-          smooth: true,
-          duration: 600,
-          offset: -5,
-        });
+    const scrollToChapterHandler = (chapter) => {
+      if (chapter.pageNumber == null) return;
+      // numPagesRef.current is null when the PDF is not yet rendered —
+      // either because no document has loaded, or because useLayoutEffect([document])
+      // just reset it during this document transition. In that case store the
+      // target page for onRenderSuccess to pick up once pages are rendered.
+      if (numPagesRef.current === null) {
+        pendingPageRef.current = chapter.pageNumber;
+        return;
       }
+      scroller.scrollTo(`page-${chapter.pageNumber}`, {
+        containerId: "pdfViewer",
+        smooth: true,
+        duration: 600,
+        offset: -5,
+      });
     };
     localObserver.subscribe("pdf-scroll-to-chapter", scrollToChapterHandler);
     return () => {
@@ -214,10 +267,9 @@ function PdfViewerWithTOC({
         scrollToChapterHandler
       );
     };
-  }, [localObserver, document]);
+  }, [localObserver]);
 
   useEffect(() => {
-    // Reset any states when a new document is loaded
     setSelectedNodeId(null);
     setCollapsedItems({});
   }, [document]);
@@ -228,11 +280,7 @@ function PdfViewerWithTOC({
   };
 
   const onScroll = (e) => {
-    if (e.target.scrollTop > scrollLimit) {
-      setShowScrollButton(true);
-    } else {
-      setShowScrollButton(false);
-    }
+    setShowScrollButton(e.target.scrollTop > SCROLL_LIMIT);
   };
 
   const scrollToTop = () => {
@@ -262,7 +310,7 @@ function PdfViewerWithTOC({
           <Page
             pageNumber={pageNumber}
             scale={scale}
-            width={pageWidth - 19}
+            width={pageWidth}
             renderAnnotationLayer
             renderTextLayer
             onRenderSuccess={() => {
@@ -273,7 +321,6 @@ function PdfViewerWithTOC({
               }
             }}
             inputRef={(ref) => {
-              pageRefs.current[pageNumber] = ref || undefined;
               if (disconnectors.current[pageNumber]) {
                 disconnectors.current[pageNumber]();
                 delete disconnectors.current[pageNumber];
@@ -364,7 +411,7 @@ function PdfViewerWithTOC({
           )}
 
           <Document
-            file={docBlob}
+            file={document.blob}
             onLoadSuccess={onDocumentLoadSuccess}
             externalLinkTarget="_blank"
           >
