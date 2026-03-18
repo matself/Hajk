@@ -86,6 +86,7 @@ class ToolOptions extends Component {
     draggingEnabled: false,
     searchImplemented: true,
     enablePrint: true,
+    directPrint: false,
     pdfLinks: [{ name: "", link: "" }],
     closePanelOnMapLinkOpen: false,
     displayLoadingOnMapLinkOpen: false,
@@ -195,6 +196,7 @@ class ToolOptions extends Component {
         draggingEnabled: tool.options.draggingEnabled || false,
         searchImplemented: tool.options.searchImplemented,
         enablePrint: tool.options.enablePrint,
+        directPrint: tool.options.directPrint || false,
         pdfLinks: tool.options.pdfLinks || [{ name: "", link: "" }],
         closePanelOnMapLinkOpen: tool.options.closePanelOnMapLinkOpen,
         displayLoadingOnMapLinkOpen:
@@ -290,6 +292,7 @@ class ToolOptions extends Component {
         height: this.state.height,
         searchImplemented: this.state.searchImplemented,
         enablePrint: this.state.enablePrint,
+        directPrint: this.state.directPrint,
         pdfLinks: this.state.pdfLinks,
         closePanelOnMapLinkOpen: this.state.closePanelOnMapLinkOpen,
         displayLoadingOnMapLinkOpen: this.state.displayLoadingOnMapLinkOpen,
@@ -909,6 +912,23 @@ class ToolOptions extends Component {
             &nbsp;
             <label htmlFor="enablePrint">Utskrift aktiverad</label>
           </div>
+          {this.state.enablePrint && (
+            <div style={{ paddingLeft: "16px", borderLeft: "2px solid #ddd" }}>
+              <input
+                id="directPrint"
+                name="directPrint"
+                type="checkbox"
+                onChange={(e) => {
+                  this.handleInputChange(e);
+                }}
+                checked={this.state.directPrint}
+              />
+              &nbsp;
+              <label htmlFor="directPrint" style={{ width: "auto" }}>
+                Skriv ut aktiv sida direkt (utan dokumentval)
+              </label>
+            </div>
+          )}
           <div>
             {this.state.pdfLinks &&
               this.state.pdfLinks.map((pdfLink, index) => (
