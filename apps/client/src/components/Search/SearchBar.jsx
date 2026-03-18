@@ -89,6 +89,8 @@ const CustomPaper = (props) => {
     ? {
         margin: 0,
         borderTop: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
+        borderTopRightRadius: "0px",
+        borderTopLeftRadius: "0px",
       }
     : { margin: 0 };
   return <Paper {...props} style={style} />;

@@ -45,6 +45,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     position: "absolute",
     left: 0,
     borderTop: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
+    borderTopRightRadius: "0px",
+    borderTopLeftRadius: "0px",
   },
 }));
 
