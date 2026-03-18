@@ -34,6 +34,7 @@ const WindowSheet = ({
   const handleSnap = useCallback(
     (index) => {
       currentSnapIndex.current = index;
+      console.log("handleSnap", index);
       onSnap?.(index);
     },
     [onSnap]
@@ -93,6 +94,10 @@ const WindowSheet = ({
       ref={sheetRef}
       isOpen={isOpen}
       onClose={onClose}
+      onAnimationStart={(e) =>
+        console.log("onAnimationStart", e.detail.fromIndex, e.detail.toIndex)
+      }
+      onOpenEnd={() => console.log("onOpenEnd")}
       snapPoints={snapPoints}
       initialSnap={initialSnap}
       detent="full"

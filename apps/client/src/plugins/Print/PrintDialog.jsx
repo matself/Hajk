@@ -2,10 +2,10 @@ import React from "react";
 import { createPortal } from "react-dom";
 import withSnackbar from "components/WithSnackbar";
 
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
   Button,
   LinearProgress,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -16,7 +16,7 @@ class PrintDialog extends React.PureComponent {
   render() {
     const { cancelPrint, open, saveAsType } = this.props;
     return createPortal(
-      <Dialog
+      <BaseDialog
         disableEscapeKeyDown={true}
         open={open}
       >
@@ -38,7 +38,7 @@ class PrintDialog extends React.PureComponent {
             Avbryt
           </Button>
         </DialogActions>
-      </Dialog>,
+      </BaseDialog>,
       document.getElementById("root")
     );
   }

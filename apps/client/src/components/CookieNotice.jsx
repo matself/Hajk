@@ -3,15 +3,14 @@ import {
   Box,
   Button,
   Checkbox,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   FormControlLabel,
   FormGroup,
   Link,
-  Slide,
 } from "@mui/material";
+import BaseDialog from "./Dialog/BaseDialog";
 import {
   functionalOk,
   setLevel,
@@ -41,10 +40,6 @@ const LabeledCheckbox = ({ checked, disabled, label, onChange }) => {
     />
   );
 };
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 function CookieNotice({ globalObserver, appModel }) {
   const { config } = appModel;
@@ -117,7 +112,7 @@ function CookieNotice({ globalObserver, appModel }) {
   }, [showThirdPartCheckbox]);
 
   return (
-    <Dialog
+    <BaseDialog
       slotProps={{
         paper: {
           sx: {
@@ -128,7 +123,6 @@ function CookieNotice({ globalObserver, appModel }) {
       }}
       sx={{ zIndex: "9999" }}
       open={open}
-      TransitionComponent={Transition}
       keepMounted
       aria-describedby="cookie-dialog-content-text"
     >
@@ -212,7 +206,7 @@ function CookieNotice({ globalObserver, appModel }) {
           </Button>
         </Box>
       </DialogActions>
-    </Dialog>
+    </BaseDialog>
   );
 }
 

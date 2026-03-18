@@ -1,7 +1,7 @@
 import React from "react";
 import { styled } from "@mui/material";
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -10,7 +10,7 @@ import {
   Box,
 } from "@mui/material";
 
-const StyledDialog = styled(Dialog)(({ theme }) => ({
+const StyledDialog = styled(BaseDialog)(({ theme }) => ({
   "& .MuiDialog-paper": {
     width: "100%",
     maxWidth: 500,
