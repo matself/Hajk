@@ -182,7 +182,9 @@ class DialogWindowPlugin extends React.PureComponent {
           onClick={this.#handleButtonClick}
           alignItems="flex-start"
         >
-          <ListItemIcon>{this.icon}</ListItemIcon>
+          <ListItemIcon sx={{ mt: 0, alignSelf: "center" }}>
+            {this.icon}
+          </ListItemIcon>
           <ListItemText primary={this.title} />
         </ListItemButton>
       </Box>,

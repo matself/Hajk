@@ -218,13 +218,7 @@ class BaseWindowPlugin extends React.PureComponent {
             isOpen={this.state.windowVisible}
             onClose={this.closeWindowClick}
             title={this.state.title}
-            snapPoints={[
-              0,
-              SHEET_MIN_HEIGHT / window.innerHeight,
-              0.4,
-              0.7,
-              1,
-            ]}
+            snapPoints={[0, SHEET_MIN_HEIGHT / window.innerHeight, 0.4, 0.7, 1]}
             initialSnap={2}
             globalObserver={this.props.app.globalObserver}
             minimizeOnFocusMapClick
@@ -301,7 +295,9 @@ class BaseWindowPlugin extends React.PureComponent {
           onClick={this.handleButtonClick}
           alignItems="flex-start"
         >
-          <ListItemIcon>{this.props.custom.icon}</ListItemIcon>
+          <ListItemIcon sx={{ mt: 0, alignSelf: "center" }}>
+            {this.props.custom.icon}
+          </ListItemIcon>
           <ListItemText primary={this.title} />
         </ListItemButton>
       </Box>,
