@@ -140,7 +140,7 @@ class AnchorView extends React.PureComponent {
           </StyledAlert>
         </Grid>
         {allowCreatingCleanUrls && (
-          <Grid sx={{ mb: 1.5 }}>
+          <Grid sx={{ mb: 1.5, display: { xs: "none", sm: "block" } }}>
             <RadioGroup
               aria-label="copy-url"
               name="copy-url"
@@ -161,7 +161,7 @@ class AnchorView extends React.PureComponent {
             </RadioGroup>
           </Grid>
         )}
-        <Grid sx={{ mb: 1 }}>
+        <Grid sx={{ mb: 1, display: { xs: "none", sm: "block" } }}>
           <StyledTextField
             fullWidth={true}
             id="anchorUrl"
