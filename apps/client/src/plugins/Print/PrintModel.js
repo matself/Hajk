@@ -169,11 +169,24 @@ export default class PrintModel {
     fontWeight,
     maxWidth
   ) => {
+    // Keep text placement consistent with icon placement: apply the same computed
+    // margin inset (converted from mm → points).
+    const commonMarginPt =
+      (this.margin + this.textIconsMargin) * this.mmPerPoint;
+    // Nudge a tiny bit closer to the page edge than the raw margin.
+    const insetPtX = Math.max(0, commonMarginPt - 2);
+    // Text in the bottom margin tends to look better slightly closer to the edge.
+    const insetPtY = Math.max(0, commonMarginPt + 2);
+    const effectiveXMargin = xmargin + insetPtX;
+    const effectiveYMargin = ymargin + insetPtY;
+
     // If we are printing a PNG we assign the maxWidth to the width of the separate text string.
     if (this.saveAsType !== "PDF") {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
-      context.font = `${fontWeight === "bold" ? "700" : "400"} ${fontSize}px Roboto, roboto, sans-serif`;
+      context.font = `${
+        fontWeight === "bold" ? "700" : "400"
+      } ${fontSize}px Roboto, roboto, sans-serif`;
       maxWidth = context.measureText(text).width;
     }
     // If QrCode is placed in the bottom right corner, move text to the left of it (its wider)
@@ -181,30 +194,35 @@ export default class PrintModel {
     // Also take care of scalebar placement bottomRight
     let x;
     if (options.includeQrCode && options.qrCodePlacement === "bottomRight") {
-      x = paperWidth - maxWidth - xmargin - 90;
+      x = paperWidth - maxWidth - effectiveXMargin - 90;
     } else if (
       options.includeNorthArrow &&
       options.northArrowPlacement === "bottomRight"
     ) {
-      x = paperWidth - maxWidth - xmargin - this.northArrowMaxWidth * 3 - 10;
+      x =
+        paperWidth -
+        maxWidth -
+        effectiveXMargin -
+        this.northArrowMaxWidth * this.mmPerPoint -
+        10;
     } else if (
       options.includeScaleBar &&
       options.scaleBarPlacement === "bottomRight"
     ) {
       // Use the scalebarMaxWidth that either is the text or the scalebar length, to align ex copyright
       // and disclaimer/date correctly to the left of the scalebar when bottomRight
-      x = paperWidth - maxWidth - xmargin - this.scalebarMaxWidth - 10;
+      x = paperWidth - maxWidth - effectiveXMargin - this.scalebarMaxWidth - 10;
     } else if (options.includeLogo && options.logoPlacement === "bottomRight") {
       x =
         paperWidth -
         maxWidth -
-        xmargin -
+        effectiveXMargin -
         this.logoMaxWidth * this.mmPerPoint -
         10;
     } else {
-      x = paperWidth - maxWidth - xmargin;
+      x = paperWidth - maxWidth - effectiveXMargin;
     }
-    const y = this.getTextHeight(text, fontSize) + ymargin;
+    const y = this.getTextHeight(text, fontSize) + effectiveYMargin;
     return { x, y };
   };
 
@@ -512,19 +530,25 @@ export default class PrintModel {
     pdfHeight,
     contentType
   ) => {
-    // We must take the potential margin around the map-image into account (this.margin)
-    // And the extra margin for textIconsMargin.
-    // And the extra extra margin for qrcode image
-    const margin = this.textIconsMargin + this.margin;
-    // Here we simply say if content that is going to be placed is a qr code...
-    // we need to adjust it slightly because the qr code is bigger than the other icons.
-    const qrMargin =
-      (contentType === "qrCode" && this.textIconsMargin) === 0 ? 3 : 0;
+    // All layout coordinates and sizes are in PDF points.
+    // `this.margin` and `this.textIconsMargin` are derived from paper sizes (mm),
+    // so we convert mm → points before mixing units.
+    // Despite the name, `mmPerPoint` is used throughout the print codebase as
+    // points-per-mm (2.83465). So mm → points is multiplication here.
+    const mmToPt = (mm) => mm * this.mmPerPoint;
+    const marginPt = mmToPt(this.margin + this.textIconsMargin);
+    // Nudge a tiny bit closer to the page edge than the raw margin.
+    const insetPt = Math.max(0, marginPt - 2);
+
+    // Historically QR code got a small extra offset when *not* using the wider
+    // text/icon margins. Keep the behavior but express it in points.
+    const qrExtraPt =
+      contentType === "qrCode" && this.textIconsMargin === 0 ? mmToPt(3) : 0;
 
     let pdfPlacement = { x: 0, y: 0 };
     if (placement === "bottomLeft") {
-      pdfPlacement.x = margin;
-      pdfPlacement.y = margin - qrMargin;
+      pdfPlacement.x = insetPt + (contentType === "scaleBar" ? 10 : 0);
+      pdfPlacement.y = insetPt - qrExtraPt;
     } else if (placement === "bottomRight") {
       if (contentType === "scaleBar") {
         // Check if the text is longer than the scalebar to get the one with most width.
@@ -532,11 +556,12 @@ export default class PrintModel {
         // If the contentWidth aka the scalebar and not the text, add some extra padding.
         this.scalebarMaxWidth =
           contentWidth > this.scalebarMaxWidth ? contentWidth + 25 : textLength;
-        pdfPlacement.x = pdfWidth - margin - this.scalebarMaxWidth;
-        pdfPlacement.y = margin;
+        pdfPlacement.x = pdfWidth - insetPt - this.scalebarMaxWidth - 10;
+        pdfPlacement.y = insetPt;
       } else {
-        pdfPlacement.x = pdfWidth - contentWidth - margin;
-        pdfPlacement.y = margin - qrMargin + 10;
+        pdfPlacement.x = pdfWidth - contentWidth - insetPt - 10;
+        pdfPlacement.y =
+          insetPt - qrExtraPt + (this.textIconsMargin === 0 ? 0 : 10);
       }
     } else if (placement === "topRight") {
       if (contentType === "scaleBar") {
@@ -545,15 +570,18 @@ export default class PrintModel {
         // If the contentWidth aka the scalebar and not the text, add some extra padding.
         const scalebarMaxWidth =
           contentWidth > scaleTextWidth ? contentWidth + 25 : scaleTextWidth;
-        pdfPlacement.x = pdfWidth - margin - scalebarMaxWidth;
-        pdfPlacement.y = pdfHeight - contentHeight - margin - 20;
+        pdfPlacement.x = pdfWidth - insetPt - scalebarMaxWidth - 10;
+        pdfPlacement.y = pdfHeight - contentHeight - insetPt - 20;
       } else {
-        pdfPlacement.x = pdfWidth - contentWidth - margin;
-        pdfPlacement.y = pdfHeight - contentHeight - margin + qrMargin;
+        pdfPlacement.x = pdfWidth - contentWidth - insetPt - 10;
+        pdfPlacement.y = pdfHeight - contentHeight - insetPt + qrExtraPt;
       }
     } else {
-      pdfPlacement.x = margin;
-      pdfPlacement.y = pdfHeight - contentHeight - margin + qrMargin;
+      pdfPlacement.x = insetPt + (contentType === "scaleBar" ? 10 : 0);
+      pdfPlacement.y =
+        contentType === "scaleBar"
+          ? pdfHeight - contentHeight - insetPt - 20
+          : pdfHeight - contentHeight - insetPt + qrExtraPt;
     }
     return pdfPlacement;
   };

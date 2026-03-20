@@ -121,7 +121,9 @@ export async function buildLayout(
   // 3. QR Code
   if (options.includeQrCode && model.mapConfig.enableAppStateInHash) {
     try {
-      const qrCode = await model.generateQR(windowUrl, 20);
+      const qrSize =
+        options.useMargin && options.useTextIconsInMargin ? 14 : 20;
+      const qrCode = await model.generateQR(windowUrl, qrSize);
       const qrCodePlacement = model.getPlacement(
         options.qrCodePlacement,
         qrCode.width,
