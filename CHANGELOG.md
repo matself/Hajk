@@ -7,12 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.3.0-rc.1] 2026-03-16
 
 ### Breaking
 
 - Client: As part of migration the to Vite (see below and [PR #1754](https://github.com/hajkmap/Hajk/pull/1754)), support for some legacy browsers, including iOS <=12, has been removed. See [commit](https://github.com/hajkmap/Hajk/commit/3fc95ba9b565503af499909eb2cdb521e061c706) for more details.
 - Client: Another implication of the Vite migration is that `buildConfig.json` is no longer used. Instead, we rely on Vite's dynamic chuck loading to decide which "plugins" (i.e. Hajk tools) are loaded. This is now done in runtime and administrators can change this behavior by editing the `availableTools` array in `appConfig.json`. If the array is missing or empty, we fall back to load all tools. Please note that whatever is visible to the end user has not changed: it is still up to the map configuration to decide which tools really are shown in a specific map.
+
+### Added
+
+- Backend: Added support for `X-Forwarded-*` headers and `X-Qgis-Service-Url` header in proxy middleware (the one activated by the use of `PROXY_*` variables in `.env`). See issue [issue #1774](https://github.com/hajkmap/Hajk/issues/1774) for more info.
 
 ### Changed
 
@@ -501,7 +505,9 @@ _A quick follow-up to 3.13.22, that had some issues with certain map configurati
 
 ## [3.12.0-rc.2] - 2023-06-19
 
-[unreleased]: https://github.com/hajkmap/Hajk/compare/v4.2.0...develop
+<!-- [unreleased]: https://github.com/hajkmap/Hajk/compare/v4.2.0...develop -->
+
+[4.3.0-rc.1]: https://github.com/hajkmap/Hajk/compare/v4.2.0...v4.3.0-rc1
 [4.2.0]: https://github.com/hajkmap/Hajk/compare/v4.2.0-rc.1...v4.2.0
 [4.2.0-rc.1]: https://github.com/hajkmap/Hajk/compare/v4.1.0...v4.2.0-rc.1
 [4.1.0]: https://github.com/hajkmap/Hajk/compare/v4.1.0-rc.1...v4.1.0
