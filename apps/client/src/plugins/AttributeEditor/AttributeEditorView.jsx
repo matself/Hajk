@@ -1486,9 +1486,7 @@ export default function AttributeEditorView({
           const totalDeletedCount = (result.deleted || 0) + deletedDraftsCount;
           const failureParts = [];
           if (failedInserts > 0)
-            failureParts.push(
-              `${failedInserts} ny(a) kunde inte sparas`
-            );
+            failureParts.push(`${failedInserts} ny(a) kunde inte sparas`);
           if (failedUpdates > 0)
             failureParts.push(
               `${failedUpdates} uppdatering(ar) kunde inte sparas`
@@ -2615,8 +2613,15 @@ export default function AttributeEditorView({
     const uniqueTypes = [...new Set(validTypes)];
     if (uniqueTypes.length !== 1) return false;
 
-    // Only allow merging Point, LineString, Polygon (not already multi)
-    return ["Point", "LineString", "Polygon"].includes(uniqueTypes[0]);
+    // Allow merging simple types OR already-multi types (e.g. when the geometry column enforces Multi)
+    return [
+      "Point",
+      "LineString",
+      "Polygon",
+      "MultiPoint",
+      "MultiLineString",
+      "MultiPolygon",
+    ].includes(uniqueTypes[0]);
   }, [ui.mode, tableSelectedIds, selectedIds, featureIndexRef, allowMultiGeom]);
 
   const mergeFeatures = React.useCallback(() => {

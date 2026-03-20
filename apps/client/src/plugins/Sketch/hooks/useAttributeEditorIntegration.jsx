@@ -7,6 +7,7 @@ import { altKeyOnly } from "ol/events/condition";
 import { fromCircle } from "ol/geom/Polygon";
 import MultiPoint from "ol/geom/MultiPoint";
 import LineString from "ol/geom/LineString";
+import Feature from "ol/Feature";
 import { editBus } from "../../../buses/editBus";
 import HajkTransformer from "../../../utils/HajkTransformer";
 import Draw from "ol/interaction/Draw";
@@ -26,6 +27,36 @@ function matchesLogicalId(feat, want) {
   if (A && A.endsWith("." + wantStr)) return true;
   if (B && B.endsWith("." + wantStr)) return true;
   return false;
+}
+
+/**
+ * If features are already Multi-type (e.g. MultiPolygon from PostGIS),
+ * extract each individual geometry part as a separate Feature so that
+ * drawModel.mergeFeatures() (which only handles simple types) can combine them
+ * into a new Multi-geometry. Properties from the original feature are preserved.
+ */
+function flattenToSimpleFeatures(features) {
+  const simpleTypes = ["Point", "LineString", "Polygon"];
+  const firstType = features[0]?.getGeometry?.()?.getType?.() ?? "";
+  if (simpleTypes.includes(firstType)) return features; // already simple, no-op
+
+  return features.flatMap((f) => {
+    const geom = f.getGeometry();
+    const parts =
+      typeof geom.getPolygons === "function"
+        ? geom.getPolygons()
+        : typeof geom.getLineStrings === "function"
+          ? geom.getLineStrings()
+          : typeof geom.getPoints === "function"
+            ? geom.getPoints()
+            : [];
+    const props = { ...f.getProperties() };
+    delete props.geometry;
+    return parts.map((partGeom) => {
+      const partFeature = new Feature({ geometry: partGeom, ...props });
+      return partFeature;
+    });
+  });
 }
 
 function getFeatureCoordinates(feature) {
@@ -1320,8 +1351,12 @@ const useAttributeEditorIntegration = ({
         return;
       }
 
+      // If features are Multi-type (e.g. MultiPolygon loaded from PostGIS),
+      // flatten them to their simple parts before merging so drawModel works as-is.
+      const featuresForMerge = flattenToSimpleFeatures(targetFeatures);
+
       // Merge the features
-      const mergedFeature = drawModel.mergeFeatures(targetFeatures);
+      const mergedFeature = drawModel.mergeFeatures(featuresForMerge);
       if (!mergedFeature) {
         editBus.emit("sketch:merge-error", {
           message:
