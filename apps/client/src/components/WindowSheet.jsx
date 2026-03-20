@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Sheet } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -101,9 +101,9 @@ const WindowSheet = ({
       snapPoints={snapPoints}
       initialSnap={initialSnap}
       detent="full"
-      avoidKeyboard
+      avoidKeyboard={avoidKeyboard}
       disableScrollLocking
-      dragVelocityThreshold={700}
+      dragVelocityThreshold={1500}
       dragCloseThreshold={1.5}
       onSnap={handleSnap}
       style={{ zIndex }}
@@ -114,6 +114,8 @@ const WindowSheet = ({
           backdropFilter: "blur(12px)",
           color: theme.palette.text.primary,
           boxShadow: theme.shadows[24],
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
         }}
       >
         <Sheet.Header>
@@ -149,7 +151,13 @@ const WindowSheet = ({
               scrollContainerRef.current = node?.parentElement ?? null;
             }}
             sx={{
-              minHeight: isMobile && keyboardActive ? "200%" : undefined,
+              position: "relative",
+              // content detent sizes the sheet from children; floor so abs-loaded UIs (e.g. Street View) don't collapse
+              minHeight: isMobile
+                ? keyboardActive
+                  ? "200%"
+                  : "100%"
+                : undefined,
               padding: disablePadding ? 0 : 2,
               userSelect: "none",
               outline: "none",
