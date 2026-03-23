@@ -326,7 +326,7 @@ class PrintWindow extends React.PureComponent {
 
     printWindow.document.head.insertAdjacentHTML(
       "beforeend",
-      ` <title>${document.title}</title>
+      ` <title>${this.props.options?.directPrint && this.props.activeDocument?.documentTitle ? `${document.title} - ${this.props.activeDocument.documentTitle}` : document.title}</title>
         <base href="${document.location.protocol}//${
           document.location.host
         }/" />
@@ -343,12 +343,7 @@ class PrintWindow extends React.PureComponent {
             size: A4;
             margin: 25mm 25mm 25mm 25mm;
           }
-          .print-page-header {
-            text-align: center;
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 8mm;
-          }
+
           @media print {
             * {
               -webkit-print-color-adjust: exact !important;
@@ -484,12 +479,6 @@ class PrintWindow extends React.PureComponent {
     }
   };
 
-  getDocumentTitleForPrint = () => {
-    if (this.props.options?.directPrint) {
-      return this.props.activeDocument?.documentTitle || null;
-    }
-    return null;
-  };
 
   // Creates a new window, appends all elements that should be printed, and invokes
   // window.print(), allowing the user to save the document as a PDF (or print it straight away).
@@ -544,14 +533,6 @@ class PrintWindow extends React.PureComponent {
         }
 
         // In directPrint mode: add the active document's title as a header on every printed page.
-        const printTitle = this.getDocumentTitleForPrint();
-        if (printTitle) {
-          const header = newWindow.document.createElement("div");
-          header.className = "print-page-header";
-          header.textContent = printTitle;
-          newWindow.document.body.appendChild(header);
-        }
-
         // Add our recently-created DIV to the new window's document
         newWindow.document.body.appendChild(printContent);
 

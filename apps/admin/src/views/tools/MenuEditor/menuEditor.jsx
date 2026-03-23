@@ -114,19 +114,22 @@ class ToolOptions extends Component {
     this.type = "documenthandler";
     this.mapSettingsModel = props.model;
     this.menuEditorModel = this.getMenuEditorModel();
-    this.menuEditorModel.listAllAvailableDocuments(this.state.folder).then((list) => {
-      this.setState({
-        availableDocuments: list,
-      })
-    });
-    
-    this.useDocumentFolders = this.menuEditorModel.config.use_document_folders ?? false;
+    this.menuEditorModel
+      .listAllAvailableDocuments(this.state.folder)
+      .then((list) => {
+        this.setState({
+          availableDocuments: list,
+        });
+      });
+
+    this.useDocumentFolders =
+      this.menuEditorModel.config.use_document_folders ?? false;
 
     if (this.useDocumentFolders) {
       this.menuEditorModel.loadFolders().then((list) => {
         this.setState({
           folders: list,
-        })
+        });
       });
     }
   }
@@ -144,7 +147,7 @@ class ToolOptions extends Component {
               this.updateTreeValidation(this.state.tree);
               // I hate myself... This should be avoided at all costs!!!
               this.forceUpdate();
-            }
+            },
           );
         });
     });
@@ -270,7 +273,7 @@ class ToolOptions extends Component {
   saveFromMenuEditor() {
     this.menuConfig = this.menuEditorModel.exportTreeAsMenuJson(
       this.state.tree,
-      this.menuConfig
+      this.menuConfig,
     );
     this.setState({ menuConfig: this.menuConfig }, () => {
       this.save();
@@ -318,7 +321,7 @@ class ToolOptions extends Component {
             alert: true,
             alertMessage: "Uppdateringen lyckades",
           });
-        }
+        },
       );
     }
     if (!this.state.active) {
@@ -442,7 +445,7 @@ class ToolOptions extends Component {
   addHeaderRowToTreeStructure = (treeData) => {
     treeData.unshift({
       title: this.getHeader(
-        this.menuEditorModel.canSave(this.getTreeWithoutHeader(treeData))
+        this.menuEditorModel.canSave(this.getTreeWithoutHeader(treeData)),
       ),
       disabled: true,
       children: [],
@@ -511,7 +514,7 @@ class ToolOptions extends Component {
     treeNode.title = this.getRowTitleComponent(
       treeNode.menuItem,
       treeNode.children,
-      treeNode.key
+      treeNode.key,
     );
   };
 
@@ -570,21 +573,21 @@ class ToolOptions extends Component {
             newTree,
             foundDragNode,
             foundDropNode,
-            info
+            info,
           );
         } else {
           this.menuEditorModel.addToGap(
             newTree,
             foundDragNode,
             foundDropNode,
-            info
+            info,
           );
         }
       } else {
         this.menuEditorModel.addToDropNode(
           newTree,
           foundDragNode,
-          foundDropNode
+          foundDropNode,
         );
       }
 
@@ -602,7 +605,7 @@ class ToolOptions extends Component {
   saveNewTree = (newTree) => {
     this.updateTreeValidation(newTree);
     newTree[0].title = this.getHeader(
-      this.menuEditorModel.canSave(this.getTreeWithoutHeader(newTree))
+      this.menuEditorModel.canSave(this.getTreeWithoutHeader(newTree)),
     );
     this.setState({ tree: newTree });
   };
@@ -627,7 +630,7 @@ class ToolOptions extends Component {
       if (child.key === treeNodeToDelete.key) {
         nodeArrayToSearch.splice(
           nodeArrayToSearch.indexOf(treeNodeToDelete),
-          1
+          1,
         );
       }
     });
@@ -925,7 +928,7 @@ class ToolOptions extends Component {
               />
               &nbsp;
               <label htmlFor="directPrint" style={{ width: "auto" }}>
-                Skriv ut aktiv sida direkt (utan dokumentval)
+                Endast aktiv sida kommer skrivas ut (utan dokumentval)
               </label>
             </div>
           )}
