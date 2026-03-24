@@ -31,6 +31,7 @@ const WindowSheet = ({
   const paddingBottom = useTransform(() => sheetRef.current?.y.get() ?? 0);
   const [keyboardActive, setKeyboardActive] = useState(false);
   const scrollContainerRef = useRef(null);
+
   const handleSnap = useCallback(
     (index) => {
       currentSnapIndex.current = index;
@@ -41,17 +42,25 @@ const WindowSheet = ({
   );
 
   useEffect(() => {
-    if (!isMobile || !isOpen) return;
+    if (!isMobile || !isOpen || !avoidKeyboard) return;
 
     const onFocusIn = (e) => {
       if (!isTextInput(e.target)) return;
       setKeyboardActive(true);
 
       const cur = currentSnapIndex.current;
-      if (snapPoints[cur] !== KEYBOARD_EXPAND_THRESHOLD) return;
-      const next = cur + 1;
-      if (next >= snapPoints.length) return;
-      sheetRef.current?.snapTo(next);
+      const currentSnapValue = snapPoints[cur];
+      const canExpandFromCurrentSnap =
+        typeof currentSnapValue === "number" &&
+        currentSnapValue > 0 &&
+        currentSnapValue <= KEYBOARD_EXPAND_THRESHOLD;
+      if (!canExpandFromCurrentSnap) return;
+
+      // Move only one snap step up to reveal focused input without forcing full-screen.
+      const nextSnap = Math.min(cur + 1, Math.max(0, snapPoints.length - 2));
+      if (nextSnap > cur) {
+        sheetRef.current?.snapTo(nextSnap);
+      }
       setTimeout(() => {
         const sc = scrollContainerRef.current;
 
@@ -77,7 +86,7 @@ const WindowSheet = ({
       document.removeEventListener("focusout", onFocusOut);
       setKeyboardActive(false);
     };
-  }, [isOpen, snapPoints]);
+  }, [avoidKeyboard, isOpen, snapPoints]);
 
   useEffect(() => {
     if (!minimizeOnFocusMapClick || !globalObserver) return;
@@ -101,7 +110,7 @@ const WindowSheet = ({
       snapPoints={snapPoints}
       initialSnap={initialSnap}
       detent="full"
-      avoidKeyboard={avoidKeyboard}
+      avoidKeyboard={false}
       disableScrollLocking
       dragVelocityThreshold={1500}
       dragCloseThreshold={1.5}
