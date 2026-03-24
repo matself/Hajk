@@ -221,6 +221,7 @@ class PrintWindow extends React.PureComponent {
   resizeImage = (img) => {
     img.height = img.getBoundingClientRect().height * imageResizeRatio;
     img.width = img.clientWidth * imageResizeRatio;
+    img.setAttribute("data-resized", "true");
   };
 
   imageFitsOnePage = (img) => {
@@ -228,15 +229,21 @@ class PrintWindow extends React.PureComponent {
   };
 
   loadImage = (img) => {
+    const checkAndResolve = (resolve) => {
+      if (this.imageFitsOnePage(img)) {
+        resolve(img);
+      } else {
+        this.resizeImage(img);
+        resolve(img);
+      }
+    };
+
     return new Promise((resolve, reject) => {
-      img.onload = () => {
-        if (this.imageFitsOnePage(img)) {
-          resolve(img);
-        } else {
-          this.resizeImage(img);
-          resolve(img);
-        }
-      };
+      if (img.complete && img.naturalWidth > 0) {
+        checkAndResolve(resolve);
+        return;
+      }
+      img.onload = () => checkAndResolve(resolve);
       img.onerror = () => reject(img);
     });
   };
@@ -357,8 +364,10 @@ class PrintWindow extends React.PureComponent {
             h6 {
               page-break-after: avoid;
             }
-            img {
+            img:not([data-resized]) {
               height: auto !important;
+            }
+            img {
               page-break-inside: avoid;
               break-inside: avoid;
             }
@@ -446,6 +455,7 @@ class PrintWindow extends React.PureComponent {
 
       if (headings[i].nodeName !== "H1") {
         isAfterH1 = false;
+        isConsecutiveH1 = false;
       }
     }
   };
@@ -458,8 +468,28 @@ class PrintWindow extends React.PureComponent {
       this.state.tocPrintMode !== "none" && this.renderToc(),
       this.renderContent(),
     ]).then(() => {
+      // Temporarily attach content to the DOM with A4-like width so that
+      // getBoundingClientRect() returns real layout values during image
+      // measurement. The container is positioned off-screen.
+      const measureContainer = document.createElement("div");
+      Object.assign(measureContainer.style, {
+        position: "absolute",
+        left: "-9999px",
+        top: "0",
+        width: "595px",
+        visibility: "hidden",
+      });
+      measureContainer.appendChild(this.content);
+      if (this.toc) measureContainer.appendChild(this.toc);
+      document.body.appendChild(measureContainer);
+
       // We're also gonna want to make sure all images has been loaded
       this.areAllImagesLoaded().then(() => {
+        // Detach the content from the measurement container before
+        // assembling the final print DOM.
+        if (this.toc) measureContainer.removeChild(this.toc);
+        measureContainer.removeChild(this.content);
+        document.body.removeChild(measureContainer);
         // Then we can create an element that will hold our TOC and print-content...
         const printContent = document.createElement("div");
         // ...append the TOC to the element (only if applicable)...
@@ -505,18 +535,23 @@ class PrintWindow extends React.PureComponent {
         // Add our recently-created DIV to the new window's document
         newWindow.document.body.appendChild(printContent);
 
-        // We force print to the next upcoming render. Let it render in peace.
-        setTimeout(() => {
-          // Invoke browser's print dialog - this will block the thread
-          // until user does something with it.
+        // Wait for fonts to load in the print window (custom fonts injected
+        // via <link> are fetched asynchronously), then ensure the browser has
+        // completed layout via a double requestAnimationFrame before printing.
+        const waitForLayout = async () => {
+          await newWindow.document.fonts.ready;
+          await new Promise((r) =>
+            newWindow.requestAnimationFrame(() =>
+              newWindow.requestAnimationFrame(r)
+            )
+          );
+        };
+
+        waitForLayout().then(() => {
           newWindow.print();
-
-          // Once the print dialog has disappeared, let's close the new window
           newWindow.close();
-
-          // When the user closes the print-window we have to do some cleanup...
           this.handlePrintCompleted();
-        }, 25);
+        });
       });
     });
   };
