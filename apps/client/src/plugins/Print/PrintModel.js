@@ -169,16 +169,9 @@ export default class PrintModel {
     fontWeight,
     maxWidth
   ) => {
-    // Keep text placement consistent with icon placement: apply the same computed
-    // margin inset (converted from mm → points).
-    const commonMarginPt =
-      (this.margin + this.textIconsMargin) * this.mmPerPoint;
-    // Nudge a tiny bit closer to the page edge than the raw margin.
-    const insetPtX = Math.max(0, commonMarginPt - 2);
-    // Text in the bottom margin tends to look better slightly closer to the edge.
-    const insetPtY = Math.max(0, commonMarginPt + 2);
-    const effectiveXMargin = xmargin + insetPtX;
-    const effectiveYMargin = ymargin + insetPtY;
+    const borderInsetPt = (5.5 * this.margin) / 2;
+    const effectiveXMargin = xmargin + borderInsetPt;
+    const effectiveYMargin = ymargin + borderInsetPt + 10;
 
     // If we are printing a PNG we assign the maxWidth to the width of the separate text string.
     if (this.saveAsType !== "PDF") {
@@ -530,58 +523,53 @@ export default class PrintModel {
     pdfHeight,
     contentType
   ) => {
-    // All layout coordinates and sizes are in PDF points.
-    // `this.margin` and `this.textIconsMargin` are derived from paper sizes (mm),
-    // so we convert mm → points before mixing units.
-    // Despite the name, `mmPerPoint` is used throughout the print codebase as
-    // points-per-mm (2.83465). So mm → points is multiplication here.
-    const mmToPt = (mm) => mm * this.mmPerPoint;
-    const marginPt = mmToPt(this.margin + this.textIconsMargin);
-    // Nudge a tiny bit closer to the page edge than the raw margin.
-    const insetPt = Math.max(0, marginPt - 2);
+    // The white margin stroke uses lineWidth = 5.5 * margin (see PrintLayout).
+    // Half the stroke is visible inside the page, so the map image border
+    // sits at 5.5 * margin / 2 from each edge. Match that for horizontal inset.
+    // Vertical gets a small extra bump so items don't sit right at the border.
+    const insetX = (5.5 * this.margin) / 2;
+    const insetY = insetX + 10;
 
     // Historically QR code got a small extra offset when *not* using the wider
     // text/icon margins. Keep the behavior but express it in points.
     const qrExtraPt =
-      contentType === "qrCode" && this.textIconsMargin === 0 ? mmToPt(3) : 0;
+      contentType === "qrCode" && this.textIconsMargin === 0
+        ? 3 * this.mmPerPoint
+        : 0;
 
     let pdfPlacement = { x: 0, y: 0 };
     if (placement === "bottomLeft") {
-      pdfPlacement.x = insetPt + (contentType === "scaleBar" ? 10 : 0);
-      pdfPlacement.y = insetPt - qrExtraPt;
+      pdfPlacement.x = insetX + (contentType === "scaleBar" ? 10 : 0);
+      pdfPlacement.y = insetY - qrExtraPt;
     } else if (placement === "bottomRight") {
       if (contentType === "scaleBar") {
-        // Check if the text is longer than the scalebar to get the one with most width.
         const textLength = this.getTextWidth(this.scaleText, this.fontSize);
-        // If the contentWidth aka the scalebar and not the text, add some extra padding.
         this.scalebarMaxWidth =
           contentWidth > this.scalebarMaxWidth ? contentWidth + 25 : textLength;
-        pdfPlacement.x = pdfWidth - insetPt - this.scalebarMaxWidth - 10;
-        pdfPlacement.y = insetPt;
+        pdfPlacement.x = pdfWidth - insetX - this.scalebarMaxWidth - 10;
+        pdfPlacement.y = insetY;
       } else {
-        pdfPlacement.x = pdfWidth - contentWidth - insetPt - 10;
+        pdfPlacement.x = pdfWidth - contentWidth - insetX - 10;
         pdfPlacement.y =
-          insetPt - qrExtraPt + (this.textIconsMargin === 0 ? 0 : 10);
+          insetY - qrExtraPt + (this.textIconsMargin === 0 ? 0 : 10);
       }
     } else if (placement === "topRight") {
       if (contentType === "scaleBar") {
-        // Check if the text is longer than the scalebar to get the one with most width.
         const scaleTextWidth = this.getTextWidth(this.scaleText, this.fontSize);
-        // If the contentWidth aka the scalebar and not the text, add some extra padding.
         const scalebarMaxWidth =
           contentWidth > scaleTextWidth ? contentWidth + 25 : scaleTextWidth;
-        pdfPlacement.x = pdfWidth - insetPt - scalebarMaxWidth - 10;
-        pdfPlacement.y = pdfHeight - contentHeight - insetPt - 20;
+        pdfPlacement.x = pdfWidth - insetX - scalebarMaxWidth - 10;
+        pdfPlacement.y = pdfHeight - contentHeight - insetY - 20;
       } else {
-        pdfPlacement.x = pdfWidth - contentWidth - insetPt - 10;
-        pdfPlacement.y = pdfHeight - contentHeight - insetPt + qrExtraPt;
+        pdfPlacement.x = pdfWidth - contentWidth - insetX - 10;
+        pdfPlacement.y = pdfHeight - contentHeight - insetY + qrExtraPt;
       }
     } else {
-      pdfPlacement.x = insetPt + (contentType === "scaleBar" ? 10 : 0);
+      pdfPlacement.x = insetX + (contentType === "scaleBar" ? 10 : 0);
       pdfPlacement.y =
         contentType === "scaleBar"
-          ? pdfHeight - contentHeight - insetPt - 20
-          : pdfHeight - contentHeight - insetPt + qrExtraPt;
+          ? pdfHeight - contentHeight - insetY - 20
+          : pdfHeight - contentHeight - insetY + qrExtraPt;
     }
     return pdfPlacement;
   };

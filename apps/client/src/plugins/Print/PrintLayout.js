@@ -368,7 +368,7 @@ export async function buildLayout(
       pdfBottomRightTexts,
       model.textFontSize,
       10,
-      10,
+      20,
       pageWidth,
       options,
       model.textFontWeight,
