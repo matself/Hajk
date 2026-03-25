@@ -134,11 +134,14 @@ export async function buildLayout(
       );
       const qrIsLeft = options.qrCodePlacement.includes("Left");
       const qrIsBottom = options.qrCodePlacement.includes("bottom");
+      const qrWideMargin = options.useMargin && options.useTextIconsInMargin;
       elements.push({
         type: "image",
         src: qrCode.data,
-        x: qrCodePlacement.x + (qrIsLeft ? 10 : 2),
-        y: qrCodePlacement.y + (qrIsBottom ? -2 : 2),
+        x: qrCodePlacement.x + (qrIsLeft ? (qrWideMargin ? 4 : 10) : 2),
+        y:
+          qrCodePlacement.y +
+          (qrIsBottom ? (qrWideMargin ? -12 : -6) : qrWideMargin ? 12 : 6),
         width: qrCode.width,
         height: qrCode.height,
       });
@@ -205,7 +208,7 @@ export async function buildLayout(
         type: "image",
         src: arrowData,
         x: arrowPlacement.x + (isLeft ? 8 : -2),
-        y: arrowPlacement.y + (isBottom ? -3 : 5),
+        y: arrowPlacement.y + (isBottom ? -7 : 9),
         width: arrowWidth,
         height: arrowHeight,
       });
