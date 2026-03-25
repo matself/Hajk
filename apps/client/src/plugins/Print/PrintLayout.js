@@ -133,11 +133,12 @@ export async function buildLayout(
         "qrCode"
       );
       const qrIsLeft = options.qrCodePlacement.includes("Left");
+      const qrIsBottom = options.qrCodePlacement.includes("bottom");
       elements.push({
         type: "image",
         src: qrCode.data,
-        x: qrCodePlacement.x + (qrIsLeft ? 12 : 0),
-        y: qrCodePlacement.y,
+        x: qrCodePlacement.x + (qrIsLeft ? 10 : 2),
+        y: qrCodePlacement.y + (qrIsBottom ? -2 : 2),
         width: qrCode.width,
         height: qrCode.height,
       });
