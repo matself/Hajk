@@ -132,10 +132,11 @@ export async function buildLayout(
         pageHeight,
         "qrCode"
       );
+      const qrIsLeft = options.qrCodePlacement.includes("Left");
       elements.push({
         type: "image",
         src: qrCode.data,
-        x: qrCodePlacement.x,
+        x: qrCodePlacement.x + (qrIsLeft ? 12 : 0),
         y: qrCodePlacement.y,
         width: qrCode.width,
         height: qrCode.height,
@@ -197,11 +198,13 @@ export async function buildLayout(
         pageWidth,
         pageHeight
       );
+      const isLeft = options.northArrowPlacement.includes("Left");
+      const isBottom = options.northArrowPlacement.includes("bottom");
       elements.push({
         type: "image",
         src: arrowData,
-        x: arrowPlacement.x,
-        y: arrowPlacement.y,
+        x: arrowPlacement.x + (isLeft ? 8 : -2),
+        y: arrowPlacement.y + (isBottom ? -3 : 5),
         width: arrowWidth,
         height: arrowHeight,
       });
