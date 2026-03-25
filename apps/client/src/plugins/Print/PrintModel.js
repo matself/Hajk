@@ -169,9 +169,16 @@ export default class PrintModel {
     fontWeight,
     maxWidth
   ) => {
-    const borderInsetPt = (5.5 * this.margin) / 2;
-    const effectiveXMargin = xmargin + borderInsetPt;
-    const effectiveYMargin = ymargin + borderInsetPt + 10;
+    const sideBorderInset = (5.5 * this.margin) / 2;
+    const wideBorderInset = (16 * this.margin) / 2;
+    const inMarginMode = this.textIconsMargin === 0;
+
+    const effectiveXMargin = inMarginMode
+      ? xmargin + sideBorderInset - 10
+      : xmargin + sideBorderInset - 3;
+    const effectiveYMargin = inMarginMode
+      ? ymargin + wideBorderInset - 45
+      : ymargin + sideBorderInset + 10;
 
     // If we are printing a PNG we assign the maxWidth to the width of the separate text string.
     if (this.saveAsType !== "PDF") {
@@ -523,12 +530,15 @@ export default class PrintModel {
     pdfHeight,
     contentType
   ) => {
-    // The white margin stroke uses lineWidth = 5.5 * margin (see PrintLayout).
-    // Half the stroke is visible inside the page, so the map image border
-    // sits at 5.5 * margin / 2 from each edge. Match that for horizontal inset.
-    // Vertical gets a small extra bump so items don't sit right at the border.
-    const insetX = (5.5 * this.margin) / 2;
-    const insetY = insetX + 10;
+    // The white margin stroke uses lineWidth = 5.5 * margin for left/right
+    // and 16 * margin for top/bottom when useTextIconsInMargin is active.
+    // Half the stroke is visible, so the map border sits at lineWidth / 2.
+    const sideBorderInset = (5.5 * this.margin) / 2;
+    const wideBorderInset = (16 * this.margin) / 2;
+    const inMarginMode = this.textIconsMargin === 0;
+
+    const insetX = inMarginMode ? sideBorderInset - 8 : sideBorderInset - 3;
+    const insetY = inMarginMode ? wideBorderInset - 40 : sideBorderInset + 10;
 
     // Historically QR code got a small extra offset when *not* using the wider
     // text/icon margins. Keep the behavior but express it in points.
