@@ -168,11 +168,31 @@ export async function buildLayout(
         pageWidth,
         pageHeight
       );
+      const p = options.logoPlacement;
+      let logoDx;
+      let logoDy;
+      if (p === "topLeft") {
+        logoDx = 9;
+        logoDy = 5;
+      } else if (p === "bottomLeft") {
+        logoDx = 8;
+        logoDy = -7;
+      } else if (p === "topRight") {
+        logoDx = 1;
+        logoDy = 6;
+      } else {
+        logoDx = -5;
+        logoDy = -5;
+      }
+      const logoInTextMargins = model.margin > 0 && model.textIconsMargin === 0;
+      if (logoInTextMargins && (p === "topLeft" || p === "topRight")) {
+        logoDy += 3;
+      }
       elements.push({
         type: "image",
         src: logoData,
-        x: logoPlacement.x - 5,
-        y: logoPlacement.y - 5,
+        x: logoPlacement.x + logoDx,
+        y: logoPlacement.y + logoDy,
         width: logoWidth,
         height: logoHeight,
       });
@@ -208,7 +228,7 @@ export async function buildLayout(
         type: "image",
         src: arrowData,
         x: arrowPlacement.x + (isLeft ? 8 : -2),
-        y: arrowPlacement.y + (isBottom ? -7 : 9),
+        y: arrowPlacement.y + (isBottom ? -3 : 5),
         width: arrowWidth,
         height: arrowHeight,
       });
