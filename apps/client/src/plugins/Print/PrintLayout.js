@@ -224,11 +224,12 @@ export async function buildLayout(
       );
       const isLeft = options.northArrowPlacement.includes("Left");
       const isBottom = options.northArrowPlacement.includes("bottom");
+      const arrowYOffset = isBottom ? -3 : 7;
       elements.push({
         type: "image",
         src: arrowData,
         x: arrowPlacement.x + (isLeft ? 8 : -2),
-        y: arrowPlacement.y + (isBottom ? -3 : 5),
+        y: arrowPlacement.y + arrowYOffset,
         width: arrowWidth,
         height: arrowHeight,
       });
