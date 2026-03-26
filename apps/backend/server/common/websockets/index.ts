@@ -2,7 +2,7 @@ import { type Server } from "http";
 import crypto from "crypto";
 import { type WebSocket, WebSocketServer } from "ws";
 import queryString from "query-string";
-import log4js from "../utils/hajk-logger.js";
+import log4js from "../utils/hajk-logger.ts";
 import WebSocketMessageHandler from "./web-socket-message-handler.ts";
 
 export interface CustomWebSocket extends WebSocket {
@@ -27,7 +27,7 @@ function broadcastToClients(clients: Set<WebSocket>) {
 export default async (expressServer: Server) => {
   const logger = log4js.getLogger("websockets");
 
-  logger.trace("Initiating WebSockets");
+  logger.debug("Initiating WebSockets");
 
   const wss = new WebSocketServer({
     noServer: true, // we don't want the WebSocket constructor to create an additional HTTP - we're already in Express!
@@ -79,7 +79,7 @@ export default async (expressServer: Server) => {
       const [path, params] = connectionRequest?.url?.split("?") || [];
       const connectionParams = queryString.parse(params);
 
-      logger.trace(
+      logger.debug(
         `Upgrade successful. Opening connection ${
           websocketConnection.uuid
         }. Path: "${path}". Query params: "${JSON.stringify(
@@ -141,7 +141,7 @@ export default async (expressServer: Server) => {
         // Clean up presence tracking
         WebSocketMessageHandler.handleDisconnect(websocketConnection.uuid);
         // Can't send a message at this time, but we can at least log
-        logger.trace(`Goodbye ${websocketConnection.uuid}!`);
+        logger.debug(`Goodbye ${websocketConnection.uuid}!`);
       });
     }
   );
