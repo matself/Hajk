@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
@@ -53,7 +53,7 @@ export default function MapSettings() {
   const { palette } = useTheme();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [activeTab, setActiveTab] = useState<"menu" | "settings" | "tools">(
-    "settings"
+    "settings",
   );
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
@@ -64,13 +64,13 @@ export default function MapSettings() {
     TreeItems<TreeItemData>
   >([]);
   const [groupLayersDZ, setGroupLayersDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
   const [drawerDZ, setDrawerDZ] = useState<TreeItems<TreeItemData>>([]);
   const [controlDZ, setControlDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetLeftDZ, setWidgetLeftDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetRightDZ, setWidgetRightDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
 
   const backgroundImage = mapBackgroundImage;
@@ -81,12 +81,95 @@ export default function MapSettings() {
     }
   };
 
-  const defaultValues = {} as FieldValues;
-  const { register, handleSubmit, control } = useForm<FieldValues>({
-    defaultValues,
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { isDirty },
+  } = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  useEffect(() => {
+    if (map) {
+      const options = map.options ?? {};
+
+      const defaultValues = {
+        name: map.name ?? "",
+        locked: map.locked ?? false,
+        "options.projection": options.projection ?? "EPSG:3006",
+        "options.startZoom": options.startZoom ?? "1.33",
+        "options.maxZoom": options.maxZoom ?? "8",
+        "options.minZoom": options.minZoom ?? "0",
+        "options.centerCoordinate":
+          options.centerCoordinate ?? "576357, 6386049",
+        "options.origin": options.origin ?? "0,0",
+        "options.extent":
+          options.extent ?? "-1200000, 4700000, 2600000, 8500000",
+        "options.resolutions":
+          options.resolutions ?? "2048, 1024, 512, 256, 128, 64, 32, 16, 8",
+        "options.printResolutions": options.printResolutions ?? "",
+        "options.constrainResolution": options.constrainResolution === "true",
+        "options.constrainOnlyCenter": options.constrainOnlyCenter === "true",
+        "options.constrainResolutionMobile":
+          options.constrainResolutionMobile === "true",
+        "options.enableDownloadLink": options.enableDownloadLink === "true",
+        "options.enableAppStateInHash": options.enableAppStateInHash === "true",
+        "options.confirmOnWindowClose": options.confirmOnWindowClose === "true",
+        "options.logoLight": options.logoLight ?? "/logoLight.png",
+        "options.logoDark": options.logoDark ?? "",
+        "options.legendOptions": options.legendOptions ?? "",
+        "options.crossOrigin": options.crossOrigin ?? "anonymous",
+        "options.mapselector": options.mapselector === "true",
+        "options.mapcleaner": options.mapcleaner === "true",
+        "options.mapresetter": options.mapresetter === "true",
+        "options.showThemeToggler": options.showThemeToggler === "true",
+        "options.showUserAvatar": options.showUserAvatar === "true",
+        "options.showRecentlyUsedPlugins":
+          options.showRecentlyUsedPlugins === "true",
+        "options.altShiftDragRotate": options.altShiftDragRotate === "true",
+        "options.onFocusOnly": options.onFocusOnly === "true",
+        "options.doubleClickZoom": options.doubleClickZoom === "true",
+        "options.keyboard": options.keyboard === "true",
+        "options.mouseWheelZoom": options.mouseWheelZoom === "true",
+        "options.shiftDragZoom": options.shiftDragZoom === "true",
+        "options.dragPan": options.dragPan === "true",
+        "options.pinchRotate": options.pinchRotate === "true",
+        "options.pinchZoom": options.pinchZoom === "true",
+        "options.zoomLevelDelta": options.zoomLevelDelta ?? "",
+        "options.zoomAnimationDuration": options.zoomAnimationDuration ?? "",
+        "options.preferredColorScheme": options.preferredColorScheme ?? "user",
+        "options.primaryColor": options.primaryColor ?? "#333333",
+        "options.secondaryColor": options.secondaryColor ?? "#ffa000",
+        "options.drawerStatic": options.drawerStatic === "true",
+        "options.drawerVisible": options.drawerVisible === "true",
+        "options.drawerVisibleMobile": options.drawerVisibleMobile === "true",
+        "options.drawerPermanent": options.drawerPermanent === "true",
+        "options.drawerContent": options.drawerContent ?? "plugins",
+        "options.drawerTitle": options.drawerTitle ?? "Kartverktyg",
+        "options.drawerButtonTitle": options.drawerButtonTitle ?? "Kartverktyg",
+        "options.drawerButtonIcon": options.drawerButtonIcon ?? "MapIcon",
+        "options.showCookieNotice": options.showCookieNotice === "true",
+        "options.cookieUse3dPart": options.cookieUse3dPart === "true",
+        "options.showCookieNoticeButton":
+          options.showCookieNoticeButton === "true",
+        "options.cookieLink":
+          options.cookieLink ??
+          "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/",
+        "options.cookieMessage":
+          options.cookieMessage ??
+          "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
+        "options.introductionEnabled": options.introductionEnabled === "true",
+        "options.introductionShowControlButton":
+          options.introductionShowControlButton === "true",
+        "options.introductionSteps": options.introductionSteps ?? "[]",
+      };
+
+      reset(defaultValues);
+    }
+  }, [map, reset]);
 
   const handleUpdateMap = async (mapData: MapMutation) => {
     try {
@@ -125,7 +208,6 @@ export default function MapSettings() {
 
   return (
     <Page title={t("common.settings")}>
-      {/* Multi-admin warning - showDebug=true for testing */}
       <Box sx={{ mb: 2 }}>
         <ActiveAdminsBadge
           resourceType="map"
@@ -161,6 +243,7 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
+        isDirty={isDirty}
       >
         {activeTab === "settings" && (
           <FormContainer
@@ -180,7 +263,7 @@ export default function MapSettings() {
                     projection:
                       (data["options.projection"] as string) ?? "EPSG:3006",
                     startZoom: String(
-                      toNumber(data["options.startZoom"]) ?? 1.33
+                      toNumber(data["options.startZoom"]) ?? 1.33,
                     ),
                     maxZoom: String(toNumber(data["options.maxZoom"]) ?? 8),
                     minZoom: String(toNumber(data["options.minZoom"]) ?? 0),
@@ -197,22 +280,22 @@ export default function MapSettings() {
                     printResolutions:
                       (data["options.printResolutions"] as string) ?? "",
                     constrainResolution: String(
-                      Boolean(data["options.constrainResolution"])
+                      Boolean(data["options.constrainResolution"]),
                     ),
                     constrainOnlyCenter: String(
-                      Boolean(data["options.constrainOnlyCenter"])
+                      Boolean(data["options.constrainOnlyCenter"]),
                     ),
                     constrainResolutionMobile: String(
-                      Boolean(data["options.constrainResolutionMobile"])
+                      Boolean(data["options.constrainResolutionMobile"]),
                     ),
                     enableDownloadLink: String(
-                      Boolean(data["options.enableDownloadLink"])
+                      Boolean(data["options.enableDownloadLink"]),
                     ),
                     enableAppStateInHash: String(
-                      Boolean(data["options.enableAppStateInHash"])
+                      Boolean(data["options.enableAppStateInHash"]),
                     ),
                     confirmOnWindowClose: String(
-                      Boolean(data["options.confirmOnWindowClose"])
+                      Boolean(data["options.confirmOnWindowClose"]),
                     ),
                     logoLight:
                       (data["options.logoLight"] as string) ?? "/logoLight.png",
@@ -225,36 +308,36 @@ export default function MapSettings() {
                     mapcleaner: String(Boolean(data["options.mapcleaner"])),
                     mapresetter: String(Boolean(data["options.mapresetter"])),
                     showThemeToggler: String(
-                      Boolean(data["options.showThemeToggler"])
+                      Boolean(data["options.showThemeToggler"]),
                     ),
                     showUserAvatar: String(
-                      Boolean(data["options.showUserAvatar"])
+                      Boolean(data["options.showUserAvatar"]),
                     ),
                     showRecentlyUsedPlugins: String(
-                      Boolean(data["options.showRecentlyUsedPlugins"])
+                      Boolean(data["options.showRecentlyUsedPlugins"]),
                     ),
                     altShiftDragRotate: String(
-                      Boolean(data["options.altShiftDragRotate"])
+                      Boolean(data["options.altShiftDragRotate"]),
                     ),
                     onFocusOnly: String(Boolean(data["options.onFocusOnly"])),
                     doubleClickZoom: String(
-                      Boolean(data["options.doubleClickZoom"])
+                      Boolean(data["options.doubleClickZoom"]),
                     ),
                     keyboard: String(Boolean(data["options.keyboard"])),
                     mouseWheelZoom: String(
-                      Boolean(data["options.mouseWheelZoom"])
+                      Boolean(data["options.mouseWheelZoom"]),
                     ),
                     shiftDragZoom: String(
-                      Boolean(data["options.shiftDragZoom"])
+                      Boolean(data["options.shiftDragZoom"]),
                     ),
                     dragPan: String(Boolean(data["options.dragPan"])),
                     pinchRotate: String(Boolean(data["options.pinchRotate"])),
                     pinchZoom: String(Boolean(data["options.pinchZoom"])),
                     zoomLevelDelta: String(
-                      toNumber(data["options.zoomLevelDelta"]) ?? ""
+                      toNumber(data["options.zoomLevelDelta"]) ?? "",
                     ),
                     zoomAnimationDuration: String(
-                      toNumber(data["options.zoomAnimationDuration"]) ?? ""
+                      toNumber(data["options.zoomAnimationDuration"]) ?? "",
                     ),
                     preferredColorScheme:
                       (data["options.preferredColorScheme"] as string) ??
@@ -265,13 +348,13 @@ export default function MapSettings() {
                       (data["options.secondaryColor"] as string) ?? "#ffa000",
                     drawerStatic: String(Boolean(data["options.drawerStatic"])),
                     drawerVisible: String(
-                      Boolean(data["options.drawerVisible"])
+                      Boolean(data["options.drawerVisible"]),
                     ),
                     drawerVisibleMobile: String(
-                      Boolean(data["options.drawerVisibleMobile"])
+                      Boolean(data["options.drawerVisibleMobile"]),
                     ),
                     drawerPermanent: String(
-                      Boolean(data["options.drawerPermanent"])
+                      Boolean(data["options.drawerPermanent"]),
                     ),
                     drawerContent:
                       (data["options.drawerContent"] as string) ?? "plugins",
@@ -283,13 +366,13 @@ export default function MapSettings() {
                     drawerButtonIcon:
                       (data["options.drawerButtonIcon"] as string) ?? "MapIcon",
                     showCookieNotice: String(
-                      Boolean(data["options.showCookieNotice"])
+                      Boolean(data["options.showCookieNotice"]),
                     ),
                     cookieUse3dPart: String(
-                      Boolean(data["options.cookieUse3dPart"])
+                      Boolean(data["options.cookieUse3dPart"]),
                     ),
                     showCookieNoticeButton: String(
-                      Boolean(data["options.showCookieNoticeButton"])
+                      Boolean(data["options.showCookieNoticeButton"]),
                     ),
                     cookieLink:
                       (data["options.cookieLink"] as string) ??
@@ -298,10 +381,10 @@ export default function MapSettings() {
                       (data["options.cookieMessage"] as string) ??
                       "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
                     introductionEnabled: String(
-                      Boolean(data["options.introductionEnabled"])
+                      Boolean(data["options.introductionEnabled"]),
                     ),
                     introductionShowControlButton: String(
-                      Boolean(data["options.introductionShowControlButton"])
+                      Boolean(data["options.introductionShowControlButton"]),
                     ),
                     introductionSteps:
                       (data["options.introductionSteps"] as string) ?? "[]",
@@ -408,66 +491,90 @@ export default function MapSettings() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.constrainResolution
+                        <Controller
+                          name="options.constrainResolution"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.constrainResolution")}
                         />
                       }
                       label={t("map.constrainResolution")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.constrainOnlyCenter
+                        <Controller
+                          name="options.constrainOnlyCenter"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.constrainOnlyCenter")}
                         />
                       }
                       label={t("map.constrainOnlyCenter")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.constrainResolutionMobile
+                        <Controller
+                          name="options.constrainResolutionMobile"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.constrainResolutionMobile")}
                         />
                       }
                       label={t("map.constrainResolutionMobile")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.enableDownloadLink
+                        <Controller
+                          name="options.enableDownloadLink"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.enableDownloadLink")}
                         />
                       }
                       label={t("map.enableDownloadLink")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.enableAppStateInHash
+                        <Controller
+                          name="options.enableAppStateInHash"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.enableAppStateInHash")}
                         />
                       }
                       label={t("map.enableAppStateInHash")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.confirmOnWindowClose
+                        <Controller
+                          name="options.confirmOnWindowClose"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.confirmOnWindowClose")}
                         />
                       }
                       label={t("map.confirmOnWindowClose")}
@@ -515,58 +622,90 @@ export default function MapSettings() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.mapselector)}
-                          {...register("options.mapselector")}
+                        <Controller
+                          name="options.mapselector"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.mapselector")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.mapcleaner)}
-                          {...register("options.mapcleaner")}
+                        <Controller
+                          name="options.mapcleaner"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.mapcleaner")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.mapresetter)}
-                          {...register("options.mapresetter")}
+                        <Controller
+                          name="options.mapresetter"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.mapresetter")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.showThemeToggler
+                        <Controller
+                          name="options.showThemeToggler"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.showThemeToggler")}
                         />
                       }
                       label={t("map.showThemeToggler")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.showUserAvatar)}
-                          {...register("options.showUserAvatar")}
+                        <Controller
+                          name="options.showUserAvatar"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.showUserAvatar")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.showRecentlyUsedPlugins
+                        <Controller
+                          name="options.showRecentlyUsedPlugins"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.showRecentlyUsedPlugins")}
                         />
                       }
                       label={t("map.showRecentlyUsedPlugins")}
@@ -582,85 +721,135 @@ export default function MapSettings() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.altShiftDragRotate
+                        <Controller
+                          name="options.altShiftDragRotate"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.altShiftDragRotate")}
                         />
                       }
                       label={t("map.altShiftDragRotate")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.onFocusOnly)}
-                          {...register("options.onFocusOnly")}
+                        <Controller
+                          name="options.onFocusOnly"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.onFocusOnly")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.doubleClickZoom
+                        <Controller
+                          name="options.doubleClickZoom"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.doubleClickZoom")}
                         />
                       }
                       label={t("map.doubleClickZoom")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.keyboard)}
-                          {...register("options.keyboard")}
+                        <Controller
+                          name="options.keyboard"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.keyboard")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.mouseWheelZoom)}
-                          {...register("options.mouseWheelZoom")}
+                        <Controller
+                          name="options.mouseWheelZoom"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.mouseWheelZoom")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.shiftDragZoom)}
-                          {...register("options.shiftDragZoom")}
+                        <Controller
+                          name="options.shiftDragZoom"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.shiftDragZoom")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.dragPan)}
-                          {...register("options.dragPan")}
+                        <Controller
+                          name="options.dragPan"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.dragPan")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.pinchRotate)}
-                          {...register("options.pinchRotate")}
+                        <Controller
+                          name="options.pinchRotate"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.pinchRotate")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.pinchZoom)}
-                          {...register("options.pinchZoom")}
+                        <Controller
+                          name="options.pinchZoom"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.pinchZoom")}
@@ -744,9 +933,15 @@ export default function MapSettings() {
                   <Grid size={12}>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.drawerStatic)}
-                          {...register("options.drawerStatic")}
+                        <Controller
+                          name="options.drawerStatic"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.drawerStatic")}
@@ -755,9 +950,15 @@ export default function MapSettings() {
                   <Grid size={12}>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(map?.options?.drawerVisible)}
-                          {...register("options.drawerVisible")}
+                        <Controller
+                          name="options.drawerVisible"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
                         />
                       }
                       label={t("map.drawerVisible")}
@@ -766,11 +967,15 @@ export default function MapSettings() {
                   <Grid size={12}>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.drawerVisibleMobile
+                        <Controller
+                          name="options.drawerVisibleMobile"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.drawerVisibleMobile")}
                         />
                       }
                       label={t("map.drawerVisibleMobile")}
@@ -779,11 +984,15 @@ export default function MapSettings() {
                   <Grid size={12}>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.drawerPermanent
+                        <Controller
+                          name="options.drawerPermanent"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.drawerPermanent")}
                         />
                       }
                       label={t("map.drawerPermanent")}
@@ -847,33 +1056,45 @@ export default function MapSettings() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.showCookieNotice
+                        <Controller
+                          name="options.showCookieNotice"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.showCookieNotice")}
                         />
                       }
                       label={t("map.showCookieNotice")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.cookieUse3dPart
+                        <Controller
+                          name="options.cookieUse3dPart"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.cookieUse3dPart")}
                         />
                       }
                       label={t("map.cookieUse3dPart")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.showCookieNoticeButton
+                        <Controller
+                          name="options.showCookieNoticeButton"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.showCookieNoticeButton")}
                         />
                       }
                       label={t("map.showCookieNoticeButton")}
@@ -913,22 +1134,30 @@ export default function MapSettings() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.introductionEnabled
+                        <Controller
+                          name="options.introductionEnabled"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.introductionEnabled")}
                         />
                       }
                       label={t("map.introductionEnabled")}
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          defaultChecked={Boolean(
-                            map?.options?.introductionShowControlButton
+                        <Controller
+                          name="options.introductionShowControlButton"
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
                           )}
-                          {...register("options.introductionShowControlButton")}
                         />
                       }
                       label={t("map.introductionShowControlButton")}
