@@ -75,9 +75,7 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
             width: "100%",
           },
         ".form-container [class*='MuiGrid2-grid']": {
-          // Target all MuiGrid2-grid classes including MuiGrid2-grid-xs-12, etc.
           paddingBottom: "16px",
-          paddingLeft: "16px",
         },
       }}
     />
