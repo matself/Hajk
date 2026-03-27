@@ -1,4 +1,4 @@
-import { Box, Chip, Typography, Stack, Tooltip } from "@mui/material";
+import { Box, Chip, Typography, Stack, Tooltip, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import InfoIcon from "@mui/icons-material/Info";
 
@@ -7,13 +7,15 @@ interface Props {
   preSelectedLayers: string[];
   removedSelectedLayers: string[];
   isDarkMode: boolean;
+  onLayerClick: (layerName: string) => void;
 }
 
-export default function DataGridBadge({
+export default function DataGridBadgeButton({
   selectedLayers,
   preSelectedLayers,
   removedSelectedLayers,
   isDarkMode,
+  onLayerClick,
 }: Props) {
   const { t } = useTranslation();
 
@@ -71,26 +73,30 @@ export default function DataGridBadge({
       {selectedLayers.map((item, index) => {
         const isRemoved = removedSelectedLayers.includes(item);
         return (
-          <Chip
+          <Button
             sx={{ ml: 0.5, mb: 0.5 }}
             size="small"
             key={`selected-${index}`}
-            label={item}
             color={!isRemoved ? "error" : "success"}
-            variant={!isRemoved ? "outlined" : "filled"}
-          />
+            variant={!isRemoved ? "outlined" : "contained"}
+            onClick={() => onLayerClick(item)}
+          >
+            {item}
+          </Button>
         );
       })}
 
       {preSelectedLayers.map((item, index) => (
-        <Chip
+        <Button
           sx={{ ml: 0.5, mb: 0.5 }}
           size="small"
           key={`preselected-${index}`}
-          label={item}
+          onClick={() => onLayerClick(item)}
           color="success"
           variant="outlined"
-        />
+        >
+          {item}
+        </Button>
       ))}
     </Box>
   );

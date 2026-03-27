@@ -3,10 +3,7 @@ import {
   Box,
   TextField,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Grid2 as Grid,
+  Paper,
   IconButton,
   Menu,
   MenuItem,
@@ -17,7 +14,6 @@ import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 function UsedInMapsGrid() {
@@ -102,84 +98,69 @@ function UsedInMapsGrid() {
   };
 
   return (
-    <Grid container>
-      <Grid size={{ xs: 12, md: 12 }} sx={{ pl: "0 !important" }}>
-        <Accordion
-          disableGutters
+        <Paper
           sx={{
             width: "100%",
+            p: 2,
             mb: 3,
             backgroundColor: isDarkMode ? "#121212" : "#efefef",
-            ml: 2,
           }}
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">{t("common.usedInMaps")}</Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 2 }}>
-            <Box
+          <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
+            {t("common.usedInMaps")}
+          </Typography>
+          <TextField
+            sx={{
+              mb: 3,
+              mt: 1,
+              width: "100%",
+              maxWidth: "400px",
+              backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+            }}
+            label="Sök i kartor"
+            variant="outlined"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            slotProps={{
+              input: {
+                endAdornment: <SearchIcon />,
+              },
+            }}
+          />
+          <Scrollbar sx={{ maxHeight: "400px" }}>
+            <DataGrid
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
+                maxWidth: "100%",
+                mb: 2,
+                mt: 1,
+                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
               }}
-            >
-              <TextField
-                sx={{
-                  mb: 4,
-                  mt: 1,
-                  width: "100%",
-                  maxWidth: "400px",
-                  backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                }}
-                label="Sök i kartor"
-                variant="outlined"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                slotProps={{
-                  input: {
-                    endAdornment: <SearchIcon />,
+              rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
                   },
-                }}
-              />
-              <Scrollbar sx={{ maxHeight: "400px" }}>
-                <DataGrid
-                  sx={{
-                    maxWidth: "100%",
-                    mb: 2,
-                    mt: 1,
-                    backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                  }}
-                  rows={rows}
-                  columns={columns}
-                  initialState={{
-                    pagination: {
-                      paginationModel: {
-                        pageSize: 10,
-                      },
-                    },
-                  }}
-                  slotProps={{
-                    loadingOverlay: {
-                      variant: "skeleton",
-                      noRowsVariant: "skeleton",
-                    },
-                  }}
-                  pageSizeOptions={[10, 25, 50, 100]}
-                  pagination
-                  localeText={
-                    language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-                  }
-                  checkboxSelection
-                  disableMultipleRowSelection
-                  disableRowSelectionOnClick
-                />
-              </Scrollbar>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      </Grid>
-    </Grid>
+                },
+              }}
+              slotProps={{
+                loadingOverlay: {
+                  variant: "skeleton",
+                  noRowsVariant: "skeleton",
+                },
+              }}
+              pageSizeOptions={[10, 25, 50, 100]}
+              pagination
+              localeText={
+                language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+              }
+              checkboxSelection
+              disableMultipleRowSelection
+              disableRowSelectionOnClick
+            />
+          </Scrollbar>
+        </Paper>
   );
 }
 

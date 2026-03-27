@@ -68,14 +68,14 @@ export default function MapsList({
               Object.values(map).some(
                 (v) =>
                   typeof v === "string" &&
-                  v.toLowerCase().includes(debouncedSearchString.toLowerCase())
+                  v.toLowerCase().includes(debouncedSearchString.toLowerCase()),
               )) ||
             (typeof map === "object" &&
               typeof map.options === "object" &&
               Object.values(map.options).some(
                 (v) =>
                   typeof v === "string" &&
-                  v.toLowerCase().includes(debouncedSearchString.toLowerCase())
+                  v.toLowerCase().includes(debouncedSearchString.toLowerCase()),
               ))
           );
         })
@@ -259,8 +259,8 @@ export default function MapsList({
           <Grid size={12}>
             <StyledDataGrid<Map>
               onRowClick={({ row }) => {
-                const id: string = row.id;
-                if (id) {
+                const id = row.id;
+                if (id !== undefined && id !== null) {
                   void navigate(`${baseRoute}/${id}`);
                 }
               }}

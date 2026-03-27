@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Paper, Grid2 as Grid, Typography, TextField } from "@mui/material";
+import { Paper, Typography, TextField } from "@mui/material";
 import Scrollbar from "../../components/scrollbar/scrollbar";
 import {
   DataGrid,
@@ -10,7 +10,7 @@ import useAppStateStore from "../../store/use-app-state-store";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
-import DataGridBadge from "./components/data-grid-badge";
+import DataGridBadgeButton from "./components/data-grid-badge";
 
 function AvailableLayersGrid({
   isLoading,
@@ -22,6 +22,7 @@ function AvailableLayersGrid({
   searchTerm,
   selectGridId,
   selectedRowObjects,
+  onLayerClick,
 }: {
   isLoading: boolean;
   getCapLayers: string[];
@@ -32,6 +33,7 @@ function AvailableLayersGrid({
   searchTerm: string;
   selectGridId?: GridRowSelectionModel;
   selectedRowObjects?: string[];
+  onLayerClick: (layerName: string) => void;
 }) {
   const themeMode = useAppStateStore((state) => state.themeMode);
   const language = useAppStateStore((state) => state.language);
@@ -77,17 +79,12 @@ function AvailableLayersGrid({
     selectedRowObjects?.filter((item) => selectedLayers.includes(item)) ?? [];
 
   return (
-    <Grid container>
-      <Grid size={{ xs: 12, md: 12 }} sx={{ pl: "0 !important" }}>
         <Paper
-          key=""
           sx={{
             width: "100%",
             p: 2,
             mb: 3,
             backgroundColor: isDarkMode ? "#121212" : "#efefef",
-
-            ml: 2,
           }}
         >
           <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
@@ -113,11 +110,12 @@ function AvailableLayersGrid({
           />
           {(selectedLayers.length !== 0 || preSelectedLayers.length !== 0) &&
             !isDataLoading && (
-              <DataGridBadge
+              <DataGridBadgeButton
                 selectedLayers={selectedLayers}
                 preSelectedLayers={preSelectedLayers}
                 removedSelectedLayers={removedSelectedLayers}
                 isDarkMode={isDarkMode}
+                onLayerClick={onLayerClick}
               />
             )}
 
@@ -161,8 +159,6 @@ function AvailableLayersGrid({
             />
           </Scrollbar>
         </Paper>
-      </Grid>
-    </Grid>
   );
 }
 
