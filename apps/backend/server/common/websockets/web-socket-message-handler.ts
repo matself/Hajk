@@ -1,4 +1,4 @@
-import log4js from "../utils/hajk-logger.js";
+import log4js from "../utils/hajk-logger.ts";
 import { type CustomWebSocket, type HajkSocketMessage } from "./index.ts";
 import adminPresenceService from "./admin-presence-service.ts";
 

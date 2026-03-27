@@ -24,10 +24,10 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { PrismaClient } from "@prisma/client";
 
 import { getCLFDate } from "./utils/get-clf-date.ts";
-import log4js from "./utils/hajk-logger.js";
+import log4js from "./utils/hajk-logger.ts";
 import { initRoutes } from "./routes.ts";
 import websockets from "./websockets/index.ts";
-import detailedRequestLogger from "./middlewares/detailed.request.logger.js";
+import detailedRequestLogger from "./middlewares/detailed-request-logger.ts";
 
 import HttpStatusCodes from "./http-status-codes.ts";
 import { HajkError, RouteError } from "./classes.ts";
@@ -36,6 +36,8 @@ import { isInstanceOfPrismaError } from "./utils/is-instance-of-prisma-error.ts"
 
 import { isAuthActive } from "./auth/is-auth-active.ts";
 import { setupPassport } from "./auth/passport.middleware.ts";
+
+import extractUserContext from "./middlewares/extract-user-context.ts";
 
 const logger = log4js.getLogger("hajk");
 
@@ -135,9 +137,29 @@ class Server {
     return apiVersions;
   }
 
+  private setupUserContext() {
+    // Now let's setup a unique context for each request. We implement it using Node's
+    // AsyncLocalStorage feature - https://nodejs.org/api/async_context.html#asynchronous-context-tracking.
+    //
+    // From Node's documentation:
+    //    "These classes are used to associate state and propagate it throughout callbacks and
+    //    promise chains. They allow storing data throughout the lifetime of a web request or
+    //    any other asynchronous duration. It is similar to thread-local storage in other languages."
+    //
+    // In other words: this is the perfect place for us to extract the user info (if AD_LOOKUP_ACTIVE is enabled)
+    // and store it once and for all in the request's context.
+    // We could of course add a check here and only run this if AD_LOOKUP_ACTIVE is true. But that's
+    // no good, as we always want to create the context, even if it will be populated with user: "anonymous".
+    // That's way better than having to check "do we have the context? ah, ok, so who is the user?" down the line.
+    // The performance penalty is negligible, if it's even there (according to some test there's none).
+    this.app.use(extractUserContext);
+  }
+
   private async asyncInit() {
     // Configure the "trust proxy" parameter of Express, https://expressjs.com/en/guide/behind-proxies.html
     this.setExpressTrustProxy();
+
+    this.setupUserContext();
 
     // Setup Log4JS for HTTP access logging
     this.setupLogging();
@@ -209,6 +231,18 @@ class Server {
       );
 
       this.app.set("trust proxy", trustProxy);
+
+      // Should our proxy middleware add the x-forwarded-* headers?
+      this.addXForwardedHeaders = this.grabDotEnvBoolean(
+        "HAJK_PROXY_ADD_X_FORWARDED_HEADERS",
+        false
+      );
+
+      // Should we send the X-Qgis-Service-Url header to proxied services? See #1774 for more info.
+      this.addQgisServiceUrlHeader = this.grabDotEnvBoolean(
+        "HAJK_PROXY_ADD_X_QGIS_SERVICE_URL_HEADER",
+        false
+      );
     }
   }
 
@@ -276,7 +310,7 @@ class Server {
 
     // Enable compression early so that responses that follow will get gziped
     if (process.env.ENABLE_GZIP_COMPRESSION !== "false") {
-      logger.trace("[HTTP] Enabling Hajk's built-in GZIP compression");
+      logger.debug("[HTTP] Enabling Hajk's built-in GZIP compression");
       this.app.use(compression());
     } else {
       logger.warn(
@@ -400,12 +434,12 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         .map((entry) => entry.name);
 
       if (staticDirs.length > 0) {
-        l.trace(
+        l.debug(
           "Found following directories in 'static': %s",
           staticDirs.join(", ")
         );
       } else {
-        l.trace(
+        l.debug(
           "No directories found in 'static' - not exposing anything except the backend's API itself."
         );
       }
@@ -520,7 +554,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
       const openApiSpecification = path.join(__dirname, `api.v${v}.yml`);
 
       // Expose the API specification as a simple static route…
-      logger.trace(
+      logger.debug(
         `[API] Exposing ${openApiSpecification} on route /api/v${v}/spec`
       );
       this.app.use(`/api/v${v}/spec`, express.static(openApiSpecification));
@@ -533,7 +567,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
       // the middleware directly, any non-existing routes (such as those being
       // created in async parts of the code) would render a 404 in the middleware.
       // Related to #1309. Discovered during PR in #1332.
-      logger.trace(`[VALIDATOR] Setting up OpenApiValidator for /api/v${v}`);
+      logger.debug(`[VALIDATOR] Setting up OpenApiValidator for /api/v${v}`);
       this.app.use(
         OpenApiValidator.middleware({
           apiSpec: openApiSpecification,
@@ -545,6 +579,16 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         })
       );
     });
+  }
+
+  /**
+   * @description Utility function to grab boolean values from .env, with a default fallback.
+   * Handles the different ways users can setup their .envs (e.g. "true"/"1"/"false"/"0", case insensitively).
+   */
+  private grabDotEnvBoolean(name: string, defaultValue: boolean): boolean {
+    const value = process.env[name];
+    if (value === undefined) return defaultValue;
+    return value === "1" || value.toLowerCase() === "true";
   }
 
   /**
@@ -702,7 +746,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
           // Grab context and target from current element
           const context = v.context;
           const target = v.target;
-          l.trace(
+          l.debug(
             `Setting up proxy: /api/v${apiVersion}/proxy/${context} -> ${target}`
           );
 

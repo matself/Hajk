@@ -1,5 +1,4 @@
 node_modules/
-App_Data/
 dist/
 logs/
 .DS_Store
@@ -7,3 +6,13 @@ logs/
 .env
 /exports/
 /imports/
+
+# Ignore all organization-specific map data…
+App_Data/*
+
+# …except some example files that should be tracked
+!App_Data/layers.json
+!App_Data/map_1.json
+!App_Data/documents/exempeldokument.json
+!App_Data/documents/exempeldokument2.json
+!App_Data/templates/map.template
