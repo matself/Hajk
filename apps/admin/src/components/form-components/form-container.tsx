@@ -22,7 +22,7 @@ export default function FormContainer({
 }: FormContainerProps) {
   return (
     <Box
-      sx={{ ml: -2 }}
+      sx={{ ml: 0 }}
       component="form"
       className={className}
       onSubmit={onSubmit}

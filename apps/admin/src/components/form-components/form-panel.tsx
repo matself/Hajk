@@ -13,15 +13,12 @@ export default function FormPanel({ title, children }: FormPanelProps) {
         backgroundColor: "none",
         width: "100%",
         p: 2,
-        pb: 0,
-        pl: 0,
-        mb: 3,
-        ml: 2,
-        mr: 2,
+        pb: 1,
+        mb: 2,
         display: "block",
       }}
     >
-      <Typography variant="h6" sx={{ mt: -0.5, ml: 2, mb: 1.5 }}>
+      <Typography variant="h6" sx={{ mb: 1.5 }}>
         {title}
       </Typography>
       {children}
