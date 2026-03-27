@@ -309,6 +309,43 @@
         padding-bottom: 56.25%;
         background: #f1f5f9;
       }
+      .demo-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0d2d5c 0%, #1a6fc4 100%);
+      }
+      .demo-placeholder-inner {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+      }
+      .demo-placeholder-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+      }
+      .demo-placeholder-inner p {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 20px;
+      }
+      #demo-load-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        color: var(--white);
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      #demo-load-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: var(--white);
+      }
       .demo-iframe-wrap iframe {
         position: absolute;
         inset: 0;
@@ -827,13 +864,14 @@
             <div class="demo-dots"><span></span><span></span><span></span></div>
             <div class="demo-url">karta.halmstad.se</div>
           </div>
-          <div class="demo-iframe-wrap">
-            <iframe
-              src="https://karta.halmstad.se"
-              title="Halmstad municipality map powered by Hajk"
-              loading="lazy"
-              allowfullscreen
-            ></iframe>
+          <div class="demo-iframe-wrap" id="demo-iframe-wrap">
+            <div class="demo-placeholder">
+              <div class="demo-placeholder-inner">
+                <div class="demo-placeholder-icon">🗺️</div>
+                <p>Interactive map — karta.halmstad.se</p>
+                <button id="demo-load-btn">Load demo</button>
+              </div>
+            </div>
           </div>
           <div class="demo-caption">
             <span>Halmstad municipality — public map portal</span>
@@ -1766,28 +1804,12 @@
       </p>
     </footer>
   <script>
-    // Prevent the embedded iframe's cookie banner from scrolling the parent
-    // page into view before the user has interacted. The banner calls focus()
-    // on its dialog, which triggers a browser-native scroll-into-view on the
-    // iframe element. We detect this by watching for any scroll that happens
-    // before genuine user input and immediately cancel it.
-    (function () {
-      var userActed = false;
-      var cancel = function () {
-        if (!userActed) window.scrollTo(0, 0);
-      };
-      ["wheel", "touchstart", "keydown", "mousedown"].forEach(function (e) {
-        window.addEventListener(e, function () { userActed = true; }, {
-          once: true,
-          passive: true,
-        });
-      });
-      window.addEventListener("scroll", cancel, { passive: true });
-      // Stop watching once the user has actually scrolled themselves
-      window.addEventListener("wheel", function () {
-        window.removeEventListener("scroll", cancel);
-      }, { once: true, passive: true });
-    })();
+    document.getElementById("demo-load-btn").addEventListener("click", function () {
+      var wrap = document.getElementById("demo-iframe-wrap");
+      wrap.innerHTML =
+        '<iframe src="https://karta.halmstad.se" title="Halmstad municipality map powered by Hajk" allowfullscreen></iframe>';
+      this.closest(".demo-placeholder").remove();
+    });
   </script>
   </body>
 </html>
