@@ -11,7 +11,8 @@ import {
 } from "./constants";
 import useAppStateStore from "../../store/use-app-state-store";
 import PageTitle from "./components/page-title";
-import WebSocketProvider from "../../components/websocket-provider";
+
+/** To turn on multi-admin WebSocket presence later: import `WebSocketProvider` and wrap the layout tree; set `ENABLE_WEBSOCKETS=true` in backend `.env`. */
 
 export default function RootLayout() {
   const sidebarLocked = useAppStateStore((state) => state.sidebarLocked);
@@ -29,8 +30,7 @@ export default function RootLayout() {
   };
 
   return (
-    <WebSocketProvider>
-      <Paper
+    <Paper
         sx={{
           width: "100%",
           backgroundColor: theme.palette.background.default,
@@ -85,6 +85,5 @@ export default function RootLayout() {
           <Outlet />
         </Box>
       </Paper>
-    </WebSocketProvider>
   );
 }

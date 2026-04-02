@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
-import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -583,84 +582,6 @@ async function createBaseRoles() {
   }
 }
 
-async function createLocalDummyAccounts() {
-  const dummyUsers = [
-    {
-      email: "henrik@hallberg.se",
-      fullName: "Henrik Hallberg",
-      password: "Henrik",
-    },
-    {
-      email: "jacob@wodzynski.se",
-      fullName: "Jacob Wodzynski",
-      password: "Jacob",
-    },
-    {
-      email: "olof@svahn.se",
-      fullName: "Olof Svahn",
-      password: "Olof1",
-    },
-    {
-      email: "albin@ahmetaj.se",
-      fullName: "Albin Ahmetaj",
-      password: "Albin",
-    },
-    {
-      email: "jesper@adeborn.se",
-      fullName: "Jesper Adeborn",
-      password: "Jesper",
-    },
-    {
-      email: "niklas@eriksson.se",
-      fullName: "Niklas Eriksson",
-      password: "Niklas",
-    },
-    {
-      email: "elizabeth@barlow.se",
-      fullName: "Elizabeth Barlow",
-      password: "Elizabeth",
-    },
-    {
-      email: "ingvar@petersson.se",
-      fullName: "Ingvar Petersson",
-      password: "Ingvar",
-    },
-    {
-      email: "lars@samuelsson.se",
-      fullName: "Lars Samuelsson",
-      password: "Lars",
-    },
-  ];
-
-  for await (const user of dummyUsers) {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    await prisma.localAccount.create({
-      data: {
-        ...user,
-        password: hashedPassword,
-        user: {
-          create: {
-            email: user.email,
-            fullName: user.fullName,
-            strategy: "LOCAL",
-            roles: {
-              create: [
-                {
-                  role: {
-                    connect: {
-                      code: "SUPERUSER",
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
-      },
-    });
-  }
-}
-
 async function updateRolesFromVisibleForGroups(
   visibleForGroups,
   entityId,
@@ -734,10 +655,9 @@ async function main() {
   // We're gonna want to keep crucial information such as the map layer structure separated from specific plugins such as the layer switcher.
   await populateLayerStructure();
 
-  // Some base roles are required. For example, the role containing users that are allowed to use the admin endpoints etc.
+  // Base roles (e.g. SUPERUSER, ADMIN) for map/layer/tool restrictions and future IdP group mapping.
+  // Local users are not seeded: identities come from Keycloak or another external IdP.
   await createBaseRoles();
-
-  await createLocalDummyAccounts();
 }
 
 main()

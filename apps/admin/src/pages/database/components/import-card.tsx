@@ -253,7 +253,7 @@ export default function DatabaseImportCard() {
               {t("database.import.success")}
             </Typography>
             <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-              {t("database.import.logoutMessage")}
+              {t("database.import.reloadMessage")}
             </Typography>
           </Alert>
         )}

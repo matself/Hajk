@@ -1,8 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../http-status-codes.ts";
 import { getUserRoles } from "./get-user-roles.ts";
+import { isAuthActive } from "./is-auth-active.ts";
 
 export async function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!isAuthActive) {
+    next();
+    return;
+  }
+
   if (!req.user) {
     res.status(HttpStatusCodes.UNAUTHORIZED).end();
     return;

@@ -29,7 +29,7 @@ const createApiClient = (): AxiosInstance => {
 
     const escapeRegex = (url: string) => url.replace(urlRegex, "\\$1");
     return new RegExp(
-      "^" + ruleWithWildCard.split("*").map(escapeRegex).join(".*") + "$"
+      "^" + ruleWithWildCard.split("*").map(escapeRegex).join(".*") + "$",
     ).test(url);
   };
 
@@ -60,16 +60,15 @@ const createApiClient = (): AxiosInstance => {
         switch (apiError.response.status) {
           case 400:
             console.error(
-              `Bad request, errorId: ${apiError.response.data.errorId}`
+              `Bad request, errorId: ${apiError.response.data.errorId}`,
             );
             break;
           case 401:
             console.error("Unauthorized");
-            // window.location.href = `${import.meta.env.BASE_URL || ""}/login`;
             break;
           case 403:
             console.error(
-              `Forbidden, errorId: ${apiError.response.data.errorId}`
+              `Forbidden, errorId: ${apiError.response.data.errorId}`,
             );
             break;
           case 404:
@@ -77,7 +76,7 @@ const createApiClient = (): AxiosInstance => {
             break;
           case 500:
             console.error(
-              `Internal server error, errorId: ${apiError.response.data.errorId}`
+              `Internal server error, errorId: ${apiError.response.data.errorId}`,
             );
             break;
           default:
@@ -90,7 +89,7 @@ const createApiClient = (): AxiosInstance => {
       }
 
       return Promise.reject(apiError);
-    }
+    },
   );
 
   return apiClient;

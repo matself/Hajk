@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import {
@@ -8,7 +7,6 @@ import {
   exportDatabase,
   importDatabase,
 } from "./requests";
-import useAuth from "../../hooks/use-auth";
 
 export const useDatabaseStatus = () => {
   return useQuery({
@@ -37,8 +35,6 @@ export const useExportDatabase = () => {
 
 export const useImportDatabase = () => {
   const queryClient = useQueryClient();
-  const { logout } = useAuth();
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   return useMutation({
@@ -47,21 +43,12 @@ export const useImportDatabase = () => {
       void queryClient.invalidateQueries({ queryKey: ["database-status"] });
 
       if (data.requiresLogout) {
-        toast.info(t("database.import.logoutToast"), {
+        toast.info(t("database.import.reloadToast"), {
           autoClose: 7000,
         });
 
-        setTimeout(async () => {
-          const message = t("database.import.loginPageMessage");
-
-          sessionStorage.setItem("databaseImportMessage", message);
-
-          await logout();
-          await navigate("/login", {
-            state: {
-              message: message,
-            },
-          });
+        setTimeout(() => {
+          window.location.reload();
         }, 2000);
       }
     },

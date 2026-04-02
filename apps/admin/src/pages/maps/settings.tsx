@@ -15,7 +15,6 @@ import {
   Checkbox,
   Button,
   ButtonGroup,
-  Box,
 } from "@mui/material";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import {
@@ -40,7 +39,6 @@ import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
 import { useTools } from "../../api/tools";
 import { TreeItems } from "dnd-kit-sortable-tree";
-import ActiveAdminsBadge from "../../components/active-admins-badge";
 import mapBackgroundImage from "../../../public/mapbackground.png";
 
 export default function MapSettings() {
@@ -208,13 +206,6 @@ export default function MapSettings() {
 
   return (
     <Page title={t("common.settings")}>
-      <Box sx={{ mb: 2 }}>
-        <ActiveAdminsBadge
-          resourceType="map"
-          resourceId={mapId ?? ""}
-          showDebug
-        />
-      </Box>
       <ButtonGroup sx={{ mb: 2 }}>
         <Button
           variant={activeTab === "menu" ? "contained" : "outlined"}

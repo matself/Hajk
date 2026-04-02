@@ -5,8 +5,8 @@ import useWebSocketStore from "../store/use-websocket-store";
 import useAdminPresenceStore, {
   AdminPresence,
 } from "../store/use-admin-presence-store";
-import useUserStore from "../store/use-user-store";
 import useAppStateStore from "../store/use-app-state-store";
+import { getAdminClientId } from "../lib/admin-client-id";
 
 interface WebSocketProviderProps {
   children: React.ReactNode;
@@ -57,35 +57,34 @@ function parseRoute(pathname: string): {
   return null;
 }
 
+const PRESENCE_LABEL = "Admin";
+
 /**
  * WebSocket provider for multi-admin awareness.
- * Connects when user is authenticated and tracks admin presence.
+ *
+ * Not mounted in root layout by default — wrap the layout with
+ * `<WebSocketProvider>` when you want presence again. Requires backend
+ * `ENABLE_WEBSOCKETS=true` and an admin session or compatible auth setup.
  */
 export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const location = useLocation();
-  const user = useUserStore((state) => state.user);
+  const clientId = getAdminClientId();
   const apiBaseUrl = useAppStateStore((state) => state.apiBaseUrl);
   const isConnected = useWebSocketStore((state) => state.isConnected);
   const lastMessage = useWebSocketStore((state) => state.lastMessage);
 
-  // Refs to track state without causing re-renders
   const lastBroadcastedResource = useRef<string | null>(null);
   const prevAdminsRef = useRef<AdminPresence[]>([]);
   const isRegistered = useRef(false);
   const connectedUserId = useRef<string | null>(null);
 
-  // Extract user.id to avoid re-running effect when user object reference changes
-  const userId = user?.id ?? null;
-
-  // Connect to WebSocket when user is authenticated
   useEffect(() => {
-    if (!userId || !apiBaseUrl) {
+    if (!clientId || !apiBaseUrl) {
       return;
     }
 
-    // Don't reconnect if already connected for this user
     if (
-      connectedUserId.current === userId &&
+      connectedUserId.current === clientId &&
       useWebSocketStore.getState().isConnected
     ) {
       return;
@@ -95,7 +94,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${wsProtocol}//${url.host}/api/v3/websockets`;
 
-    connectedUserId.current = userId;
+    connectedUserId.current = clientId;
     useWebSocketStore.getState().connect(wsUrl);
     isRegistered.current = false;
 
@@ -104,27 +103,25 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       connectedUserId.current = null;
       isRegistered.current = false;
     };
-  }, [userId, apiBaseUrl]);
+  }, [clientId, apiBaseUrl]);
 
-  // Register with backend when connected
   useEffect(() => {
-    if (!isConnected || !user || isRegistered.current) {
+    if (!isConnected || isRegistered.current) {
       return;
     }
 
     useWebSocketStore.getState().sendMessage({
       type: "register",
       payload: {
-        userId: user.id,
-        userName: user.fullName || user.email,
+        userId: clientId,
+        userName: PRESENCE_LABEL,
       },
     });
     isRegistered.current = true;
-  }, [isConnected, user]);
+  }, [isConnected, clientId]);
 
-  // Update presence when route changes
   useEffect(() => {
-    if (!isConnected || !user) {
+    if (!isConnected) {
       return;
     }
 
@@ -133,7 +130,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       ? `${resource.resourceType}:${resource.resourceId}`
       : null;
 
-    // Only broadcast if resource actually changed
     if (resourceKey === lastBroadcastedResource.current) {
       return;
     }
@@ -144,9 +140,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
     if (resource) {
       const presence: AdminPresence = {
-        id: `${user.id}-${Date.now()}`,
-        userId: user.id,
-        userName: user.fullName || user.email,
+        id: `${clientId}-${Date.now()}`,
+        userId: clientId,
+        userName: PRESENCE_LABEL,
         resource: resourceKey!,
         resourceType: resource.resourceType,
         resourceId: resource.resourceId,
@@ -169,9 +165,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       });
       presenceStore.setMyPresence(null);
     }
-  }, [location.pathname, isConnected, user]);
+  }, [location.pathname, isConnected, clientId]);
 
-  // Handle incoming WebSocket messages
   useEffect(() => {
     if (!lastMessage) return;
 
@@ -200,7 +195,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     }
   }, [lastMessage]);
 
-  // Show toast notifications when other admins join/leave current resource
   useEffect(() => {
     const resource = parseRoute(location.pathname);
     if (!resource) {
@@ -213,34 +207,31 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       .getAdminsOnResource(resource.resourceType, resource.resourceId);
     const prevAdmins = prevAdminsRef.current;
 
-    // Find newly joined admins
     const newAdmins = currentAdmins.filter(
-      (a) => !prevAdmins.find((p) => p.userId === a.userId)
+      (a) => !prevAdmins.find((p) => p.userId === a.userId),
     );
 
-    // Find admins who left
     const leftAdmins = prevAdmins.filter(
-      (p) => !currentAdmins.find((a) => a.userId === p.userId)
+      (p) => !currentAdmins.find((a) => a.userId === p.userId),
     );
 
     newAdmins.forEach((admin) => {
       toast.info(
         `${admin.userName} started editing this ${resource.resourceType}`,
-        { position: "bottom-right", autoClose: 5000 }
+        { position: "bottom-right", autoClose: 5000 },
       );
     });
 
     leftAdmins.forEach((admin) => {
       toast.info(
         `${admin.userName} stopped editing this ${resource.resourceType}`,
-        { position: "bottom-right", autoClose: 3000 }
+        { position: "bottom-right", autoClose: 3000 },
       );
     });
 
     prevAdminsRef.current = currentAdmins;
   }, [location.pathname, lastMessage]);
 
-  // Periodically clear stale presence entries
   useEffect(() => {
     const interval = setInterval(() => {
       useAdminPresenceStore.getState().clearStalePresence();
