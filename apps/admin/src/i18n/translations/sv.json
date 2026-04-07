@@ -85,7 +85,7 @@
     "services.description": "Intern adminbeskrivning av tjänst",
     "services.dialog.addBtn": "Skapa en tjänst",
     "services.dialog.title": "Skapa tjänst",
-    "services.dialog.subtitle": "Ange webbadress, tjänsttyp och servertyp. Namn är valfritt (ett namn genereras om det lämnas tomt). Övriga inställningar når du på tjänstens inställningssida efter att du sparat.",
+    "services.dialog.subtitle": "Ange namn, webbadress, tjänsttyp och servertyp. Övriga inställningar når du på tjänstens inställningssida efter att du sparat.",
     "services.dialog.urlField": "Webbadress (URL)",
     "services.dialog.invalidUrl": "Ange en giltig webbadress, t.ex. https://…",
     "services.dialog.urlMustBeHttp": "URL måste börja med http:// eller https://",

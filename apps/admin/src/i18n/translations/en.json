@@ -86,7 +86,7 @@
     "services.description": "Internal description of the service",
     "services.dialog.addBtn": "Create a service",
     "services.dialog.title": "Create service",
-    "services.dialog.subtitle": "Enter the service URL, service type, and server type. Name is optional (a name is generated if left empty). Further settings are available on the service settings page after you save.",
+    "services.dialog.subtitle": "Enter the name, service URL, service type, and server type. Further settings are available on the service settings page after you save.",
     "services.dialog.urlField": "URL",
     "services.dialog.invalidUrl": "Enter a valid URL, e.g. https://…",
     "services.dialog.urlMustBeHttp": "The URL must start with http:// or https://",

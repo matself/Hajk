@@ -14,6 +14,8 @@ interface DialogProps {
   children: React.ReactNode;
   actions?: React.ReactNode;
   fullWidth?: boolean;
+  /** When set, forwarded to `<form noValidate>` (e.g. use with react-hook-form). */
+  formNoValidate?: boolean;
 }
 
 const DialogWrapper = ({
@@ -24,12 +26,13 @@ const DialogWrapper = ({
   children,
   actions,
   fullWidth,
+  formNoValidate,
 }: DialogProps) => (
   <Dialog fullWidth={fullWidth} open={open} onClose={onClose}>
     <DialogTitle>{title}</DialogTitle>
 
     {onSubmit ? (
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} noValidate={formNoValidate}>
         <DialogContent>{children}</DialogContent>
         <DialogActions>{actions}</DialogActions>
       </form>

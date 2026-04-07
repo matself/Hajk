@@ -11,7 +11,6 @@ import {
 import { LayersApiResponse } from "../layers";
 import { Map } from "../maps";
 import { GlobalMapsApiResponse } from "../tools";
-import { generateRandomName } from "../generated/names";
 import useAppStateStore from "../../store/use-app-state-store";
 
 /**
@@ -146,21 +145,49 @@ export const getAllProjections = async (): Promise<string[]> => {
   }
 };
 
+/** Aligns with backend default when config has no projection (see services.service.ts). */
+const CREATE_SERVICE_PROJECTION_FALLBACK = "EPSG:3006";
+
+/**
+ * Builds the JSON body for `POST /services` (admin API base includes `/api/v3`).
+ * Merges `servicesDefault` from config.json with user input and ensures
+ * `projection.code` when missing (backend Zod requires projection).
+ */
+function buildCreateServicePayload(
+  input: ServiceCreateInput,
+): Record<string, unknown> {
+  const { servicesDefault, defaultCoordinates } = useAppStateStore.getState();
+
+  const merged: Record<string, unknown> = {
+    ...servicesDefault,
+    ...input,
+  };
+
+  const projection = merged.projection as { code?: string } | undefined;
+  const code = projection?.code?.trim();
+  if (!code) {
+    const first = defaultCoordinates?.[0];
+    merged.projection = {
+      code:
+        typeof first === "string" && first.trim()
+          ? first.trim()
+          : CREATE_SERVICE_PROJECTION_FALLBACK,
+    };
+  }
+
+  return merged;
+}
+
+/**
+ * Creates a service via backend `POST /services`.
+ * On 4xx/5xx, rejects with the Axios error so callers can read `response.data` (e.g. Zod details).
+ */
 export const createService = async (
   newService: ServiceCreateInput,
 ): Promise<Service> => {
   const internalApiClient = getApiClient();
-  const { servicesDefault } = useAppStateStore.getState();
+  const serviceData = buildCreateServicePayload(newService);
 
-  const payload: ServiceCreateInput = { ...newService };
-  if (!payload.name) {
-    payload.name = generateRandomName();
-  }
-
-  const serviceData: ServiceCreateInput = {
-    ...servicesDefault,
-    ...payload,
-  };
   try {
     const response = await internalApiClient.post<Service>(
       "/services",

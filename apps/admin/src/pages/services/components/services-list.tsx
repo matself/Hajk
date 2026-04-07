@@ -227,6 +227,7 @@ export default function ServicesList({
           >
             <DialogWrapper
               fullWidth
+              formNoValidate
               open={open}
               title={t("services.dialog.title")}
               onClose={handleClose}
@@ -272,9 +273,14 @@ export default function ServicesList({
                 </Grid>
                 <Grid size={12}>
                   <TextField
+                    required
                     label={t("common.name")}
                     fullWidth
-                    {...register("name")}
+                    {...register("name", {
+                      required: t("common.required"),
+                      validate: (v) =>
+                        v.trim().length > 0 ? true : t("common.required"),
+                    })}
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
