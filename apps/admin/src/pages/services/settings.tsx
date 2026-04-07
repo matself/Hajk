@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import Page from "../../layouts/root/components/page";
@@ -11,6 +11,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Alert,
 } from "@mui/material";
 import {
   useServiceById,
@@ -36,7 +37,6 @@ import { toast } from "react-toastify";
 import FormActionPanel from "../../components/form-action-panel";
 import { SquareSpinnerComponent } from "../../components/progress/square-progress";
 import useAppStateStore from "../../store/use-app-state-store";
-import { HttpError } from "../../lib/http-error";
 
 export default function ServiceSettings() {
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -74,14 +74,14 @@ export default function ServiceSettings() {
       service?.type === SERVICE_TYPE.WMS
         ? SERVICE_TYPE.WMS
         : service?.type === SERVICE_TYPE.WMTS
-        ? SERVICE_TYPE.WMS
-        : service?.type === SERVICE_TYPE.WFS
-        ? SERVICE_TYPE.WFS
-        : service?.type === SERVICE_TYPE.WFST
-        ? SERVICE_TYPE.WFS
-        : service?.type === SERVICE_TYPE.VECTOR
-        ? SERVICE_TYPE.WFS
-        : service?.type,
+          ? SERVICE_TYPE.WMS
+          : service?.type === SERVICE_TYPE.WFS
+            ? SERVICE_TYPE.WFS
+            : service?.type === SERVICE_TYPE.WFST
+              ? SERVICE_TYPE.WFS
+              : service?.type === SERVICE_TYPE.VECTOR
+                ? SERVICE_TYPE.WFS
+                : service?.type,
   });
 
   const {
@@ -125,7 +125,7 @@ export default function ServiceSettings() {
     setIsDialogOpen(true);
     setDialogUrl((getValues("url") as string) || (service?.url ?? ""));
     setDialogServiceType(
-      (getValues("type") as string) || (service?.type ?? "")
+      (getValues("type") as string) || (service?.type ?? ""),
     );
   };
 
@@ -175,7 +175,7 @@ export default function ServiceSettings() {
           position: "bottom-left",
           theme: palette.mode,
           hideProgressBar: true,
-        }
+        },
       );
     } catch (error) {
       console.error("Failed to update service:", error);
@@ -224,18 +224,49 @@ export default function ServiceSettings() {
   if (isLoading) {
     return <SquareSpinnerComponent />;
   }
-  if (!service) {
-    throw new HttpError(404, "Service not found");
+
+  if (isError) {
+    return (
+      <Page title={t("common.settings")}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {t("services.loadServiceFailed")}
+        </Alert>
+        <Button
+          component={Link}
+          to="/services"
+          variant="contained"
+          color="primary"
+        >
+          {t("services.backToServices")}
+        </Button>
+      </Page>
+    );
   }
 
-  if (isError) return <div>Error fetching service details.</div>;
+  if (!service) {
+    return (
+      <Page title={t("common.settings")}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          {t("services.serviceNotFound")}
+        </Alert>
+        <Button
+          component={Link}
+          to="/services"
+          variant="contained"
+          color="primary"
+        >
+          {t("services.backToServices")}
+        </Button>
+      </Page>
+    );
+  }
 
   return (
     <Page title={t("common.settings")}>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
-        saveButtonText="Spara"
+        saveButtonText={t("common.dialog.saveBtn")}
         createdBy={service?.createdBy}
         createdDate={service?.createdDate}
         lastSavedBy={service?.lastSavedBy}
@@ -429,7 +460,7 @@ export default function ServiceSettings() {
                       >
                         {defaultCoordinates.map((value) => {
                           const opt = epsgProjectionsMap?.find(
-                            (p) => p.value === value
+                            (p) => p.value === value,
                           );
                           return (
                             <MenuItem key={value} value={opt?.value ?? value}>

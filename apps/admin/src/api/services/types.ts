@@ -16,14 +16,14 @@ export interface Service {
   createdDate?: string;
   lastSavedBy?: string;
   lastSavedDate?: string;
-  metadata: {
+  metadata?: {
     id: string;
     owner?: string;
     description?: string;
-  };
-  projection: {
+  } | null;
+  projection?: {
     code: string;
-  };
+  } | null;
   status?: SERVICE_STATUS;
 }
 
@@ -48,6 +48,7 @@ export interface ServiceCreateInput {
   url: string;
   name: string;
   type: string;
+  serverType?: string;
 }
 
 export interface ServiceUpdateInput {

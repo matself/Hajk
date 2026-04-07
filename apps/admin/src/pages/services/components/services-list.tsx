@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid2";
 import {
@@ -11,7 +12,11 @@ import {
   MenuItem,
   Box,
   ListItemText,
+  Typography,
+  FormHelperText,
+  CircularProgress,
 } from "@mui/material";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import {
@@ -21,6 +26,7 @@ import {
   ServiceCreateInput,
   SERVICE_TYPE,
   SERVICE_STATUS,
+  serverTypes,
 } from "../../../api/services";
 import DialogWrapper from "../../../components/flexible-dialog";
 import { useForm, Controller } from "react-hook-form";
@@ -30,7 +36,43 @@ import { GridRenderCellParams } from "@mui/x-data-grid";
 import ServiceStatusIndicator from "../components/service-status-indicator";
 import ServiceTypeBadge from "../components/service-type-badge";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
-import { InternalApiError } from "../../../lib/internal-api-client";
+import { ApiValidationDetail } from "../../../lib/internal-api-client";
+
+interface ServiceCreateErrorBody {
+  errorId?: string;
+  error?: string;
+  details?: ApiValidationDetail[];
+}
+
+function getCreateServiceErrorMessage(error: unknown, t: TFunction): string {
+  if (!isAxiosError<ServiceCreateErrorBody>(error) || !error.response) {
+    return t("services.createServiceFailed");
+  }
+
+  const status = error.response.status;
+  const data = error.response.data;
+
+  if (
+    status === 409 ||
+    (typeof data?.error === "string" &&
+      data.error.includes("A service with this URL and type already exists"))
+  ) {
+    return t("services.createServiceDuplicateError");
+  }
+
+  if (status === 400 && Array.isArray(data?.details)) {
+    const messages = data.details.map((d) => d.message).filter(Boolean);
+    if (messages.length > 0) {
+      return messages.join(" · ");
+    }
+  }
+
+  if (typeof data?.error === "string" && data.error.trim()) {
+    return data.error.trim();
+  }
+
+  return t("services.createServiceFailed");
+}
 
 interface ServicesListProps {
   filterServices: (services: Service[]) => Service[];
@@ -48,9 +90,8 @@ export default function ServicesList({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: services, isLoading } = useServices();
-  const { mutateAsync: createService, error: createServiceError } =
+  const { mutateAsync: createService, isPending: isCreatingService } =
     useCreateService();
-  console.log(createServiceError);
   const { palette } = useTheme();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -59,20 +100,11 @@ export default function ServicesList({
     setSearchTerm(event.target.value);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const filteredServices = useMemo<Service[]>(() => {
     if (!services) return [];
 
-    // First apply the specific filter for this page type
     const typeFilteredServices = filterServices(services);
 
-    // Then apply search filter
     const searchFilter = (service: Service) => {
       const combinedText =
         `${service.name} ${service.url} ${service.type}`.toLowerCase();
@@ -82,10 +114,11 @@ export default function ServicesList({
     return typeFilteredServices.filter(searchFilter);
   }, [services, searchTerm, filterServices]);
 
-  const defaultValues = {
+  const defaultValues: ServiceCreateInput = {
     name: "",
     url: "",
     type: SERVICE_TYPE.WMS,
+    serverType: "GEOSERVER",
   };
 
   const {
@@ -100,45 +133,67 @@ export default function ServicesList({
     reValidateMode: "onChange",
   });
 
+  const handleClickOpen = () => {
+    reset(defaultValues);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    if (isCreatingService) return;
+    setOpen(false);
+  };
+
+  const validateServiceUrl = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return t("common.required");
+    }
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return t("services.dialog.urlMustBeHttp");
+      }
+      return true;
+    } catch {
+      return t("services.dialog.invalidUrl");
+    }
+  };
+
   const handleServiceSubmit = async (serviceData: ServiceCreateInput) => {
     try {
-      const payload = {
-        name: serviceData.name,
-        url: serviceData.url,
+      const payload: ServiceCreateInput = {
+        name: serviceData.name.trim(),
+        url: serviceData.url.trim(),
         type: serviceData.type,
+        serverType: serviceData.serverType,
       };
       const response = await createService(payload);
+      if (!response?.id) {
+        toast.error(t("services.createResponseMissingId"), {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        });
+        return;
+      }
       toast.success(
-        t("services.createServiceSuccess", { name: response?.name }),
+        t("services.createServiceSuccess", { name: response.name }),
         {
           position: "bottom-left",
           theme: palette.mode,
           hideProgressBar: true,
-        }
+        },
       );
-      void navigate(`${baseRoute}/${response?.id}`);
+      void navigate(`${baseRoute}/${response.id}`);
       reset();
       handleClose();
     } catch (error) {
       console.error("Failed to submit service:", error);
-      // Check if this is a unique constraint error (duplicate service)
-      const axiosError = error as InternalApiError;
-      const isDuplicateError =
-        axiosError.response?.status === 409 ||
-        axiosError.response?.data?.error?.includes(
-          "A service with this URL and type already exists"
-        );
-
-      toast.error(
-        isDuplicateError
-          ? t("services.createServiceDuplicateError")
-          : t("services.createServiceFailed"),
-        {
-          position: "bottom-left",
-          theme: palette.mode,
-          hideProgressBar: true,
-        }
-      );
+      toast.error(getCreateServiceErrorMessage(error, t), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
     }
   };
 
@@ -162,6 +217,7 @@ export default function ServicesList({
                     onClick={handleClickOpen}
                     color="primary"
                     variant="contained"
+                    aria-label={t("services.dialog.addBtn")}
                   >
                     {t("services.dialog.addBtn")}
                   </Button>
@@ -180,16 +236,40 @@ export default function ServicesList({
               }}
               actions={
                 <>
-                  <Button variant="text" onClick={handleClose} color="primary">
+                  <Button
+                    variant="text"
+                    onClick={handleClose}
+                    color="primary"
+                    disabled={isCreatingService}
+                  >
                     {t("common.dialog.closeBtn")}
                   </Button>
-                  <Button type="submit" color="primary" variant="contained">
+                  <Button
+                    type="submit"
+                    color="primary"
+                    variant="contained"
+                    disabled={isCreatingService}
+                    startIcon={
+                      isCreatingService ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : undefined
+                    }
+                  >
                     {t("common.dialog.saveBtn")}
                   </Button>
                 </>
               }
             >
               <Grid container spacing={2}>
+                <Grid size={12}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    {t("services.dialog.subtitle")}
+                  </Typography>
+                </Grid>
                 <Grid size={12}>
                   <TextField
                     label={t("common.name")}
@@ -201,39 +281,82 @@ export default function ServicesList({
                 </Grid>
                 <Grid size={12}>
                   <TextField
-                    label="Url"
+                    label={t("services.dialog.urlField")}
                     fullWidth
                     {...register("url", {
-                      required: `${t("common.required")}`,
+                      required: t("common.required"),
+                      validate: validateServiceUrl,
                     })}
                     error={!!errors.url}
                     helperText={errors.url?.message}
                   />
                 </Grid>
                 <Grid size={12}>
-                  <FormControl fullWidth>
-                    <InputLabel id="type-label">
-                      {t("common.serviceType")}
-                    </InputLabel>
-                    <Controller
-                      name="type"
-                      control={control}
-                      rules={{ required: `${t("common.required")}` }}
-                      render={({ field }) => (
+                  <Controller
+                    name="type"
+                    control={control}
+                    rules={{ required: t("common.required") }}
+                    render={({ field, fieldState }) => (
+                      <FormControl fullWidth error={!!fieldState.error}>
+                        <InputLabel id="type-label">
+                          {t("common.serviceType")}
+                        </InputLabel>
                         <Select
                           labelId="type-label"
                           label={t("common.serviceType")}
                           {...field}
+                          error={!!fieldState.error}
                         >
-                          {Object.keys(SERVICE_TYPE).map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
+                          {(
+                            Object.keys(
+                              SERVICE_TYPE,
+                            ) as (keyof typeof SERVICE_TYPE)[]
+                          ).map((key) => (
+                            <MenuItem key={key} value={SERVICE_TYPE[key]}>
+                              {SERVICE_TYPE[key]}
                             </MenuItem>
                           ))}
                         </Select>
-                      )}
-                    />
-                  </FormControl>
+                        {fieldState.error?.message ? (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        ) : null}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <Controller
+                    name="serverType"
+                    control={control}
+                    rules={{ required: t("common.required") }}
+                    render={({ field, fieldState }) => (
+                      <FormControl fullWidth error={!!fieldState.error}>
+                        <InputLabel id="serverType-create-label">
+                          {t("common.serverType")}
+                        </InputLabel>
+                        <Select
+                          labelId="serverType-create-label"
+                          label={t("common.serverType")}
+                          {...field}
+                          value={field.value ?? ""}
+                          error={!!fieldState.error}
+                        >
+                          {serverTypes.map((s) => (
+                            <MenuItem key={s.value} value={s.value}>
+                              {s.title}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {fieldState.error?.message ? (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        ) : null}
+                      </FormControl>
+                    )}
+                  />
                 </Grid>
               </Grid>
             </DialogWrapper>

@@ -36,9 +36,8 @@ import useAppStateStore from "../../store/use-app-state-store";
 export const getServices = async (): Promise<Service[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<ServicesApiResponse>(
-      "/services"
-    );
+    const response =
+      await internalApiClient.get<ServicesApiResponse>("/services");
     if (!response.data) {
       throw new Error("No services data found");
     }
@@ -47,7 +46,7 @@ export const getServices = async (): Promise<Service[]> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch services. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch services. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch services");
@@ -59,7 +58,7 @@ export const getServiceById = async (serviceId: string): Promise<Service> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<Service>(
-      `/services/${serviceId}`
+      `/services/${serviceId}`,
     );
     if (!response.data) {
       throw new Error("No service data found");
@@ -69,7 +68,7 @@ export const getServiceById = async (serviceId: string): Promise<Service> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch service. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch service. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch service");
@@ -78,12 +77,12 @@ export const getServiceById = async (serviceId: string): Promise<Service> => {
 };
 
 export const getLayersByServiceId = async (
-  serviceId: string
+  serviceId: string,
 ): Promise<LayersApiResponse> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<LayersApiResponse>(
-      `/services/${serviceId}/layers`
+      `/services/${serviceId}/layers`,
     );
     if (!response.data) {
       throw new Error("No layers data found");
@@ -93,7 +92,7 @@ export const getLayersByServiceId = async (
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch layers. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch layers. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch layers");
@@ -105,7 +104,7 @@ export const getMapsByServiceId = async (serviceId: string): Promise<Map[]> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<GlobalMapsApiResponse>(
-      `/services/${serviceId}/maps`
+      `/services/${serviceId}/maps`,
     );
 
     if (!response.data) {
@@ -117,7 +116,7 @@ export const getMapsByServiceId = async (serviceId: string): Promise<Map[]> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch maps. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch maps. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch maps");
@@ -129,7 +128,7 @@ export const getAllProjections = async (): Promise<string[]> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<{ projections: string[] }>(
-      "/services/projections"
+      "/services/projections",
     );
     if (!response.data) {
       throw new Error("No projections data found");
@@ -139,7 +138,7 @@ export const getAllProjections = async (): Promise<string[]> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch projections. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch projections. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch projections");
@@ -148,23 +147,24 @@ export const getAllProjections = async (): Promise<string[]> => {
 };
 
 export const createService = async (
-  newService: ServiceCreateInput
-): Promise<ServiceCreateInput> => {
+  newService: ServiceCreateInput,
+): Promise<Service> => {
   const internalApiClient = getApiClient();
   const { servicesDefault } = useAppStateStore.getState();
 
-  if (!newService.name) {
-    newService.name = generateRandomName();
+  const payload: ServiceCreateInput = { ...newService };
+  if (!payload.name) {
+    payload.name = generateRandomName();
   }
 
   const serviceData: ServiceCreateInput = {
     ...servicesDefault,
-    ...newService,
+    ...payload,
   };
   try {
-    const response = await internalApiClient.post<ServiceCreateInput>(
+    const response = await internalApiClient.post<Service>(
       "/services",
-      serviceData
+      serviceData,
     );
     if (!response.data) {
       throw new Error("No service data found");
@@ -182,13 +182,13 @@ export const createService = async (
 
 export const updateService = async (
   serviceId: string,
-  data: Partial<ServiceUpdateInput>
+  data: Partial<ServiceUpdateInput>,
 ): Promise<ServiceUpdateInput> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.patch<ServiceUpdateInput>(
       `/services/${serviceId}`,
-      data
+      data,
     );
     if (!response.data) {
       throw new Error("No service data found");
@@ -198,7 +198,7 @@ export const updateService = async (
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to update service. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to update service. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to update service");
@@ -214,7 +214,7 @@ export const deleteService = async (serviceId: string): Promise<void> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to delete service. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to delete service. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to delete service");
@@ -272,7 +272,7 @@ const parseCapabilitiesFromXML = (xmlString: string): ServiceCapabilities => {
 };
 
 export const fetchCapabilities = async (
-  url: string
+  url: string,
 ): Promise<ServiceCapabilities> => {
   const response = await axios.get(url, { responseType: "text" });
   const xmlData: string = response.data as string;
@@ -282,7 +282,7 @@ export const fetchCapabilities = async (
 
 export const checkServiceHealth = async (
   service: Service,
-  updateCache: (id: string, status: SERVICE_STATUS) => void
+  updateCache: (id: string, status: SERVICE_STATUS) => void,
 ) => {
   try {
     const healthUrl = ["WMS", "WMTS"].includes(service.type)

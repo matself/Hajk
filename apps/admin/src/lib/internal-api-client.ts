@@ -1,10 +1,16 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 import useAppStateStore from "../store/use-app-state-store";
 
+export interface ApiValidationDetail {
+  field: string;
+  message: string;
+  code: string;
+}
+
 export type InternalApiError = AxiosError<{
   errorId: string;
   error?: string;
-  details?: string;
+  details?: string | ApiValidationDetail[];
   stderr?: string;
 }>;
 

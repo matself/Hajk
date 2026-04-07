@@ -42,13 +42,14 @@ export const useServiceById = (serviceId: string): UseQueryResult<Service> => {
   return useQuery({
     queryKey: ["services", serviceId],
     queryFn: () => getServiceById(serviceId),
+    enabled: Boolean(serviceId),
   });
 };
 
 // React Query hook to fetch layers by service id
 // This hook uses the `getLayersByServiceId` function from the services `requests` module
 export const useLayersByServiceId = (
-  serviceId: string
+  serviceId: string,
 ): UseQueryResult<LayersApiResponse> => {
   return useQuery({
     queryKey: ["services", "layers", serviceId],
@@ -59,7 +60,7 @@ export const useLayersByServiceId = (
 // React Query hook to fetch maps by service id
 // This hook uses the `getMapsByServiceId` function from the  services `requests` module
 export const useMapsByServiceId = (
-  serviceId: string
+  serviceId: string,
 ): UseQueryResult<Map[]> => {
   return useQuery({
     queryKey: ["mapsByServiceId", serviceId],
@@ -79,8 +80,11 @@ export const useCreateService = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createService,
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ["services"] });
+      if (data?.id) {
+        queryClient.setQueryData<Service>(["services", data.id], data);
+      }
     },
     onError: (error) => {
       console.error(error);
@@ -154,8 +158,8 @@ export const useServicesHealthCheck = (services: Service[]) => {
     const updateCache = (id: string, status: SERVICE_STATUS) => {
       queryClient.setQueryData(["services"], (oldServices: Service[]) =>
         oldServices?.map((service: Service) =>
-          service.id === id ? { ...service, status: status } : service
-        )
+          service.id === id ? { ...service, status: status } : service,
+        ),
       );
     };
 
