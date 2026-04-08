@@ -11,7 +11,17 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  styled,
+  List,
+  ListItem,
+  Typography,
+  Box,
+  Alert,
 } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LayersIcon from "@mui/icons-material/Layers";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import SearchablePanel from "../../components/form-components/searchable-panel";
 import {
   useServiceById,
   useUpdateService,
@@ -26,9 +36,35 @@ import {
   useServiceCapabilities,
 } from "../../api/services";
 import Grid from "@mui/material/Grid2";
+
+const StyledTabButton = styled(Button)<{ isActive: boolean }>(
+  ({ theme, isActive }) => ({
+    textTransform: "none",
+    width: "100%",
+    borderRadius: 14,
+    justifyContent: "flex-start",
+    color: theme.palette.text.primary,
+    paddingTop: theme.spacing(1.8),
+    paddingBottom: theme.spacing(1.8),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    minHeight: 48,
+    backgroundColor: isActive ? theme.palette.action.focus : "transparent",
+    transition: "all 200ms ease",
+    "&:hover": {
+      backgroundColor: isActive
+        ? theme.palette.action.selected
+        : theme.palette.action.hover,
+    },
+    "& .MuiButton-startIcon": {
+      fontSize: "1.25rem",
+      marginRight: theme.spacing(2),
+    },
+  }),
+);
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
-import FormAccordion from "../../components/form-components/form-accordion";
+
 import DialogWrapper from "../../components/flexible-dialog";
 import LayersGrid from "./layers-grid";
 import { toast } from "react-toastify";
@@ -44,6 +80,8 @@ export default function ServiceSettings() {
   const { t } = useTranslation();
   const { serviceId } = useParams<{ serviceId: string }>();
   const { data: service, isError, isLoading } = useServiceById(serviceId ?? "");
+  const [activeTab, setActiveTab] = useState<"settings" | "layers" | "search">("settings");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogUrl, setDialogUrl] = useState("");
   const [dialogServiceType, setDialogServiceType] = useState("");
@@ -61,7 +99,7 @@ export default function ServiceSettings() {
   //const { mutateAsync: deleteService, status: deleteStatus } =
   //useDeleteService();
   const { data: layersByServiceId } = useLayersByServiceId(serviceId ?? "");
-  const count = layersByServiceId?.count ?? 0;
+  const count = layersByServiceId?.layers?.length ?? 0;
   const { defaultCoordinates } = useAppStateStore.getState();
   const {
     layers: getCapLayers,
@@ -91,11 +129,14 @@ export default function ServiceSettings() {
     setValue,
     getValues,
     reset,
+    watch,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const allValues = watch();
 
   // Reset form with service data when it loads
   useEffect(() => {
@@ -241,8 +282,84 @@ export default function ServiceSettings() {
         lastSavedBy={service?.lastSavedBy}
         lastSavedDate={service?.lastSavedDate}
         isDirty={isDirty}
+        warning={
+          count > 0 ? (
+            <Alert severity="warning" sx={{ mt: 1 }}>
+              <Trans
+                i18nKey="services.settingsWarning"
+                values={{ count }}
+                components={{ strong: <strong /> }}
+              />
+            </Alert>
+          ) : undefined
+        }
       >
-        <FormContainer formRef={formRef} onSubmit={onSubmit} noValidate={false}>
+        <List
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 1,
+            p: 0,
+            mb: 2,
+          }}
+        >
+          {(
+            [
+              {
+                key: "settings",
+                label: t("common.settings"),
+                icon: <SettingsIcon />,
+              },
+              {
+                key: "layers",
+                label: t("layers.availableLayers"),
+                icon: <LayersIcon />,
+              },
+              {
+                key: "search",
+                label: t("common.searchSettings"),
+                icon: <ManageSearchIcon />,
+              },
+            ] as const
+          ).map((tab) => (
+            <ListItem
+              key={tab.key}
+              disablePadding
+              disableGutters
+              sx={{ width: "auto" }}
+            >
+              <StyledTabButton
+                isActive={activeTab === tab.key}
+                startIcon={tab.icon}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <Typography>{tab.label}</Typography>
+              </StyledTabButton>
+            </ListItem>
+          ))}
+        </List>
+      <FormContainer formRef={formRef} onSubmit={onSubmit} noValidate={false}>
+          <Box sx={{ display: activeTab === "settings" || activeTab === "search" ? "block" : "none" }}>
+          {activeTab === "search" && (
+            <TextField
+              placeholder={t("common.searchSettings") + "..."}
+              fullWidth
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              slotProps={{
+                input: { startAdornment: <ManageSearchIcon sx={{ mr: 1, color: "text.secondary" }} /> },
+              }}
+              sx={{ mb: 2 }}
+            />
+          )}
+          <SearchablePanel
+            keywords={["namn", "name", "tjänst", "tjänsttyp", "service type", "beskrivning", "description", "kommentar", "comment"]}
+            fields={["name", "type", "comment"]}
+            allValues={allValues}
+            searchTerm={activeTab === "search" ? searchQuery : ""}
+          >
           <FormPanel title={t("common.information")}>
             <Grid container>
               <Grid size={12}>
@@ -275,9 +392,16 @@ export default function ServiceSettings() {
               </Grid>
             </Grid>
           </FormPanel>
+          </SearchablePanel>
 
-          <FormAccordion title={t("common.connection")}>
-            <Grid container>
+          <SearchablePanel
+            keywords={["anslutning", "connection", "url", "servertyp", "server type", "geoserver", "mapserver", "arbetsområde", "workspace"]}
+            fields={["url", "serverType", "workspace"]}
+            allValues={allValues}
+            searchTerm={activeTab === "search" ? searchQuery : ""}
+          >
+          <FormPanel title={t("common.connection")}>
+            <Grid container rowSpacing={2}>
               <Grid size={{ xs: 12, md: 8 }}>
                 <FormControl fullWidth error={!!errors.serverType}>
                   <InputLabel id="serverType-label">
@@ -352,10 +476,17 @@ export default function ServiceSettings() {
                 </FormControl>
               </Grid>
             </Grid>
-          </FormAccordion>
+          </FormPanel>
+          </SearchablePanel>
 
-          <FormAccordion title={t("services.settings.request")}>
-            <Grid container>
+          <SearchablePanel
+            keywords={["förfrågan", "request", "getmap", "version", "bildformat", "image format", "koordinatsystem", "projektion", "projection"]}
+            fields={["getMapUrl", "version", "imageFormat", "projection.code"]}
+            allValues={allValues}
+            searchTerm={activeTab === "search" ? searchQuery : ""}
+          >
+          <FormPanel title={t("services.settings.request")}>
+            <Grid container rowSpacing={2}>
               <Grid size={{ xs: 12, md: 8 }}>
                 <TextField
                   label="GetMap-url"
@@ -443,10 +574,17 @@ export default function ServiceSettings() {
                 </FormControl>
               </Grid>
             </Grid>
-          </FormAccordion>
+          </FormPanel>
+          </SearchablePanel>
 
-          <FormAccordion title={t("common.infobutton")}>
-            <Grid container>
+          <SearchablePanel
+            keywords={["info", "infoknapp", "ägare", "owner", "beskrivning", "description", "metadata"]}
+            fields={["metadata.owner", "metadata.description"]}
+            allValues={allValues}
+            searchTerm={activeTab === "search" ? searchQuery : ""}
+          >
+          <FormPanel title={t("common.infobutton")}>
+            <Grid container rowSpacing={2}>
               <Grid size={{ xs: 12, md: 8 }}>
                 <TextField
                   label={t("services.owner")}
@@ -464,15 +602,19 @@ export default function ServiceSettings() {
                 />
               </Grid>
             </Grid>
-          </FormAccordion>
+          </FormPanel>
+          </SearchablePanel>
+          </Box>
 
-          <LayersGrid
-            layers={getCapLayers}
-            serviceId={service.id}
-            isError={layersError}
-            isLoading={layersLoading}
-            type={service?.type}
-          />
+          <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
+            <LayersGrid
+              layers={getCapLayers}
+              serviceId={service.id}
+              isError={layersError}
+              isLoading={layersLoading}
+              type={service?.type}
+            />
+          </Box>
         </FormContainer>
       </FormActionPanel>
       <DialogWrapper
