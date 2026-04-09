@@ -156,13 +156,14 @@ export const createLayer = async (
   const internalApiClient = getApiClient();
   const { layersDefault } = useAppStateStore.getState();
 
-  if (!newLayer.name) {
-    newLayer.name = generateRandomName();
+  const payload: LayerCreateInput = { ...newLayer };
+  if (!payload.name) {
+    payload.name = generateRandomName();
   }
-  const layerData: LayerCreateInput = {
-    ...newLayer,
+  const layerData = {
     ...layersDefault,
-  };
+    ...payload,
+  } as LayerCreateInput;
   try {
     const response = await internalApiClient.post<LayerCreateInput>(
       "/layers",

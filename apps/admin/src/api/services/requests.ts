@@ -11,6 +11,7 @@ import {
 import { LayersApiResponse } from "../layers";
 import { Map } from "../maps";
 import { GlobalMapsApiResponse } from "../tools";
+import { mergeWithConfigDefaults } from "../../lib/merge-with-config-defaults";
 import useAppStateStore from "../../store/use-app-state-store";
 
 /**
@@ -150,18 +151,20 @@ const CREATE_SERVICE_PROJECTION_FALLBACK = "EPSG:3006";
 
 /**
  * Builds the JSON body for `POST /services` (admin API base includes `/api/v3`).
- * Merges `servicesDefault` from config.json with user input and ensures
- * `projection.code` when missing (backend Zod requires projection).
+ * Merges `servicesDefault` from config.json with user input (`undefined` does not
+ * wipe defaults; `projection` is deep-merged). Ensures `projection.code` when still
+ * missing (backend Zod requires projection).
  */
 function buildCreateServicePayload(
   input: ServiceCreateInput,
 ): Record<string, unknown> {
   const { servicesDefault, defaultCoordinates } = useAppStateStore.getState();
 
-  const merged: Record<string, unknown> = {
-    ...servicesDefault,
-    ...input,
-  };
+  const merged = mergeWithConfigDefaults(
+    { ...(servicesDefault ?? {}) },
+    { ...input } as Record<string, unknown>,
+    { deepMergeKeys: ["projection"] },
+  );
 
   const projection = merged.projection as { code?: string } | undefined;
   const code = projection?.code?.trim();
