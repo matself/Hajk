@@ -133,11 +133,10 @@ export const useServiceCapabilities = ({
   baseUrl,
   type,
 }: UseServiceCapabilitiesProps) => {
-  const urlWithParams = `${baseUrl}?service=${type}&request=GetCapabilities`;
-
   const { data, isError, isLoading } = useQuery({
-    queryKey: ["serviceCapabilities", urlWithParams],
-    queryFn: () => fetchCapabilities(urlWithParams),
+    queryKey: ["serviceCapabilities", baseUrl, type],
+    queryFn: () => fetchCapabilities(baseUrl, type),
+    enabled: Boolean(baseUrl && type),
   });
 
   return {

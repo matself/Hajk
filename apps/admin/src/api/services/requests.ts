@@ -1,4 +1,3 @@
-import axios from "axios";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 import {
   Service,
@@ -206,11 +205,8 @@ async function enrichCreateServicePayloadWithCapabilities(
     return payload;
   }
 
-  const separator = url.includes("?") ? "&" : "?";
-  const capabilitiesUrl = `${url}${separator}service=${serviceType}&request=GetCapabilities`;
-
   try {
-    const capabilities = await fetchCapabilities(capabilitiesUrl);
+    const capabilities = await fetchCapabilities(url, serviceType);
     const currentMetadata =
       typeof payload.metadata === "object" && payload.metadata !== null
         ? (payload.metadata as Record<string, unknown>)
@@ -408,10 +404,20 @@ const parseCapabilitiesFromXML = (xmlString: string): ServiceCapabilities => {
 };
 
 export const fetchCapabilities = async (
-  url: string,
+  baseUrl: string,
+  type = "WMS",
 ): Promise<ServiceCapabilities> => {
-  const response = await axios.get(url, { responseType: "text" });
-  const xmlData: string = response.data as string;
+  const internalApiClient = getApiClient();
+  const response = await internalApiClient.get<{ capabilities: string }>(
+    "/services/capabilities",
+    {
+      params: {
+        url: baseUrl,
+        type,
+      },
+    },
+  );
+  const xmlData: string = response.data.capabilities;
   const layers = parseCapabilitiesFromXML(xmlData);
   return { ...layers };
 };

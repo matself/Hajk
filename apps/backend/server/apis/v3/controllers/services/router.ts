@@ -10,6 +10,7 @@ export default express
   .Router()
   .get("/", controller.getServices)
   .get("/projections", controller.getAllProjections)
+  .get("/capabilities", controller.getCapabilities)
   .get("/:id", controller.getServiceById)
   .get("/:id/layers", controller.getLayersByServiceId)
   .get("/:id/maps", controller.getMapsByServiceId)

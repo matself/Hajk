@@ -46,6 +46,13 @@ class ServicesController {
       .json({ count: projections.length, projections });
   });
 
+  getCapabilities = asyncHandler(async (req: Request, res: Response) => {
+    const url = String(req.query.url ?? "");
+    const type = String(req.query.type ?? "");
+    const result = await ServicesService.getCapabilities(url, type);
+    res.status(HttpStatusCodes.OK).json(result);
+  });
+
   createService = asyncHandler(async (req: Request, res: Response) => {
     const service = await ServicesService.createService(
       req.body as ServiceCreateInput,
