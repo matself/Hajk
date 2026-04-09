@@ -16,6 +16,7 @@ interface FormActionProps {
   lastSavedDate?: string;
   children?: React.ReactNode;
   isDirty?: boolean;
+  warning?: React.ReactNode;
 }
 
 const FormActionPanel: React.FC<FormActionProps> = ({
@@ -28,6 +29,7 @@ const FormActionPanel: React.FC<FormActionProps> = ({
   lastSavedDate,
   children,
   isDirty,
+  warning,
 }) => {
   const { t } = useTranslation();
   const { data: createdUser } = useUser(createdBy ?? "");
@@ -67,7 +69,7 @@ const FormActionPanel: React.FC<FormActionProps> = ({
           border: "1px solid",
           borderColor: "grey.300",
           borderRadius: 3,
-          maxWidth: "200px",
+          maxWidth: "300px",
           top: "100px",
           position: "sticky",
           width: "100%",
@@ -132,6 +134,8 @@ const FormActionPanel: React.FC<FormActionProps> = ({
             </Box>
           </Box>
         )}
+
+        {warning}
       </Box>
       <Box
         sx={{

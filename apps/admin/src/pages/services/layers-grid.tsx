@@ -5,25 +5,20 @@ import {
   TextField,
   Typography,
   useTheme,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Grid2 as Grid,
   IconButton,
   Button,
   Dialog,
   DialogContent,
+  Paper,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
 import CircularProgress from "../../components/progress/circular-progress";
-import Scrollbar from "../../components/scrollbar/scrollbar";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import { LayersGridProps, useLayersByServiceId } from "../../api/services";
-import SearchIcon from "@mui/icons-material/Search";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useCreateLayer, LayerCreateInput } from "../../api/layers";
 import { SERVICE_TYPE } from "../../api/services/types";
 
@@ -36,7 +31,8 @@ function LayersGrid({
 }: LayersGridProps) {
   const { palette } = useTheme();
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [dialogSearchTerm, setDialogSearchTerm] = useState("");
+  const [serviceLayerSearch, setServiceLayerSearch] = useState("");
   const language = useAppStateStore((state) => state.language);
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
@@ -45,34 +41,26 @@ function LayersGrid({
   const { data: layersByService, isLoading: isLoadingLayersByService } =
     useLayersByServiceId(serviceId);
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const handleClose = () => {
     setOpen(false);
     setSelectedRowObjects(undefined);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const navigate = useNavigate();
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const columns = [
+  const capabilitiesColumns = [
     { field: "layer", headerName: t("common.layerName"), flex: 1 },
     { field: "infoClick", headerName: t("common.infoclick"), flex: 0.3 },
     { field: "publications", headerName: t("common.publications"), flex: 0.5 },
   ];
 
-  const filteredLayers = useMemo(() => {
+  // Capabilities layers filtered by dialog search
+  const filteredCapabilityLayers = useMemo(() => {
     if (!layers) return [];
-
-    const searchAndSelectedFilteredLayers = layers
+    return layers
       .map((layer, index) => {
         const isSelected = selectedRowObjects?.some(
-          (selectedLayer) => selectedLayer.toLowerCase() === layer.toLowerCase()
+          (selected) => selected.toLowerCase() === layer.toLowerCase()
         );
         return {
           id: index,
@@ -85,284 +73,244 @@ function LayersGrid({
       .filter(
         (layer) =>
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          layer?.selected || // Disable lint here since ?? is messing with the data-grid search logic
-          layer.layer.toLowerCase().includes(searchTerm.toLowerCase())
+          layer?.selected ||
+          layer.layer.toLowerCase().includes(dialogSearchTerm.toLowerCase())
       );
-    return searchAndSelectedFilteredLayers;
-  }, [layers, searchTerm, selectedRowObjects]);
+  }, [layers, dialogSearchTerm, selectedRowObjects]);
 
+  // Existing service layers filtered by main search
   const filteredLayersByService = useMemo(() => {
     if (!layersByService?.layers) return [];
-    return layersByService.layers.map((layer, index) => ({
-      id: index,
-      name: layer.name,
-    }));
-  }, [layersByService?.layers]);
+    return layersByService.layers
+      .filter((layer) =>
+        layer.name.toLowerCase().includes(serviceLayerSearch.toLowerCase())
+      )
+      .map((layer) => ({ id: layer.id, name: layer.name }));
+  }, [layersByService?.layers, serviceLayerSearch]);
 
   const handleCreateLayer = async (layer: LayerCreateInput) => {
     try {
-      const payload = {
+      const response = await createLayer({
         serviceId,
         selectedLayers: layer.selectedLayers ?? [],
-      };
-
-      const response = await createLayer(payload);
+      });
       void navigate(
         type === SERVICE_TYPE.WMS
           ? "/display-layers/" + response?.id
           : type === SERVICE_TYPE.WFS
-          ? "/search-layers/" + response?.id
-          : type === SERVICE_TYPE.WFST
-          ? "/editing-layers/" + response?.id
-          : "/display-layers/" + response?.id
+            ? "/search-layers/" + response?.id
+            : type === SERVICE_TYPE.WFST
+              ? "/editing-layers/" + response?.id
+              : "/display-layers/" + response?.id
       );
     } catch (error) {
       console.error("Failed to create layer:", error);
     }
   };
 
+  const hasExistingLayers = (layersByService?.layers?.length ?? 0) > 0;
+
   return (
-    <Grid container>
-      <Grid size={{ xs: 12, md: 12 }} sx={{ pl: "0 !important" }}>
-        <Accordion
-          disableGutters
-          sx={{
-            width: "100%",
-            mb: 3,
-            backgroundColor: isDarkMode ? "#121212" : "#efefef",
-            border: 0,
-            boxShadow: "none",
-            borderRadius: "8px",
-            ml: 2,
-          }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">
-              {t("services.settings.availableLayers")}
+    <Paper
+      sx={{
+        width: "100%",
+        p: 2,
+        mb: 3,
+        backgroundColor: isDarkMode ? "#121212" : "#efefef",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 1.5,
+          mt: -0.5,
+        }}
+      >
+        <Typography variant="h6">
+          {t("services.settings.availableLayers")}
+        </Typography>
+        <Button variant="contained" onClick={() => setOpen(true)}>
+          {hasExistingLayers
+            ? t("layers.createNewLayer")
+            : t("services.publishLayer")}
+        </Button>
+      </Box>
+
+      <TextField
+        sx={{
+          mb: 3,
+          mt: 1,
+          width: "100%",
+          maxWidth: "400px",
+          backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+        }}
+        label={t("layers.searchTitle")}
+        variant="outlined"
+        value={serviceLayerSearch}
+        onChange={(e) => setServiceLayerSearch(e.target.value)}
+        slotProps={{
+          input: { endAdornment: <SearchIcon /> },
+        }}
+      />
+
+      {!hasExistingLayers && (
+        <Typography sx={{ textAlign: "center", fontSize: "large", mt: 1 }}>
+          {t("services.layerInServiceNone")}
+        </Typography>
+      )}
+
+      {hasExistingLayers && (
+          <DataGrid
+            sx={{
+              maxWidth: "100%",
+              mb: 2,
+              mt: 1,
+              height: 400,
+              backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+              "& .MuiDataGrid-row": { cursor: "pointer" },
+            }}
+            rows={filteredLayersByService}
+            columns={[{ field: "name", headerName: t("common.name"), flex: 1 }]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } },
+            }}
+            slotProps={{
+              loadingOverlay: {
+                variant: "skeleton",
+                noRowsVariant: "skeleton",
+              },
+            }}
+            hideFooterPagination={(layersByService?.layers?.length ?? 0) < 10}
+            pageSizeOptions={[10, 25, 50, 100]}
+            pagination
+            loading={isLoadingLayersByService}
+            localeText={
+              language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+            }
+            onRowClick={({ row }) => {
+              const id = row.id as string;
+              void navigate(
+                type === SERVICE_TYPE.WFS
+                  ? `/search-layers/${id}`
+                  : type === SERVICE_TYPE.WFST
+                    ? `/editing-layers/${id}`
+                    : `/display-layers/${id}`
+              );
+            }}
+            disableMultipleRowSelection
+            disableRowSelectionOnClick
+          />
+      )}
+
+      <Dialog open={open} fullWidth onClose={handleClose} maxWidth="lg">
+        <DialogContent>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              mb: 1,
+            }}
+          >
+            <TextField
+              sx={{
+                mt: 1,
+                width: "100%",
+                maxWidth: "400px",
+                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+              }}
+              label={t("layers.searchTitle")}
+              variant="outlined"
+              value={dialogSearchTerm}
+              onChange={(e) => setDialogSearchTerm(e.target.value)}
+              slotProps={{
+                input: { endAdornment: <SearchIcon /> },
+              }}
+            />
+            <IconButton onClick={handleClose} aria-label="close">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (!selectedRowObjects || selectedRowObjects.length === 0) return;
+              void handleCreateLayer({
+                serviceId,
+                selectedLayers: selectedRowObjects,
+              });
+            }}
+            disabled={!selectedRowObjects || selectedRowObjects.length === 0}
+            sx={{ display: "block", mb: 1 }}
+          >
+            {t("common.create")}
+          </Button>
+
+          {(!selectedRowObjects || selectedRowObjects.length === 0) && (
+            <Typography align="center" color={palette.error.main} sx={{ mb: 1 }}>
+              {!isLoading && !isError && t("services.atLeastOneLayerRequired")}
             </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 2 }}>
-            {layersByService?.layers?.length === 0 && (
-              <Typography
-                sx={{ textAlign: "center", fontSize: "large", mt: 1 }}
-              >
-                {t("services.layerInServiceNone")}
-              </Typography>
-            )}
+          )}
 
-            {layersByService?.layers && layersByService?.layers?.length > 0 && (
-              <>
-                <Typography sx={{ textAlign: "center", fontSize: "large" }}>
-                  {t("services.layerInService")}
-                </Typography>
-                <Scrollbar sx={{ maxHeight: "400px" }}>
-                  <DataGrid
-                    sx={{
-                      maxWidth: "100%",
-                      mb: 2,
-                      mt: 2,
-                      backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                    }}
-                    rows={filteredLayersByService}
-                    columns={[
-                      {
-                        field: "name",
-                        headerName: "Namn",
-                        flex: 1,
-                      },
-                    ]}
-                    initialState={{
-                      pagination: {
-                        paginationModel: {
-                          pageSize: 10,
-                        },
-                      },
-                    }}
-                    slotProps={{
-                      loadingOverlay: {
-                        variant: "skeleton",
-                        noRowsVariant: "skeleton",
-                      },
-                    }}
-                    hideFooterPagination={layers && layers.length < 10}
-                    pageSizeOptions={[10, 25, 50, 100]}
-                    pagination
-                    loading={isLoadingLayersByService}
-                    localeText={
-                      language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-                    }
-                    disableMultipleRowSelection
-                    disableRowSelectionOnClick
-                  />
-                </Scrollbar>
-              </>
-            )}
-            {layersByService?.layers?.length === 0 ? (
-              <Button
-                variant="contained"
-                onClick={handleClickOpen}
-                sx={{
-                  mt: 2,
-                  mb: 1,
-                  mx: "auto",
-                  display: "block",
+          {isLoading ? (
+            <CircularProgress
+              color="primary"
+              size={40}
+              typographyText={t("services.loadingLayers")}
+            />
+          ) : isError ? (
+            <Typography align="center" color={palette.error.main}>
+              {t("services.error.url")}
+            </Typography>
+          ) : filteredCapabilityLayers.length === 0 ? (
+            <Typography align="center" color={palette.error.main}>
+              {t("services.error.layers")}
+            </Typography>
+          ) : (
+              <DataGrid
+                onRowSelectionModelChange={(ids) => {
+                  const selectedRowsData = ids.map((id) =>
+                    filteredCapabilityLayers.find((row) => row.id === id)
+                  );
+                  setSelectedRowObjects(
+                    selectedRowsData.map((row) => row?.layer ?? "")
+                  );
                 }}
-              >
-                {t("services.publishLayer")}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={handleClickOpen}
-                sx={{ float: "right", mt: 1, mb: 2 }}
-              >
-                {t("layers.createNewLayer")}
-              </Button>
-            )}
-
-            <Dialog
-              open={open}
-              fullWidth
-              onClose={handleClose}
-              aria-labelledby="alert-dialog-title"
-              aria-describedby="alert-dialog-description"
-              maxWidth="lg"
-            >
-              <DialogContent>
-                <TextField
-                  sx={{
-                    mb: 2,
-                    mt: 1,
-                    width: "100%",
-                    maxWidth: "400px",
-                    backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                  }}
-                  label={t("layers.searchTitle")}
-                  variant="outlined"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  slotProps={{
-                    input: {
-                      endAdornment: <SearchIcon />,
-                    },
-                  }}
-                />
-
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  onClick={handleClose}
-                  aria-label="close"
-                  sx={{ float: "right" }}
-                >
-                  <CloseIcon />
-                </IconButton>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    if (
-                      !selectedRowObjects ||
-                      selectedRowObjects.length === 0
-                    ) {
-                      return;
-                    }
-                    void handleCreateLayer({
-                      serviceId,
-                      selectedLayers: selectedRowObjects,
-                    });
-                  }}
-                  disabled={
-                    !selectedRowObjects || selectedRowObjects.length === 0
-                  }
-                  sx={{ display: "block", mb: 1 }}
-                >
-                  {t("common.create")}
-                </Button>
-                {(!selectedRowObjects || selectedRowObjects.length === 0) && (
-                  <Typography
-                    align="center"
-                    color={palette.error.main}
-                    sx={{ mb: 1 }}
-                  >
-                    {!isLoading &&
-                      !isError &&
-                      t("services.atLeastOneLayerRequired")}
-                  </Typography>
-                )}
-                {isLoading ? (
-                  <CircularProgress
-                    color="primary"
-                    size={40}
-                    typographyText={t("services.loadingLayers")}
-                  />
-                ) : isError ? (
-                  <Typography align="center" color={palette.error.main}>
-                    {t("services.error.url")}
-                  </Typography>
-                ) : filteredLayers.length === 0 ? (
-                  <Typography align="center" color={palette.error.main}>
-                    {t("services.error.layers")}
-                  </Typography>
-                ) : (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
-                    }}
-                  >
-                    <Scrollbar sx={{ maxHeight: "400px" }}>
-                      <DataGrid
-                        onRowSelectionModelChange={(ids) => {
-                          const selectedRowsData = ids.map((id) =>
-                            filteredLayers.find((row) => row.id === id)
-                          );
-                          setSelectedRowObjects(
-                            selectedRowsData.map((row) => row?.layer ?? "")
-                          );
-                        }}
-                        sx={{
-                          maxWidth: "100%",
-                          mb: 2,
-                          mt: 1,
-                          backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                        }}
-                        rows={filteredLayers}
-                        columns={columns}
-                        initialState={{
-                          pagination: {
-                            paginationModel: {
-                              pageSize: 10,
-                            },
-                          },
-                        }}
-                        slotProps={{
-                          loadingOverlay: {
-                            variant: "skeleton",
-                            noRowsVariant: "skeleton",
-                          },
-                        }}
-                        hideFooterPagination={layers && layers.length < 10}
-                        pageSizeOptions={[10, 25, 50, 100]}
-                        pagination
-                        loading={isLoading}
-                        localeText={
-                          language === "sv"
-                            ? GRID_SWEDISH_LOCALE_TEXT
-                            : undefined
-                        }
-                        checkboxSelection
-                        disableRowSelectionOnClick
-                      />
-                    </Scrollbar>
-                  </Box>
-                )}
-              </DialogContent>
-            </Dialog>
-          </AccordionDetails>
-        </Accordion>
-      </Grid>
-    </Grid>
+                sx={{
+                  maxWidth: "100%",
+                  mb: 2,
+                  mt: 1,
+                  height: 400,
+                  backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+                }}
+                rows={filteredCapabilityLayers}
+                columns={capabilitiesColumns}
+                initialState={{
+                  pagination: { paginationModel: { pageSize: 10 } },
+                }}
+                slotProps={{
+                  loadingOverlay: {
+                    variant: "skeleton",
+                    noRowsVariant: "skeleton",
+                  },
+                }}
+                hideFooterPagination={layers && layers.length < 10}
+                pageSizeOptions={[10, 25, 50, 100]}
+                pagination
+                loading={isLoading}
+                localeText={
+                  language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+                }
+                checkboxSelection
+                disableRowSelectionOnClick
+              />
+          )}
+        </DialogContent>
+      </Dialog>
+    </Paper>
   );
 }
 
