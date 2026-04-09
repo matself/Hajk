@@ -143,7 +143,7 @@ class ServicesService {
       ) {
         throw new HajkError(
           HttpStatusCodes.CONFLICT,
-          "A service with this URL and type already exists",
+          "Could not create service: a unique data constraint was violated",
           HajkStatusCodes.SERVICE_ALREADY_EXISTS
         );
       }

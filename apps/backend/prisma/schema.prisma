@@ -170,6 +170,7 @@ model Group {
 }
 
 model Service {
+  /// Primary key; stable reference for layers and APIs. Multiple services may share the same `url`.
   id            String      @id @default(cuid())
   metadataId    String?     @unique
   projectionId  Int?
@@ -190,8 +191,6 @@ model Service {
   lastSavedDate DateTime?   @db.Timestamptz(3)
   layers        Layer[]
   metadata      Metadata?   @relation(fields: [metadataId], references: [id])
-
-  @@unique([url, type])
 }
 
 model Metadata {

@@ -15,6 +15,7 @@ import {
   Typography,
   FormHelperText,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -52,12 +53,11 @@ function getCreateServiceErrorMessage(error: unknown, t: TFunction): string {
   const status = error.response.status;
   const data = error.response.data;
 
-  if (
-    status === 409 ||
-    (typeof data?.error === "string" &&
-      data.error.includes("A service with this URL and type already exists"))
-  ) {
-    return t("services.createServiceDuplicateError");
+  if (status === 409) {
+    if (typeof data?.error === "string" && data.error.trim()) {
+      return data.error.trim();
+    }
+    return t("services.createServiceConflict");
   }
 
   if (status === 400 && Array.isArray(data?.details)) {
@@ -72,6 +72,22 @@ function getCreateServiceErrorMessage(error: unknown, t: TFunction): string {
   }
 
   return t("services.createServiceFailed");
+}
+
+/** Compare URLs for duplicate hint (scheme + host + path, no trailing slash on path). */
+function normalizeUrlForDuplicateCheck(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed);
+    let path = u.pathname;
+    if (path.length > 1 && path.endsWith("/")) {
+      path = path.slice(0, -1);
+    }
+    return `${u.protocol}//${u.hostname}${path}`.toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 interface ServicesListProps {
@@ -125,6 +141,7 @@ export default function ServicesList({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     reset,
   } = useForm<ServiceCreateInput>({
@@ -142,6 +159,16 @@ export default function ServicesList({
     if (isCreatingService) return;
     setOpen(false);
   };
+
+  const watchedUrl = watch("url");
+
+  const showUrlUsedElsewhereWarning = useMemo(() => {
+    const norm = normalizeUrlForDuplicateCheck(watchedUrl ?? "");
+    if (!norm || !services?.length) return false;
+    return services.some(
+      (s) => normalizeUrlForDuplicateCheck(s.url) === norm,
+    );
+  }, [watchedUrl, services]);
 
   const validateServiceUrl = (value: string) => {
     const trimmed = value.trim();
@@ -296,6 +323,11 @@ export default function ServicesList({
                     error={!!errors.url}
                     helperText={errors.url?.message}
                   />
+                  {showUrlUsedElsewhereWarning && !errors.url ? (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      {t("services.dialog.urlDuplicateWarning")}
+                    </Alert>
+                  ) : null}
                 </Grid>
                 <Grid size={12}>
                   <Controller
