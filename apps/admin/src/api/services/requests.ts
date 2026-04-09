@@ -148,6 +148,20 @@ export const getAllProjections = async (): Promise<string[]> => {
 
 /** Aligns with backend default when config has no projection (see services.service.ts). */
 const CREATE_SERVICE_PROJECTION_FALLBACK = "EPSG:3006";
+const CAPABILITIES_SERVICE_TYPE_BY_SERVICE_TYPE: Partial<
+  Record<string, string>
+> = {
+  WMS: "WMS",
+  WMTS: "WMS",
+  WFS: "WFS",
+  WFST: "WFS",
+  VECTOR: "WFS",
+};
+
+function getCapabilitiesType(type?: string): string | null {
+  if (!type) return null;
+  return CAPABILITIES_SERVICE_TYPE_BY_SERVICE_TYPE[type] ?? null;
+}
 
 /**
  * Builds the JSON body for `POST /services` (admin API base includes `/api/v3`).
@@ -181,6 +195,64 @@ function buildCreateServicePayload(
   return merged;
 }
 
+async function enrichCreateServicePayloadWithCapabilities(
+  payload: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const url = typeof payload.url === "string" ? payload.url.trim() : "";
+  const serviceType =
+    typeof payload.type === "string" ? getCapabilitiesType(payload.type) : null;
+
+  if (!url || !serviceType) {
+    return payload;
+  }
+
+  const separator = url.includes("?") ? "&" : "?";
+  const capabilitiesUrl = `${url}${separator}service=${serviceType}&request=GetCapabilities`;
+
+  try {
+    const capabilities = await fetchCapabilities(capabilitiesUrl);
+    const currentMetadata =
+      typeof payload.metadata === "object" && payload.metadata !== null
+        ? (payload.metadata as Record<string, unknown>)
+        : {};
+    const autoDescription = capabilities.metadata?.description?.trim();
+    const autoTitle = capabilities.metadata?.title?.trim();
+    const autoOrganization = capabilities.metadata?.organization?.trim();
+
+    if (!currentMetadata.description && autoDescription) {
+      currentMetadata.description = autoDescription;
+    } else if (!currentMetadata.description && autoTitle) {
+      // Fall back to title when abstract/description is missing in capabilities.
+      currentMetadata.description = autoTitle;
+    }
+    if (!currentMetadata.title && autoTitle) {
+      currentMetadata.title = autoTitle;
+    }
+    if (!currentMetadata.owner && autoOrganization) {
+      // Metadata model stores organization as owner.
+      currentMetadata.owner = autoOrganization;
+    }
+
+    if (Object.keys(currentMetadata).length > 0) {
+      payload.metadata = currentMetadata;
+      console.info("Service metadata auto-populated from GetCapabilities", {
+        type: payload.type,
+        hasTitle: Boolean(currentMetadata.title),
+        hasDescription: Boolean(currentMetadata.description),
+        hasOwner: Boolean(currentMetadata.owner),
+      });
+    }
+
+    return payload;
+  } catch (error) {
+    console.warn(
+      "GetCapabilities request failed during service creation",
+      error,
+    );
+    return payload;
+  }
+}
+
 /**
  * Creates a service via backend `POST /services`.
  * On 4xx/5xx, rejects with the Axios error so callers can read `response.data` (e.g. Zod details).
@@ -189,7 +261,8 @@ export const createService = async (
   newService: ServiceCreateInput,
 ): Promise<Service> => {
   const internalApiClient = getApiClient();
-  const serviceData = buildCreateServicePayload(newService);
+  let serviceData = buildCreateServicePayload(newService);
+  serviceData = await enrichCreateServicePayloadWithCapabilities(serviceData);
 
   try {
     const response = await internalApiClient.post<Service>(
@@ -294,10 +367,43 @@ const parseCapabilitiesFromXML = (xmlString: string): ServiceCapabilities => {
     }
   }
 
+  const getNodeTextByLocalNames = (
+    root: Document | Element,
+    localNames: string[],
+  ): string | undefined => {
+    const allNodes =
+      "getElementsByTagName" in root ? root.getElementsByTagName("*") : [];
+
+    for (const node of allNodes) {
+      const localName = node.localName?.toLowerCase();
+      if (!localName) continue;
+      if (localNames.some((n) => n.toLowerCase() === localName)) {
+        const text = node.textContent?.trim();
+        if (text) return text;
+      }
+    }
+
+    return undefined;
+  };
+
+  // Covers both OWS and plain WMS capability variants.
+  const title = getNodeTextByLocalNames(xmlDoc, ["Title"]);
+  const description = getNodeTextByLocalNames(xmlDoc, ["Abstract"]);
+  const organization = getNodeTextByLocalNames(xmlDoc, [
+    "ProviderName",
+    "ContactOrganization",
+    "ContactOrganizationName",
+  ]);
+
   return {
     layers: layerNames,
     workspaces: Array.from(workspaces),
     styles,
+    metadata: {
+      title,
+      description,
+      organization,
+    },
   };
 };
 

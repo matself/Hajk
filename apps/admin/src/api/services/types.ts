@@ -75,6 +75,11 @@ export interface ServiceCapabilities {
   layers: string[];
   workspaces?: string[];
   styles?: Record<string, { name: string; legendUrl?: string | undefined }[]>;
+  metadata?: {
+    title?: string;
+    description?: string;
+    organization?: string;
+  };
 }
 
 export interface LayersGridProps {
