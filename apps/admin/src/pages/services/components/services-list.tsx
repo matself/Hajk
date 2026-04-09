@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -165,9 +166,7 @@ export default function ServicesList({
   const showUrlUsedElsewhereWarning = useMemo(() => {
     const norm = normalizeUrlForDuplicateCheck(watchedUrl ?? "");
     if (!norm || !services?.length) return false;
-    return services.some(
-      (s) => normalizeUrlForDuplicateCheck(s.url) === norm,
-    );
+    return services.some((s) => normalizeUrlForDuplicateCheck(s.url) === norm);
   }, [watchedUrl, services]);
 
   const validateServiceUrl = (value: string) => {
@@ -245,8 +244,22 @@ export default function ServicesList({
                     color="primary"
                     variant="contained"
                     aria-label={t("services.dialog.addBtn")}
+                    startIcon={<AddIcon />}
+                    sx={{
+                      minHeight: 44,
+                      px: 2,
+                      fontSize: "0.94rem",
+                      fontWeight: 600,
+                      "& .MuiButton-startIcon": {
+                        display: "flex",
+                        alignItems: "center",
+                        "& .MuiSvgIcon-root": {
+                          fontSize: 21,
+                        },
+                      },
+                    }}
                   >
-                    {t("services.dialog.addBtn")}
+                    <Box component="span">{t("services.dialog.addBtn")}</Box>
                   </Button>
                 </>
               ) : undefined

@@ -74,6 +74,8 @@ const Page = (props: Props) => {
 
       {props.children}
 
+      <Grid container spacing={2} sx={{ mb: "1.8rem", mt: "0.625rem" }}></Grid>
+
       <Box
         sx={{
           position: "fixed",
