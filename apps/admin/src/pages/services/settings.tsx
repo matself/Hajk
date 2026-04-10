@@ -80,7 +80,9 @@ export default function ServiceSettings() {
   const { t } = useTranslation();
   const { serviceId } = useParams<{ serviceId: string }>();
   const { data: service, isError, isLoading } = useServiceById(serviceId ?? "");
-  const [activeTab, setActiveTab] = useState<"settings" | "layers" | "search">("settings");
+  const [activeTab, setActiveTab] = useState<"settings" | "layers" | "search">(
+    "settings",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogUrl, setDialogUrl] = useState("");
@@ -391,271 +393,336 @@ export default function ServiceSettings() {
             </ListItem>
           ))}
         </List>
-      <FormContainer formRef={formRef} onSubmit={onSubmit} noValidate={false}>
-          <Box sx={{ display: activeTab === "settings" || activeTab === "search" ? "block" : "none" }}>
-          {activeTab === "search" && (
-            <TextField
-              placeholder={t("common.searchSettings") + "..."}
-              fullWidth
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              slotProps={{
-                input: { startAdornment: <ManageSearchIcon sx={{ mr: 1, color: "text.secondary" }} /> },
-              }}
-              sx={{ mb: 2 }}
-            />
-          )}
-          <SearchablePanel
-            keywords={["namn", "name", "tjänst", "tjänsttyp", "service type", "beskrivning", "description", "kommentar", "comment"]}
-            fields={["name", "type", "comment"]}
-            allValues={allValues}
-            searchTerm={activeTab === "search" ? searchQuery : ""}
+        <FormContainer formRef={formRef} onSubmit={onSubmit} noValidate={false}>
+          <Box
+            sx={{
+              display:
+                activeTab === "settings" || activeTab === "search"
+                  ? "block"
+                  : "none",
+            }}
           >
-          <FormPanel title={t("common.information")}>
-            <Grid container>
-              <Grid size={12}>
-                <TextField
-                  label={t("common.name")}
-                  fullWidth
-                  {...register("name", { required: `${t("common.required")}` })}
-                  error={!!errors.name}
-                  helperText={
-                    (errors.name as { message?: string } | undefined)?.message
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
-                <TextField
-                  label={t("common.serviceType")}
-                  fullWidth
-                  slotProps={{ input: { readOnly: true } }}
-                  {...register("type")}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
-                <TextField
-                  label={t("services.description")}
-                  fullWidth
-                  multiline
-                  rows={3}
-                  {...register("comment")}
-                />
-              </Grid>
-            </Grid>
-          </FormPanel>
-          </SearchablePanel>
+            {activeTab === "search" && (
+              <TextField
+                placeholder={t("common.searchSettings") + "..."}
+                fullWidth
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <ManageSearchIcon
+                        sx={{ mr: 1, color: "text.secondary" }}
+                      />
+                    ),
+                  },
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+            <SearchablePanel
+              keywords={[
+                "namn",
+                "name",
+                "tjänst",
+                "tjänsttyp",
+                "service type",
+                "beskrivning",
+                "description",
+                "kommentar",
+                "comment",
+              ]}
+              fields={["name", "type", "comment"]}
+              allValues={allValues}
+              searchTerm={activeTab === "search" ? searchQuery : ""}
+            >
+              <FormPanel title={t("common.information")}>
+                <Grid container>
+                  <Grid size={12}>
+                    <TextField
+                      label={t("common.name")}
+                      fullWidth
+                      {...register("name", {
+                        required: `${t("common.required")}`,
+                      })}
+                      error={!!errors.name}
+                      helperText={
+                        (errors.name as { message?: string } | undefined)
+                          ?.message
+                      }
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 10 }}>
+                    <TextField
+                      label={t("common.serviceType")}
+                      fullWidth
+                      slotProps={{ input: { readOnly: true } }}
+                      {...register("type")}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 10 }}>
+                    <TextField
+                      label={t("services.description")}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      {...register("comment")}
+                    />
+                  </Grid>
+                </Grid>
+              </FormPanel>
+            </SearchablePanel>
 
-          <SearchablePanel
-            keywords={["anslutning", "connection", "url", "servertyp", "server type", "geoserver", "mapserver", "arbetsområde", "workspace"]}
-            fields={["url", "serverType", "workspace"]}
-            allValues={allValues}
-            searchTerm={activeTab === "search" ? searchQuery : ""}
-          >
-          <FormPanel title={t("common.connection")}>
-            <Grid container rowSpacing={2}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <FormControl fullWidth error={!!errors.serverType}>
-                  <InputLabel id="serverType-label">
-                    {t("common.serverType")}
-                  </InputLabel>
-                  <Controller
-                    name="serverType"
-                    control={control}
-                    rules={{ required: `${t("common.required")}` }}
-                    render={({ field }) => (
-                      <Select
-                        labelId="serverType-label"
-                        label={t("common.serverType")}
-                        {...field}
-                        value={field.value || ""}
-                      >
-                        {serverTypes.map((s) => (
-                          <MenuItem key={s.value} value={s.value}>
-                            {s.title}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <TextField
-                  label="Url"
-                  fullWidth
-                  disabled
-                  {...register("url")}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <Button
-                          sx={{ color: palette.primary.main, fontWeight: 600 }}
-                          size="small"
-                          onClick={handleDialogOpen}
-                        >
-                          {t("services.url.btnLabel")}
-                        </Button>
-                      ),
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <FormControl fullWidth>
-                  <InputLabel id="workspace-label">
-                    {t("services.workspace")}
-                  </InputLabel>
-                  <Controller
-                    name="workspace"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        labelId="workspace-label"
-                        label={t("services.workspace")}
-                        {...field}
-                        value={field.value || ""}
-                      >
-                        <MenuItem value="All">{t("common.all")}</MenuItem>
-                        {(getCapWorkspaces ?? []).map((w) => (
-                          <MenuItem key={w} value={w}>
-                            {w}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-            </Grid>
-          </FormPanel>
-          </SearchablePanel>
+            <SearchablePanel
+              keywords={[
+                "anslutning",
+                "connection",
+                "url",
+                "servertyp",
+                "server type",
+                "geoserver",
+                "mapserver",
+                "arbetsområde",
+                "workspace",
+              ]}
+              fields={["url", "serverType", "workspace"]}
+              allValues={allValues}
+              searchTerm={activeTab === "search" ? searchQuery : ""}
+            >
+              <FormPanel title={t("common.connection")}>
+                <Grid container rowSpacing={2}>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <FormControl fullWidth error={!!errors.serverType}>
+                      <InputLabel id="serverType-label">
+                        {t("common.serverType")}
+                      </InputLabel>
+                      <Controller
+                        name="serverType"
+                        control={control}
+                        rules={{ required: `${t("common.required")}` }}
+                        render={({ field }) => (
+                          <Select
+                            labelId="serverType-label"
+                            label={t("common.serverType")}
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {serverTypes.map((s) => (
+                              <MenuItem key={s.value} value={s.value}>
+                                {s.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      label="Url"
+                      fullWidth
+                      disabled
+                      {...register("url")}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <Button
+                              sx={{
+                                color: palette.primary.main,
+                                fontWeight: 600,
+                              }}
+                              size="small"
+                              onClick={handleDialogOpen}
+                            >
+                              {t("services.url.btnLabel")}
+                            </Button>
+                          ),
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="workspace-label">
+                        {t("services.workspace")}
+                      </InputLabel>
+                      <Controller
+                        name="workspace"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            labelId="workspace-label"
+                            label={t("services.workspace")}
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            <MenuItem value="All">{t("common.all")}</MenuItem>
+                            {(getCapWorkspaces ?? []).map((w) => (
+                              <MenuItem key={w} value={w}>
+                                {w}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </FormPanel>
+            </SearchablePanel>
 
-          <SearchablePanel
-            keywords={["förfrågan", "request", "getmap", "version", "bildformat", "image format", "koordinatsystem", "projektion", "projection"]}
-            fields={["getMapUrl", "version", "imageFormat", "projection.code"]}
-            allValues={allValues}
-            searchTerm={activeTab === "search" ? searchQuery : ""}
-          >
-          <FormPanel title={t("services.settings.request")}>
-            <Grid container rowSpacing={2}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <TextField
-                  label="GetMap-url"
-                  fullWidth
-                  {...register("getMapUrl")}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <FormControl fullWidth error={!!errors.version}>
-                  <InputLabel id="version-label">Version</InputLabel>
-                  <Controller
-                    name="version"
-                    control={control}
-                    rules={{ required: `${t("common.required")}` }}
-                    render={({ field }) => (
-                      <Select
-                        labelId="version-label"
-                        label="Version"
-                        {...field}
-                        value={field.value || ""}
-                      >
-                        {versions.map((v) => (
-                          <MenuItem key={v.value} value={v.value}>
-                            {v.title}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <FormControl fullWidth>
-                  <InputLabel id="imageFormat-label">
-                    {t("services.imageFormats")}
-                  </InputLabel>
-                  <Controller
-                    name="imageFormat"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        labelId="imageFormat-label"
-                        label={t("services.imageFormats")}
-                        {...field}
-                        value={field.value || ""}
-                      >
-                        {imageFormats.map((f) => (
-                          <MenuItem key={f.value} value={f.value}>
-                            {f.title}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <FormControl fullWidth>
-                  <InputLabel id="projection-label">
-                    {t("services.coordinateSystem")}
-                  </InputLabel>
-                  <Controller
-                    name="projection.code"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        labelId="projection-label"
-                        label={t("services.coordinateSystem")}
-                        {...field}
-                        value={field.value || ""}
-                      >
-                        {defaultCoordinates.map((value) => {
-                          const opt = epsgProjectionsMap?.find(
-                            (p) => p.value === value,
-                          );
-                          return (
-                            <MenuItem key={value} value={opt?.value ?? value}>
-                              {opt?.title ?? value}
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-            </Grid>
-          </FormPanel>
-          </SearchablePanel>
+            <SearchablePanel
+              keywords={[
+                "förfrågan",
+                "request",
+                "getmap",
+                "version",
+                "bildformat",
+                "image format",
+                "koordinatsystem",
+                "projektion",
+                "projection",
+              ]}
+              fields={[
+                "getMapUrl",
+                "version",
+                "imageFormat",
+                "projection.code",
+              ]}
+              allValues={allValues}
+              searchTerm={activeTab === "search" ? searchQuery : ""}
+            >
+              <FormPanel title={t("services.settings.request")}>
+                <Grid container rowSpacing={2}>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      label="GetMap-url"
+                      fullWidth
+                      {...register("getMapUrl")}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <FormControl fullWidth error={!!errors.version}>
+                      <InputLabel id="version-label">Version</InputLabel>
+                      <Controller
+                        name="version"
+                        control={control}
+                        rules={{ required: `${t("common.required")}` }}
+                        render={({ field }) => (
+                          <Select
+                            labelId="version-label"
+                            label="Version"
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {versions.map((v) => (
+                              <MenuItem key={v.value} value={v.value}>
+                                {v.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="imageFormat-label">
+                        {t("services.imageFormats")}
+                      </InputLabel>
+                      <Controller
+                        name="imageFormat"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            labelId="imageFormat-label"
+                            label={t("services.imageFormats")}
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {imageFormats.map((f) => (
+                              <MenuItem key={f.value} value={f.value}>
+                                {f.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="projection-label">
+                        {t("services.coordinateSystem")}
+                      </InputLabel>
+                      <Controller
+                        name="projection.code"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            labelId="projection-label"
+                            label={t("services.coordinateSystem")}
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {defaultCoordinates.map((value) => {
+                              const opt = epsgProjectionsMap?.find(
+                                (p) => p.value === value,
+                              );
+                              return (
+                                <MenuItem
+                                  key={value}
+                                  value={opt?.value ?? value}
+                                >
+                                  {opt?.title ?? value}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </FormPanel>
+            </SearchablePanel>
 
-          <SearchablePanel
-            keywords={["info", "infoknapp", "ägare", "owner", "beskrivning", "description", "metadata"]}
-            fields={["metadata.owner", "metadata.description"]}
-            allValues={allValues}
-            searchTerm={activeTab === "search" ? searchQuery : ""}
-          >
-          <FormPanel title={t("common.infobutton")}>
-            <Grid container rowSpacing={2}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <TextField
-                  label={t("services.owner")}
-                  fullWidth
-                  {...register("metadata.owner")}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <TextField
-                  label={t("services.layerDescription")}
-                  fullWidth
-                  multiline
-                  rows={3}
-                  {...register("metadata.description")}
-                />
-              </Grid>
-            </Grid>
-          </FormPanel>
-          </SearchablePanel>
+            <SearchablePanel
+              keywords={[
+                "info",
+                "infoknapp",
+                "ägare",
+                "owner",
+                "beskrivning",
+                "description",
+                "metadata",
+              ]}
+              fields={["metadata.owner", "metadata.description"]}
+              allValues={allValues}
+              searchTerm={activeTab === "search" ? searchQuery : ""}
+            >
+              <FormPanel title={t("common.infobutton")}>
+                <Grid container rowSpacing={2}>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      label={t("services.owner")}
+                      fullWidth
+                      {...register("metadata.owner")}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      label={t("services.layerDescription")}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      {...register("metadata.description")}
+                    />
+                  </Grid>
+                </Grid>
+              </FormPanel>
+            </SearchablePanel>
           </Box>
 
           <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
