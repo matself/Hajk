@@ -1,7 +1,7 @@
 export interface Service {
   id: string;
-  metadataId: string;
-  projectionId: number;
+  metadataId?: string | null;
+  projectionId?: number | null;
   name: string;
   locked: boolean;
   url: string;
@@ -9,17 +9,21 @@ export interface Service {
   imageFormat: string;
   type: SERVICE_TYPE;
   serverType: string;
-  workspace: string;
-  getMapUrl: string;
-  comment: string;
+  workspace?: string | null;
+  getMapUrl?: string | null;
+  comment?: string | null;
   createdBy?: string;
   createdDate?: string;
   lastSavedBy?: string;
   lastSavedDate?: string;
   metadata?: {
     id: string;
+    title?: string;
     owner?: string;
     description?: string;
+    url?: string;
+    urlTitle?: string;
+    attribution?: string;
   } | null;
   projection?: {
     code: string;
@@ -49,6 +53,23 @@ export interface ServiceCreateInput {
   name: string;
   type: string;
   serverType?: string;
+  version?: string;
+  imageFormat?: string;
+  workspace?: string;
+  getMapUrl?: string;
+  comment?: string | null;
+  locked?: boolean;
+  projection?: {
+    code: string;
+  };
+  metadata?: {
+    title?: string;
+    description?: string;
+    owner?: string;
+    url?: string;
+    urlTitle?: string;
+    attribution?: string;
+  };
 }
 
 export interface ServiceUpdateInput {
@@ -66,8 +87,12 @@ export interface ServiceUpdateInput {
     code?: string;
   };
   metadata?: {
+    title?: string;
     description?: string;
     owner?: string;
+    url?: string;
+    urlTitle?: string;
+    attribution?: string;
   };
 }
 

@@ -1,8 +1,12 @@
 import { z } from "zod";
 
 const MetadataSchema = z.object({
+  title: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   owner: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
+  urlTitle: z.string().nullable().optional(),
+  attribution: z.string().nullable().optional(),
 });
 
 const ProjectionSchema = z.object({
