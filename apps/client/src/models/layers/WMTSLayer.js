@@ -45,7 +45,7 @@ class WMTSLayer {
 
     const sourceConfig = {
       attributions: config.attribution,
-      format: "image/png",
+      format: config.imageFormat || "image/png",
       wrapX: false,
       url: config.url,
       crossOrigin: config.crossOrigin,
