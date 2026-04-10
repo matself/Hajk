@@ -23,12 +23,13 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import {
   useServices,
   Service,
   useCreateService,
+  useLayersByServiceId,
   ServiceCreateInput,
   SERVICE_TYPE,
   SERVICE_STATUS,
@@ -43,6 +44,7 @@ import ServiceStatusIndicator from "../components/service-status-indicator";
 import ServiceTypeBadge from "../components/service-type-badge";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { ApiValidationDetail } from "../../../lib/internal-api-client";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 interface ServiceCreateErrorBody {
   errorId?: string;
@@ -121,7 +123,16 @@ export default function ServicesList({
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     null,
   );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const actionsMenuOpen = Boolean(anchorEl);
+  const selectedService = useMemo(
+    () => services?.find((service) => service.id === selectedServiceId),
+    [services, selectedServiceId],
+  );
+  const { data: layersByServiceId } = useLayersByServiceId(
+    selectedServiceId ?? "",
+  );
+  const selectedServiceLayerCount = layersByServiceId?.layers?.length ?? 0;
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -137,7 +148,20 @@ export default function ServicesList({
 
   const handleCloseActionsMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
     setSelectedServiceId(null);
+  };
+
+  const handleConfirmDelete = () => {
+    handleCloseDeleteDialog();
   };
 
   const filteredServices = useMemo<Service[]>(() => {
@@ -530,12 +554,52 @@ export default function ServicesList({
                 onClick={(event) => event.stopPropagation()}
               >
                 <MuiMenuItem
-                  onClick={handleCloseActionsMenu}
+                  onClick={handleOpenDeleteDialog}
                   data-service-id={selectedServiceId ?? ""}
                 >
                   {t("common.delete")}
                 </MuiMenuItem>
               </Menu>
+              <DialogWrapper
+                fullWidth
+                open={isDeleteDialogOpen}
+                title={t("services.deleteServiceConfirmTitle")}
+                onClose={handleCloseDeleteDialog}
+                actions={
+                  <>
+                    <Button
+                      variant="text"
+                      onClick={handleCloseDeleteDialog}
+                      color="primary"
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleConfirmDelete}
+                      startIcon={<DeleteOutlineIcon />}
+                    >
+                      {t("common.delete")}
+                    </Button>
+                  </>
+                }
+              >
+                <Typography>
+                  {t("services.deleteServiceConfirmMessage", {
+                    name: selectedService?.name ?? "",
+                  })}
+                </Typography>
+                {selectedServiceLayerCount > 0 ? (
+                  <Alert severity="warning" sx={{ mt: 2 }}>
+                    <Trans
+                      i18nKey="services.deleteServiceAffectedLayers"
+                      values={{ count: selectedServiceLayerCount }}
+                      components={{ strong: <strong /> }}
+                    />
+                  </Alert>
+                ) : null}
+              </DialogWrapper>
             </Grid>
           </Page>
         </>

@@ -54,6 +54,7 @@ export const useLayersByServiceId = (
   return useQuery({
     queryKey: ["services", "layers", serviceId],
     queryFn: () => getLayersByServiceId(serviceId),
+    enabled: Boolean(serviceId),
   });
 };
 

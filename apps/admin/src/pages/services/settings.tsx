@@ -87,6 +87,7 @@ export default function ServiceSettings() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogUrl, setDialogUrl] = useState("");
   const [dialogServiceType, setDialogServiceType] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { data: projections } = useProjections();
   const epsgProjections =
@@ -191,6 +192,15 @@ export default function ServiceSettings() {
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    handleCloseDeleteDialog();
   };
 
   const handleUpdateService = async (serviceData: ServiceUpdateInput) => {
@@ -787,6 +797,46 @@ export default function ServiceSettings() {
             ))}
           </Select>
         </FormControl>
+      </DialogWrapper>
+      <DialogWrapper
+        fullWidth
+        open={isDeleteDialogOpen}
+        title={t("services.deleteServiceConfirmTitle")}
+        onClose={handleCloseDeleteDialog}
+        actions={
+          <>
+            <Button
+              variant="text"
+              onClick={handleCloseDeleteDialog}
+              color="primary"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              color="error"
+              variant="contained"
+              startIcon={<DeleteOutlineIcon />}
+            >
+              {t("common.delete")}
+            </Button>
+          </>
+        }
+      >
+        <Typography>
+          {t("services.deleteServiceConfirmMessage", {
+            name: service?.name ?? "",
+          })}
+        </Typography>
+        {count > 0 ? (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Trans
+              i18nKey="services.deleteServiceAffectedLayers"
+              values={{ count }}
+              components={{ strong: <strong /> }}
+            />
+          </Alert>
+        ) : null}
       </DialogWrapper>
     </Page>
   );
