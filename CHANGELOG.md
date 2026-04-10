@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: LayerSwitcher's search box now has the same styling as the app's regular search box. See issue [#1645](https://github.com/hajkmap/Hajk/issues/1645) and PR [#1768](https://github.com/hajkmap/Hajk/pull/1768).
 - Backend: The proxy mechanism now properly sets X-Forwarded headers, see ([commit](https://github.com/hajkmap/Hajk/commit/c38339b5a0675911d2625c4b29b107c9ea802ac4)).
 - Make the CQL filter in Client more interactive and user-friendly, see issue [#1731](https://github.com/hajkmap/Hajk/issues/1731).
+- Client: Display the filename of imported draw objects along with the time, see issue [#1782](https://github.com/hajkmap/Hajk/issues/1782).
 
 ### Fixed
 

@@ -36,8 +36,9 @@ const UploadDialog = (props) => {
           const reader = new FileReader();
           reader.onload = (e) => {
             try {
-              const fileType = file.name.endsWith(".kml") ? "kml" : "gpx";
-              props.handleUploadedFile(e.target.result, fileType);
+              const fileName = file.name;
+              const fileType = fileName.endsWith(".kml") ? "kml" : "gpx";
+              props.handleUploadedFile(e.target.result, fileName, fileType);
             } catch (error) {
               console.error("Failed to import file:", error);
             }
