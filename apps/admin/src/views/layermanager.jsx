@@ -365,6 +365,7 @@ class Manager extends Component {
           layer: layer.layer,
           matrixSet: layer.matrixSet,
           style: layer.style,
+          imageFormat: layer.imageFormat,
           projection: layer.projection,
           origin: layer.origin,
           resolutions: layer.resolutions,
