@@ -1,4 +1,3 @@
-import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import WMTS from "ol/source/WMTS";
 import WMTSTileGrid from "ol/tilegrid/WMTS";
@@ -39,14 +38,12 @@ class WMTSLayer {
       ...wmtsLayerProperties,
       ...config,
     };
-    this.proxyUrl = proxyUrl;
-    this.map = map;
-    this.resolutions = this.resolutions = config.resolutions.map((r) =>
-      Number(r)
-    );
-    this.projection = config.projection;
 
-    let source = {
+    this.proxyUrl = proxyUrl;
+
+    const resolutions = config.resolutions.map((r) => Number(r));
+
+    const sourceConfig = {
       attributions: config.attribution,
       format: "image/png",
       wrapX: false,
@@ -56,16 +53,16 @@ class WMTSLayer {
       layer: config.layer,
       matrixSet: config.matrixSet,
       style: config.style,
-      projection: this.projection,
+      projection: config.projection,
       tileGrid: new WMTSTileGrid({
         origin: config.origin.map((o) => Number(o)),
-        resolutions: this.resolutions,
+        resolutions,
         matrixIds: config.matrixIds,
         extent: config.extent,
       }),
     };
 
-    overrideLayerSourceParams(source);
+    overrideLayerSourceParams(sourceConfig);
 
     const minZoom = config?.minZoom >= 0 ? config.minZoom : undefined;
     const maxZoom = config?.maxZoom >= 0 ? config.maxZoom : undefined;
@@ -78,26 +75,14 @@ class WMTSLayer {
       opacity: config.opacity,
       zIndex: config.zIndex,
       layerType: config.layerType,
-      source: new WMTS(source),
+      rotateMap: config.rotateMap,
+      source: new WMTS(sourceConfig),
       layerInfo: new LayerInfo(config),
-      minZoom: minZoom,
-      maxZoom: maxZoom,
+      minZoom,
+      maxZoom,
     });
-    this.updateMapViewResolutions();
-    this.type = "wmts";
-  }
 
-  updateMapViewResolutions() {
-    var view = this.map.getView();
-    this.map.setView(
-      new View({
-        zoom: view.getZoom(),
-        center: view.getCenter(),
-        resolutions: this.resolutions,
-        projection: this.projection,
-        constrainResolution: view.getConstrainResolution(),
-      })
-    );
+    this.type = "wmts";
   }
 }
 
