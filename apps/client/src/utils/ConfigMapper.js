@@ -254,7 +254,7 @@ export default class ConfigMapper {
         zIndex: args.drawOrder || 0,
         maxZoom: args.maxZoom,
         minZoom: args.minZoom,
-        format: "image/png",
+        imageFormat: args.imageFormat || args.format || "image/png",
         crossOrigin: properties.mapConfig.map.crossOrigin || "anonymous",
         wrapX: false,
         url: args.url,
