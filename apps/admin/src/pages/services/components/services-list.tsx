@@ -16,8 +16,12 @@ import {
   FormHelperText,
   CircularProgress,
   Alert,
+  IconButton,
+  Menu,
+  MenuItem as MuiMenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -113,8 +117,27 @@ export default function ServicesList({
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
+    null,
+  );
+  const actionsMenuOpen = Boolean(anchorEl);
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    serviceId: string,
+  ) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedServiceId(serviceId);
+  };
+
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
+    setSelectedServiceId(null);
   };
 
   const filteredServices = useMemo<Service[]>(() => {
@@ -472,6 +495,26 @@ export default function ServicesList({
                       return <ServiceStatusIndicator status={status} />;
                     },
                   },
+                  {
+                    field: "actions",
+                    headerName: "",
+                    width: 60,
+                    align: "center",
+                    sortable: false,
+                    filterable: false,
+                    disableColumnMenu: true,
+                    renderCell: (params: GridRenderCellParams<Service>) => (
+                      <IconButton
+                        aria-label={t("common.actions")}
+                        size="small"
+                        onClick={(event) =>
+                          handleOpenActionsMenu(event, params.row.id)
+                        }
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  },
                 ]}
                 onRowClick={({ row }) => {
                   const id: string = row.id;
@@ -480,6 +523,19 @@ export default function ServicesList({
                   }
                 }}
               />
+              <Menu
+                anchorEl={anchorEl}
+                open={actionsMenuOpen}
+                onClose={handleCloseActionsMenu}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <MuiMenuItem
+                  onClick={handleCloseActionsMenu}
+                  data-service-id={selectedServiceId ?? ""}
+                >
+                  {t("common.delete")}
+                </MuiMenuItem>
+              </Menu>
             </Grid>
           </Page>
         </>

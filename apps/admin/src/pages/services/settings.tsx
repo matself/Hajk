@@ -21,6 +21,7 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 import LayersIcon from "@mui/icons-material/Layers";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SearchablePanel from "../../components/form-components/searchable-panel";
 import {
   useServiceById,
@@ -185,6 +186,11 @@ export default function ServiceSettings() {
     }
   };
 
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const handleUpdateService = async (serviceData: ServiceUpdateInput) => {
     try {
       const payload = {
@@ -313,15 +319,31 @@ export default function ServiceSettings() {
         lastSavedDate={service?.lastSavedDate}
         isDirty={isDirty}
         warning={
-          count > 0 ? (
-            <Alert severity="warning" sx={{ mt: 1 }}>
-              <Trans
-                i18nKey="services.settingsWarning"
-                values={{ count }}
-                components={{ strong: <strong /> }}
-              />
-            </Alert>
-          ) : undefined
+          <Box sx={{ mt: 1 }}>
+            {count > 0 ? (
+              <Alert severity="warning">
+                <Trans
+                  i18nKey="services.settingsWarning"
+                  values={{ count }}
+                  components={{ strong: <strong /> }}
+                />
+              </Alert>
+            ) : null}
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteOutlineIcon />}
+              onClick={handleDeleteClick}
+              sx={{
+                mt: count > 0 ? 2 : 0,
+                width: "100%",
+                justifyContent: "center",
+                borderStyle: "dashed",
+              }}
+            >
+              {t("common.delete")}
+            </Button>
+          </Box>
         }
       >
         <List

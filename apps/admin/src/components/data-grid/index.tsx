@@ -84,6 +84,9 @@ export default function StyledDataGrid<
     "& .MuiDataGrid-cell:focus": {
       outline: "none",
     },
+    "& .MuiDataGrid-cell:focus-within": {
+      outline: "none",
+    },
     "& .MuiDataGrid-cell.Mui-selected": {
       backgroundColor: "inherit",
     },
