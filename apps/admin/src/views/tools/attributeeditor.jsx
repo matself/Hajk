@@ -29,7 +29,7 @@ const defaultState = {
   activeServices: [],
   editableLayers: {},
   tree: "",
-  maxzoom: 0,
+  zoomLevel: 6,
   winwidth: "1082",
   winheight: "600",
 };
@@ -62,7 +62,7 @@ class ToolOptions extends Component {
           winwidth: tool.options.winwidth,
           winheight: tool.options.winheight,
           instruction: tool.options.instruction,
-          maxzoom: tool.options.maxzoom,
+          zoomLevel: tool.options.zoomLevel ?? 6,
           activeServices: tool.options.activeServices || [],
           visibleAtStart: tool.options.visibleAtStart,
           visibleForGroups:
@@ -70,7 +70,7 @@ class ToolOptions extends Component {
         },
         () => {
           this.loadLayers();
-        }
+        },
       );
     } else {
       this.setState({
@@ -155,7 +155,7 @@ class ToolOptions extends Component {
             />
           ),
         });
-      }
+      },
     );
   }
 
@@ -204,12 +204,12 @@ class ToolOptions extends Component {
         winwidth: this.state.winwidth,
         winheight: this.state.winheight,
         instruction: this.state.instruction,
-        maxzoom: this.state.maxzoom,
+        zoomLevel: this.state.zoomLevel,
         activeServices: this.state.activeServices,
         visibleAtStart: this.state.visibleAtStart,
         visibleForGroups: this.state.visibleForGroups.map(
           Function.prototype.call,
-          String.prototype.trim
+          String.prototype.trim,
         ),
       },
     };
@@ -224,7 +224,7 @@ class ToolOptions extends Component {
             alert: true,
             alertMessage: "Uppdateringen lyckades",
           });
-        }
+        },
       );
     }
 
@@ -310,7 +310,7 @@ class ToolOptions extends Component {
         });
       } else {
         let newArray = this.state.activeServices.filter(
-          (o) => o.id !== layer.id.toString()
+          (o) => o.id !== layer.id.toString(),
         );
 
         this.setState({
@@ -320,10 +320,10 @@ class ToolOptions extends Component {
     }
     if (e.target.type.toLowerCase() === "text") {
       let obj = this.state.activeServices.find(
-        (o) => o.id === layer.id.toString()
+        (o) => o.id === layer.id.toString(),
       );
       let newArray = this.state.activeServices.filter(
-        (o) => o.id !== layer.id.toString()
+        (o) => o.id !== layer.id.toString(),
       );
 
       if (typeof obj !== "undefined") {
@@ -480,24 +480,24 @@ class ToolOptions extends Component {
             <label htmlFor="visibleAtStart">Synlig vid start</label>
           </div>
           <div>
-            <label htmlFor="maxzoom">
-              Max zoom{" "}
+            <label htmlFor="zoomLevel">
+              Zoomnivå för Zoomknappen{" "}
               <i
                 className="fa fa-question-circle"
                 data-toggle="tooltip"
-                title="Zoomnivå vid vilken verktyget aktiveras. 0 = ingen begränsning."
+                title="Zoomningsnivå för funktionen Zooma till valt objekt i kartan. Zoomningsnivån måste ligga mellan kartans Min-zoomnivå och Max-zoomnivå."
               />
             </label>
             <input
-              id="maxzoom"
-              name="maxzoom"
+              id="zoomLevel"
+              name="zoomLevel"
               type="number"
               min="0"
               className="control-fixed-width"
               onChange={(e) => {
                 this.handleInputChange(e);
               }}
-              value={this.state.maxzoom}
+              value={this.state.zoomLevel}
             />
           </div>
           <div>

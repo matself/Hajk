@@ -3,7 +3,7 @@ import { useTheme as useMuiTheme } from "@mui/material/styles";
 import BaseWindowPlugin from "../BaseWindowPlugin";
 import AttributeEditorView from "./AttributeEditorView";
 import Observer from "react-event-observer";
-import BugReportIcon from "@mui/icons-material/BugReport";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import AttributeEditorModel, { Action } from "./AttributeEditorModel";
 import { editBus } from "../../buses/editBus";
 import { createOgcApi } from "./api/ogc";
@@ -1599,7 +1599,7 @@ function AttributeEditor(props) {
         const view = props.map.getView();
         const windowWidth = props.options?.winwidth || 800;
         const rightPadding = Math.floor(windowWidth * 0.5) + 160;
-        const maxZoom = Number(props.options?.maxzoom) || 6;
+        const maxZoom = Number(props.options?.zoomLevel) || 6;
 
         view.fit(extent, {
           padding: [50, rightPadding, 50, 50],
@@ -1614,7 +1614,7 @@ function AttributeEditor(props) {
     vectorLayerRef,
     featureIndexRef,
     props.options?.winwidth,
-    props.options?.maxzoom,
+    props.options?.zoomLevel,
   ]);
 
   const updateCustomProp = React.useCallback((prop, value) => {
@@ -1629,13 +1629,13 @@ function AttributeEditor(props) {
         {...props}
         type="AttributeEditor"
         custom={{
-          icon: <BugReportIcon />,
+          icon: <EditNoteIcon />,
           title: pluginSettings.title,
           color: pluginSettings.color,
           description: "Redigera attribut för WFS-lager",
           customPanelHeaderButtons: [
             {
-              icon: <BugReportIcon />,
+              icon: <EditNoteIcon />,
               onClickCallback: panelHeaderButtonCallback,
             },
           ],

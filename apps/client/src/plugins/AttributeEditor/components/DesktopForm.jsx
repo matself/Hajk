@@ -636,12 +636,12 @@ export default function DesktopForm({
             onClick={scrollToSelectedRow}
             title={
               selectedIds.size > 1
-                ? `Skrolla till markerad rad med tooltip (${currentScrollIndex + 1}/${selectedIds.size})`
+                ? `Visa markerad rad med tooltip (${currentScrollIndex + 1}/${selectedIds.size})`
                 : selectedIds.size === 1 || focusedId != null
-                  ? "Skrolla till markerad rad i listan och visa på kartan"
+                  ? "Visa markerad rad i listan och visa på kartan"
                   : "Markera objekt först"
             }
-            aria-label="Skrolla till markerad"
+            aria-label="Visa markerad"
           >
             <VisibilityIcon fontSize="small" />
           </button>

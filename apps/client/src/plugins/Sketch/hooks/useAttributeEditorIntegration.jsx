@@ -460,11 +460,13 @@ const useAttributeEditorIntegration = ({
 
         if (wanted.size === 0) continue;
 
+        const pushedFeatures = new Set();
         wanted.forEach((wid) => {
           const f =
             src.getFeatureById?.(wid) ||
             srcFeatures.find((x) => matchesLogicalId(x, wid));
-          if (f) {
+          if (f && !pushedFeatures.has(f)) {
+            pushedFeatures.add(f);
             markFeatureForAttributeEditor(f);
             // Set EDIT_ACTIVE to show nodes (only when plugin is shown AND in EDIT mode)
             // modifyEnabled controls whether nodes can be MODIFIED (via Modify interaction)

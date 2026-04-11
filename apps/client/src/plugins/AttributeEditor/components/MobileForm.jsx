@@ -349,11 +349,9 @@ export default function MobileForm({
                   }
                 }}
                 title={
-                  selectedIds.size
-                    ? "Skrolla till markerad rad"
-                    : "Markera rader först"
+                  selectedIds.size ? "Visa markerad rad" : "Markera rader först"
                 }
-                aria-label="Skrolla till markerad"
+                aria-label="Visa markerad"
               >
                 <VisibilityIcon fontSize="small" />
               </button>
