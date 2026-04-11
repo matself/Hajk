@@ -587,6 +587,7 @@ export function makeStyles(t, isMobile) {
       fontSize: isMobile ? 12 : 13,
       padding: isMobile ? "4px 6px" : "6px 8px",
       borderBottom: `1px solid ${t.border}`,
+      borderRight: `1px solid ${t.border}`,
       cursor: "pointer",
       whiteSpace: "nowrap",
       color: t.text,
