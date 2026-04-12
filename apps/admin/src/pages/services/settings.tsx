@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router";
+import { useParams, Link, useSearchParams } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import Page from "../../layouts/root/components/page";
@@ -80,9 +80,13 @@ export default function ServiceSettings() {
   const { t } = useTranslation();
   const { serviceId } = useParams<{ serviceId: string }>();
   const { data: service, isError, isLoading } = useServiceById(serviceId ?? "");
-  const [activeTab, setActiveTab] = useState<"settings" | "layers" | "search">(
-    "settings",
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get("tab") ?? "settings") as
+    | "settings"
+    | "layers"
+    | "search";
+  const setActiveTab = (tab: string) =>
+    setSearchParams({ tab }, { replace: true });
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogUrl, setDialogUrl] = useState("");
