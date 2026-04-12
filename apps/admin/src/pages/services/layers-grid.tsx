@@ -129,7 +129,7 @@ function LayersGrid({
         }}
       >
         <Typography variant="h6">
-          {t("services.settings.availableLayers")}
+          {t("services.publishedLayers")}
         </Typography>
         <Button variant="contained" onClick={() => setOpen(true)}>
           {hasExistingLayers

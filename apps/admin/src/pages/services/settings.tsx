@@ -381,7 +381,7 @@ export default function ServiceSettings() {
               },
               {
                 key: "layers",
-                label: t("layers.availableLayers"),
+                label: t("services.publishedLayers"),
                 icon: <LayersIcon />,
               },
               {
