@@ -223,6 +223,7 @@ export default function GroupsList({
 
           <Grid size={12}>
             <StyledDataGrid<Group>
+              storageKey="groups"
               onRowClick={({ row }) => {
                 const id: string = row.id;
                 if (id) {

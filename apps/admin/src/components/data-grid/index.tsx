@@ -3,6 +3,7 @@ import {
   DataGridProps,
   GridColDef,
   GridValidRowModel,
+  GridPaginationModel,
 } from "@mui/x-data-grid";
 import { useTheme } from "@mui/material";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
@@ -25,6 +26,7 @@ export interface StyledDataGridProps<
   getRowId?: (row: T) => string;
   slots?: DataGridProps<T>["slots"];
   slotProps?: DataGridProps<T>["slotProps"];
+  storageKey?: string;
 }
 
 export default function StyledDataGrid<
@@ -41,10 +43,24 @@ export default function StyledDataGrid<
   getRowId = (row: GridValidRowModel) => String(row.id),
   slots,
   slotProps,
+  storageKey,
   ...otherProps
 }: StyledDataGridProps<T>) {
   const { palette } = useTheme();
   const language = useAppStateStore((state) => state.language);
+
+  const storedPageSize = storageKey
+    ? Number(localStorage.getItem(`datagrid-pagesize-${storageKey}`)) || pageSize
+    : pageSize;
+
+  const handlePaginationModelChange = (model: GridPaginationModel) => {
+    if (storageKey) {
+      localStorage.setItem(
+        `datagrid-pagesize-${storageKey}`,
+        String(model.pageSize)
+      );
+    }
+  };
 
   const defaultSx = {
     maxWidth: "100%",
@@ -116,10 +132,11 @@ export default function StyledDataGrid<
       initialState={{
         pagination: {
           paginationModel: {
-            pageSize,
+            pageSize: storedPageSize,
           },
         },
       }}
+      onPaginationModelChange={handlePaginationModelChange}
       hideFooterPagination={
         hideFooterPagination ?? (rows && rows.length < pageSize)
       }

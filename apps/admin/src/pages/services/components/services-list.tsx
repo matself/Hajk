@@ -470,6 +470,7 @@ export default function ServicesList({
             </Grid>
             <Grid size={12}>
               <StyledDataGrid<Service>
+                storageKey="services"
                 rows={filteredServices ?? []}
                 columns={[
                   {

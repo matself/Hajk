@@ -292,6 +292,7 @@ export default function LayersList({
 
           <Grid size={12}>
             <StyledDataGrid<LayersGridRow>
+              storageKey="layers"
               rows={filteredLayers ?? []}
               columns={
                 [

@@ -62,6 +62,7 @@ export default function ToolsList({
 
           <Grid size={12}>
             <StyledDataGrid
+              storageKey="tools"
               rows={filteredTools}
               columns={[
                 {

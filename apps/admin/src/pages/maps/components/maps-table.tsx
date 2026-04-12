@@ -101,6 +101,7 @@ export default function MapsTable() {
         setSearchString={setSearchString}
       />
       <StyledDataGrid<Map>
+        storageKey="maps-table"
         onRowClick={({ row }) => {
           const id: string = (row as Map).id;
           if (id) {
