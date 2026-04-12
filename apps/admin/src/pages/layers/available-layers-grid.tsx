@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { Paper, Typography, TextField } from "@mui/material";
-import Scrollbar from "../../components/scrollbar/scrollbar";
 import {
   DataGrid,
   GridRowSelectionModel,
@@ -119,12 +118,12 @@ function AvailableLayersGrid({
               />
             )}
 
-          <Scrollbar sx={{ maxHeight: "400px" }}>
-            <DataGrid
+          <DataGrid
               sx={{
                 maxWidth: "100%",
                 mb: 2,
                 mt: 1,
+                height: 400,
                 backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
               }}
               rows={filteredLayers}
@@ -157,7 +156,6 @@ function AvailableLayersGrid({
               checkboxSelection
               disableRowSelectionOnClick
             />
-          </Scrollbar>
         </Paper>
   );
 }

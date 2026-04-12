@@ -8,7 +8,6 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import Scrollbar from "../../components/scrollbar/scrollbar";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
@@ -127,12 +126,12 @@ function UsedInMapsGrid() {
               },
             }}
           />
-          <Scrollbar sx={{ maxHeight: "400px" }}>
-            <DataGrid
+          <DataGrid
               sx={{
                 maxWidth: "100%",
                 mb: 2,
                 mt: 1,
+                height: 400,
                 backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
               }}
               rows={rows}
@@ -159,7 +158,6 @@ function UsedInMapsGrid() {
               disableMultipleRowSelection
               disableRowSelectionOnClick
             />
-          </Scrollbar>
         </Paper>
   );
 }
