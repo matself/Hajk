@@ -471,6 +471,7 @@ export default function ServicesList({
             <Grid size={12}>
               <StyledDataGrid<Service>
                 storageKey="services"
+                customSx={{ height: "calc(100vh - 300px)" }}
                 rows={filteredServices ?? []}
                 columns={[
                   {
