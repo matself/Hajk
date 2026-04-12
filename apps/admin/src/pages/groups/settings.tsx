@@ -132,7 +132,7 @@ function GroupSettings() {
   if (isError) return <div>Error fetching group details.</div>;
 
   return (
-    <Page title={t("common.settings")}>
+    <Page title={group?.name ? `${t("common.settings")} - ${group.name}` : t("common.settings")}>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}

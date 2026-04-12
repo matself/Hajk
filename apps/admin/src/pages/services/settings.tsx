@@ -324,7 +324,7 @@ export default function ServiceSettings() {
   }
 
   return (
-    <Page title={t("common.settings")}>
+    <Page title={service?.name ? `${t("common.settings")} - ${service.name}` : t("common.settings")}>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}

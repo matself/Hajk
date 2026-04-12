@@ -752,7 +752,7 @@ export default function LayerSettings() {
   if (isError) return <div>Error fetching layer details.</div>;
 
   return (
-    <Page title={t("common.settings")}>
+    <Page title={layer?.name ? `${t("common.settings")} - ${layer.name}` : t("common.settings")}>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}

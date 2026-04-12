@@ -205,7 +205,7 @@ export default function MapSettings() {
   if (isError) return <div>Error fetching map details.</div>;
 
   return (
-    <Page title={t("common.settings")}>
+    <Page title={map?.name ? `${t("common.settings")} - ${map.name}` : t("common.settings")}>
       <ButtonGroup sx={{ mb: 2 }}>
         <Button
           variant={activeTab === "menu" ? "contained" : "outlined"}

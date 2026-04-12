@@ -89,7 +89,7 @@ export default function ToolSettings() {
         : "idle";
 
   return (
-    <Page title={toolName ?? t("common.tools")}>
+    <Page title={toolName ? `${t("common.settings")} - ${toolName}` : t("common.settings")}>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
