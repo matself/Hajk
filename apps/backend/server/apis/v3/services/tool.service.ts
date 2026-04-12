@@ -11,7 +11,7 @@ class ToolService {
   }
 
   async getTools() {
-    return await prisma.tool.findMany();
+    return await prisma.tool.findMany({ orderBy: { type: "asc" } });
   }
 
   async isToolTypeValid(toolType: string) {

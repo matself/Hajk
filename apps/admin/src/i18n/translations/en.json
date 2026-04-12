@@ -51,6 +51,7 @@
     "common.theme": "Theme",
     "common.database": "Database",
     "common.createdBy": "Created by {{createdBy}} on {{createdDate}}",
+    "common.lastSaved": "Last modified",
     "common.lastSavedBy": "Last saved by {{lastSavedBy}} on {{lastSavedDate}}",
     "common.dialog.closeBtn": "Close",
     "common.dialog.saveBtn": "Save",

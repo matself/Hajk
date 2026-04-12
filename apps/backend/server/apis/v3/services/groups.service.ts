@@ -11,7 +11,7 @@ class GroupsService {
   }
 
   async getGroups() {
-    return await prisma.group.findMany();
+    return await prisma.group.findMany({ orderBy: { name: "asc" } });
   }
 
   async getGroupById(id: string) {

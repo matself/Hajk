@@ -13,7 +13,7 @@ class LayerService {
   }
 
   async getLayers() {
-    return await prisma.layer.findMany();
+    return await prisma.layer.findMany({ orderBy: { name: "asc" } });
   }
 
   async getLayerById(id: string) {

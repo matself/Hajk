@@ -16,7 +16,7 @@ class MapService {
   }
 
   async getMaps() {
-    const maps = await prisma.map.findMany();
+    const maps = await prisma.map.findMany({ orderBy: { name: "asc" } });
 
     return maps;
   }

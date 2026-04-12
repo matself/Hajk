@@ -27,6 +27,7 @@ class ServicesService {
           },
         },
       },
+      orderBy: { name: "asc" },
     });
 
     return services;

@@ -508,6 +508,15 @@ export default function ServicesList({
                     headerName: "Version",
                   },
                   {
+                    field: "lastSavedDate",
+                    flex: 0.3,
+                    headerName: t("common.lastSaved"),
+                    valueFormatter: (value: string) =>
+                      value
+                        ? new Date(value).toLocaleDateString("sv-SE")
+                        : "–",
+                  },
+                  {
                     field: "status",
                     disableColumnMenu: true,
                     headerAlign: "center",
