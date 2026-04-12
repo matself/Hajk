@@ -85,6 +85,13 @@ export default function ToolsList({
                   flex: 0.4,
                 },
                 {
+                  field: "lastSavedDate",
+                  flex: 0.3,
+                  headerName: t("common.lastSaved"),
+                  valueFormatter: (value: string) =>
+                    value ? new Date(value).toLocaleDateString("sv-SE") : "–",
+                },
+                {
                   field: "actions",
                   headerName: t("common.actions"),
                   flex: 0.2,

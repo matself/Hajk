@@ -104,6 +104,13 @@ export default function MapsList({
     },
     { field: "locked", flex: 1, headerName: t("map.locked") },
     {
+      field: "lastSavedDate",
+      flex: 0.8,
+      headerName: t("common.lastSaved"),
+      valueFormatter: (value: string) =>
+        value ? new Date(value).toLocaleDateString("sv-SE") : "–",
+    },
+    {
       field: "more",
       headerName: "",
       flex: 0.2,

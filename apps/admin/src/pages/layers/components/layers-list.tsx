@@ -324,6 +324,13 @@ export default function LayersList({
                     headerName: t("common.usedInMaps"),
                   },
                   {
+                    field: "lastSavedDate",
+                    flex: 0.3,
+                    headerName: t("common.lastSaved"),
+                    valueFormatter: (value: string) =>
+                      value ? new Date(value).toLocaleDateString("sv-SE") : "–",
+                  },
+                  {
                     field: "brokenService",
                     flex: 0.2,
                     headerName: t("common.status"),

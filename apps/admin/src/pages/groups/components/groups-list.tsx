@@ -248,6 +248,13 @@ export default function GroupsList({
                   headerName: "Intern namn",
                   flex: 0.3,
                 },
+                {
+                  field: "lastSavedDate",
+                  flex: 0.3,
+                  headerName: t("common.lastSaved"),
+                  valueFormatter: (value: string) =>
+                    value ? new Date(value).toLocaleDateString("sv-SE") : "–",
+                },
               ]}
             />
           </Grid>
