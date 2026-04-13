@@ -351,7 +351,7 @@ class Manager extends Component {
       });
 
       setTimeout(() => {
-        this.refs["WMTSLayerForm"].setState({
+        this.refs["WMTSLayerForm"].loadLayerState({
           id: layer.id,
           caption: layer.caption,
           internalLayerName: layer.internalLayerName,
@@ -367,9 +367,19 @@ class Manager extends Component {
           style: layer.style,
           imageFormat: layer.imageFormat,
           projection: layer.projection,
-          origin: layer.origin,
+          origins: layer.origins
+            ? layer.origins.map((o) => o.join(" ")).join("; ")
+            : "",
           resolutions: layer.resolutions,
           matrixIds: layer.matrixIds,
+          sizes: layer.sizes
+            ? layer.sizes.map((s) => s.join(" ")).join("; ")
+            : "",
+          tileSize: layer.tileSize != null
+            ? Array.isArray(layer.tileSize)
+              ? layer.tileSize.join(" ")
+              : String(layer.tileSize)
+            : "",
           layerType: layer.type,
           attribution: layer.attribution,
           infoVisible: layer.infoVisible,
@@ -385,9 +395,6 @@ class Manager extends Component {
           minZoom: layer.minZoom,
           maxZoom: layer.maxZoom,
         });
-        setTimeout(() => {
-          this.refs["WMTSLayerForm"].validate();
-        }, 0);
       }, 0);
     }
   }

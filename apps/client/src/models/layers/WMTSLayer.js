@@ -10,9 +10,9 @@ var wmtsLayerProperties = {
   layer: "",
   opacity: 1,
   matrixSet: "3006",
-  style: "default",
+  style: "",
   axisMode: "natural",
-  origin: [-1200000, 8500000],
+  origins: [[-1200000, 8500000]],
   resolutions: [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5],
   matrixIds: [
     "0",
@@ -43,6 +43,15 @@ class WMTSLayer {
 
     const resolutions = config.resolutions.map((r) => Number(r));
 
+    const parsedOrigins = (config.origins || []).map((o) =>
+      o.map((v) => Number(v)),
+    );
+
+    const tileGridOrigin =
+      parsedOrigins.length > 1
+        ? { origins: parsedOrigins }
+        : { origin: parsedOrigins[0] };
+
     const sourceConfig = {
       attributions: config.attribution,
       format: config.imageFormat || "image/png",
@@ -55,10 +64,14 @@ class WMTSLayer {
       style: config.style,
       projection: config.projection,
       tileGrid: new WMTSTileGrid({
-        origin: config.origin.map((o) => Number(o)),
+        ...tileGridOrigin,
         resolutions,
         matrixIds: config.matrixIds,
-        extent: config.extent,
+        sizes:
+          Array.isArray(config.sizes) && config.sizes.length > 0
+            ? config.sizes
+            : undefined,
+        tileSize: config.tileSize || undefined,
       }),
     };
 

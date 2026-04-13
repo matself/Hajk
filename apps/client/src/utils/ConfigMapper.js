@@ -262,9 +262,15 @@ export default class ConfigMapper {
         matrixSet: args.matrixSet,
         style: args.style,
         projection: args.projection,
-        origin: args.origin,
+        ...(args.origins
+          ? { origins: args.origins }
+          : args.origin
+            ? { origins: [args.origin] }
+            : {}),
         resolutions: args.resolutions,
         matrixIds: args.matrixIds,
+        sizes: args.sizes,
+        tileSize: args.tileSize,
         attribution: args.attribution,
         legend: args.legend,
         legendIcon: args.legendIcon,
