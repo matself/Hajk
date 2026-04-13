@@ -72,9 +72,9 @@ const UploadedFile = (props) => {
       <StyledPaper>
         <Grid container justifyContent="space-between" alignItems="center">
           <Grid size={8}>
-            <Typography variant="button" sx={{ textTransform: 'none' }}>{props.title}</Typography>
+            <Typography variant="button" sx={{ textTransform: 'none'}}>{props.title}</Typography>
           </Grid>
-          <Grid container wrap="nowrap" justifyContent="flex-end" spacing={1} size={4}>
+          <Grid container justifyContent="flex-end" spacing={1} size={4}>
             <Grid>
               <HajkToolTip title="Klicka för att ta bort de importerade objekten.">
                 <IconButton size="small" onClick={props.onRemoveClick}>
