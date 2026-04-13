@@ -246,7 +246,7 @@ function LayersGrid({
             disabled={!selectedRowObjects || selectedRowObjects.length === 0}
             sx={{ display: "block", mb: 1 }}
           >
-            {t("common.create")}
+            {t("layers.createNewLayer")}
           </Button>
 
           {(!selectedRowObjects || selectedRowObjects.length === 0) && (
@@ -285,6 +285,8 @@ function LayersGrid({
                   mt: 1,
                   height: 400,
                   backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+                  "& .MuiDataGrid-cell:focus": { outline: "none" },
+                  "& .MuiDataGrid-cell:focus-within": { outline: "none" },
                 }}
                 rows={filteredCapabilityLayers}
                 columns={capabilitiesColumns}
@@ -304,8 +306,7 @@ function LayersGrid({
                 localeText={
                   language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
                 }
-                checkboxSelection
-                disableRowSelectionOnClick
+                disableMultipleRowSelection
               />
           )}
         </DialogContent>

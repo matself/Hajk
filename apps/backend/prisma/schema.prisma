@@ -282,6 +282,8 @@ model Layer {
   restrictedToRoles           RoleOnLayer[]
   instances                   LayerInstance[]
   options                     Json               @default("{}")
+
+  @@index([serviceId])
 }
 
 model LayerInstance {
