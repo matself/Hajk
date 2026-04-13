@@ -224,7 +224,7 @@ export default function GroupsList({
           <Grid size={12}>
             <StyledDataGrid<Group>
               storageKey="groups"
-              customSx={{ height: "calc(100vh - 300px)" }}
+              customSx={{ height: "calc(100vh - 320px)" }}
               onRowClick={({ row }) => {
                 const id: string = row.id;
                 if (id) {

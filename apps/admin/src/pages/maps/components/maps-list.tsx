@@ -266,7 +266,7 @@ export default function MapsList({
           <Grid size={12}>
             <StyledDataGrid<Map>
               storageKey="maps"
-              customSx={{ height: "calc(100vh - 300px)" }}
+              customSx={{ height: "calc(100vh - 320px)" }}
               onRowClick={({ row }) => {
                 const id = row.id;
                 if (id !== undefined && id !== null) {

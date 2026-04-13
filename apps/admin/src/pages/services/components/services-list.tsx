@@ -471,7 +471,7 @@ export default function ServicesList({
             <Grid size={12}>
               <StyledDataGrid<Service>
                 storageKey="services"
-                customSx={{ height: "calc(100vh - 300px)" }}
+                customSx={{ height: "calc(100vh - 320px)" }}
                 rows={filteredServices ?? []}
                 columns={[
                   {
@@ -513,9 +513,7 @@ export default function ServicesList({
                     flex: 0.3,
                     headerName: t("common.lastSaved"),
                     valueFormatter: (value: string) =>
-                      value
-                        ? new Date(value).toLocaleDateString("sv-SE")
-                        : "–",
+                      value ? new Date(value).toLocaleDateString("sv-SE") : "–",
                   },
                   {
                     field: "status",

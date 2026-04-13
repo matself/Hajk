@@ -63,7 +63,7 @@ export default function ToolsList({
           <Grid size={12}>
             <StyledDataGrid
               storageKey="tools"
-              customSx={{ height: "calc(100vh - 300px)" }}
+              customSx={{ height: "calc(100vh - 320px)" }}
               rows={filteredTools}
               columns={[
                 {

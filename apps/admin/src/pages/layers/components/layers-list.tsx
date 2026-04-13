@@ -293,7 +293,7 @@ export default function LayersList({
           <Grid size={12}>
             <StyledDataGrid<LayersGridRow>
               storageKey="layers"
-              customSx={{ height: "calc(100vh - 300px)" }}
+              customSx={{ height: "calc(100vh - 320px)" }}
               rows={filteredLayers ?? []}
               columns={
                 [

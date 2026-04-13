@@ -102,7 +102,7 @@ export default function MapsTable() {
       />
       <StyledDataGrid<Map>
         storageKey="maps-table"
-        customSx={{ height: "calc(100vh - 300px)" }}
+        customSx={{ height: "calc(100vh - 320px)" }}
         onRowClick={({ row }) => {
           const id: string = (row as Map).id;
           if (id) {
