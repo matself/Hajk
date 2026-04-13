@@ -61,7 +61,7 @@ COPY --from=buildimage /tmp/build/backend/dist ./
 # Copy some more necessary files. There's a great chance that 
 # they'll be mounted when running anyway, but if someone forgets
 # that, it's good to have them around so we get running with the defaults. 
-COPY /apps/backend/.env .
+COPY /apps/backend/.env.example ./.env
 COPY /apps/backend/App_Data ./App_Data
 COPY /apps/backend/static ./static
 
