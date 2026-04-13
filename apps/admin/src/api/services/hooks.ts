@@ -121,8 +121,15 @@ export const useDeleteService = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (serviceId: string) => deleteService(serviceId),
-    onSuccess: () => {
+    onSuccess: (_data, serviceId) => {
       void queryClient.invalidateQueries({ queryKey: ["services"] });
+      void queryClient.invalidateQueries({ queryKey: ["services", serviceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["services", "layers", serviceId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["mapsByServiceId", serviceId],
+      });
     },
     onError: (error) => {
       console.error(error);

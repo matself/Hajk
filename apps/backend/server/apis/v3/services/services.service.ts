@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import log4js from "log4js";
 
 import prisma from "../../../common/prisma.ts";
+import LayerService from "./layer.service.ts";
 import { HajkError } from "../../../common/classes.ts";
 import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import HttpStatusCodes from "../../../common/http-status-codes.ts";
@@ -277,6 +278,15 @@ class ServicesService {
 
   async deleteService(id: string) {
     await prisma.$transaction(async (transaction) => {
+      const layers = await transaction.layer.findMany({
+        where: { serviceId: id },
+        select: { id: true },
+      });
+
+      for (const { id: layerId } of layers) {
+        await LayerService.deleteLayerInTransaction(transaction, layerId);
+      }
+
       const service = await transaction.service.findUnique({
         where: { id },
         select: { metadata: true },

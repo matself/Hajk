@@ -29,6 +29,7 @@ import {
   useServices,
   Service,
   useCreateService,
+  useDeleteService,
   useLayersByServiceId,
   ServiceCreateInput,
   SERVICE_TYPE,
@@ -115,6 +116,8 @@ export default function ServicesList({
   const { data: services, isLoading } = useServices();
   const { mutateAsync: createService, isPending: isCreatingService } =
     useCreateService();
+  const { mutateAsync: removeService, isPending: isDeletingService } =
+    useDeleteService();
   const { palette } = useTheme();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -160,8 +163,30 @@ export default function ServicesList({
     setSelectedServiceId(null);
   };
 
-  const handleConfirmDelete = () => {
-    handleCloseDeleteDialog();
+  const handleConfirmDelete = async () => {
+    if (!selectedServiceId || !selectedService) return;
+    try {
+      await removeService(selectedServiceId);
+      toast.success(
+        t("services.deleteServiceSuccess", { name: selectedService.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+      toast.error(
+        t("services.deleteServiceFailed", { name: selectedService.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+    }
   };
 
   const filteredServices = useMemo<Service[]>(() => {
@@ -586,7 +611,10 @@ export default function ServicesList({
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={handleConfirmDelete}
+                      disabled={isDeletingService}
+                      onClick={() => {
+                        void handleConfirmDelete();
+                      }}
                       startIcon={<DeleteOutlineIcon />}
                     >
                       {t("common.delete")}

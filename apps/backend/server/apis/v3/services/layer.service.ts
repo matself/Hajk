@@ -126,35 +126,44 @@ class LayerService {
 
   async deleteLayer(id: string) {
     await prisma.$transaction(async (transaction) => {
-      const layer = await transaction.layer.findUnique({
-        where: { id },
-        select: {
-          metadata: true,
-          searchSettings: true,
-          infoClickSettings: true,
-        },
-      });
-
-      if (layer?.metadata) {
-        await transaction.metadata.delete({
-          where: { id: layer.metadata.id },
-        });
-      }
-
-      if (layer?.searchSettings) {
-        await transaction.searchSettings.delete({
-          where: { id: layer.searchSettings.id },
-        });
-      }
-
-      if (layer?.infoClickSettings) {
-        await transaction.infoClickSettings.delete({
-          where: { id: layer.infoClickSettings.id },
-        });
-      }
-
-      await transaction.layer.delete({ where: { id } });
+      await this.deleteLayerInTransaction(transaction, id);
     });
+  }
+
+  async deleteLayerInTransaction(
+    transaction: Prisma.TransactionClient,
+    id: string
+  ) {
+    await transaction.layerInstance.deleteMany({ where: { layerId: id } });
+
+    const layer = await transaction.layer.findUnique({
+      where: { id },
+      select: {
+        metadata: true,
+        searchSettings: true,
+        infoClickSettings: true,
+      },
+    });
+
+    if (layer?.metadata) {
+      await transaction.metadata.delete({
+        where: { id: layer.metadata.id },
+      });
+    }
+
+    if (layer?.searchSettings) {
+      await transaction.searchSettings.delete({
+        where: { id: layer.searchSettings.id },
+      });
+    }
+
+    if (layer?.infoClickSettings) {
+      await transaction.infoClickSettings.delete({
+        where: { id: layer.infoClickSettings.id },
+      });
+    }
+
+    await transaction.layer.delete({ where: { id } });
   }
 
   async getRoleOnLayerByLayerId(layerId: string) {

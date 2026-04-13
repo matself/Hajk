@@ -1,4 +1,4 @@
-import { useParams, Link, useSearchParams } from "react-router";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import Page from "../../layouts/root/components/page";
@@ -26,7 +26,7 @@ import SearchablePanel from "../../components/form-components/searchable-panel";
 import {
   useServiceById,
   useUpdateService,
-  //useDeleteService,
+  useDeleteService,
   useLayersByServiceId,
   SERVICE_TYPE,
   ServiceUpdateInput,
@@ -76,6 +76,7 @@ import useAppStateStore from "../../store/use-app-state-store";
 
 export default function ServiceSettings() {
   const formRef = useRef<HTMLFormElement | null>(null);
+  const navigate = useNavigate();
   const { palette } = useTheme();
   const { t } = useTranslation();
   const { serviceId } = useParams<{ serviceId: string }>();
@@ -103,8 +104,8 @@ export default function ServiceSettings() {
   }));
   const { mutateAsync: updateService, status: updateStatus } =
     useUpdateService();
-  //const { mutateAsync: deleteService, status: deleteStatus } =
-  //useDeleteService();
+  const { mutateAsync: removeService, isPending: isDeletingService } =
+    useDeleteService();
   const { data: layersByServiceId } = useLayersByServiceId(serviceId ?? "");
   const count = layersByServiceId?.layers?.length ?? 0;
   const { defaultCoordinates } = useAppStateStore.getState();
@@ -203,8 +204,28 @@ export default function ServiceSettings() {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleConfirmDelete = () => {
-    handleCloseDeleteDialog();
+  const handleConfirmDelete = async () => {
+    if (!service?.id) return;
+    try {
+      await removeService(service.id);
+      toast.success(
+        t("services.deleteServiceSuccess", { name: service.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+      handleCloseDeleteDialog();
+      void navigate("/services");
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+      toast.error(t("services.deleteServiceFailed", { name: service.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
   };
 
   const handleUpdateService = async (serviceData: ServiceUpdateInput) => {
@@ -817,7 +838,10 @@ export default function ServiceSettings() {
               {t("common.cancel")}
             </Button>
             <Button
-              onClick={handleConfirmDelete}
+              disabled={isDeletingService}
+              onClick={() => {
+                void handleConfirmDelete();
+              }}
               color="error"
               variant="contained"
               startIcon={<DeleteOutlineIcon />}
