@@ -11,7 +11,6 @@ import {
   Select,
   MenuItem,
   Box,
-  ListItemText,
   Typography,
   FormHelperText,
   CircularProgress,
@@ -42,6 +41,7 @@ import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
 import { GridRenderCellParams } from "@mui/x-data-grid";
+import ServiceNameCell from "./service-name-cell";
 import ServiceStatusIndicator from "../components/service-status-indicator";
 import ServiceTypeBadge from "../components/service-type-badge";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
@@ -520,18 +520,10 @@ export default function ServicesList({
                     flex: 0.5,
                     headerName: t("common.name"),
                     renderCell: (params: GridRenderCellParams<Service>) => (
-                      <ListItemText
-                        primary={params.row.name}
-                        secondary={params.row.url}
-                        slotProps={{
-                          secondary: {
-                            sx: {
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            },
-                          },
-                        }}
+                      <ServiceNameCell
+                        name={params.row.name}
+                        url={params.row.url}
+                        comment={params.row.comment}
                       />
                     ),
                   },
