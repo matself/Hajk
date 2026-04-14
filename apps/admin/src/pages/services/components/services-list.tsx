@@ -199,7 +199,7 @@ export default function ServicesList({
 
     const searchFilter = (service: Service) => {
       const combinedText =
-        `${service.name} ${service.url} ${service.type}`.toLowerCase();
+        `${service.name} ${service.url} ${service.type} ${service.version ?? ""}`.toLowerCase();
       return combinedText.includes(searchTerm.toLowerCase());
     };
 
