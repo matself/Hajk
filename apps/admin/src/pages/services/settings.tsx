@@ -17,6 +17,7 @@ import {
   Typography,
   Box,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LayersIcon from "@mui/icons-material/Layers";
@@ -36,6 +37,7 @@ import {
   useProjections,
   useServiceCapabilities,
 } from "../../api/services";
+import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
 import Grid from "@mui/material/Grid2";
 
 const StyledTabButton = styled(Button)<{ isActive: boolean }>(
@@ -195,12 +197,14 @@ export default function ServiceSettings() {
   };
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isDeletingService) return;
     event.preventDefault();
     event.stopPropagation();
     setIsDeleteDialogOpen(true);
   };
 
   const handleCloseDeleteDialog = () => {
+    if (isDeletingService) return;
     setIsDeleteDialogOpen(false);
   };
 
@@ -220,7 +224,7 @@ export default function ServiceSettings() {
       void navigate("/services");
     } catch (error) {
       console.error("Failed to delete service:", error);
-      toast.error(t("services.deleteServiceFailed", { name: service.name }), {
+      toast.error(getDeleteServiceErrorMessage(error, t, service.name), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -371,6 +375,7 @@ export default function ServiceSettings() {
               color="error"
               startIcon={<DeleteOutlineIcon />}
               onClick={handleDeleteClick}
+              disabled={isDeletingService}
               sx={{
                 mt: count > 0 ? 2 : 0,
                 width: "100%",
@@ -834,6 +839,7 @@ export default function ServiceSettings() {
               variant="text"
               onClick={handleCloseDeleteDialog}
               color="primary"
+              disabled={isDeletingService}
             >
               {t("common.cancel")}
             </Button>
@@ -844,7 +850,13 @@ export default function ServiceSettings() {
               }}
               color="error"
               variant="contained"
-              startIcon={<DeleteOutlineIcon />}
+              startIcon={
+                isDeletingService ? (
+                  <CircularProgress color="inherit" size={18} />
+                ) : (
+                  <DeleteOutlineIcon />
+                )
+              }
             >
               {t("common.delete")}
             </Button>

@@ -36,6 +36,7 @@ import {
   SERVICE_STATUS,
   serverTypes,
 } from "../../../api/services";
+import { getDeleteServiceErrorMessage } from "../../../api/services/error-messages";
 import DialogWrapper from "../../../components/flexible-dialog";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -144,6 +145,7 @@ export default function ServicesList({
     event: React.MouseEvent<HTMLElement>,
     serviceId: string,
   ) => {
+    if (isDeletingService) return;
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
     setSelectedServiceId(serviceId);
@@ -159,6 +161,7 @@ export default function ServicesList({
   };
 
   const handleCloseDeleteDialog = () => {
+    if (isDeletingService) return;
     setIsDeleteDialogOpen(false);
     setSelectedServiceId(null);
   };
@@ -179,7 +182,7 @@ export default function ServicesList({
     } catch (error) {
       console.error("Failed to delete service:", error);
       toast.error(
-        t("services.deleteServiceFailed", { name: selectedService.name }),
+        getDeleteServiceErrorMessage(error, t, selectedService.name),
         {
           position: "bottom-left",
           theme: palette.mode,
@@ -569,6 +572,7 @@ export default function ServicesList({
                       <IconButton
                         aria-label={t("common.actions")}
                         size="small"
+                        disabled={isDeletingService}
                         onClick={(event) =>
                           handleOpenActionsMenu(event, params.row.id)
                         }
@@ -594,6 +598,7 @@ export default function ServicesList({
                 <MuiMenuItem
                   onClick={handleOpenDeleteDialog}
                   data-service-id={selectedServiceId ?? ""}
+                  disabled={isDeletingService}
                 >
                   {t("common.delete")}
                 </MuiMenuItem>
@@ -609,6 +614,7 @@ export default function ServicesList({
                       variant="text"
                       onClick={handleCloseDeleteDialog}
                       color="primary"
+                      disabled={isDeletingService}
                     >
                       {t("common.cancel")}
                     </Button>
@@ -619,7 +625,13 @@ export default function ServicesList({
                       onClick={() => {
                         void handleConfirmDelete();
                       }}
-                      startIcon={<DeleteOutlineIcon />}
+                      startIcon={
+                        isDeletingService ? (
+                          <CircularProgress color="inherit" size={18} />
+                        ) : (
+                          <DeleteOutlineIcon />
+                        )
+                      }
                     >
                       {t("common.delete")}
                     </Button>

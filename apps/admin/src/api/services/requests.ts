@@ -312,9 +312,7 @@ export const deleteService = async (serviceId: string): Promise<void> => {
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to delete service. ErrorId: ${axiosError.response.data.errorId}.`,
-      );
+      throw axiosError;
     } else {
       throw new Error("Failed to delete service");
     }
