@@ -100,6 +100,7 @@
     "services.settings.request": "Inställningar för request",
     "services.settings.availableLayers": "Tillgängliga lager i tjänsten",
     "services.publishedLayers": "Publicerade lager",
+    "services.loadServicesFailed": "Kunde inte ladda tjänster. Försök igen senare.",
     "services.settings.dialog.title": "Redigera url",
     "services.url.btnLabel": "Ändra url",
     "services.createServiceSuccess": "Tjänsten {{name}} skapades!",

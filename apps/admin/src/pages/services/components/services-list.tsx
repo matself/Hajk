@@ -113,7 +113,7 @@ export default function ServicesList({
 }: ServicesListProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: services, isLoading } = useServices();
+  const { data: services, isLoading, isError } = useServices();
   const { mutateAsync: createService, isPending: isCreatingService } =
     useCreateService();
   const { mutateAsync: removeService, isPending: isDeletingService } =
@@ -303,6 +303,10 @@ export default function ServicesList({
     <>
       {isLoading ? (
         <SquareSpinnerComponent />
+      ) : isError ? (
+        <Page title={t(pageTitleKey)}>
+          <Alert severity="error">{t("services.loadServicesFailed")}</Alert>
+        </Page>
       ) : (
         <>
           {!services && <Box component="div">No services found</Box>}

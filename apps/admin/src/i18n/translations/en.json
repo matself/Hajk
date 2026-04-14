@@ -101,6 +101,7 @@
     "services.settings.request": "Settings for request",
     "services.settings.availableLayers": "Available layers in the service",
     "services.publishedLayers": "Published layers",
+    "services.loadServicesFailed": "Failed to load services. Please try again later.",
     "services.settings.dialog.title": "Edit url",
     "services.url.btnLabel": "Change url",
     "services.workspace": "Workspace",
