@@ -546,10 +546,9 @@ export default function ServicesList({
                     flex: 0.2,
                     headerName: "Status",
                     renderCell: (params: { row: { id: string } }) => {
-                      const status: SERVICE_STATUS =
-                        (params.row as Service)?.status ??
-                        SERVICE_STATUS.UNKNOWN;
-                      return <ServiceStatusIndicator status={status} />;
+                      const row = params.row as Service;
+                      const status = row?.status ?? SERVICE_STATUS.UNKNOWN;
+                      return <ServiceStatusIndicator status={status} lastChecked={row?.lastChecked} />;
                     },
                   },
                   {

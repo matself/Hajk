@@ -26,7 +26,7 @@ export default function ServiceNameCell({
               border: "1px solid black",
               borderRadius: 0,
               boxShadow: "none",
-              fontSize: "1rem",
+              fontSize: "1.1rem",
               maxWidth: 300,
             },
           },

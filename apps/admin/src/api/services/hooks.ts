@@ -25,7 +25,19 @@ import {
 import { LayersApiResponse } from "../layers";
 import { Map } from "../maps";
 import { fetchCapabilities } from "./requests";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
+const HEALTH_CHECK_CONCURRENCY = 3;
+
+async function runWithConcurrencyLimit(
+  services: Service[],
+  limit: number,
+  fn: (service: Service) => Promise<void>,
+): Promise<void> {
+  for (let i = 0; i < services.length; i += limit) {
+    await Promise.allSettled(services.slice(i, i + limit).map(fn));
+  }
+}
 
 // React Query hook to fetch all services
 // This hook uses the `getServices` function from the services `requests` module
@@ -158,27 +170,52 @@ export const useServiceCapabilities = ({
 
 export const useServicesHealthCheck = (services: Service[]) => {
   const queryClient = useQueryClient();
+  const servicesRef = useRef<Service[]>(services);
+  const skipNextCheck = useRef<Set<string>>(new Set());
+  const runChecksRef = useRef<(() => Promise<void>) | null>(null);
+  const hasRunInitialCheck = useRef(false);
+
+  // Keep servicesRef in sync without triggering re-runs
+  servicesRef.current = services;
 
   useEffect(() => {
-    if (!services.length) return;
-
     const updateCache = (id: string, status: SERVICE_STATUS) => {
+      const lastChecked = new Date().toISOString();
       queryClient.setQueryData(["services"], (oldServices: Service[]) =>
         oldServices?.map((service: Service) =>
-          service.id === id ? { ...service, status: status } : service,
+          service.id === id ? { ...service, status, lastChecked } : service,
         ),
       );
-    };
-
-    const runChecks = () => {
-      for (const service of services) {
-        void checkServiceHealth(service, updateCache);
+      if (status === SERVICE_STATUS.UNHEALTHY) {
+        skipNextCheck.current.add(id);
+      } else {
+        skipNextCheck.current.delete(id);
       }
     };
 
-    void runChecks();
+    runChecksRef.current = async () => {
+      const toCheck = servicesRef.current.filter((service) => {
+        if (skipNextCheck.current.has(service.id)) {
+          skipNextCheck.current.delete(service.id);
+          return false;
+        }
+        return true;
+      });
+      if (!toCheck.length) return;
+      await runWithConcurrencyLimit(toCheck, HEALTH_CHECK_CONCURRENCY, (service) =>
+        checkServiceHealth(service, updateCache),
+      );
+    };
 
-    const interval = setInterval(runChecks, 5 * 60 * 1000);
+    const interval = setInterval(() => void runChecksRef.current?.(), 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [services, queryClient]);
+  }, [queryClient]);
+
+  // Fire initial check once services have loaded
+  useEffect(() => {
+    if (services.length > 0 && !hasRunInitialCheck.current && runChecksRef.current) {
+      hasRunInitialCheck.current = true;
+      void runChecksRef.current();
+    }
+  }, [services]);
 };

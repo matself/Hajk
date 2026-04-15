@@ -29,6 +29,7 @@ export interface Service {
     code: string;
   } | null;
   status?: SERVICE_STATUS;
+  lastChecked?: string;
 }
 
 export interface Projection {
