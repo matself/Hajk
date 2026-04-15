@@ -33,6 +33,36 @@ var wmtsLayerProperties = {
   attribution: "",
 };
 
+const normalizeLegend = (legend, fallbackDescription) => {
+  if (!legend) {
+    return [];
+  }
+
+  const entries = Array.isArray(legend) ? legend : [legend];
+
+  return entries
+    .map((entry) => {
+      if (typeof entry === "string") {
+        return {
+          url: entry,
+          description: fallbackDescription || "",
+        };
+      }
+
+      const url = entry?.url || entry?.Url;
+      if (!url) {
+        return null;
+      }
+
+      return {
+        ...entry,
+        url,
+        description: entry?.description || fallbackDescription || "",
+      };
+    })
+    .filter(Boolean);
+};
+
 class WMTSLayer {
   constructor(config, proxyUrl, map) {
     config = {
@@ -95,6 +125,10 @@ class WMTSLayer {
 
     const minZoom = config?.minZoom >= 0 ? config.minZoom : undefined;
     const maxZoom = config?.maxZoom >= 0 ? config.maxZoom : undefined;
+    const layerInfo = new LayerInfo({
+      ...config,
+      legend: normalizeLegend(config.legend, config.caption),
+    });
 
     this.layer = new TileLayer({
       name: config.name,
@@ -106,7 +140,7 @@ class WMTSLayer {
       layerType: config.layerType,
       rotateMap: config.rotateMap,
       source: new WMTS(sourceConfig),
-      layerInfo: new LayerInfo(config),
+      layerInfo,
       minZoom,
       maxZoom,
     });
