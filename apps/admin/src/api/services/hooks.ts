@@ -173,7 +173,6 @@ export const useServicesHealthCheck = (services: Service[]) => {
   const servicesRef = useRef<Service[]>(services);
   const skipNextCheck = useRef<Set<string>>(new Set());
   const runChecksRef = useRef<(() => Promise<void>) | null>(null);
-  const hasRunInitialCheck = useRef(false);
 
   // Keep servicesRef in sync without triggering re-runs
   servicesRef.current = services;
@@ -211,11 +210,10 @@ export const useServicesHealthCheck = (services: Service[]) => {
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  // Fire initial check once services have loaded
+  // Run check on load and after any refetch that clears status
   useEffect(() => {
-    if (services.length > 0 && !hasRunInitialCheck.current && runChecksRef.current) {
-      hasRunInitialCheck.current = true;
-      void runChecksRef.current();
+    if (services.length > 0 && services.some((s) => s.status === undefined)) {
+      void runChecksRef.current?.();
     }
   }, [services]);
 };
