@@ -6,6 +6,7 @@ import { overrideLayerSourceParams } from "../../utils/FetchWrapper";
 
 var wmtsLayerProperties = {
   url: "",
+  requestEncoding: "",
   projection: "EPSG:3006",
   layer: "",
   opacity: 1,
@@ -41,12 +42,21 @@ class WMTSLayer {
 
     this.proxyUrl = proxyUrl;
 
-    const resolutions = config.resolutions.map((r) => Number(r));
+
 
     const parsedOrigins = (config.origins || []).map((o) =>
       o.map((v) => Number(v)),
     );
 
+    let resolutions = config.resolutions.map((r) => Number(r));
+    let sizes =
+      Array.isArray(config.sizes) && config.sizes.length > 0
+        ? config.sizes
+        : undefined;
+    let matrixIds = config.matrixIds;
+
+    // If there are multiple origins, use the origins array.
+    // Otherwise, use the first origin as the origin.
     const tileGridOrigin =
       parsedOrigins.length > 1
         ? { origins: parsedOrigins }
@@ -56,26 +66,32 @@ class WMTSLayer {
       attributions: config.attribution,
       format: config.imageFormat || "image/png",
       wrapX: false,
+      requestEncoding: config.requestEncoding,
       url: config.url,
-      crossOrigin: config.crossOrigin,
       axisMode: config.axisMode,
       layer: config.layer,
+      zDirection: -1,
       matrixSet: config.matrixSet,
       style: config.style,
       projection: config.projection,
       tileGrid: new WMTSTileGrid({
         ...tileGridOrigin,
         resolutions,
-        matrixIds: config.matrixIds,
-        sizes:
-          Array.isArray(config.sizes) && config.sizes.length > 0
-            ? config.sizes
-            : undefined,
+        matrixIds,
+        sizes,
         tileSize: config.tileSize || undefined,
       }),
     };
 
+    // Only set crossOrigin when explicitly configured. Some WMTS servers
+    // do not return CORS headers, and forcing crossOrigin can cause requests
+    // to fail instead of behaving like regular image tile loads.
+    if (config.crossOrigin !== undefined && config.crossOrigin !== null) {
+      sourceConfig.crossOrigin = config.crossOrigin;
+    }
+
     overrideLayerSourceParams(sourceConfig);
+
 
     const minZoom = config?.minZoom >= 0 ? config.minZoom : undefined;
     const maxZoom = config?.maxZoom >= 0 ? config.maxZoom : undefined;

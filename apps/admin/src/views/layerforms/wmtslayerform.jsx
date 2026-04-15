@@ -35,12 +35,15 @@ const defaultState = {
   legend: "",
   legendIcon: "",
   url: "",
+  capabilitiesUrl: "",
   queryable: true,
   drawOrder: 1,
   layer: "",
   matrixSet: "",
-  style: "",
+  style: "default",
+  requestEncoding: "REST",
   imageFormat: "",
+  selectedResource: "",
   projection: "EPSG:3006",
   origins: "-1200000 8500000",
   resolutions: [4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5],
@@ -62,6 +65,7 @@ const defaultState = {
   ],
   sizes: "",
   tileSize: "",
+  crossOrigin: "",
   layerType: "WMTS",
   attribution: "",
   infoVisible: false,
@@ -80,7 +84,7 @@ const defaultState = {
   wmtsLayers: [],
   wmtsTileMatrixSets: [],
   availableMatrixSets: [],
-  availableFormats: [],
+  availableResources: [],
 };
 
 /**
@@ -88,7 +92,8 @@ const defaultState = {
  */
 class WMTSLayerForm extends Component {
   componentDidMount() {
-    defaultState.url = this.props.url;
+    defaultState.capabilitiesUrl =
+      this.props.capabilitiesUrl || this.props.url || "";
     this.setState(defaultState);
     this.props.model.on("change:select-image", () => {
       this.setState({
@@ -125,7 +130,7 @@ class WMTSLayerForm extends Component {
 
   fetchCapabilities() {
     return this.props.model
-      .getAllWMTSCapabilities(this.state.url)
+      .getAllWMTSCapabilities(this.state.capabilitiesUrl)
       .then((capabilities) => {
         var layers = capabilities.Contents?.Layer || [];
         var tileMatrixSets = capabilities.Contents?.TileMatrixSet || [];
@@ -146,7 +151,7 @@ class WMTSLayerForm extends Component {
       (l) => textValue(l.Identifier) === layerIdentifier,
     );
     if (!selectedLayer) {
-      return { availableMatrixSets: [], availableFormats: [] };
+      return { availableMatrixSets: [], availableResources: [] };
     }
 
     var links = selectedLayer.TileMatrixSetLink || [];
@@ -161,19 +166,31 @@ class WMTSLayerForm extends Component {
     if (!Array.isArray(resources)) {
       resources = [resources];
     }
-    var availableFormats = resources
+    var availableResources = [];
+    resources
       .filter((r) => r._resourceType === "tile")
-      .map((r) => r._format);
+      .forEach((r) => {
+        var format = textValue(r._format);
+        var template = textValue(r._template);
+        if (!format) return;
+        availableResources.push({
+          format,
+          template: template || "",
+        });
+      });
 
-    if (availableFormats.length === 0) {
+    if (availableResources.length === 0) {
       var formats = selectedLayer.Format || [];
       if (!Array.isArray(formats)) {
         formats = [formats];
       }
-      availableFormats = formats.map((f) => textValue(f));
+      availableResources = formats.map((f) => ({
+        format: textValue(f),
+        template: "",
+      }));
     }
 
-    return { availableMatrixSets, availableFormats };
+    return { availableMatrixSets, availableResources };
   }
 
   loadWMTSCapabilities(e) {
@@ -192,9 +209,12 @@ class WMTSLayerForm extends Component {
           wmtsTileMatrixSets: tileMatrixSets,
           layer: "",
           matrixSet: "",
+          selectedResource: "",
+          requestEncoding: "REST",
           imageFormat: "",
+          url: "",
           availableMatrixSets: [],
-          availableFormats: [],
+          availableResources: [],
         });
       })
       .catch((err) => {
@@ -220,12 +240,25 @@ class WMTSLayerForm extends Component {
     this.fetchCapabilities()
       .then(({ capabilities, layers, tileMatrixSets }) => {
         var options = this.deriveLayerOptions(layers, savedState.layer);
+        var selectedResourceIndex = options.availableResources.findIndex(
+          (resource) =>
+            resource.format === savedState.imageFormat &&
+            resource.template === savedState.url,
+        );
+        var inferredRequestEncoding =
+          /\{TileMatrix\}|\{TileRow\}|\{TileCol\}/i.test(savedState.url || "")
+            ? "REST"
+            : "KVP";
 
         this.setState({
           load: false,
           wmtsCapabilities: capabilities,
           wmtsLayers: layers,
           wmtsTileMatrixSets: tileMatrixSets,
+          selectedResource:
+            selectedResourceIndex >= 0 ? String(selectedResourceIndex) : "",
+          requestEncoding:
+            savedState.requestEncoding || inferredRequestEncoding,
           ...options,
         });
       })
@@ -240,9 +273,12 @@ class WMTSLayerForm extends Component {
       this.setState({
         layer: "",
         matrixSet: "",
+        selectedResource: "",
+        requestEncoding: "REST",
         imageFormat: "",
+        url: "",
         availableMatrixSets: [],
-        availableFormats: [],
+        availableResources: [],
       });
       return;
     }
@@ -252,7 +288,10 @@ class WMTSLayerForm extends Component {
     this.setState({
       layer: identifier,
       matrixSet: "",
+      selectedResource: "",
+      requestEncoding: "REST",
       imageFormat: "",
+      url: "",
       ...options,
     });
   }
@@ -263,6 +302,7 @@ class WMTSLayerForm extends Component {
       id: this.state.id,
       caption: this.getValue("caption"),
       url: this.getValue("url"),
+      capabilitiesUrl: this.getValue("capabilitiesUrl"),
       date: this.getValue("date"),
       content: this.getValue("content"),
       legend: this.getValue("legend"),
@@ -270,6 +310,7 @@ class WMTSLayerForm extends Component {
       layer: this.getValue("layer"),
       matrixSet: this.getValue("matrixSet"),
       style: this.getValue("style"),
+      requestEncoding: this.getValue("requestEncoding"),
       imageFormat: this.getValue("imageFormat"),
       projection: this.getValue("projection"),
       origins: this.getValue("origins"),
@@ -277,6 +318,7 @@ class WMTSLayerForm extends Component {
       matrixIds: this.getValue("matrixIds"),
       sizes: this.getValue("sizes"),
       tileSize: this.getValue("tileSize"),
+      crossOrigin: this.getValue("crossOrigin"),
       attribution: this.getValue("attribution"),
       infoVisible: this.getValue("infoVisible"),
       infoTitle: this.getValue("infoTitle"),
@@ -345,6 +387,8 @@ class WMTSLayerForm extends Component {
         value = undefined;
       }
     }
+    if (fieldName === "crossOrigin")
+      value = value.trim() === "" ? undefined : value;
     if (fieldName === "infoVisible") value = input.checked;
     if (fieldName === "timeSliderVisible") value = input.checked;
 
@@ -354,6 +398,7 @@ class WMTSLayerForm extends Component {
   validate() {
     var validationFields = [
       "url",
+      "capabilitiesUrl",
       "caption",
       "layer",
       "matrixSet",
@@ -406,6 +451,7 @@ class WMTSLayerForm extends Component {
           valid = false;
         }
         break;
+      case "capabilitiesUrl":
       case "url":
       case "caption":
       case "layer":
@@ -466,15 +512,15 @@ class WMTSLayerForm extends Component {
         <legend>WMTS-lager</legend>
         <div className="separator">Val av lager</div>
         <div>
-          <label>Url*</label>
+          <label>CapabilitiesUrl*</label>
           <input
             type="text"
-            ref="input_url"
-            value={this.state.url}
-            className={this.getValidationClass("url")}
+            ref="input_capabilitiesUrl"
+            value={this.state.capabilitiesUrl}
+            className={this.getValidationClass("capabilitiesUrl")}
             onChange={(e) => {
-              this.setState({ url: e.target.value }, () =>
-                this.validateField("url"),
+              this.setState({ capabilitiesUrl: e.target.value }, () =>
+                this.validateField("capabilitiesUrl"),
               );
             }}
           />
@@ -493,6 +539,7 @@ class WMTSLayerForm extends Component {
             ref="input_layer"
             value={this.state.layer}
             className={this.getValidationClass("layer")}
+            style={{ width: "400px" }}
             onChange={(e) => {
               this.onLayerChange(e.target.value);
               this.validateField("layer");
@@ -630,15 +677,20 @@ class WMTSLayerForm extends Component {
                     matrices = [matrices];
                   }
                   if (matrices.length > 0) {
-                    // WMTS reports TopLeftCorner in the CRS axis order,
-                    // which is (northing, easting) for most projected CRS.
-                    // OpenLayers expects (easting, northing), so swap.
+                    // WMTS may report TopLeftCorner in CRS axis order.
+                    // Swap only when the first value is positive.
                     stateUpdate.origins = matrices
                       .map((m) => {
-                        var parts = textValue(m.TopLeftCorner).trim().split(/\s+/);
-                        return parts.length === 2
+                        var parts = textValue(m.TopLeftCorner)
+                          .trim()
+                          .split(/\s+/);
+                        if (parts.length !== 2) {
+                          return textValue(m.TopLeftCorner).trim();
+                        }
+                        var firstValue = Number(parts[0]);
+                        return !Number.isNaN(firstValue) && firstValue > 0
                           ? parts[1] + " " + parts[0]
-                          : textValue(m.TopLeftCorner).trim();
+                          : parts[0] + " " + parts[1];
                       })
                       .filter(Boolean)
                       .join("; ");
@@ -681,21 +733,69 @@ class WMTSLayerForm extends Component {
           </select>
         </div>
         <div>
-          <label>Format (imageFormat)</label>
+          <label>Resource</label>
           <select
+            ref="input_resource"
+            value={this.state.selectedResource}
+            style={{ width: "400px" }}
+            onChange={(e) => {
+              const selectedResource = e.target.value;
+              const selectedIndex = Number(selectedResource);
+              const resource = this.state.availableResources[selectedIndex];
+              const imageFormat = resource ? resource.format : "";
+              const url = resource ? resource.template : "";
+              const requestEncoding =
+                resource && resource.template ? "REST" : "KVP";
+              this.setState(
+                { selectedResource, imageFormat, requestEncoding, url },
+                () => this.validateField("url"),
+              );
+            }}
+          >
+            <option value="">Välj resource...</option>
+            {this.state.availableResources.map((resource, i) => (
+              <option key={i} value={String(i)}>
+                {resource.format + " @ " + (resource.template || "")}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Format (imageFormat)</label>
+          <input
+            type="text"
             ref="input_imageFormat"
             value={this.state.imageFormat}
             onChange={(e) => {
               this.setState({ imageFormat: e.target.value });
             }}
+          />
+        </div>
+        <div>
+          <label>Request encoding</label>
+          <select
+            ref="input_requestEncoding"
+            value={this.state.requestEncoding}
+            onChange={(e) => {
+              this.setState({ requestEncoding: e.target.value });
+            }}
           >
-            <option value="">Välj format...</option>
-            {this.state.availableFormats.map((fmt, i) => (
-              <option key={i} value={fmt}>
-                {fmt}
-              </option>
-            ))}
+            <option value="REST">REST</option>
+            <option value="KVP">KVP</option>
           </select>
+        </div>
+        <div>
+          <label>Url*</label>
+          <input
+            type="text"
+            ref="input_url"
+            value={this.state.url}
+            className={this.getValidationClass("url")}
+            onChange={(e) => {
+              const v = e.target.value;
+              this.setState({ url: v }, () => this.validateField("url", v));
+            }}
+          />
         </div>
         <div>
           <label>Projektion (projection)*</label>
@@ -793,6 +893,20 @@ class WMTSLayerForm extends Component {
             value={this.state.style}
             className={this.getValidationClass("style")}
           />
+        </div>
+        <div>
+          <label>Cross origin</label>
+          <select
+            ref="input_crossOrigin"
+            value={this.state.crossOrigin || ""}
+            onChange={(e) => {
+              this.setState({ crossOrigin: e.target.value });
+            }}
+          >
+            <option value="">Ej satt</option>
+            <option value="anonymous">anonymous</option>
+            <option value="use-credentials">use-credentials</option>
+          </select>
         </div>
         <div className="separator">Metadata</div>
         <div>

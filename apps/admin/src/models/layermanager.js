@@ -471,12 +471,17 @@ var manager = Model.extend({
       ],
     });
 
+    var hasCapabilitiesInUrl = /xml|GetCapabilities/i.test(url);
+    var data = hasCapabilitiesInUrl
+      ? undefined
+      : {
+          service: "WMTS",
+          request: "GetCapabilities",
+          version: "1.0.0",
+        };
+
     return $.ajax(prepareProxyUrl(url, this.get("config").url_proxy), {
-      data: {
-        service: "WMTS",
-        request: "GetCapabilities",
-        version: "1.0.0",
-      },
+      data: data
     }).then((value) => {
       var xmlstr =
         typeof value === "string"

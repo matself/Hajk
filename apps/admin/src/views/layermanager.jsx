@@ -168,7 +168,7 @@ class Manager extends Component {
         layerType: "ArcGIS",
       });
 
-      setTimeout(() => {
+      setTimeout(() => { 
         this.refs["ArcGISLayerForm"].setState({
           id: layer.id,
           caption: layer.caption,
@@ -361,10 +361,12 @@ class Manager extends Component {
           legend: layer.legend,
           legendIcon: layer.legendIcon,
           owner: layer.owner,
+          capabilitiesUrl: layer.capabilitiesUrl || layer.url,
           url: layer.url,
           layer: layer.layer,
           matrixSet: layer.matrixSet,
           style: layer.style,
+          requestEncoding: layer.requestEncoding || "",
           imageFormat: layer.imageFormat,
           projection: layer.projection,
           origins: layer.origins
@@ -692,7 +694,7 @@ class Manager extends Component {
             model={this.props.model}
             layer={this.state.layer}
             parent={this}
-            url={this.props.config.url_default_server}
+            capabilitiesUrl={this.props.config.url_default_server}
             serverType={this.props.config.default_server_type}
           />
         );
