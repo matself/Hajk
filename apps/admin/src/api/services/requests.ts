@@ -40,7 +40,23 @@ export const getServices = async (): Promise<Service[]> => {
     if (!response.data) {
       throw new Error("No services data found");
     }
-    return response.data.services;
+    // Map backend DB fields to frontend fields
+    type RawService = Service & {
+      healthStatus?: string | null;
+      healthCheckedAt?: string | null;
+    };
+    return (response.data.services as RawService[]).map(
+      ({ healthStatus, healthCheckedAt, ...service }) => ({
+        ...service,
+        status:
+          healthStatus === "HEALTHY"
+            ? SERVICE_STATUS.HEALTHY
+            : healthStatus === "UNHEALTHY"
+              ? SERVICE_STATUS.UNHEALTHY
+              : undefined,
+        lastChecked: healthCheckedAt ?? undefined,
+      }),
+    );
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
@@ -420,6 +436,20 @@ export const fetchCapabilities = async (
   return { ...layers };
 };
 
+export const updateServiceHealthStatus = async (
+  id: string,
+  healthStatus: "HEALTHY" | "UNHEALTHY",
+): Promise<void> => {
+  const internalApiClient = getApiClient();
+  try {
+    await internalApiClient.patch(`/services/${id}/health-status`, {
+      healthStatus,
+    });
+  } catch (error) {
+    console.warn(`Failed to persist health status for service ${id}:`, error);
+  }
+};
+
 export const checkServiceHealth = async (
   service: Service,
   updateCache: (id: string, status: SERVICE_STATUS) => void,
@@ -436,7 +466,12 @@ export const checkServiceHealth = async (
       ? SERVICE_STATUS.HEALTHY
       : SERVICE_STATUS.UNHEALTHY;
     updateCache(service.id, status);
+    void updateServiceHealthStatus(
+      service.id,
+      response.ok ? "HEALTHY" : "UNHEALTHY",
+    );
   } catch {
     updateCache(service.id, SERVICE_STATUS.UNHEALTHY);
+    void updateServiceHealthStatus(service.id, "UNHEALTHY");
   }
 };

@@ -16,4 +16,5 @@ export default express
   .get("/:id/maps", controller.getMapsByServiceId)
   .post("/", validatePayload(ServiceCreateSchema), controller.createService)
   .patch("/:id", validatePayload(ServiceUpdateSchema), controller.updateService)
+  .patch("/:id/health-status", controller.updateHealthStatus)
   .delete("/:id", controller.deleteService);

@@ -187,10 +187,12 @@ model Service {
   comment       String?
   createdBy     String?
   createdDate   DateTime?   @db.Timestamptz(3)
-  lastSavedBy   String?
-  lastSavedDate DateTime?   @db.Timestamptz(3)
-  layers        Layer[]
-  metadata      Metadata?   @relation(fields: [metadataId], references: [id])
+  lastSavedBy      String?
+  lastSavedDate    DateTime?   @db.Timestamptz(3)
+  healthStatus     String?
+  healthCheckedAt  DateTime?   @db.Timestamptz(3)
+  layers           Layer[]
+  metadata         Metadata?   @relation(fields: [metadataId], references: [id])
 }
 
 model Metadata {

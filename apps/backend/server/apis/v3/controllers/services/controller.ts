@@ -70,6 +70,14 @@ class ServicesController {
     res.status(HttpStatusCodes.OK).json(service);
   });
 
+  updateHealthStatus = asyncHandler(async (req: Request, res: Response) => {
+    const { healthStatus } = req.body as {
+      healthStatus: "HEALTHY" | "UNHEALTHY";
+    };
+    await ServicesService.updateHealthStatus(req.params.id, healthStatus);
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  });
+
   deleteService = asyncHandler(async (req: Request, res: Response) => {
     await ServicesService.deleteService(req.params.id);
     res.status(HttpStatusCodes.NO_CONTENT).send();

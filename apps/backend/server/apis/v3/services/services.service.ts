@@ -276,6 +276,19 @@ class ServicesService {
     return updatedService;
   }
 
+  async updateHealthStatus(
+    id: string,
+    healthStatus: "HEALTHY" | "UNHEALTHY"
+  ) {
+    return await prisma.service.update({
+      where: { id },
+      data: {
+        healthStatus,
+        healthCheckedAt: new Date(),
+      },
+    });
+  }
+
   async deleteService(id: string) {
     await prisma.$transaction(async (transaction) => {
       const layers = await transaction.layer.findMany({

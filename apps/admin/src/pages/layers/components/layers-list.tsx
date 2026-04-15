@@ -37,6 +37,7 @@ type LayersGridRow = Omit<Layer, "status"> & {
   type: SERVICE_TYPE;
   url: string;
   status: SERVICE_STATUS | undefined;
+  lastChecked: string | undefined;
 };
 
 export default function LayersList({
@@ -85,6 +86,7 @@ export default function LayersList({
         type: serviceType,
         url: service?.url ?? "",
         status: service?.status,
+        lastChecked: service?.lastChecked,
       };
     });
   }, [layers, services, searchTerm, filterLayers]);
@@ -337,7 +339,7 @@ export default function LayersList({
                     headerAlign: "center",
                     renderCell: (
                       params: GridRenderCellParams<LayersGridRow>
-                    ) => <ServiceStatusIndicator status={params.row.status!} />,
+                    ) => <ServiceStatusIndicator status={params.row.status!} lastChecked={params.row.lastChecked} />,
                   },
                 ] as GridColDef<LayersGridRow>[]
               }

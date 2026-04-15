@@ -28,6 +28,12 @@ import { fetchCapabilities } from "./requests";
 import { useEffect, useRef } from "react";
 
 const HEALTH_CHECK_CONCURRENCY = 3;
+const HEALTH_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+
+function isStale(lastChecked?: string): boolean {
+  if (!lastChecked) return true;
+  return Date.now() - new Date(lastChecked).getTime() >= HEALTH_CHECK_INTERVAL_MS;
+}
 
 async function runWithConcurrencyLimit(
   services: Service[],
@@ -173,6 +179,7 @@ export const useServicesHealthCheck = (services: Service[]) => {
   const servicesRef = useRef<Service[]>(services);
   const skipNextCheck = useRef<Set<string>>(new Set());
   const runChecksRef = useRef<(() => Promise<void>) | null>(null);
+  const isCheckRunning = useRef(false);
 
   // Keep servicesRef in sync without triggering re-runs
   servicesRef.current = services;
@@ -193,26 +200,38 @@ export const useServicesHealthCheck = (services: Service[]) => {
     };
 
     runChecksRef.current = async () => {
-      const toCheck = servicesRef.current.filter((service) => {
-        if (skipNextCheck.current.has(service.id)) {
-          skipNextCheck.current.delete(service.id);
-          return false;
-        }
-        return true;
-      });
-      if (!toCheck.length) return;
-      await runWithConcurrencyLimit(toCheck, HEALTH_CHECK_CONCURRENCY, (service) =>
-        checkServiceHealth(service, updateCache),
-      );
+      if (isCheckRunning.current) return;
+      isCheckRunning.current = true;
+      try {
+        const toCheck = servicesRef.current.filter((service) => {
+          if (!isStale(service.lastChecked)) return false;
+          if (skipNextCheck.current.has(service.id)) {
+            skipNextCheck.current.delete(service.id);
+            return false;
+          }
+          return true;
+        });
+        if (!toCheck.length) return;
+        await runWithConcurrencyLimit(
+          toCheck,
+          HEALTH_CHECK_CONCURRENCY,
+          (service) => checkServiceHealth(service, updateCache),
+        );
+      } finally {
+        isCheckRunning.current = false;
+      }
     };
 
-    const interval = setInterval(() => void runChecksRef.current?.(), 5 * 60 * 1000);
+    const interval = setInterval(
+      () => void runChecksRef.current?.(),
+      HEALTH_CHECK_INTERVAL_MS,
+    );
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  // Run check on load and after any refetch that clears status
+  // Trigger check on load and after refetch — only when stale or missing
   useEffect(() => {
-    if (services.length > 0 && services.some((s) => s.status === undefined)) {
+    if (services.length > 0 && services.some((s) => isStale(s.lastChecked))) {
       void runChecksRef.current?.();
     }
   }, [services]);
