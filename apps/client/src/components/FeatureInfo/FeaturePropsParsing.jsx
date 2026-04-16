@@ -278,9 +278,12 @@ export default class FeaturePropsParsing {
   // Converts [text](url){key=value ...} into <a href="url" key="value" ...>text</a>.
   // Runs before placeholder replacement so the {attrs} block isn't consumed.
   #linkAttributeReplacer = (match, text, href, attrsStr) => {
-    const attrs = attrsStr
-      .trim()
-      .split(/\s+/)
+    // Splits on whitespace but respects quoted values,
+    // e.g. key="value with spaces"
+    // Not pretty and readable, but it works.
+    const attrs = (
+      attrsStr.match(/[\w-]+=(?:"[^"]*"|'[^']*'|\S+)|[\w-]+/g) || []
+    )
       .map((attr) => {
         const eqIdx = attr.indexOf("=");
         if (eqIdx === -1) return attr;
