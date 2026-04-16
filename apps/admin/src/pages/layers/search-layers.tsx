@@ -1,13 +1,12 @@
 import { Layer } from "../../api/layers";
+import { Service, SERVICE_TYPE } from "../../api/services";
 import LayersList from "./components/layers-list";
 
-// Filter function for searchable layers
-const filterSearchableLayers = (layers: Layer[]): Layer[] => {
-  return layers.filter((layer) => {
-    // TODO: Implement filtering logic here for searchable layers
-    return layer;
+const filterSearchableLayers = (layers: Layer[], services: Service[]): Layer[] =>
+  layers.filter((layer) => {
+    const service = services.find((s) => s.id === layer.serviceId);
+    return service?.type === SERVICE_TYPE.WFS;
   });
-};
 
 export default function SearchLayersPage() {
   return (

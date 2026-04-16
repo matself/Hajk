@@ -1,13 +1,12 @@
 import { Layer } from "../../api/layers";
+import { Service, SERVICE_TYPE } from "../../api/services";
 import LayersList from "./components/layers-list";
 
-// Filter function for editable layers
-const filterEditableLayers = (layers: Layer[]): Layer[] => {
-  return layers.filter((layer) => {
-    // TODO: Implement filtering logic here for editable layers
-    return layer;
+const filterEditableLayers = (layers: Layer[], services: Service[]): Layer[] =>
+  layers.filter((layer) => {
+    const service = services.find((s) => s.id === layer.serviceId);
+    return service?.type === SERVICE_TYPE.WFST;
   });
-};
 
 export default function EditingLayersPage() {
   return (
