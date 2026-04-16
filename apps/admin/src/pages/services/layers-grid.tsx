@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   Box,
+  Tooltip,
   TextField,
   Typography,
   useTheme,
@@ -14,7 +15,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import CircularProgress from "../../components/progress/circular-progress";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import { LayersGridProps, useLayersByServiceId } from "../../api/services";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
@@ -48,8 +49,46 @@ function LayersGrid({
     setSelectedRowObjects(undefined);
   };
 
-  const capabilitiesColumns = [
-    { field: "layer", headerName: t("common.layerName"), flex: 1 },
+  const tooltipSlotProps = {
+    tooltip: {
+      sx: {
+        "&&": {
+          bgcolor: "background.paper",
+          color: "text.primary",
+          border: "1px solid black",
+          borderRadius: 0,
+          boxShadow: "none",
+          fontSize: "1.1rem",
+        },
+      },
+    },
+  } as const;
+
+  const capabilitiesColumns: GridColDef[] = [
+    {
+      field: "layer",
+      headerName: t("common.layerName"),
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <Tooltip
+          title={params.value}
+          enterDelay={500}
+          enterNextDelay={500}
+          slotProps={tooltipSlotProps}
+        >
+          <Box
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              width: "100%",
+            }}
+          >
+            {params.value}
+          </Box>
+        </Tooltip>
+      ),
+    },
     { field: "infoClick", headerName: t("common.infoclick"), flex: 0.3 },
     { field: "publications", headerName: t("common.publications"), flex: 0.5 },
   ];
@@ -172,7 +211,32 @@ function LayersGrid({
               "& .MuiDataGrid-row": { cursor: "pointer" },
             }}
             rows={filteredLayersByService}
-            columns={[{ field: "name", headerName: t("common.name"), flex: 1 }]}
+            columns={[
+              {
+                field: "name",
+                headerName: t("common.name"),
+                flex: 1,
+                renderCell: (params: GridRenderCellParams) => (
+                  <Tooltip
+                    title={params.value as string}
+                    enterDelay={500}
+                    enterNextDelay={500}
+                    slotProps={tooltipSlotProps}
+                  >
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        width: "100%",
+                      }}
+                    >
+                      {params.value as string}
+                    </Box>
+                  </Tooltip>
+                ),
+              },
+            ]}
             initialState={{
               pagination: { paginationModel: { pageSize: 10 } },
             }}

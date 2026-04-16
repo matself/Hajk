@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Paper, Typography, TextField } from "@mui/material";
+import { Paper, Typography, TextField, Tooltip, Box } from "@mui/material";
 import {
   DataGrid,
+  GridColDef,
+  GridRenderCellParams,
   GridRowSelectionModel,
   GridValidRowModel,
 } from "@mui/x-data-grid";
@@ -43,8 +45,46 @@ function AvailableLayersGrid({
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
-  const columns = [
-    { field: "layer", headerName: t("common.layerName"), flex: 1 },
+  const tooltipSlotProps = {
+    tooltip: {
+      sx: {
+        "&&": {
+          bgcolor: "background.paper",
+          color: "text.primary",
+          border: "1px solid black",
+          borderRadius: 0,
+          boxShadow: "none",
+          fontSize: "1.1rem",
+        },
+      },
+    },
+  } as const;
+
+  const columns: GridColDef[] = [
+    {
+      field: "layer",
+      headerName: t("common.layerName"),
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <Tooltip
+          title={params.value}
+          enterDelay={500}
+          enterNextDelay={500}
+          slotProps={tooltipSlotProps}
+        >
+          <Box
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              width: "100%",
+            }}
+          >
+            {params.value as string}
+          </Box>
+        </Tooltip>
+      ),
+    },
     { field: "infoClick", headerName: t("common.infoclick"), flex: 0.3 },
     { field: "publications", headerName: t("common.publications"), flex: 0.5 },
   ];
