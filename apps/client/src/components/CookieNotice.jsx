@@ -115,10 +115,15 @@ function CookieNotice({ globalObserver, appModel }) {
     <BaseDialog
       slotProps={{
         paper: {
-          sx: {
-            width: { xs: "calc(100% - 16px)", sm: "calc(100% - 32px)" },
+          sx: (theme) => ({
+            width: {
+              // 16px = theme.spacing(2)
+              xs: `calc(100% - ${theme.spacing(2)})`,
+              // 32px = theme.spacing(4)
+              sm: `calc(100% - ${theme.spacing(4)})`,
+            },
             maxWidth: "md",
-          },
+          }),
         },
       }}
       sx={{ zIndex: "9999" }}

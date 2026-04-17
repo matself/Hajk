@@ -91,6 +91,7 @@ function getTheme(config, customTheme) {
       MuiDialogContent: {
         styleOverrides: {
           root: ({ theme }) => ({
+            // Often this is needed because Admin has set html/markdown with links and they dont get styled properly.
             '& a:not([class*="Mui"])': {
               color: theme.palette.primary.light,
             },

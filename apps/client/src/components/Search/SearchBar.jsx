@@ -89,8 +89,8 @@ const CustomPaper = (props) => {
     ? {
         margin: 0,
         borderTop: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
-        borderTopRightRadius: "0px",
-        borderTopLeftRadius: "0px",
+        borderTopRightRadius: 0,
+        borderTopLeftRadius: 0,
       }
     : { margin: 0 };
   return <Paper {...props} style={style} />;
@@ -429,7 +429,7 @@ class SearchBar extends React.PureComponent {
           input: {
             ...params.InputProps,
             ...disableUnderline,
-            style: { margin: 0, ...(isMobile && { height: "46px" }) },
+            style: { margin: 0, ...(isMobile && { height: "46px" }) }, // TODO: Prevent hardcoding of height, really not urgent.
             notched: isMobile ? null : false,
             "aria-label": "Sök i webbplatsens innehåll",
             endAdornment: (

@@ -57,6 +57,7 @@ const LayerListFilter = ({
             if (event.key === "Enter") {
               handleFilterSubmit(event.target.value);
               if (isMobile) {
+                // try to get rid of the keyboard on mobile.
                 event.target.blur();
               }
             }
