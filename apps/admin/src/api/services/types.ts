@@ -114,6 +114,7 @@ export interface LayersGridProps {
   isError: boolean;
   isLoading: boolean;
   type?: string;
+  onRetry?: () => void;
 }
 export interface UseServiceCapabilitiesProps {
   baseUrl: string;

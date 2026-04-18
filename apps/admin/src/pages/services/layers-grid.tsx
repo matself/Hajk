@@ -4,10 +4,10 @@ import {
   Box,
   Tooltip,
   TextField,
+  Button,
   Typography,
   useTheme,
   IconButton,
-  Button,
   Dialog,
   DialogContent,
   Paper,
@@ -29,6 +29,7 @@ function LayersGrid({
   isError,
   isLoading,
   type,
+  onRetry,
 }: LayersGridProps) {
   const { palette } = useTheme();
   const { t } = useTranslation();
@@ -326,11 +327,18 @@ function LayersGrid({
               typographyText={t("services.loadingLayers")}
             />
           ) : isError ? (
-            <Typography align="center" color={palette.error.main}>
-              {t("services.error.url")}
-            </Typography>
+            <Box sx={{ textAlign: "center", py: 2 }}>
+              <Typography color="error" sx={{ mb: 2 }}>
+                {t("services.error.url")}
+              </Typography>
+              {onRetry && (
+                <Button variant="outlined" onClick={onRetry}>
+                  {t("common.retry")}
+                </Button>
+              )}
+            </Box>
           ) : filteredCapabilityLayers.length === 0 ? (
-            <Typography align="center" color={palette.error.main}>
+            <Typography align="center" color="text.secondary">
               {t("services.error.layers")}
             </Typography>
           ) : (

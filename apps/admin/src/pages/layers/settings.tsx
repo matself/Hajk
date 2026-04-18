@@ -117,7 +117,13 @@ export default function LayerSettings() {
     { pxRatio: 0, dpi: 90 },
     { pxRatio: 2, dpi: 180 },
   ]);
-  const { layers: getCapLayers, styles: getCapStyles } = useServiceCapabilities(
+  const {
+    layers: getCapLayers,
+    styles: getCapStyles,
+    isError: capabilitiesError,
+    isLoading: capabilitiesLoading,
+    refetch: refetchCapabilities,
+  } = useServiceCapabilities(
     {
       baseUrl: service?.url ?? "",
       type:
@@ -1425,7 +1431,9 @@ export default function LayerSettings() {
           <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
             {layer && (
               <AvailableLayersGrid
-                isLoading={serviceLoading}
+                isLoading={serviceLoading || capabilitiesLoading}
+                isError={capabilitiesError}
+                onRetry={() => void refetchCapabilities()}
                 getCapLayers={getCapLayers}
                 selectedLayers={layer?.selectedLayers ?? []}
                 filteredLayers={filteredLayers}

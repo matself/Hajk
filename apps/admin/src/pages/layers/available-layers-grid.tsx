@@ -1,5 +1,12 @@
 import { useEffect, useRef } from "react";
-import { Paper, Typography, TextField, Tooltip, Box } from "@mui/material";
+import {
+  Paper,
+  Typography,
+  TextField,
+  Tooltip,
+  Box,
+  Button,
+} from "@mui/material";
 import {
   DataGrid,
   GridColDef,
@@ -15,6 +22,8 @@ import DataGridBadgeButton from "./components/data-grid-badge";
 
 function AvailableLayersGrid({
   isLoading,
+  isError,
+  onRetry,
   getCapLayers,
   selectedLayers,
   filteredLayers,
@@ -26,6 +35,8 @@ function AvailableLayersGrid({
   onLayerClick,
 }: {
   isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   getCapLayers: string[];
   selectedLayers: string[];
   filteredLayers: GridValidRowModel[];
@@ -40,11 +51,12 @@ function AvailableLayersGrid({
   const language = useAppStateStore((state) => state.language);
   const isDarkMode = themeMode === "dark";
   const { t } = useTranslation();
-  const isDataLoading = isLoading || filteredLayers.length === 0;
   const userHasInteractedRef = useRef(false);
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
+
   const tooltipSlotProps = {
     tooltip: {
       sx: {
@@ -117,18 +129,41 @@ function AvailableLayersGrid({
   const removedSelectedLayers =
     selectedRowObjects?.filter((item) => selectedLayers.includes(item)) ?? [];
 
+  const isEmpty = !isLoading && !isError && getCapLayers.length === 0;
+
   return (
-        <Paper
-          sx={{
-            width: "100%",
-            p: 2,
-            mb: 3,
-            backgroundColor: isDarkMode ? "#121212" : "#efefef",
-          }}
-        >
-          <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
-            {t("layers.availableLayers")}
+    <Paper
+      sx={{
+        width: "100%",
+        p: 2,
+        mb: 3,
+        backgroundColor: isDarkMode ? "#121212" : "#efefef",
+      }}
+    >
+      <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
+        {t("layers.availableLayers")}
+      </Typography>
+
+      {isError ? (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Typography color="error" sx={{ mb: 2 }}>
+            {t("layers.errorLoadingCapabilities")}
           </Typography>
+          {onRetry && (
+            <Button variant="outlined" onClick={onRetry}>
+              {t("common.retry")}
+            </Button>
+          )}
+        </Box>
+      ) : isEmpty ? (
+        <Typography
+          sx={{ textAlign: "center", fontSize: "large", mt: 1, py: 4 }}
+          color="text.secondary"
+        >
+          {t("services.error.layers")}
+        </Typography>
+      ) : (
+        <>
           <TextField
             sx={{
               mb: 3,
@@ -147,56 +182,56 @@ function AvailableLayersGrid({
               },
             }}
           />
-          {(selectedLayers.length !== 0 || preSelectedLayers.length !== 0) &&
-            !isDataLoading && (
-              <DataGridBadgeButton
-                selectedLayers={selectedLayers}
-                preSelectedLayers={preSelectedLayers}
-                removedSelectedLayers={removedSelectedLayers}
-                isDarkMode={isDarkMode}
-                onLayerClick={onLayerClick}
-              />
-            )}
-
-          <DataGrid
-              sx={{
-                maxWidth: "100%",
-                mb: 2,
-                mt: 1,
-                height: 400,
-                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-              }}
-              rows={filteredLayers}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 10,
-                  },
-                },
-              }}
-              slotProps={{
-                loadingOverlay: {
-                  variant: "skeleton",
-                  noRowsVariant: "skeleton",
-                },
-              }}
-              hideFooterPagination={getCapLayers && getCapLayers.length < 10}
-              pageSizeOptions={[10, 25, 50, 100]}
-              pagination
-              loading={isDataLoading}
-              localeText={
-                language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-              }
-              rowSelectionModel={selectGridId ?? []}
-              onRowSelectionModelChange={(ids) => {
-                userHasInteractedRef.current = true;
-                setSelectGridId(ids);
-              }}
-              checkboxSelection
-              disableRowSelectionOnClick
+          {(selectedLayers.length !== 0 || preSelectedLayers.length !== 0) && (
+            <DataGridBadgeButton
+              selectedLayers={selectedLayers}
+              preSelectedLayers={preSelectedLayers}
+              removedSelectedLayers={removedSelectedLayers}
+              isDarkMode={isDarkMode}
+              onLayerClick={onLayerClick}
             />
-        </Paper>
+          )}
+          <DataGrid
+            sx={{
+              maxWidth: "100%",
+              mb: 2,
+              mt: 1,
+              height: 400,
+              backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+            }}
+            rows={filteredLayers}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 10,
+                },
+              },
+            }}
+            slotProps={{
+              loadingOverlay: {
+                variant: "skeleton",
+                noRowsVariant: "skeleton",
+              },
+            }}
+            hideFooterPagination={getCapLayers && getCapLayers.length < 10}
+            pageSizeOptions={[10, 25, 50, 100]}
+            pagination
+            loading={isLoading}
+            localeText={
+              language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+            }
+            rowSelectionModel={selectGridId ?? []}
+            onRowSelectionModelChange={(ids) => {
+              userHasInteractedRef.current = true;
+              setSelectGridId(ids);
+            }}
+            checkboxSelection
+            disableRowSelectionOnClick
+          />
+        </>
+      )}
+    </Paper>
   );
 }
 

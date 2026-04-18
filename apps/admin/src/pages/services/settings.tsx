@@ -116,6 +116,7 @@ export default function ServiceSettings() {
     workspaces: getCapWorkspaces,
     isError: layersError,
     isLoading: layersLoading,
+    refetch: refetchLayers,
   } = useServiceCapabilities({
     baseUrl: service?.url ?? "",
     type:
@@ -185,8 +186,8 @@ export default function ServiceSettings() {
   };
 
   const handleSaveUrl = () => {
-    setValue("url", dialogUrl);
-    setValue("type", dialogServiceType);
+    setValue("url", dialogUrl, { shouldDirty: true });
+    setValue("type", dialogServiceType, { shouldDirty: true });
     handleDialogClose();
   };
 
@@ -772,6 +773,7 @@ export default function ServiceSettings() {
               isError={layersError}
               isLoading={layersLoading}
               type={service?.type}
+              onRetry={() => void refetchLayers()}
             />
           </Box>
         </FormContainer>
@@ -787,7 +789,7 @@ export default function ServiceSettings() {
               {t("common.dialog.closeBtn")}
             </Button>
             <Button onClick={handleSaveUrl} color="primary" variant="contained">
-              {t("common.dialog.saveBtn")}
+              {t("common.dialog.okBtn")}
             </Button>
           </>
         }
