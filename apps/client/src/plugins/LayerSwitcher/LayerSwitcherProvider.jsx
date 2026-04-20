@@ -143,6 +143,15 @@ const setQuickAccessStateInLocalStorage = (map) => {
   }
 };
 
+const clearQuickAccessState = (map) => {
+  // force UI to update and clear.
+  map
+    .getAllLayers()
+    .filter((l) => l.get("quickAccess") === true)
+    .forEach((l) => l.set(QUICK_ACCESS_KEY, false));
+  LocalStorageHelper.set(QUICK_ACCESS_LS_KEY, []);
+};
+
 const createDispatch = (map, staticLayerConfig, staticLayerTree) => {
   const olBackgroundLayers = map
     .getLayers()
@@ -435,6 +444,11 @@ const LayerSwitcherProvider = ({
   // OpenLayers listeners. So that the application realizes that some new
   // layers might have been added to QuickAccess.
   useEffect(() => {
+    if (!functionalCookieOk()) {
+      clearQuickAccessState(map);
+      return;
+    }
+
     const ls = LocalStorageHelper.get(QUICK_ACCESS_LS_KEY);
 
     if (!(typeof ls === "object" && ls !== null)) {
@@ -450,6 +464,22 @@ const LayerSwitcherProvider = ({
         }
       });
   }, [map]);
+
+  useEffect(() => {
+    const cookieLevelChangedListener = globalObserver.subscribe(
+      "core.cookieLevelChanged",
+      () => {
+        if (!functionalCookieOk()) {
+          // Clean up if someone changed to disable functional cookies
+          clearQuickAccessState(map);
+        }
+      }
+    );
+
+    return () => {
+      cookieLevelChangedListener.unsubscribe();
+    };
+  }, [globalObserver, map]);
 
   const dispatcher = useRef(
     createDispatch(map, staticLayerConfigMap, layerTreeData)
