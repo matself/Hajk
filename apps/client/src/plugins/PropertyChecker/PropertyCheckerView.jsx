@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 
 import useUpdateEffect from "../../hooks/useUpdateEffect";
 
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
   Button,
   Card,
   CardActions,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -165,7 +165,7 @@ function PropertyCheckerView(props) {
   return (
     <>
       <InfoDialog localObserver={localObserver} />
-      <Dialog open={clearDialogVisible} onClose={handleCloseConfirmationDialog}>
+      <BaseDialog open={clearDialogVisible} onClose={handleCloseConfirmationDialog}>
         <DialogTitle>{"Är du säker på att du vill rensa listan?"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -180,7 +180,7 @@ function PropertyCheckerView(props) {
             Ja, rensa
           </Button>
         </DialogActions>
-      </Dialog>
+      </BaseDialog>
       {Object.keys(groupedFeatures).length === 0 && (
         <ButtonWithBottomMargin
           variant="contained"

@@ -248,6 +248,7 @@ export default class PrintModel {
   }
 
   addPreviewLayer() {
+    if (this.previewLayer) return;
     this.previewLayer = new Vector({
       source: new VectorSource(),
       layerType: "system",

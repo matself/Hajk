@@ -13,14 +13,13 @@ import AdvancedOptions from "./AdvancedOptions";
 import HajkToolTip from "components/HajkToolTip";
 
 const Root = styled("div")(() => ({
-  margin: -10,
   display: "flex",
   flexDirection: "column",
   height: "100%",
 }));
 
 const StyledAppBar = styled(AppBar)(() => ({
-  top: -10,
+  top: 0,
 }));
 
 const TabContent = styled("div")(({ theme }) => ({
@@ -142,6 +141,18 @@ class PrintView extends React.PureComponent {
     props.localObserver.subscribe("hidePrintPreview", () => {
       this.setState({ previewLayerVisible: false });
     });
+  }
+
+  componentDidMount() {
+    // On mobile the Sheet unmounts children when closed and remounts them
+    // when opened. By that time the "showPrintPreview" event has already
+    // been published (and missed), so we trigger the preview here instead.
+    if (this.props.windowVisible) {
+      const scale = this.model.getFittingScale();
+      this.setState({ previewLayerVisible: true, scale: scale }, () => {
+        this.handlePotentialPrintOptionError();
+      });
+    }
   }
 
   initiatePrint = (e) => {

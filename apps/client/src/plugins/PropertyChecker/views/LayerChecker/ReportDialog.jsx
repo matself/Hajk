@@ -1,8 +1,8 @@
 import React from "react";
 
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -128,7 +128,7 @@ export default function ReportDialog({
 
   return (
     reportDialogVisible && (
-      <Dialog
+      <BaseDialog
         open={reportDialogVisible}
         onClose={() => {
           setReportDialogVisible(false);
@@ -201,7 +201,7 @@ export default function ReportDialog({
             Stäng
           </Button>
         </DialogActions>
-      </Dialog>
+      </BaseDialog>
     )
   );
 }
