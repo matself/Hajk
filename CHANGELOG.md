@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.4.0] 2026-04-16
+## [unreleased]
 
 ### Breaking
 
@@ -15,9 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Client: New Mobile UI etc [Issue #1778](https://github.com/hajkmap/Hajk/issues/1778)
+- Client: New Mobile UI etc, see [#1778](https://github.com/hajkmap/Hajk/issues/1778).
+- Client: New CQL filter UI, PR [#1756](https://github.com/hajkmap/Hajk/pull/1756).
 
 ### Fixed
+
+- Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
 
 ## [4.3.0] 2026-04-20
 
@@ -541,8 +544,7 @@ _A quick follow-up to 3.13.22, that had some issues with certain map configurati
 
 ## [3.12.0-rc.2] - 2023-06-19
 
-<!-- [unreleased]: https://github.com/hajkmap/Hajk/compare/v4.2.0...develop -->
-
+[unreleased]: https://github.com/hajkmap/Hajk/compare/v4.3.0...develop
 [4.3.0]: https://github.com/hajkmap/Hajk/compare/v4.3.0-rc1...v4.3.0
 [4.3.0-rc.1]: https://github.com/hajkmap/Hajk/compare/v4.2.0...v4.3.0-rc1
 [4.2.0]: https://github.com/hajkmap/Hajk/compare/v4.2.0-rc.1...v4.2.0
