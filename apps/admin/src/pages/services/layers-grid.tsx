@@ -220,10 +220,10 @@ function LayersGrid({
             maxWidth: "100%",
             mb: 2,
             mt: 1,
+            height: "auto",
             backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
             "& .MuiDataGrid-row": { cursor: "pointer" },
           }}
-          autoHeight
           rows={filteredLayersByService}
           columns={[
             {
@@ -260,7 +260,7 @@ function LayersGrid({
               noRowsVariant: "skeleton",
             },
           }}
-          hideFooterPagination={filteredLayersByService.length <= 10}
+          hideFooter={filteredLayersByService.length <= 10}
           pageSizeOptions={[10, 25, 50, 100]}
           pagination
           loading={isLoadingLayersByService}
@@ -357,7 +357,7 @@ function LayersGrid({
                   noRowsVariant: "skeleton",
                 },
               }}
-              hideFooterPagination={filteredCapabilityLayers.length <= capabilitiesPaginationModel.pageSize}
+              hideFooter={filteredCapabilityLayers.length <= capabilitiesPaginationModel.pageSize}
               pageSizeOptions={[10, 25, 50, 100]}
               pagination
               loading={isLoading}

@@ -128,13 +128,12 @@ export default function UserTable() {
         loading={usersLoading}
         localeText={language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined}
         disableRowSelectionOnClick
-        sx={{ maxWidth: "100%" }}
+        sx={{ maxWidth: "100%", height: "auto" }}
         initialState={{
           pagination: { paginationModel: { pageSize: PAGE_SIZE } },
         }}
         pageSizeOptions={[5, 10, 25, 50, 100]}
-        autoHeight={true}
-        hideFooterPagination={users && users.length <= PAGE_SIZE}
+        hideFooter={users && users.length <= PAGE_SIZE}
         slotProps={{
           pagination: {
             showFirstButton: true,

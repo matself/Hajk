@@ -20,8 +20,7 @@ export interface StyledDataGridProps<
   customSx?: Record<string, unknown>;
   pageSize?: number;
   pageSizeOptions?: number[];
-  hideFooterPagination?: boolean;
-  autoHeight?: boolean;
+  hideFooter?: boolean;
   loading?: boolean;
   getRowId?: (row: T) => string;
   slots?: DataGridProps<T>["slots"];
@@ -38,7 +37,7 @@ export default function StyledDataGrid<
   customSx = {},
   pageSize = 10,
   pageSizeOptions = [10, 25, 50, 100],
-  hideFooterPagination,
+  hideFooter,
   loading = false,
   getRowId = (row: GridValidRowModel) => String(row.id),
   slots,
@@ -137,9 +136,7 @@ export default function StyledDataGrid<
         },
       }}
       onPaginationModelChange={handlePaginationModelChange}
-      hideFooterPagination={
-        hideFooterPagination ?? (rows && rows.length <= pageSize)
-      }
+      hideFooter={hideFooter ?? (rows && rows.length <= pageSize)}
       pageSizeOptions={pageSizeOptions}
       loading={loading}
       slots={slots}
