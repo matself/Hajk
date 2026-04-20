@@ -1,6 +1,10 @@
 import React from "react";
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
+import PanToolIcon from "@mui/icons-material/PanTool";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import Grid from "@mui/material/Grid";
 import CoordinatesTransformRow from "./CoordinatesTransformRow";
 import { Divider } from "@mui/material";
@@ -77,6 +81,26 @@ class CoordinatesView extends React.PureComponent {
     });
   }
 
+  componentDidMount() {
+    this.#publishInitialCoordinates();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.windowVisible && this.props.windowVisible) {
+      this.#publishInitialCoordinates();
+    }
+  }
+
+  #publishInitialCoordinates() {
+    if (this.props.windowVisible && this.model.showFieldsOnStart) {
+      this.localObserver.publish("newCoordinates", {
+        coordinates: this.model.map.getView().getCenter(),
+        proj: this.model.map.getView().getProjection().getCode(),
+        force: true,
+      });
+    }
+  }
+
   componentWillUnmount() {
     this.model.deactivate();
   }
@@ -106,9 +130,7 @@ class CoordinatesView extends React.PureComponent {
       >
         <Grid
           size={{
-            xs: 12,
-            sm: 6,
-            md: 6,
+            xs: 6,
           }}
         >
           <HajkToolTip title="Rensa fält">
@@ -116,6 +138,7 @@ class CoordinatesView extends React.PureComponent {
               fullWidth={true}
               variant="contained"
               color="primary"
+              startIcon={<DeleteIcon />}
               onClick={() => {
                 this.props.model.resetCoords();
               }}
@@ -126,9 +149,7 @@ class CoordinatesView extends React.PureComponent {
         </Grid>
         <Grid
           size={{
-            xs: 12,
-            sm: 6,
-            md: 6,
+            xs: 6,
           }}
         >
           <HajkToolTip title="Min position">
@@ -136,6 +157,7 @@ class CoordinatesView extends React.PureComponent {
               fullWidth={true}
               variant="contained"
               color="primary"
+              startIcon={<MyLocationIcon />}
               onClick={() => {
                 this.props.model.goToUserLocation();
               }}
@@ -146,9 +168,7 @@ class CoordinatesView extends React.PureComponent {
         </Grid>
         <Grid
           size={{
-            xs: 12,
-            sm: 6,
-            md: 6,
+            xs: 6,
           }}
         >
           <HajkToolTip title="Panorera till markering">
@@ -156,6 +176,7 @@ class CoordinatesView extends React.PureComponent {
               fullWidth={true}
               variant="contained"
               color="primary"
+              startIcon={<PanToolIcon />}
               onClick={() => {
                 this.props.model.centerOnMarker();
               }}
@@ -166,9 +187,7 @@ class CoordinatesView extends React.PureComponent {
         </Grid>
         <Grid
           size={{
-            xs: 12,
-            sm: 6,
-            md: 6,
+            xs: 6,
           }}
         >
           <HajkToolTip title="Zooma in till markering">
@@ -176,6 +195,7 @@ class CoordinatesView extends React.PureComponent {
               fullWidth={true}
               variant="contained"
               color="primary"
+              startIcon={<ZoomInIcon />}
               onClick={() => {
                 this.props.model.zoomOnMarker();
               }}
