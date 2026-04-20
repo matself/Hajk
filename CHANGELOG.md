@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Client: Ensure the Quick Access function respects the cookie setting [Issue #1798](https://github.com/hajkmap/Hajk/issues/1798)
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
 
 ## [4.3.0] 2026-04-20
