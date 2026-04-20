@@ -1,7 +1,7 @@
 import React from "react";
 import { styled } from "@mui/material";
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -10,7 +10,7 @@ import {
   Box,
 } from "@mui/material";
 
-const StyledDialog = styled(Dialog)(({ theme }) => ({
+const StyledDialog = styled(BaseDialog)(({ theme }) => ({
   "& .MuiDialog-paper": {
     width: "100%",
     maxWidth: 500,
@@ -52,7 +52,10 @@ const UploadDialog = (props) => {
   };
 
   return (
-    <StyledDialog open={props.open} onClose={() => props.setOpen(false)}>
+    <StyledDialog
+      open={props.open}
+      onClose={() => props.setOpen(false)}
+    >
       <DialogTitle>Importera ritobjekt</DialogTitle>
       <DialogContent>
         <StyledFileInput>

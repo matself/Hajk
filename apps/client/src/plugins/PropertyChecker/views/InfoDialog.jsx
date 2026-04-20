@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import BaseDialog from "components/Dialog/BaseDialog";
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -29,7 +29,7 @@ function InfoDialog({ localObserver }) {
   }, [localObserver]);
 
   return (
-    <Dialog
+    <BaseDialog
       open={clearDialogVisible}
       onClose={handleClose}
       scroll="body"
@@ -88,7 +88,7 @@ function InfoDialog({ localObserver }) {
           Stäng
         </Button>
       </DialogActions>
-    </Dialog>
+    </BaseDialog>
   );
 }
 
