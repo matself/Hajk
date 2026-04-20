@@ -550,12 +550,12 @@ class PrintWindow extends React.PureComponent {
   removeNonPrintableDocuments(documents) {
     /*
      * Remove menu items that should not appear in the print menu.
-     * Items that should be removed are: items without a document that are not a group parent. (maplinks, links)
+     * Only menu items that have documents connected to them should be included in the print menu.
      */
     let removedIds = [];
 
     Object.keys(documents).forEach((key) => {
-      if (documents[key].maplink.trim() || documents[key].link.trim()) {
+      if (!documents[key].document) {
         removedIds.push(parseInt(key));
         delete documents[key];
       }
