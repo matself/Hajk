@@ -214,7 +214,7 @@ function AvailableLayersGrid({
                 noRowsVariant: "skeleton",
               },
             }}
-            hideFooterPagination={getCapLayers && getCapLayers.length < 10}
+            hideFooterPagination={filteredLayers.length <= 10}
             pageSizeOptions={[10, 25, 50, 100]}
             pagination
             loading={isLoading}

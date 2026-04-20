@@ -138,7 +138,7 @@ export default function StyledDataGrid<
       }}
       onPaginationModelChange={handlePaginationModelChange}
       hideFooterPagination={
-        hideFooterPagination ?? (rows && rows.length < pageSize)
+        hideFooterPagination ?? (rows && rows.length <= pageSize)
       }
       pageSizeOptions={pageSizeOptions}
       loading={loading}

@@ -6,12 +6,12 @@ import {
   TextField,
   Button,
   Typography,
-  useTheme,
   IconButton,
   Dialog,
   DialogContent,
   Paper,
 } from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import CircularProgress from "../../components/progress/circular-progress";
@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { LayersGridProps, useLayersByServiceId } from "../../api/services";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
-import { useCreateLayer, LayerCreateInput } from "../../api/layers";
+import { useCreateLayer } from "../../api/layers";
 import { SERVICE_TYPE } from "../../api/services/types";
 
 function LayersGrid({
@@ -31,7 +31,6 @@ function LayersGrid({
   type,
   onRetry,
 }: LayersGridProps) {
-  const { palette } = useTheme();
   const { t } = useTranslation();
   const [dialogSearchTerm, setDialogSearchTerm] = useState("");
   const [serviceLayerSearch, setServiceLayerSearch] = useState("");
@@ -39,15 +38,19 @@ function LayersGrid({
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
   const { mutateAsync: createLayer } = useCreateLayer(serviceId ?? "");
-  const [selectedRowObjects, setSelectedRowObjects] = useState<string[]>();
   const { data: layersByService, isLoading: isLoadingLayersByService } =
     useLayersByServiceId(serviceId);
   const [open, setOpen] = React.useState(false);
+  const [capabilitiesPaginationModel, setCapabilitiesPaginationModel] = useState(() => {
+    const stored = localStorage.getItem("capabilities-dialog-page-size");
+    const parsed = Number(stored);
+    const pageSize = [10, 25, 50, 100].includes(parsed) ? parsed : 10;
+    return { page: 0, pageSize };
+  });
   const navigate = useNavigate();
 
   const handleClose = () => {
     setOpen(false);
-    setSelectedRowObjects(undefined);
   };
 
   const tooltipSlotProps = {
@@ -64,6 +67,26 @@ function LayersGrid({
       },
     },
   } as const;
+
+  const handleCreateLayer = async (layerName: string) => {
+    try {
+      const response = await createLayer({
+        serviceId,
+        selectedLayers: [layerName],
+      });
+      void navigate(
+        type === SERVICE_TYPE.WMS
+          ? "/display-layers/" + response?.id
+          : type === SERVICE_TYPE.WFS
+            ? "/search-layers/" + response?.id
+            : type === SERVICE_TYPE.WFST
+              ? "/editing-layers/" + response?.id
+              : "/display-layers/" + response?.id
+      );
+    } catch (error) {
+      console.error("Failed to create layer:", error);
+    }
+  };
 
   const capabilitiesColumns: GridColDef[] = [
     {
@@ -92,31 +115,41 @@ function LayersGrid({
     },
     { field: "infoClick", headerName: t("common.infoclick"), flex: 0.3 },
     { field: "publications", headerName: t("common.publications"), flex: 0.5 },
+    {
+      field: "actions",
+      headerName: "",
+      width: 56,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <Tooltip title={t("services.publishLayerAction")} slotProps={tooltipSlotProps}>
+          <IconButton
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleCreateLayer(params.row.layer as string);
+            }}
+          >
+            <AddCircleOutlineIcon />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
   ];
 
   // Capabilities layers filtered by dialog search
   const filteredCapabilityLayers = useMemo(() => {
     if (!layers) return [];
     return layers
-      .map((layer, index) => {
-        const isSelected = selectedRowObjects?.some(
-          (selected) => selected.toLowerCase() === layer.toLowerCase()
-        );
-        return {
-          id: index,
-          layer,
-          infoClick: "",
-          publications: "",
-          selected: isSelected,
-        };
-      })
-      .filter(
-        (layer) =>
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          layer?.selected ||
-          layer.layer.toLowerCase().includes(dialogSearchTerm.toLowerCase())
+      .map((layer, index) => ({
+        id: index,
+        layer,
+        infoClick: "",
+        publications: "",
+      }))
+      .filter((layer) =>
+        layer.layer.toLowerCase().includes(dialogSearchTerm.toLowerCase())
       );
-  }, [layers, dialogSearchTerm, selectedRowObjects]);
+  }, [layers, dialogSearchTerm]);
 
   // Existing service layers filtered by main search
   const filteredLayersByService = useMemo(() => {
@@ -127,26 +160,6 @@ function LayersGrid({
       )
       .map((layer) => ({ id: layer.id, name: layer.name }));
   }, [layersByService?.layers, serviceLayerSearch]);
-
-  const handleCreateLayer = async (layer: LayerCreateInput) => {
-    try {
-      const response = await createLayer({
-        serviceId,
-        selectedLayers: layer.selectedLayers ?? [],
-      });
-      void navigate(
-        type === SERVICE_TYPE.WMS
-          ? "/display-layers/" + response?.id
-          : type === SERVICE_TYPE.WFS
-            ? "/search-layers/" + response?.id
-            : type === SERVICE_TYPE.WFST
-              ? "/editing-layers/" + response?.id
-              : "/display-layers/" + response?.id
-      );
-    } catch (error) {
-      console.error("Failed to create layer:", error);
-    }
-  };
 
   const hasExistingLayers = (layersByService?.layers?.length ?? 0) > 0;
 
@@ -173,7 +186,7 @@ function LayersGrid({
         </Typography>
         <Button variant="contained" onClick={() => setOpen(true)}>
           {hasExistingLayers
-            ? t("layers.createNewLayer")
+            ? t("services.publishLayerAction")
             : t("services.publishLayer")}
         </Button>
       </Box>
@@ -202,71 +215,71 @@ function LayersGrid({
       )}
 
       {hasExistingLayers && (
-          <DataGrid
-            sx={{
-              maxWidth: "100%",
-              mb: 2,
-              mt: 1,
-              height: 400,
-              backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-              "& .MuiDataGrid-row": { cursor: "pointer" },
-            }}
-            rows={filteredLayersByService}
-            columns={[
-              {
-                field: "name",
-                headerName: t("common.name"),
-                flex: 1,
-                renderCell: (params: GridRenderCellParams) => (
-                  <Tooltip
-                    title={params.value as string}
-                    enterDelay={500}
-                    enterNextDelay={500}
-                    slotProps={tooltipSlotProps}
+        <DataGrid
+          sx={{
+            maxWidth: "100%",
+            mb: 2,
+            mt: 1,
+            backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+            "& .MuiDataGrid-row": { cursor: "pointer" },
+          }}
+          autoHeight
+          rows={filteredLayersByService}
+          columns={[
+            {
+              field: "name",
+              headerName: t("common.name"),
+              flex: 1,
+              renderCell: (params: GridRenderCellParams) => (
+                <Tooltip
+                  title={params.value as string}
+                  enterDelay={500}
+                  enterNextDelay={500}
+                  slotProps={tooltipSlotProps}
+                >
+                  <Box
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                    }}
                   >
-                    <Box
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        width: "100%",
-                      }}
-                    >
-                      {params.value as string}
-                    </Box>
-                  </Tooltip>
-                ),
-              },
-            ]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } },
-            }}
-            slotProps={{
-              loadingOverlay: {
-                variant: "skeleton",
-                noRowsVariant: "skeleton",
-              },
-            }}
-            hideFooterPagination={(layersByService?.layers?.length ?? 0) < 10}
-            pageSizeOptions={[10, 25, 50, 100]}
-            pagination
-            loading={isLoadingLayersByService}
-            localeText={
-              language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-            }
-            onRowClick={({ row }) => {
-              const id = row.id as string;
-              void navigate(
-                type === SERVICE_TYPE.WFS
-                  ? `/search-layers/${id}`
-                  : type === SERVICE_TYPE.WFST
-                    ? `/editing-layers/${id}`
-                    : `/display-layers/${id}`
-              );
-            }}
-            disableMultipleRowSelection
-            disableRowSelectionOnClick
-          />
+                    {params.value as string}
+                  </Box>
+                </Tooltip>
+              ),
+            },
+          ]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10 } },
+          }}
+          slotProps={{
+            loadingOverlay: {
+              variant: "skeleton",
+              noRowsVariant: "skeleton",
+            },
+          }}
+          hideFooterPagination={filteredLayersByService.length <= 10}
+          pageSizeOptions={[10, 25, 50, 100]}
+          pagination
+          loading={isLoadingLayersByService}
+          localeText={
+            language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+          }
+          onRowClick={({ row }) => {
+            const id = row.id as string;
+            void navigate(
+              type === SERVICE_TYPE.WFS
+                ? `/search-layers/${id}`
+                : type === SERVICE_TYPE.WFST
+                  ? `/editing-layers/${id}`
+                  : `/display-layers/${id}`
+            );
+          }}
+          disableMultipleRowSelection
+          disableRowSelectionOnClick
+        />
       )}
 
       <Dialog open={open} fullWidth onClose={handleClose} maxWidth="lg">
@@ -299,27 +312,6 @@ function LayersGrid({
             </IconButton>
           </Box>
 
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (!selectedRowObjects || selectedRowObjects.length === 0) return;
-              void handleCreateLayer({
-                serviceId,
-                selectedLayers: selectedRowObjects,
-              });
-            }}
-            disabled={!selectedRowObjects || selectedRowObjects.length === 0}
-            sx={{ display: "block", mb: 1 }}
-          >
-            {t("layers.createNewLayer")}
-          </Button>
-
-          {(!selectedRowObjects || selectedRowObjects.length === 0) && (
-            <Typography align="center" color={palette.error.main} sx={{ mb: 1 }}>
-              {!isLoading && !isError && t("services.atLeastOneLayerRequired")}
-            </Typography>
-          )}
-
           {isLoading ? (
             <CircularProgress
               color="primary"
@@ -342,44 +334,38 @@ function LayersGrid({
               {t("services.error.layers")}
             </Typography>
           ) : (
-              <DataGrid
-                onRowSelectionModelChange={(ids) => {
-                  const selectedRowsData = ids.map((id) =>
-                    filteredCapabilityLayers.find((row) => row.id === id)
-                  );
-                  setSelectedRowObjects(
-                    selectedRowsData.map((row) => row?.layer ?? "")
-                  );
-                }}
-                sx={{
-                  maxWidth: "100%",
-                  mb: 2,
-                  mt: 1,
-                  height: 400,
-                  backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-                  "& .MuiDataGrid-cell:focus": { outline: "none" },
-                  "& .MuiDataGrid-cell:focus-within": { outline: "none" },
-                }}
-                rows={filteredCapabilityLayers}
-                columns={capabilitiesColumns}
-                initialState={{
-                  pagination: { paginationModel: { pageSize: 10 } },
-                }}
-                slotProps={{
-                  loadingOverlay: {
-                    variant: "skeleton",
-                    noRowsVariant: "skeleton",
-                  },
-                }}
-                hideFooterPagination={layers && layers.length < 10}
-                pageSizeOptions={[10, 25, 50, 100]}
-                pagination
-                loading={isLoading}
-                localeText={
-                  language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-                }
-                disableMultipleRowSelection
-              />
+            <DataGrid
+              sx={{
+                maxWidth: "100%",
+                mb: 2,
+                mt: 1,
+                height: 400,
+                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+                "& .MuiDataGrid-cell:focus": { outline: "none" },
+                "& .MuiDataGrid-cell:focus-within": { outline: "none" },
+              }}
+              rows={filteredCapabilityLayers}
+              columns={capabilitiesColumns}
+              paginationModel={capabilitiesPaginationModel}
+              onPaginationModelChange={(model) => {
+                setCapabilitiesPaginationModel(model);
+                localStorage.setItem("capabilities-dialog-page-size", String(model.pageSize));
+              }}
+              slotProps={{
+                loadingOverlay: {
+                  variant: "skeleton",
+                  noRowsVariant: "skeleton",
+                },
+              }}
+              hideFooterPagination={filteredCapabilityLayers.length <= capabilitiesPaginationModel.pageSize}
+              pageSizeOptions={[10, 25, 50, 100]}
+              pagination
+              loading={isLoading}
+              localeText={
+                language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
+              }
+              disableRowSelectionOnClick
+            />
           )}
         </DialogContent>
       </Dialog>

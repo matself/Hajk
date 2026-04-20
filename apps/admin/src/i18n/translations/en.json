@@ -131,6 +131,7 @@
     "services.loadingLayers": "Loading layers...",
     "services.imageFormats": "Image formats",
     "services.publishLayer": "Publish your first layer",
+    "services.publishLayerAction": "Publish layer",
     "services.layerInService": "Hajk-layers that uses this service",
     "services.layerInServiceNone": "There are no Hajk-layers that uses this service",
     "services.atLeastOneLayerRequired": "At least one layer must be selected",
