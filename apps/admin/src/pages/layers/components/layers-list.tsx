@@ -1,6 +1,12 @@
 import { useState, useMemo } from "react";
 import Grid from "@mui/material/Grid2";
-import { Button, useTheme, TextField, ListItemText } from "@mui/material";
+import {
+  Button,
+  useTheme,
+  TextField,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -117,6 +123,11 @@ export default function LayersList({
   });
   const watchServiceId = watch("serviceId");
   const { mutateAsync: createLayer } = useCreateLayer(watchServiceId);
+
+  const selectedService = useMemo(
+    () => services?.find((s) => s.id === watchServiceId),
+    [services, watchServiceId],
+  );
 
   const handleLayerSubmit = async (layerData: LayerCreateInput) => {
     try {
@@ -279,6 +290,18 @@ export default function LayersList({
                   />
                 </FormControl>
               </Grid>
+              {selectedService && (
+                <Grid size={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    {t("layers.createDialog.serviceDefaults", {
+                      url: selectedService.url,
+                      version: selectedService.version,
+                      imageFormat: selectedService.imageFormat,
+                      projection: selectedService.projection?.code ?? "—",
+                    })}
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </DialogWrapper>
 

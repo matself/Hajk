@@ -21,6 +21,7 @@ import {
   ListItem,
   Typography,
   styled,
+  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -962,6 +963,21 @@ export default function LayerSettings() {
                     />
                   </FormControl>
                 </Grid>
+                {service && (
+                  <Grid size={12}>
+                    <Alert severity="info" variant="outlined" sx={{ py: 0.5 }}>
+                      <Typography variant="body2" component="span">
+                        {t("layers.serviceConnectionSummary", {
+                          type: service.type,
+                          url: service.url,
+                          version: service.version,
+                          imageFormat: service.imageFormat,
+                          projection: service.projection?.code ?? "—",
+                        })}
+                      </Typography>
+                    </Alert>
+                  </Grid>
+                )}
                 <Grid size={{ xs: 12, md: 10 }}>
                   <TextField
                     label={t("layers.internalName")}
@@ -1389,6 +1405,18 @@ export default function LayerSettings() {
                   <TextField
                     label="Url"
                     fullWidth
+                    helperText={
+                      service &&
+                      [
+                        SERVICE_TYPE.WFS,
+                        SERVICE_TYPE.WFST,
+                        SERVICE_TYPE.VECTOR,
+                      ].includes(service.type)
+                        ? t("layers.searchSettings.urlServiceHint", {
+                            url: service.url,
+                          })
+                        : undefined
+                    }
                     {...register("searchSettings.url")}
                   />
                 </Grid>

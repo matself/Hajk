@@ -11,6 +11,8 @@ import { Service } from "../services";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 import { generateRandomName } from "../generated/names";
 import useAppStateStore from "../../store/use-app-state-store";
+import { mergeWithConfigDefaults } from "../../lib/merge-with-config-defaults";
+import { applyServiceDefaultsToLayerCreate } from "./apply-service-to-layer-create";
 
 /**
  * This module provides API request functions to interact with the backend
@@ -152,7 +154,7 @@ export const getServiceByLayerId = async (
 
 export const createLayer = async (
   newLayer: LayerCreateInput
-): Promise<LayerCreateInput> => {
+): Promise<Layer> => {
   const internalApiClient = getApiClient();
   const { layersDefault } = useAppStateStore.getState();
 
@@ -160,15 +162,27 @@ export const createLayer = async (
   if (!payload.name) {
     payload.name = generateRandomName();
   }
-  const layerData = {
-    ...layersDefault,
-    ...payload,
-  } as LayerCreateInput;
+
+  let merged = mergeWithConfigDefaults(
+    { ...(layersDefault ?? {}) },
+    { ...payload } as Record<string, unknown>,
+    {
+      deepMergeKeys: [
+        "searchSettings",
+        "metadata",
+        "infoClickSettings",
+        "options",
+      ],
+    },
+  );
+
+  const { getServiceById } = await import("../services/requests");
+  const service = await getServiceById(payload.serviceId);
+  applyServiceDefaultsToLayerCreate(merged, service);
+
+  const layerData = merged as unknown as Record<string, unknown>;
   try {
-    const response = await internalApiClient.post<LayerCreateInput>(
-      "/layers",
-      layerData
-    );
+    const response = await internalApiClient.post<Layer>("/layers", layerData);
     if (!response.data) {
       throw new Error("No layer data found");
     }
