@@ -6,10 +6,15 @@ import { isMobile } from "../utils/IsMobile";
 
 const KEYBOARD_EXPAND_THRESHOLD = 0.4;
 
-const isTextInput = (el) =>
-  el?.tagName === "INPUT" ||
-  el?.tagName === "TEXTAREA" ||
-  el?.isContentEditable;
+const isTextInput = (el, container) => {
+  if (!el) return false;
+  if (container && !container.contains(el)) return false;
+  return (
+    el.tagName === "INPUT" ||
+    el.tagName === "TEXTAREA" ||
+    el.isContentEditable
+  );
+};
 
 const WindowSheet = ({
   isOpen,
@@ -44,7 +49,7 @@ const WindowSheet = ({
     if (!isMobile || !isOpen || !avoidKeyboard) return;
 
     const onFocusIn = (e) => {
-      if (!isTextInput(e.target)) return;
+      if (!isTextInput(e.target, scrollContainerRef.current)) return;
       setKeyboardActive(true);
 
       const cur = currentSnapIndex.current;
@@ -75,7 +80,8 @@ const WindowSheet = ({
     };
 
     const onFocusOut = (e) => {
-      if (isTextInput(e.target)) setKeyboardActive(false);
+      if (isTextInput(e.target, scrollContainerRef.current))
+        setKeyboardActive(false);
     };
 
     document.addEventListener("focusin", onFocusIn);
