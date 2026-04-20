@@ -22,20 +22,22 @@
     "lint:fix": "eslint --fix server"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.6",
+    "@babel/runtime": "^7.29.2",
     "activedirectory2": "^2.2.0",
+    "clf-date": "^0.2.1",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.2",
-    "fast-xml-parser": "^5.4.2",
+    "fast-xml-parser": "^5.5.12",
     "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "log4js": "^6.9.1",
     "query-string": "^9.3.1",
-    "write-excel-file": "^3.0.5"
+    "write-excel-file": "^3.0.8",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^9",
@@ -45,7 +47,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17",
     "nodemon": "^3.1.14",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.2",
     "shx": "^0.4.0"
   },
   "author": "Jacob Wodzyński <jacob.wodzynski@halmstad.se> (https://github.com/hajkmap)"

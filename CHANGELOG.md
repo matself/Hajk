@@ -11,16 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-
 ### Added
 
-
 ### Changed
-- Client: New Mobile UI etc [Issue #1778](https://github.com/hajkmap/Hajk/issues/1778)
 
+- Client: New Mobile UI etc [Issue #1778](https://github.com/hajkmap/Hajk/issues/1778)
 
 ### Fixed
 
+## [4.3.0] 2026-04-20
+
+### Changed
+
+- The Node build script is not officially obsolete, but kept in the repo for reference, [commit](https://github.com/hajkmap/Hajk/commit/8fbc7f4c27298ac1c8e69450a183f4614d3dafcd).
+- Add referrer meta tag (strict-origin-when-cross-origin), [#1799](https://github.com/hajkmap/Hajk/pull/1799).
+
+### Fixed
+
+- Solved a bug where plugin buttons could disappear in certain configurations, [#1788](https://github.com/hajkmap/hajk/issues/1788).
+- Breadcrumbs (a LayerSwitcher option) are now back, [#1785](https://github.com/hajkmap/hajk/issues/1785).
+- Multiple regressions introduced in the Print plugin during [#1757](https://github.com/hajkmap/Hajk/issues/1757) have been fixed in [#1786](https://github.com/hajkmap/Hajk/issues/1786).
+- Draw order is now always shown when enabled by admin, [#1792](https://github.com/hajkmap/hajk/issues/1792).
+- Allow visibility toggling for layers coming from imported files, [#1797](https://github.com/hajkmap/Hajk/pull/1797).
+- Added optional property chain to rule out possible runtime crash with certain misconfigured layers, [commit](https://github.com/hajkmap/Hajk/commit/3a0c6cd5294c1f1faca5ff9ff5c7caad2307222e).
+- DocumentHandler: Ensure that all menu entries that have documents connected to them show up in the print window too, [commit](https://github.com/hajkmap/Hajk/commit/63878937eadfa5da992aa4bc4992dca15aa2d47f).
+- Print: Ensure libPDF respects the colors selected in the ColorPicker. Closes [#1801](https://github.com/hajkmap/Hajk/pull/1801).
+
+### Security
+
+- The official Docker image now uses Node 24 and the "slim" image variant, with less vulnerabilities, [commit](https://github.com/hajkmap/Hajk/commit/adb8036d2833feb62a1095d257a49bad7ff217a5).
+- Updated Hajk's dependencies, bringing down the CVE count to zero, [commit](https://github.com/hajkmap/Hajk/commit/9676ce69299c8eb34dcdc74d148e15c9de5f2e75).
 
 ## [4.3.0-rc.1] 2026-03-16
 
@@ -523,6 +543,7 @@ _A quick follow-up to 3.13.22, that had some issues with certain map configurati
 
 <!-- [unreleased]: https://github.com/hajkmap/Hajk/compare/v4.2.0...develop -->
 
+[4.3.0]: https://github.com/hajkmap/Hajk/compare/v4.3.0-rc1...v4.3.0
 [4.3.0-rc.1]: https://github.com/hajkmap/Hajk/compare/v4.2.0...v4.3.0-rc1
 [4.2.0]: https://github.com/hajkmap/Hajk/compare/v4.2.0-rc.1...v4.2.0
 [4.2.0-rc.1]: https://github.com/hajkmap/Hajk/compare/v4.1.0...v4.2.0-rc.1
