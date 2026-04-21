@@ -110,6 +110,7 @@ export interface ServiceCapabilities {
 
 export interface LayersGridProps {
   layers: string[];
+  workspaces?: string[];
   serviceId: string;
   isError: boolean;
   isLoading: boolean;

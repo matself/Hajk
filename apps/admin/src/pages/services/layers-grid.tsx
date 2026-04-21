@@ -10,6 +10,10 @@ import {
   Dialog,
   DialogContent,
   Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
@@ -25,6 +29,7 @@ import { SERVICE_TYPE } from "../../api/services/types";
 
 function LayersGrid({
   layers,
+  workspaces,
   serviceId,
   isError,
   isLoading,
@@ -41,6 +46,7 @@ function LayersGrid({
   const { data: layersByService, isLoading: isLoadingLayersByService } =
     useLayersByServiceId(serviceId);
   const [open, setOpen] = React.useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState("");
   const [capabilitiesPaginationModel, setCapabilitiesPaginationModel] = useState(() => {
     const stored = localStorage.getItem("capabilities-dialog-page-size");
     const parsed = Number(stored);
@@ -51,6 +57,7 @@ function LayersGrid({
 
   const handleClose = () => {
     setOpen(false);
+    setSelectedWorkspace("");
   };
 
   const tooltipSlotProps = {
@@ -136,7 +143,7 @@ function LayersGrid({
     },
   ];
 
-  // Capabilities layers filtered by dialog search
+  // Capabilities layers filtered by dialog search and workspace
   const filteredCapabilityLayers = useMemo(() => {
     if (!layers) return [];
     return layers
@@ -146,10 +153,16 @@ function LayersGrid({
         infoClick: "",
         publications: "",
       }))
-      .filter((layer) =>
-        layer.layer.toLowerCase().includes(dialogSearchTerm.toLowerCase())
-      );
-  }, [layers, dialogSearchTerm]);
+      .filter((layer) => {
+        const matchesSearch = layer.layer
+          .toLowerCase()
+          .includes(dialogSearchTerm.toLowerCase());
+        const matchesWorkspace =
+          !selectedWorkspace ||
+          layer.layer.startsWith(selectedWorkspace + ":");
+        return matchesSearch && matchesWorkspace;
+      });
+  }, [layers, dialogSearchTerm, selectedWorkspace]);
 
   // Existing service layers filtered by main search
   const filteredLayersByService = useMemo(() => {
@@ -289,25 +302,49 @@ function LayersGrid({
               display: "flex",
               alignItems: "flex-start",
               justifyContent: "space-between",
+              gap: 2,
               mb: 1,
             }}
           >
-            <TextField
-              sx={{
-                mt: 1,
-                width: "100%",
-                maxWidth: "400px",
-                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-              }}
-              label={t("layers.searchTitle")}
-              variant="outlined"
-              value={dialogSearchTerm}
-              onChange={(e) => setDialogSearchTerm(e.target.value)}
-              slotProps={{
-                input: { endAdornment: <SearchIcon /> },
-              }}
-            />
-            <IconButton onClick={handleClose} aria-label="close">
+            <Box sx={{ display: "flex", gap: 2, flex: 1, mt: 1 }}>
+              <TextField
+                sx={{
+                  width: "100%",
+                  maxWidth: "400px",
+                  backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+                }}
+                label={t("layers.searchTitle")}
+                variant="outlined"
+                value={dialogSearchTerm}
+                onChange={(e) => setDialogSearchTerm(e.target.value)}
+                slotProps={{
+                  input: { endAdornment: <SearchIcon /> },
+                }}
+              />
+              {workspaces && workspaces.length > 0 && (
+                <FormControl
+                  sx={{
+                    minWidth: 160,
+                    backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+                  }}
+                >
+                  <InputLabel>{t("services.workspace")}</InputLabel>
+                  <Select
+                    label={t("services.workspace")}
+                    value={selectedWorkspace}
+                    onChange={(e) => setSelectedWorkspace(e.target.value)}
+                  >
+                    <MenuItem value="">{t("common.all")}</MenuItem>
+                    {workspaces.map((ws) => (
+                      <MenuItem key={ws} value={ws}>
+                        {ws}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+            </Box>
+            <IconButton onClick={handleClose} aria-label="close" sx={{ mt: 1 }}>
               <CloseIcon />
             </IconButton>
           </Box>

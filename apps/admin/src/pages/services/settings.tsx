@@ -769,6 +769,7 @@ export default function ServiceSettings() {
           <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
             <LayersGrid
               layers={getCapLayers}
+              workspaces={getCapWorkspaces}
               serviceId={service.id}
               isError={layersError}
               isLoading={layersLoading}
