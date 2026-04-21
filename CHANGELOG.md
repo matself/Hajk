@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Client: Infoclick - Functionality to hide links that point to non-existing resources [Issue #1804](https://github.com/hajkmap/Hajk/issues/1804)
+
 ### Changed
 
 - Client: New Mobile UI etc, see [#1778](https://github.com/hajkmap/Hajk/issues/1778).
