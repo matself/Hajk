@@ -163,7 +163,7 @@ export const createLayer = async (
     payload.name = generateRandomName();
   }
 
-  let merged = mergeWithConfigDefaults(
+  const merged = mergeWithConfigDefaults(
     { ...(layersDefault ?? {}) },
     { ...payload } as Record<string, unknown>,
     {

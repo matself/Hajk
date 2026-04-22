@@ -20,7 +20,7 @@ import { SketchPicker } from "react-color";
 export default function InfoClickRenderer({
   tool,
 }: {
-  tool: { [key: string]: any };
+  tool: Record<string, any>;
 }) {
   const { t } = useTranslation();
   const { control } = useForm<FieldValues>({

@@ -984,7 +984,7 @@ export default function LayerSwitcherDnD() {
     items.forEach((it) => {
       if (it.type === "group") {
         counter += 1;
-        walk(it as TreeItem<TreeItemData>, counter);
+        walk(it, counter);
       }
     });
 

@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 export default function StreetViewRenderer({
   tool,
 }: {
-  tool: { [key: string]: any };
+  tool: Record<string, any>;
 }) {
   const { t } = useTranslation();
   const { control } = useForm<FieldValues>({

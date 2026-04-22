@@ -104,7 +104,7 @@ export default function MapsTable() {
         storageKey="maps-table"
         customSx={{ height: "calc(100vh - 320px)" }}
         onRowClick={({ row }) => {
-          const id: string = (row as Map).id;
+          const id: string = (row).id;
           if (id) {
             void navigate(`/maps/${id}`);
           }

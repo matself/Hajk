@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 export default function PrintToolRenderer({
   tool,
 }: {
-  tool: { [key: string]: any };
+  tool: Record<string, any>;
 }) {
   const { t } = useTranslation();
 
