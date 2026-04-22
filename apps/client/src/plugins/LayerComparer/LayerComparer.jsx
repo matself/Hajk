@@ -1,22 +1,72 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Alert, Button, Stack } from "@mui/material";
+import React, { useEffect, useRef, useState, forwardRef } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Paper,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  useTheme,
+} from "@mui/material";
 import CompareIcon from "@mui/icons-material/Compare";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useSnackbar } from "notistack";
 
 import DialogWindowPlugin from "../../plugins/DialogWindowPlugin";
 import SelectDropdown from "./SelectDropdown";
 import SDSControl from "./CustomOLControl";
+import SpyGlassControl from "./SpyGlassControl";
+
+const MODE_SIDE_BY_SIDE = "sideBySide";
+const MODE_SPY_GLASS = "spyGlass";
+
+// Rendered as a notistack custom content component so it can call useTheme()
+// on every render and always reflect the current palette — including live
+// theme switches without a page reload.
+const ComparerSnackbar = forwardRef(function ComparerSnackbar(
+  { onShowWindow, onAbort },
+  ref
+) {
+  const theme = useTheme();
+  return (
+    <Paper
+      ref={ref}
+      elevation={6}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 1,
+        px: 2,
+        py: 1,
+        bgcolor: "background.paper",
+        color: "text.primary",
+        colorScheme: theme.palette.mode,
+      }}
+    >
+      <Button variant="contained" color="primary" onClick={onShowWindow}>
+        Ändra val
+      </Button>
+      <Button variant="contained" color="error" onClick={onAbort}>
+        Sluta jämföra
+      </Button>
+    </Paper>
+  );
+});
 
 const LayerComparer = (props) => {
   const [layerId1, setLayerId1] = useState("");
   const [layerId2, setLayerId2] = useState("");
+  const [mode, setMode] = useState(MODE_SIDE_BY_SIDE);
 
   const [layers, setLayers] = useState([]);
   const [baseLayers, setBaseLayers] = useState([]);
   const [chosenLayers, setChosenLayers] = useState([]);
 
-  // Prepare a ref that will hold our map control
-  const sds = useRef();
+  // Two refs to hold our map controls (one per mode).
+  const sdsRef = useRef();
+  const spyRef = useRef();
 
   // Two more refs that will hold the OL layer objects
   const l1 = useRef();
@@ -34,6 +84,8 @@ const LayerComparer = (props) => {
   // We don't want to prompt the user with more than one snack, so lets track the current one,
   // so that we can close it when another one is about to open.
   const helperSnack = React.useRef(null);
+
+  const isSpy = mode === MODE_SPY_GLASS;
 
   // Prepare layers that will be available in the comparer.
   // By doing it in this useEffect, we do it once and for all,
@@ -109,23 +161,52 @@ const LayerComparer = (props) => {
     props.options.chosenLayers,
   ]);
 
-  // Create a new SDSControl, add to a ref and add the ref to our map.
+  // Instantiate both OL controls once and add them to the map. Only the
+  // currently active one will have its UI rendered and render listeners
+  // attached (via its open() method). The other stays dormant.
   useEffect(() => {
-    sds.current = new SDSControl();
-    props.map.addControl(sds.current);
+    sdsRef.current = new SDSControl();
+    spyRef.current = new SpyGlassControl();
+    props.map.addControl(sdsRef.current);
+    props.map.addControl(spyRef.current);
+
+    // Previous compare sessions could have left multiple base layers
+    // visible (because both compare layers were made visible, and that
+    // state gets serialized to the URL hash). Only one base layer should
+    // ever be visible at a time, so hide any extras now. First one wins.
+    // Lets keep this fix here for now so we dont pollute AppModel etc with this logic.
+    const visibleBaseLayers = props.map
+      .getAllLayers()
+      .filter((l) => l.get("layerType") === "base" && l.getVisible() === true);
+    if (visibleBaseLayers.length > 1) {
+      visibleBaseLayers.slice(1).forEach((l) => l.setVisible(false));
+    }
+
+    return () => {
+      try {
+        sdsRef.current?.remove();
+        spyRef.current?.remove();
+        props.map.removeControl(sdsRef.current);
+        props.map.removeControl(spyRef.current);
+      } catch (e) {
+        // Map may have been torn down already
+      }
+    };
   }, [props.map]);
 
   // When Hajk Drawer is toggled the map's view (canvas's) size
   // changes too. We must update the clipper's position accordingly.
   useEffect(() => {
-    props.app.globalObserver.on("core.drawerToggled", () => {
-      sds.current.updateClip();
-    });
+    const onDrawerToggled = () => {
+      sdsRef.current?.updateClip();
+      spyRef.current?.updateClip();
+    };
+    props.app.globalObserver.on("core.drawerToggled", onDrawerToggled);
   }, [props.app.globalObserver]);
 
   // The main action happens in this useEffect. When both compare layers
-  // are set we initialize the comparer control and make it visible.
-  // If both compare layers are empty, we do the contrary and remove the control
+  // are set we initialize the currently active comparer control and make
+  // it visible. If any compare layer is empty, we reset both controls
   // and restore the original background layer.
   useEffect(() => {
     // If layer1 or layer2 changed, it means that the Dialog is visible
@@ -134,33 +215,67 @@ const LayerComparer = (props) => {
 
     if (layerId1 === "" || layerId2 === "") {
       // If any of the layer dropdowns is empty, we can't compare.
-      resetSdsAndOl();
+      resetComparer();
     } else {
       // If both IDs are set, we can attempt to grab the layers from the map
       // and start comparing.
       l1.current = props.map.getAllLayers().find((l) => l.ol_uid === layerId1);
       l2.current = props.map.getAllLayers().find((l) => l.ol_uid === layerId2);
 
-      // Let's save the original background layer, so we can restore it later
+      // Save the original background so we can restore it later. Exclude the
+      // two compare layers so we don't accidentally snapshot one of them.
       oldBackgroundLayer.current = props.map
         .getAllLayers()
-        .find((l) => l.getVisible() === true && l.get("layerType") === "base");
+        .find(
+          (l) =>
+            l.getVisible() === true &&
+            l.get("layerType") === "base" &&
+            l.ol_uid !== layerId1 &&
+            l.ol_uid !== layerId2
+        );
       // Also, let's hide it for now
       oldBackgroundLayer.current?.setVisible(false);
 
-      // Activate the compare OL control
-      sds.current.open();
-      sds.current.setCompareLayers(l1.current, l2.current);
-    }
-  }, [layerId1, layerId2, props.map, closeSnackbar]);
+      // Ensure the inactive control is fully torn down so no stale render
+      // listeners remain on layers from a previous mode.
+      const useSpy = mode === MODE_SPY_GLASS;
+      const inactiveControl = useSpy ? sdsRef.current : spyRef.current;
+      const activeControl = useSpy ? spyRef.current : sdsRef.current;
 
-  const resetSdsAndOl = () => {
-    // Remove the ref to our OL control
-    sds.current.remove();
+      inactiveControl?.remove();
+
+      activeControl.open();
+      activeControl.setCompareLayers(l1.current, l2.current);
+    }
+  }, [layerId1, layerId2, mode, props.map, closeSnackbar]);
+
+  const resetComparer = () => {
+    // Remove both OL controls' state so nothing lingers regardless of mode
+    sdsRef.current?.remove();
+    spyRef.current?.remove();
 
     // Let's hide compare layers in Map
     l1.current?.setVisible(false);
     l2.current?.setVisible(false);
+
+    // Safety net: also clean up any layers that still carry compare flags
+    // from a previous session (for example... after URL-hash stuff....).
+    props.map
+      .getAllLayers()
+      .filter(
+        (l) =>
+          l.get("isLeftCompareLayer") === true ||
+          l.get("isRightCompareLayer") === true ||
+          l.get("isTopCompareLayer") === true ||
+          l.get("isBottomCompareLayer") === true
+      )
+      .forEach((l) => {
+        l.setVisible(false);
+        l.set("isLeftCompareLayer", false);
+        l.set("isRightCompareLayer", false);
+        l.set("isTopCompareLayer", false);
+        l.set("isBottomCompareLayer", false);
+      });
 
     // Show original background layer
     oldBackgroundLayer.current?.setVisible(true);
@@ -187,53 +302,47 @@ const LayerComparer = (props) => {
     setLayerId2("");
   };
 
+  const handleModeChange = (_event, nextMode) => {
+    if (nextMode === null) return;
+    setMode(nextMode);
+  };
+
   // onClose is actually the callback that runs when user
   // clicks the primary action button in the Dialog, i.e. "Compare".
   const onClose = () => {
     // Ensure that there are real layers to compare
     if (l1.current?.getVisible() && l2.current?.getVisible()) {
       helperSnack.current = enqueueSnackbar("", {
-        variant: "default",
         persist: true,
         anchorOrigin: { vertical: "bottom", horizontal: "center" },
-        sx: {
-          // Custom styling to follow Material Design guidelines for Snackbar.
-          // Placing the close button to the right of the text.
-          ".SnackbarItem-contentRoot": {
-            flexWrap: "inherit !important",
-          },
-          // Since we don't have any text in the snackbar anymore, but the
-          // container is there, we want to remove padding from the actions container.
-          ".SnackbarItem-action": {
-            paddingLeft: 0,
-          },
-        },
-        action: (key) => (
-          <>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mr: 1 }}
-              onClick={() => {
-                props.app.globalObserver.publish("layercomparer.showWindow");
-              }}
-            >
-              Välj andra lager
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => {
-                onAbort();
-              }}
-            >
-              Sluta jämföra
-            </Button>
-          </>
+        // A React component as `content` re-renders on every theme change,
+        // so dark/light mode is always reflected without a page reload.
+        content: (key) => (
+          <ComparerSnackbar
+            key={key}
+            onShowWindow={() =>
+              props.app.globalObserver.publish("layercomparer.showWindow")
+            }
+            onAbort={onAbort}
+          />
         ),
       });
     }
   };
+
+  const dropdown1Label = isSpy ? "Bakgrundslager" : "Vänster sida";
+  const dropdown2Label = isSpy ? "Titthålslager" : "Höger sida";
+
+  const helpContent = isSpy ? (
+    <>
+      Välj vilket lager som ska vara <i>bakgrund</i> och vilket som ska visas
+      inuti <i>titthålet</i>.
+    </>
+  ) : (
+    <>
+      Välj två lager att jämföra och tryck på <i>Jämför</i>.
+    </>
+  );
 
   return (
     <DialogWindowPlugin
@@ -245,8 +354,8 @@ const LayerComparer = (props) => {
         // Some defaults to fall back to in case instanceOptions doesn't provide them.
         icon: <CompareIcon />, // Default icon for this plugin
         title: "Lagerjämförare",
-        description: "Jämför lager sida vid sida", // Shown on Widget button as well as Tooltip for Control button
-        headerText: "Jämför lager sida vid sida",
+        description: "Jämför lager sida vid sida eller med titthål", // Shown on Widget button as well as Tooltip for Control button
+        headerText: "Jämför lager",
         buttonText: "Jämför",
         primaryButtonVariant: "contained",
         abortText: "Nollställ & stäng",
@@ -255,9 +364,31 @@ const LayerComparer = (props) => {
         onVisibilityChanged: onVisibilityChanged, // Called when the dialog is shown or hidden
       }}
     >
-      <Stack spacing={2}>
-        <Alert icon={<CompareIcon />} variant="info">
-          Välj två lager att jämföra och tryck på <i>Jämför</i>.
+      <Stack spacing={2} sx={{ width: { xs: "100%", md: 350 } }}>
+        <ToggleButtonGroup
+          value={mode}
+          exclusive
+          fullWidth
+          color="primary"
+          onChange={handleModeChange}
+          aria-label="Jämförelseläge"
+          size="small"
+        >
+          <ToggleButton value={MODE_SIDE_BY_SIDE} aria-label="Sida vid sida">
+            <CompareIcon fontSize="small" sx={{ mr: 1 }} />
+            Sida vid sida
+          </ToggleButton>
+          <ToggleButton value={MODE_SPY_GLASS} aria-label="Titthål">
+            <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
+            Titthål
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <Alert
+          icon={isSpy ? <VisibilityIcon /> : <CompareIcon />}
+          variant="info"
+        >
+          {helpContent}
         </Alert>
 
         <SelectDropdown
@@ -267,7 +398,7 @@ const LayerComparer = (props) => {
           baseLayers={baseLayers}
           chosenLayers={chosenLayers}
           layers={layers}
-          label="Vänster sida"
+          label={dropdown1Label}
         />
         <SelectDropdown
           setter={setLayerId2}
@@ -276,7 +407,7 @@ const LayerComparer = (props) => {
           baseLayers={baseLayers}
           chosenLayers={chosenLayers}
           layers={layers}
-          label="Höger sida"
+          label={dropdown2Label}
         />
       </Stack>
     </DialogWindowPlugin>
