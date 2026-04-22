@@ -445,7 +445,7 @@ export default function LayerInfoClickModal({
                         <FormControlLabel
                           control={
                             <Checkbox
-                              checked={Boolean(field.value as boolean)}
+                              checked={Boolean(field.value)}
                               onChange={(e) => field.onChange(e.target.checked)}
                             />
                           }
@@ -600,7 +600,7 @@ export default function LayerInfoClickModal({
                         <FormControlLabel
                           control={
                             <Checkbox
-                              checked={Boolean(field.value as boolean)}
+                              checked={Boolean(field.value)}
                               onChange={(e) => field.onChange(e.target.checked)}
                             />
                           }
