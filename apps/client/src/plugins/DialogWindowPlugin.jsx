@@ -151,7 +151,7 @@ class DialogWindowPlugin extends React.PureComponent {
         onAbort={this.#onAbort}
         onVisibilityChanged={this.opts.onVisibilityChanged}
       >
-        {this.props.children}
+        {this.state.dialogOpen && this.props.children}
       </Dialog>,
       document.getElementById("windows-container")
     );
@@ -180,8 +180,11 @@ class DialogWindowPlugin extends React.PureComponent {
           divider={true}
           selected={this.state.dialogOpen}
           onClick={this.#handleButtonClick}
+          alignItems="flex-start"
         >
-          <ListItemIcon>{this.icon}</ListItemIcon>
+          <ListItemIcon sx={{ mt: 0, alignSelf: "center" }}>
+            {this.icon}
+          </ListItemIcon>
           <ListItemText primary={this.title} />
         </ListItemButton>
       </Box>,
