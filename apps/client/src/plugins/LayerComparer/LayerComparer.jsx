@@ -58,7 +58,11 @@ const ComparerSnackbar = forwardRef(function ComparerSnackbar(
 const LayerComparer = (props) => {
   const [layerId1, setLayerId1] = useState("");
   const [layerId2, setLayerId2] = useState("");
-  const [mode, setMode] = useState(MODE_SIDE_BY_SIDE);
+  const [mode, setMode] = useState(
+    props.options.startCompareMode === MODE_SPY_GLASS
+      ? MODE_SPY_GLASS
+      : MODE_SIDE_BY_SIDE
+  );
 
   const [layers, setLayers] = useState([]);
   const [baseLayers, setBaseLayers] = useState([]);
