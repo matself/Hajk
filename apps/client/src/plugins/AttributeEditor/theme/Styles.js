@@ -85,7 +85,7 @@ export function makeStyles(t, isMobile) {
       width: `${ch}ch`,
     }),
     iconBtn: {
-      padding: isMobile ? 6 : 8,
+      padding: isMobile ? 4 : 8,
       borderRadius: 999,
       border: `1px solid ${t.border}`,
       background: t.overlayBg,
@@ -97,7 +97,7 @@ export function makeStyles(t, isMobile) {
       lineHeight: 0,
     },
     iconBtnDisabled: {
-      padding: isMobile ? 6 : 8,
+      padding: isMobile ? 4 : 8,
       borderRadius: 999,
       border: `1px solid ${t.border}`,
       background: t.overlayBg,
@@ -126,7 +126,12 @@ export function makeStyles(t, isMobile) {
       display: "flex",
       flexDirection: "column",
       gap: 8,
-      height: "100%",
+      // On mobile the shell lives inside WindowSheet's Box (position: relative).
+      // "height: 100%" is circular there (Box uses min-height, not height), so we
+      // use absolute positioning to fill Box's padding-box and get a concrete height.
+      ...(isMobile
+        ? { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }
+        : { height: "100%" }),
       overflow: "hidden",
       fontFamily: "'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       color: t.text,
@@ -390,13 +395,14 @@ export function makeStyles(t, isMobile) {
     },
     listEmpty: { padding: 12, color: t.textMuted },
     listFooter: {
-      padding: isMobile ? 8 : 10,
+      padding: isMobile ? 6 : 10,
       display: "flex",
-      gap: 8,
+      gap: isMobile ? 4 : 8,
       borderTop: `1px solid ${t.border}`,
       background: t.panelBg,
       flexWrap: isMobile ? "wrap" : "nowrap",
       alignItems: "center",
+      flexShrink: 0,
     },
     listFooterCompact: {
       padding: isMobile ? 8 : 10,
@@ -984,8 +990,9 @@ export function makeStyles(t, isMobile) {
 
     // Mobile simple-table styles
     mobileTableScroll: {
-      overflowX: "auto",
+      overflow: "auto",
       flex: 1,
+      minHeight: 0,
     },
     mobileTable: {
       width: "100%",
