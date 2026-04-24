@@ -1083,9 +1083,11 @@ export default class PrintModel {
       // layers) so the legend set matches what the user actually sees on
       // the map – otherwise the originals would have `visible=false` by the
       // time the PDF renderer runs.
-      const legendInfosForPdf = this.getVisibleTileAndImageLayers()
-        .map((layer) => getLegendInfoForLayer(layer))
-        .filter(Boolean);
+      const legendInfosForPdf = options.includeLegendsInPdf
+        ? this.getVisibleTileAndImageLayers()
+            .map((layer) => getLegendInfoForLayer(layer))
+            .filter(Boolean)
+        : [];
 
       // Our dimensions are for landscape orientation by default. Flip the values if portrait orientation requested.
       const dim =

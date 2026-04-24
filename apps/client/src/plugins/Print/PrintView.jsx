@@ -81,6 +81,9 @@ class PrintView extends React.PureComponent {
     logoPlacement: this.props.options.logoPlacement || "topRight",
     includeQrCode: this.props.options.includeQrCode ?? false,
     qrCodePlacement: this.props.options.qrCodePlacement || "topRight",
+    includeLegendsInPdf:
+      (this.props.options.allowLegendsInPdfOutput ?? false) &&
+      (this.props.options.generateLegendsByDefault ?? false),
     saveAsType: "PDF",
     printOptionsOk: false,
   };
@@ -196,6 +199,7 @@ class PrintView extends React.PureComponent {
       scaleBarPlacement: this.state.scaleBarPlacement,
       includeNorthArrow: this.state.includeNorthArrow,
       northArrowPlacement: this.state.northArrowPlacement,
+      includeLegendsInPdf: this.state.includeLegendsInPdf,
       saveAsType: this.state.saveAsType,
     };
   };
@@ -219,9 +223,13 @@ class PrintView extends React.PureComponent {
   };
 
   handleChange = (event) => {
+    const value =
+      event.target.type === "checkbox"
+        ? event.target.checked
+        : event.target.value;
     this.setState(
       {
-        [event.target.name]: event.target.value,
+        [event.target.name]: value,
       },
       () => {
         this.handlePotentialPrintOptionError();
@@ -300,7 +308,9 @@ class PrintView extends React.PureComponent {
       logoPlacement,
       includeQrCode,
       qrCodePlacement,
+      includeLegendsInPdf,
       printOptionsOk,
+      saveAsType,
     } = this.state;
 
     return (
@@ -321,6 +331,8 @@ class PrintView extends React.PureComponent {
         logoPlacement={logoPlacement}
         includeQrCode={includeQrCode}
         qrCodePlacement={qrCodePlacement}
+        includeLegendsInPdf={includeLegendsInPdf}
+        saveAsType={saveAsType}
         printOptionsOk={printOptionsOk}
         options={this.props.options}
         enableAppStateInHash={this.props.enableAppStateInHash}
