@@ -149,7 +149,7 @@ export interface LayerUsage {
   id: string;
   usage: "BACKGROUND" | "FOREGROUND";
   map: { id: number; name: string } | null;
-  group: { id: string; name: string } | null;
+  group: { id: string; name: string; maps: { mapName: string }[] } | null;
 }
 
 export interface LayerUsageApiResponse {

@@ -173,7 +173,13 @@ class LayerService {
         id: true,
         usage: true,
         map: { select: { id: true, name: true } },
-        group: { select: { id: true, name: true } },
+        group: {
+          select: {
+            id: true,
+            name: true,
+            maps: { select: { mapName: true } },
+          },
+        },
       },
     });
   }

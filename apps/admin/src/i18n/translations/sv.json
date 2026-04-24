@@ -59,6 +59,8 @@
     "common.brokenService": "Trasig tjänst",
     "common.usedInMaps": "Används i kartor",
     "common.usage": "Användning",
+    "common.usage.FOREGROUND": "Förgrund",
+    "common.usage.BACKGROUND": "Bakgrund",
     "common.create": "Skapa",
     "common.information": "Grundläggande information",
     "common.moveUp": "Flytta upp",

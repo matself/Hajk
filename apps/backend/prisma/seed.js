@@ -658,6 +658,26 @@ async function main() {
   // Base roles (e.g. SUPERUSER, ADMIN) for map/layer/tool restrictions and future IdP group mapping.
   // Local users are not seeded: identities come from Keycloak or another external IdP.
   await createBaseRoles();
+
+  // Seed a few test LayerInstances so the "used in maps" feature has data to display.
+  // Only runs if there are no LayerInstances already (i.e. no App_Data map configs were found).
+  const existingInstances = await prisma.layerInstance.count();
+  if (existingInstances === 0) {
+    const firstMap = await prisma.map.findFirst();
+    const firstLayers = await prisma.layer.findMany({ take: 3 });
+    if (firstMap && firstLayers.length > 0) {
+      await prisma.layerInstance.createMany({
+        data: firstLayers.map((layer) => ({
+          layerId: layer.id,
+          mapId: firstMap.id,
+          usage: "FOREGROUND",
+        })),
+      });
+      console.log(
+        `Created ${firstLayers.length} test LayerInstances for map "${firstMap.name}"`
+      );
+    }
+  }
 }
 
 main()

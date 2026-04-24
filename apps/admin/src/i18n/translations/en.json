@@ -61,6 +61,8 @@
     "common.brokenService": "Broken service",
     "common.usedInMaps": "Used in maps",
     "common.usage": "Usage",
+    "common.usage.FOREGROUND": "Foreground",
+    "common.usage.BACKGROUND": "Background",
     "common.create": "Create",
     "common.information": "Basic information",
     "common.moveUp": "Move up",

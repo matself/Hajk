@@ -20,9 +20,9 @@ function UsedInMapsGrid({ layerId }: { layerId: string }) {
     () =>
       usage
         .filter((u) => {
-          const mapName = u.map?.name ?? "";
-          const groupName = u.group?.name ?? "";
           const term = searchTerm.toLowerCase();
+          const mapName = u.map?.name ?? u.group?.maps.map((m) => m.mapName).join(" ") ?? "";
+          const groupName = u.group?.name ?? "";
           return (
             mapName.toLowerCase().includes(term) ||
             groupName.toLowerCase().includes(term)
@@ -30,11 +30,11 @@ function UsedInMapsGrid({ layerId }: { layerId: string }) {
         })
         .map((u) => ({
           id: u.id,
-          map: u.map?.name ?? "—",
+          map: u.map?.name ?? u.group?.maps.map((m) => m.mapName).join(", ") ?? "—",
           group: u.group?.name ?? "—",
-          usage: u.usage,
+          usage: t(`common.usage.${u.usage}`),
         })),
-    [usage, searchTerm],
+    [usage, searchTerm, t],
   );
 
   const columns: GridColDef[] = [
