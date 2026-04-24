@@ -1476,7 +1476,7 @@ export default function LayerSettings() {
           </Box>
 
           <Box sx={{ display: activeTab === "maps" ? "block" : "none" }}>
-            <UsedInMapsGrid />
+            <UsedInMapsGrid layerId={layerId ?? ""} />
           </Box>
         </FormContainer>
       </FormActionPanel>

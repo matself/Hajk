@@ -7,6 +7,7 @@ import {
   RoleOnLayerCreateAndUpdateInput,
   RoleOnLayer,
 } from "./types";
+import type { LayerUsage, LayerUsageApiResponse } from "./types";
 import { Service } from "../services";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 import { generateRandomName } from "../generated/names";
@@ -260,6 +261,28 @@ export const getRoleOnLayerByLayerId = async (layerId: string) => {
       );
     } else {
       throw new Error(`Failed to fetch layer role`);
+    }
+  }
+};
+
+export const getLayerUsage = async (layerId: string): Promise<LayerUsage[]> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.get<LayerUsageApiResponse>(
+      `/layers/${layerId}/usage`
+    );
+    if (!response.data) {
+      throw new Error("No usage data found");
+    }
+    return response.data.usage;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to fetch layer usage. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error("Failed to fetch layer usage");
     }
   }
 };

@@ -11,6 +11,7 @@ import {
   LayerTypesApiResponse,
   LayerUpdateInput,
   RoleOnLayer,
+  LayerUsage,
 } from "./types";
 import {
   getLayers,
@@ -23,6 +24,7 @@ import {
   getServiceByLayerId,
   createAndUpdateRoleOnLayer,
   getRoleOnLayerByLayerId,
+  getLayerUsage,
 } from "./requests";
 import { Service, useServiceCapabilities, SERVICE_TYPE } from "../services";
 
@@ -132,6 +134,14 @@ export const useDeleteLayer = (serviceId: string) => {
     onError: (error) => {
       console.error(error);
     },
+  });
+};
+
+export const useLayerUsage = (layerId: string): UseQueryResult<LayerUsage[]> => {
+  return useQuery({
+    queryKey: ["layerUsage", layerId],
+    queryFn: () => getLayerUsage(layerId),
+    enabled: Boolean(layerId),
   });
 };
 

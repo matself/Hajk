@@ -77,6 +77,11 @@ class LayersController {
     res.status(HttpStatusCodes.NO_CONTENT).send();
   }
 
+  async getUsageByLayerId(req: Request, res: Response) {
+    const usage = await LayerService.getUsageByLayerId(req.params.id);
+    res.status(HttpStatusCodes.OK).json({ count: usage.length, usage });
+  }
+
   async getRoleOnLayerByLayerId(req: Request, res: Response) {
     const role = await LayerService.getRoleOnLayerByLayerId(req.params.id);
     res.status(HttpStatusCodes.OK).json(role);

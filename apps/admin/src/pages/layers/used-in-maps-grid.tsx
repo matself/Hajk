@@ -1,164 +1,102 @@
-import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  Typography,
-  Paper,
-  IconButton,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { useState, useMemo } from "react";
+import { TextField, Typography, Paper } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useLayerUsage } from "../../api/layers";
 
-function UsedInMapsGrid() {
+function UsedInMapsGrid({ layerId }: { layerId: string }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const language = useAppStateStore((state) => state.language);
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
+  const { data: usage = [], isLoading } = useLayerUsage(layerId);
 
-  const columns = [
-    { field: "title", headerName: "Titel", flex: 1 },
-    { field: "description", headerName: "Beskrivning", flex: 1 },
-    {
-      field: "actions",
-      headerName: "Åtgärder",
-      flex: 0.2,
-      renderCell: (params: { row: { title: string } }) => (
-        <RowMenu {...params} />
-      ),
-    },
+  const filtered = useMemo(
+    () =>
+      usage
+        .filter((u) => {
+          const mapName = u.map?.name ?? "";
+          const groupName = u.group?.name ?? "";
+          const term = searchTerm.toLowerCase();
+          return (
+            mapName.toLowerCase().includes(term) ||
+            groupName.toLowerCase().includes(term)
+          );
+        })
+        .map((u) => ({
+          id: u.id,
+          map: u.map?.name ?? "—",
+          group: u.group?.name ?? "—",
+          usage: u.usage,
+        })),
+    [usage, searchTerm],
+  );
+
+  const columns: GridColDef[] = [
+    { field: "map", headerName: t("common.map"), flex: 1 },
+    { field: "group", headerName: t("common.group"), flex: 1 },
+    { field: "usage", headerName: t("common.usage"), flex: 0.5 },
   ];
-
-  const rows = [
-    {
-      id: 1,
-      title: "Strandskyddskartan",
-      description: "Karta över bygglov före hela kommunen",
-    },
-    {
-      id: 2,
-      title: "Bygglovskartan",
-      description: "Karta över bygglov för hela kommunen",
-    },
-  ];
-
-  const RowMenu = (params: { row: { title: string } }) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const open = Boolean(anchorEl);
-
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget as HTMLElement | null);
-    };
-
-    const handleClose = () => {
-      setAnchorEl(null);
-    };
-
-    return (
-      <Box component="div" sx={{ textAlign: "center" }}>
-        <IconButton onClick={handleClick}>
-          <MoreHorizIcon />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "left",
-          }}
-        >
-          <MenuItem onClick={() => alert(`View ${params.row.title}`)}>
-            View
-          </MenuItem>
-          <MenuItem onClick={() => alert(`Edit ${params.row.title}`)}>
-            Edit
-          </MenuItem>
-          <MenuItem onClick={() => alert(`Delete ${params.row.title}`)}>
-            Delete
-          </MenuItem>
-        </Menu>
-      </Box>
-    );
-  };
 
   return (
-        <Paper
+    <Paper
+      sx={{
+        width: "100%",
+        p: 2,
+        mb: 3,
+        backgroundColor: isDarkMode ? "#121212" : "#efefef",
+      }}
+    >
+      <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
+        {t("common.usedInMaps")}
+      </Typography>
+      <TextField
+        sx={{
+          mb: 3,
+          mt: 1,
+          width: "100%",
+          maxWidth: "400px",
+          backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
+        }}
+        label={t("common.search")}
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        slotProps={{ input: { endAdornment: <SearchIcon /> } }}
+      />
+      {!isLoading && filtered.length === 0 ? (
+        <Typography sx={{ textAlign: "center", fontSize: "large", mt: 1 }}>
+          {t("layers.usedInMapsNone")}
+        </Typography>
+      ) : (
+        <DataGrid
           sx={{
-            width: "100%",
-            p: 2,
-            mb: 3,
-            backgroundColor: isDarkMode ? "#121212" : "#efefef",
+            maxWidth: "100%",
+            mb: 2,
+            mt: 1,
+            height: "auto",
+            backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
           }}
-        >
-          <Typography variant="h6" sx={{ mt: -0.5, mb: 1.5 }}>
-            {t("common.usedInMaps")}
-          </Typography>
-          <TextField
-            sx={{
-              mb: 3,
-              mt: 1,
-              width: "100%",
-              maxWidth: "400px",
-              backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-            }}
-            label="Sök i kartor"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            slotProps={{
-              input: {
-                endAdornment: <SearchIcon />,
-              },
-            }}
-          />
-          <DataGrid
-              sx={{
-                maxWidth: "100%",
-                mb: 2,
-                mt: 1,
-                height: 400,
-                backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-              }}
-              rows={rows}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 10,
-                  },
-                },
-              }}
-              slotProps={{
-                loadingOverlay: {
-                  variant: "skeleton",
-                  noRowsVariant: "skeleton",
-                },
-              }}
-              pageSizeOptions={[10, 25, 50, 100]}
-              pagination
-              localeText={
-                language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-              }
-              checkboxSelection
-              disableMultipleRowSelection
-              disableRowSelectionOnClick
-            />
-        </Paper>
+          rows={filtered}
+          columns={columns}
+          loading={isLoading}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+          slotProps={{
+            loadingOverlay: { variant: "skeleton", noRowsVariant: "skeleton" },
+          }}
+          hideFooter={filtered.length <= 10}
+          pageSizeOptions={[10, 25, 50, 100]}
+          pagination
+          localeText={language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined}
+          disableRowSelectionOnClick
+        />
+      )}
+    </Paper>
   );
 }
 

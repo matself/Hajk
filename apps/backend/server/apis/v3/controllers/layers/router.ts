@@ -5,6 +5,7 @@ export default express
   .Router()
   .get("/", controller.getLayers)
   .get("/:id/service", controller.getServiceByLayerId)
+  .get("/:id/usage", controller.getUsageByLayerId)
   .get("/types", controller.getLayerTypes)
   .get("/types/:type", controller.getLayersByType)
   .get("/:id", controller.getLayerById)

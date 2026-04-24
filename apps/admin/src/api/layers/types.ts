@@ -145,6 +145,18 @@ export interface LayerUpdateInput {
   options?: Record<string, unknown>;
 }
 
+export interface LayerUsage {
+  id: string;
+  usage: "BACKGROUND" | "FOREGROUND";
+  map: { id: number; name: string } | null;
+  group: { id: string; name: string } | null;
+}
+
+export interface LayerUsageApiResponse {
+  count: number;
+  usage: LayerUsage[];
+}
+
 export interface RoleOnLayer {
   layerId: string;
   roleId: string;

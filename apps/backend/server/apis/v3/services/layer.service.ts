@@ -166,6 +166,18 @@ class LayerService {
     await transaction.layer.delete({ where: { id } });
   }
 
+  async getUsageByLayerId(id: string) {
+    return await prisma.layerInstance.findMany({
+      where: { layerId: id },
+      select: {
+        id: true,
+        usage: true,
+        map: { select: { id: true, name: true } },
+        group: { select: { id: true, name: true } },
+      },
+    });
+  }
+
   async getRoleOnLayerByLayerId(layerId: string) {
     return prisma.roleOnLayer.findFirst({
       where: { layerId },
