@@ -169,7 +169,7 @@ export function autoIsMultiline(val, meta) {
 export function renderTableCellDisplay({
   meta,
   value,
-  s,
+  s: _s,
   selected = true,
   columnWidth,
 }) {
@@ -286,7 +286,9 @@ export function renderInput(meta, value, onChange, isChanged, s, opts = {}) {
               requestAnimationFrame(() => {
                 try {
                   el.selectionStart = el.selectionEnd = start + 1;
-                } catch {}
+                } catch {
+                  // ignore
+                }
               });
             }
             return;
@@ -353,6 +355,8 @@ export function renderInput(meta, value, onChange, isChanged, s, opts = {}) {
         style={inputStyle}
         value={value ?? ""}
         step={meta.type === "integer" ? 1 : "any"}
+        min={meta.min}
+        max={meta.max}
         onChange={(e) => {
           const v = e.target.value;
           if (v === "") return onChange("");
@@ -615,6 +619,8 @@ export function renderTableCellEditor({
         {...editorProps}
         type="number"
         step={meta.type === "integer" ? 1 : "any"}
+        min={meta.min}
+        max={meta.max}
         value={editingValue ?? ""}
         onChange={(e) => {
           const v = e.target.value;

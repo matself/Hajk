@@ -612,6 +612,8 @@ export default function AttributeEditorView({
     }));
   }, [serviceId, fieldMeta, allRows]);
 
+  const visibleFM = React.useMemo(() => FM.filter((m) => !m.hidden), [FM]);
+
   const filteredAndSorted = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     const editingId = tableEditing?.id ?? null;
@@ -796,7 +798,9 @@ export default function AttributeEditorView({
         clone.setId?.(toId);
         try {
           clone.set?.("id", toId, true);
-        } catch {}
+        } catch {
+          // ignore
+        }
 
         try {
           const gt = clone.getGeometry?.()?.getType?.() || "Polygon";
@@ -807,7 +811,9 @@ export default function AttributeEditorView({
           clone.set?.("USER_DRAWN", true, true);
           clone.set?.("DRAW_METHOD", method, true);
           clone.set?.("EDIT_ACTIVE", false, true);
-        } catch {}
+        } catch {
+          // ignore
+        }
 
         src.addFeature(clone);
         featureIndexRef.current.set(toId, clone);
@@ -1351,7 +1357,9 @@ export default function AttributeEditorView({
           return notDeleted;
         })
         .map(([id, changes]) => {
-          const { __geom__, __pending, __idx, ...properties } = changes;
+          const properties = Object.fromEntries(
+            Object.entries(changes).filter(([k]) => !k.startsWith("__"))
+          );
 
           // Convert datetime values to ISO 8601 (T-separator) for WFS-T
           FM.forEach(({ key, type }) => {
@@ -1454,15 +1462,16 @@ export default function AttributeEditorView({
 
       enqueueSnackbar(`Sparar: ${summary}...`, { variant: "info" });
 
-      // Send transaction to backend
-      // Pass the detected geometry name from loaded features (matches WFS schema)
-      const detectedGeomName = model.getFeatureCollection()?.geometryName;
+      const featureCollection = model.getFeatureCollection();
+      const detectedGeomName = featureCollection?.geometryName;
+      const detectedHasZ = featureCollection?.hasZ ?? false;
       const result = await ogc.commitWfstTransaction(serviceId, {
         inserts,
         updates,
         deletes,
         srsName: layerCRS,
         geometryName: detectedGeomName,
+        hasZ: detectedHasZ,
       });
 
       if (result.success) {
@@ -1470,7 +1479,9 @@ export default function AttributeEditorView({
           try {
             const names = await caches.keys();
             await Promise.all(names.map((name) => caches.delete(name)));
-          } catch (e) {}
+          } catch {
+            // ignore
+          }
         }
 
         const failedInserts = inserts.length - (result.inserted || 0);
@@ -1580,7 +1591,9 @@ export default function AttributeEditorView({
               if (fidProp) {
                 try {
                   f.setId?.(fidProp);
-                } catch {}
+                } catch {
+                  // ignore
+                }
               }
             });
 
@@ -1606,7 +1619,7 @@ export default function AttributeEditorView({
             setTableSelectedIds(new Set(updatedIds));
             setSelectedIds(new Set(updatedIds));
           }
-        } catch (reloadError) {
+        } catch (_reloadError) {
           enqueueSnackbar("Data sparades! Tryck F5 för att se ändringarna.", {
             variant: "warning",
             autoHideDuration: 10000,
@@ -1637,7 +1650,6 @@ export default function AttributeEditorView({
     showNotification,
     enqueueSnackbar,
     vectorLayerRef,
-    visibleIdsRef,
     idFieldRef,
   ]);
 
@@ -1646,15 +1658,17 @@ export default function AttributeEditorView({
       try {
         const xlsx = await import("xlsx");
 
-        const exportHeaders = FM.filter((meta) => meta.type !== "geometry").map(
-          (meta) => meta.label
-        );
+        const exportHeaders = visibleFM
+          .filter((meta) => meta.type !== "geometry")
+          .map((meta) => meta.label);
 
         const exportData = exportFeatures.map((feature) => {
-          return FM.filter((meta) => meta.type !== "geometry").map((meta) => {
-            const value = feature[meta.key];
-            return value != null ? String(value) : "";
-          });
+          return visibleFM
+            .filter((meta) => meta.type !== "geometry")
+            .map((meta) => {
+              const value = feature[meta.key];
+              return value != null ? String(value) : "";
+            });
         });
 
         const exportArray = [exportHeaders, ...exportData];
@@ -1686,7 +1700,7 @@ export default function AttributeEditorView({
         );
       }
     },
-    [FM, enqueueSnackbar]
+    [visibleFM, enqueueSnackbar]
   );
 
   const undoLatestTableChange = useCallback(() => {
@@ -2056,7 +2070,7 @@ export default function AttributeEditorView({
     const drafts = pendingAdds.map((d, i) => ({ ...d, __idx: startIdx + i }));
 
     const all = [...existing, ...drafts];
-    const fmKeys = FM.map((m) => m.key);
+    const fmKeys = visibleFM.map((m) => m.key);
     const keys = fmKeys.includes("id") ? fmKeys : ["id", ...fmKeys];
 
     const filtered = all.filter((row) => {
@@ -2119,6 +2133,7 @@ export default function AttributeEditorView({
     pendingDeletes,
     searchText,
     FM,
+    visibleFM,
     showOnlySelected,
     frozenSelectedIds,
     columnFilters,
@@ -2522,7 +2537,9 @@ export default function AttributeEditorView({
             draftFeature.set?.("id", draftId, true);
             draftFeature.set?.("USER_DRAWN", true, true);
             draftFeature.set?.("EDIT_ACTIVE", false, true);
-          } catch {}
+          } catch {
+            // ignore
+          }
 
           src.addFeature(draftFeature);
           featureIndexRef.current.set(draftId, draftFeature);
@@ -2733,7 +2750,7 @@ export default function AttributeEditorView({
           handleBeforeChangeFocus={handleBeforeChangeFocus}
           onFormRowClick={onFormRowClick}
           focusedFeature={focusedFeature}
-          FIELD_META={FM}
+          FIELD_META={visibleFM}
           changedFields={changedFields}
           editValues={editValues}
           handleFieldChange={handleFieldChange}
@@ -2772,7 +2789,7 @@ export default function AttributeEditorView({
         <TableMode
           s={s}
           theme={theme}
-          FIELD_META={FM}
+          FIELD_META={visibleFM}
           isMobile={isMobile}
           features={features}
           featuresMap={featuresMap}
@@ -2838,7 +2855,7 @@ export default function AttributeEditorView({
           focusPrev={focusPrev}
           focusNext={focusNext}
           focusedFeature={focusedFeature}
-          FIELD_META={FM}
+          FIELD_META={visibleFM}
           changedFields={changedFields}
           editValues={editValues}
           handleFieldChange={handleFieldChange}

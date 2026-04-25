@@ -425,7 +425,18 @@ const Sketch = (props) => {
 
   // Effect to sync multi-draw mode with DrawModel
   React.useEffect(() => {
-    drawModel.setMultiDrawMode(multiDrawEnabled);
+    if (!multiDrawEnabled) {
+      // Grab any pending multi-feature before setMultiDrawMode resets it,
+      // then discard it — prevents "hanging" features when the switch is
+      // toggled off without pressing "Avsluta ritning".
+      const pendingFeature = drawModel.getMultiDrawFeature();
+      drawModel.setMultiDrawMode(false);
+      if (pendingFeature) {
+        drawModel.getCurrentVectorSource()?.removeFeature(pendingFeature);
+      }
+    } else {
+      drawModel.setMultiDrawMode(true);
+    }
   }, [drawModel, multiDrawEnabled]);
 
   // Reset multi-draw mode when activity or draw type changes

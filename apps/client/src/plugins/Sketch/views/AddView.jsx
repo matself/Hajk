@@ -90,7 +90,9 @@ const AddView = (props) => {
   // Determine if multi-draw selector should be shown
   // Only show when AttributeEditor layer is selected AND draw type is Point, LineString, or Polygon
   const showMultiDrawSelector =
-    ["Point", "LineString", "Polygon"].includes(activeDrawType) &&
+    ["Point", "LineString", "Polygon", "Rectangle", "Square"].includes(
+      activeDrawType,
+    ) &&
     ogcSource &&
     ogcSource !== "Ingen";
 

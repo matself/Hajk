@@ -532,7 +532,7 @@ function AttributeEditor(props) {
                 projection: meta?.projection,
                 layers: meta?.layers || [],
               };
-            } catch (err) {
+            } catch {
               if (signal.aborted) return null;
 
               const m = allArr.find((x) => (x.id ?? x.uuid) === id);
@@ -681,6 +681,8 @@ function AttributeEditor(props) {
               options: Array.isArray(f.values) ? f.values : undefined,
               multiple,
               step: type === "integer" ? 1 : undefined,
+              min: f.textType === "positive" ? 1 : undefined,
+              max: f.textType === "negative" ? -1 : undefined,
               initialWidth: i === 0 ? 120 : 220,
             };
           });
@@ -728,8 +730,14 @@ function AttributeEditor(props) {
         fmEditable.forEach((m) => byKey.set(m.key, m));
         let fmMerged = Array.from(byKey.values());
 
-        // 5) Ensure that ID is always above as a RO
+        // 5) Ensure that ID is always above as a RO (unless explicitly hidden in schema)
+        const allSchemaFields = [
+          ...(schema?.editableFields || []),
+          ...(schema?.nonEditableFields || []),
+        ];
         function ensureRo(key, label = key, width = 90) {
+          if (allSchemaFields.some((f) => f.name === key && f.hidden === true))
+            return;
           if (!fmMerged.some((m) => m.key === key)) {
             fmMerged.unshift({
               key,
@@ -820,7 +828,9 @@ function AttributeEditor(props) {
           if (fidProp) {
             try {
               f.setId?.(fidProp);
-            } catch {}
+            } catch {
+              // ignore
+            }
           }
         });
 
@@ -957,10 +967,14 @@ function AttributeEditor(props) {
     const wireToCurrentSketchLayer = () => {
       try {
         unbindSrc();
-      } catch {}
+      } catch {
+        // ignore
+      }
       try {
         unbindLayerHook();
-      } catch {}
+      } catch {
+        // ignore
+      }
 
       const sketchLayer = getSketchLayer(map);
       if (!sketchLayer) return;
@@ -972,14 +986,18 @@ function AttributeEditor(props) {
       const onChangeSource = () => {
         try {
           unbindSrc();
-        } catch {}
+        } catch {
+          // ignore
+        }
         wireToCurrentSketchLayer();
       };
       sketchLayer.on?.("change:source", onChangeSource);
       unbindLayerHook = () => {
         try {
           sketchLayer.un?.("change:source", onChangeSource);
-        } catch {}
+        } catch {
+          // ignore
+        }
       };
 
       // --- handlers ---
@@ -1009,10 +1027,14 @@ function AttributeEditor(props) {
         if (incomingId != null && featureIndexRef.current.has(incomingId)) {
           try {
             f.setId?.(undefined);
-          } catch {}
+          } catch {
+            // ignore
+          }
           try {
             f.unset?.("id", true);
-          } catch {}
+          } catch {
+            // ignore
+          }
           incomingId = undefined;
         }
 
@@ -1021,14 +1043,18 @@ function AttributeEditor(props) {
           f.setStyle(null);
           // Unset Sketch's flag indicating that the feature's style is being controlled by Attribute Editor
           f.unset?.("__ae_style_delegate", true);
-        } catch {}
+        } catch {
+          // ignore
+        }
 
         // create draft with negative id
         const tempId = model.addDraftFromFeature(f);
         f.setId?.(tempId);
         try {
           f.set?.("id", tempId, true);
-        } catch {}
+        } catch {
+          // ignore
+        }
 
         // Capture baseline immediately when draft is created
         const baseline = {};
@@ -1122,10 +1148,14 @@ function AttributeEditor(props) {
       unbindSrc = () => {
         try {
           src.un("addfeature", onAdd);
-        } catch {}
+        } catch {
+          // ignore
+        }
         try {
           src.un("removefeature", onRemove);
-        } catch {}
+        } catch {
+          // ignore
+        }
       };
     };
 
@@ -1142,16 +1172,24 @@ function AttributeEditor(props) {
     return () => {
       try {
         layers.un("add", onLayerAdd);
-      } catch {}
+      } catch {
+        // ignore
+      }
       try {
         layers.un("remove", onLayerRemove);
-      } catch {}
+      } catch {
+        // ignore
+      }
       try {
         unbindSrc();
-      } catch {}
+      } catch {
+        // ignore
+      }
       try {
         unbindLayerHook();
-      } catch {}
+      } catch {
+        // ignore
+      }
     };
   }, [props.map, model, vectorLayerRef, fieldMetaLocal]);
 
@@ -1211,7 +1249,9 @@ function AttributeEditor(props) {
             try {
               programmaticSketchOpsRef.current.add(f);
               src.removeFeature(f);
-            } catch {}
+            } catch {
+              // ignore
+            }
             featureIndexRef.current.delete(id);
             featureAliasesRef.current.delete(id);
             graveyardRef.current.set(id, f);
@@ -1230,7 +1270,9 @@ function AttributeEditor(props) {
             try {
               programmaticSketchOpsRef.current.add(f);
               src.removeFeature(f);
-            } catch {}
+            } catch {
+              // ignore
+            }
             featureIndexRef.current.delete(id);
             featureAliasesRef.current.delete(id);
             graveyardRef.current.set(id, f);
@@ -1249,7 +1291,9 @@ function AttributeEditor(props) {
             try {
               programmaticSketchOpsRef.current.add(f);
               src.addFeature(f);
-            } catch {}
+            } catch {
+              // ignore
+            }
             featureIndexRef.current.set(id, f);
             featureAliasesRef.current.set(id, idAliases(id));
             graveyardRef.current.delete(id);
@@ -1274,7 +1318,9 @@ function AttributeEditor(props) {
             try {
               programmaticSketchOpsRef.current.add(f);
               src.removeFeature(f);
-            } catch {}
+            } catch {
+              // ignore
+            }
             featureIndexRef.current.delete(id);
             featureAliasesRef.current.delete(id);
           }
@@ -1419,7 +1465,9 @@ function AttributeEditor(props) {
     return () => {
       try {
         map.un("singleclick", onClick);
-      } catch {}
+      } catch {
+        // ignore
+      }
     };
   }, [props.map, vectorLayerRef, selectedIdsRef, model, handleRowLeave]);
 

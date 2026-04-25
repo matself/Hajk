@@ -7,6 +7,29 @@ const wfsFormat = new WFS();
 const wfsGml2Format = new WFS({ gmlFormat: new GML2() });
 const geojsonFormat = new GeoJSON();
 
+function coordsHaveZ(coords) {
+  if (!Array.isArray(coords) || coords.length === 0) return false;
+  if (typeof coords[0] === "number") return coords.length >= 3;
+  return coordsHaveZ(coords[0]);
+}
+
+function addZToCoords(coords) {
+  if (!Array.isArray(coords)) return coords;
+  if (typeof coords[0] === "number") {
+    return coords.length === 2 ? [...coords, 0] : coords;
+  }
+  return coords.map(addZToCoords);
+}
+
+function ensureZInGeometry(geom) {
+  if (!geom) return geom;
+  if (geom.geometries) {
+    return { ...geom, geometries: geom.geometries.map(ensureZInGeometry) };
+  }
+  if (!geom.coordinates) return geom;
+  return { ...geom, coordinates: addZToCoords(geom.coordinates) };
+}
+
 /**
  * Creates an OGC API client for WFST operations.
  *
@@ -194,6 +217,10 @@ export function createOgcApi(baseUrl) {
       if (firstFeature?.geometry_name) {
         fc.geometryName = firstFeature.geometry_name;
       }
+      if (firstFeature?.geometry?.coordinates) {
+        fc.hasZ = coordsHaveZ(firstFeature.geometry.coordinates);
+      }
+      fc.layerConfig = layer;
       return fc;
     }
 
@@ -203,7 +230,7 @@ export function createOgcApi(baseUrl) {
     let features;
     try {
       features = wfsFormat.readFeatures(responseText);
-    } catch (e) {
+    } catch {
       features = [];
     }
 
@@ -220,11 +247,16 @@ export function createOgcApi(baseUrl) {
 
     const detectedGeomName =
       features.length > 0 ? features[0].getGeometryName() : null;
+    const firstLayout = features[0]?.getGeometry?.()?.getLayout?.();
 
     const fc = toFeatureCollection(features, srs, layerProj);
     if (detectedGeomName) {
       fc.geometryName = detectedGeomName;
     }
+    if (firstLayout) {
+      fc.hasZ = firstLayout === "XYZ" || firstLayout === "XYZM";
+    }
+    fc.layerConfig = layer;
     return fc;
   };
 
@@ -241,6 +273,7 @@ export function createOgcApi(baseUrl) {
       deletes = [],
       srsName,
       geometryName: txGeomName,
+      hasZ: txHasZ,
     } = transaction;
 
     try {
@@ -257,11 +290,14 @@ export function createOgcApi(baseUrl) {
       // (matches transaction-builder.js: `http://hajk.se/wfs/${nsPrefix}`)
       const featureNS = layer.uri || `http://hajk.se/wfs/${prefix}`;
       const crs = srsName || layer.projection || "EPSG:3006";
+      const hasZ = Boolean(txHasZ ?? layer.forceZ);
 
       // Convert GeoJSON-like objects to OpenLayers Feature objects
-      const olInserts = inserts.map((f) => toOlFeature(f, crs, geometryName));
+      const olInserts = inserts.map((f) =>
+        toOlFeature(f, crs, geometryName, undefined, hasZ)
+      );
       const olUpdates = updates.map((f) =>
-        toOlFeature(f, crs, geometryName, formatFeatureId(f.id, layer))
+        toOlFeature(f, crs, geometryName, formatFeatureId(f.id, layer), hasZ)
       );
       const olDeletes = deletes.map((fid) => {
         const feat = new Feature();
@@ -279,7 +315,7 @@ export function createOgcApi(baseUrl) {
           featurePrefix: prefix,
           featureType: type,
           srsName: crs,
-          hasZ: false,
+          hasZ,
           version: "1.1.0",
         }
       );
@@ -383,11 +419,12 @@ function toFeatureCollection(olFeatures, srsName, layerProjection) {
  *   insert: { properties: {...}, geometry: {...} }
  *   update: { id: "123", properties: {...}, geometry?: {...} }
  */
-function toOlFeature(data, srsName, geometryName, featureId) {
+function toOlFeature(data, srsName, geometryName, featureId, hasZ = false) {
   const props = { ...(data.properties || {}) };
 
   if (data.geometry) {
-    props[geometryName] = geojsonFormat.readGeometry(data.geometry, {
+    const geom = hasZ ? ensureZInGeometry(data.geometry) : data.geometry;
+    props[geometryName] = geojsonFormat.readGeometry(geom, {
       dataProjection: srsName,
       featureProjection: srsName,
     });

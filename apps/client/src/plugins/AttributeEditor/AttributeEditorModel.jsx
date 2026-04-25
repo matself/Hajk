@@ -575,6 +575,21 @@ export default class AttributeEditorModel {
     const rows = this.normalizeApiFeatures(payload);
     const fieldMeta = this.inferFieldMetaFromFeatures(rows);
 
+    // Apply defaultValue from layer config (set in Admin) to each field
+    const configFields = [
+      ...(payload.layerConfig?.editableFields || []),
+      ...(payload.layerConfig?.nonEditableFields || []),
+    ];
+    for (const cf of configFields) {
+      const fm = fieldMeta.find((m) => m.key === cf.name);
+      if (!fm) continue;
+      if (cf.defaultValue != null && cf.defaultValue !== "")
+        fm.defaultValue = cf.defaultValue;
+      if (cf.textType === "positive") fm.min = 1;
+      if (cf.textType === "negative") fm.max = -1;
+      if (cf.hidden === true) fm.hidden = true;
+    }
+
     if (signal?.aborted) return null;
 
     this.#state = reducer(this.#state, { type: Action.INIT, features: rows });
@@ -640,19 +655,25 @@ export default class AttributeEditorModel {
 
   #makeDraftFromFeature = (feature, fieldMeta = []) => {
     const props = feature?.getProperties ? feature.getProperties() : {};
-    const { geometry, ...rest } = props;
+    const rest = Object.fromEntries(
+      Object.entries(props).filter(([k]) => k !== "geometry")
+    );
     const fmKeys = Array.isArray(fieldMeta) ? fieldMeta.map((m) => m.key) : [];
+
+    const fmByKey = Array.isArray(fieldMeta)
+      ? Object.fromEntries(fieldMeta.map((m) => [m.key, m]))
+      : {};
 
     const row = {};
     if (fmKeys.length) {
       fmKeys.forEach((k) => {
         if (k === "id") return; // id is set in reducer
-        row[k] = rest[k] ?? null; // null → shown as empty / "#saknas" for readOnly
+        row[k] = rest[k] ?? fmByKey[k]?.defaultValue ?? null;
       });
     } else {
       Object.keys(rest).forEach((k) => {
         if (k === "id") return;
-        row[k] = rest[k] ?? null;
+        row[k] = rest[k] ?? fmByKey[k]?.defaultValue ?? null;
       });
     }
     return row;
