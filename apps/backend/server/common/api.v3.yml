@@ -179,6 +179,165 @@ paths:
           description: Return the layers that belong to the group
         404:
           description: Requested group was not found
+  /services:
+    get:
+      tags:
+        - Admin only
+      responses:
+        200:
+          description: Return the list of services
+        500:
+          description: Internal server error
+    post:
+      tags:
+        - Admin only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        201:
+          description: Service created
+        400:
+          description: Invalid request body
+  /services/projections:
+    get:
+      tags:
+        - Admin only
+      responses:
+        200:
+          description: Return the list of projections
+  /services/capabilities:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the capabilities for the given service URL
+        400:
+          description: Invalid URL or type
+        504:
+          description: External service timed out
+  /services/{id}:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the service
+        404:
+          description: Service not found
+    patch:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: Service updated
+        404:
+          description: Service not found
+    delete:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Service deleted
+        404:
+          description: Service not found
+  /services/{id}/layers:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the Hajk layers that use this service
+  /services/{id}/maps:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the maps affected by this service
+  /services/{id}/groups:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the groups affected by this service
+  /services/{id}/health-status:
+    patch:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        204:
+          description: Health status updated
   /tools:
     get:
       tags:
