@@ -139,6 +139,31 @@ export const getMapsByServiceId = async (serviceId: string): Promise<Map[]> => {
   }
 };
 
+export const getGroupsByServiceId = async (
+  serviceId: string,
+): Promise<{ id: string; name: string }[]> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.get<{
+      count: number;
+      groups: { id: string; name: string }[];
+    }>(`/services/${serviceId}/groups`);
+    if (!response.data) {
+      throw new Error("No groups data found");
+    }
+    return response.data.groups;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to fetch groups. ErrorId: ${axiosError.response.data.errorId}.`,
+      );
+    } else {
+      throw new Error("Failed to fetch groups");
+    }
+  }
+};
+
 export const getAllProjections = async (): Promise<string[]> => {
   const internalApiClient = getApiClient();
   try {

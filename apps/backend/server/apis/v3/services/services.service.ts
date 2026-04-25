@@ -92,6 +92,20 @@ class ServicesService {
     return maps;
   }
 
+  async getGroupsByServiceId(id: string) {
+    return await prisma.group.findMany({
+      select: { id: true, name: true },
+      where: {
+        layers: {
+          some: {
+            layer: { serviceId: id },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
   async getAllProjections() {
     const projections = await prisma.projection.findMany();
 

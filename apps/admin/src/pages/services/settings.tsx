@@ -70,6 +70,7 @@ import FormPanel from "../../components/form-components/form-panel";
 
 import DialogWrapper from "../../components/flexible-dialog";
 import LayersGrid from "./layers-grid";
+import ServiceUsagePanel from "./service-usage-panel";
 import { toast } from "react-toastify";
 
 import FormActionPanel from "../../components/form-action-panel";
@@ -776,6 +777,7 @@ export default function ServiceSettings() {
               type={service?.type}
               onRetry={() => void refetchLayers()}
             />
+            <ServiceUsagePanel serviceId={service.id} />
           </Box>
         </FormContainer>
       </FormActionPanel>

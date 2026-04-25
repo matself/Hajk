@@ -14,6 +14,7 @@ export default express
   .get("/:id", controller.getServiceById)
   .get("/:id/layers", controller.getLayersByServiceId)
   .get("/:id/maps", controller.getMapsByServiceId)
+  .get("/:id/groups", controller.getGroupsByServiceId)
   .post("/", validatePayload(ServiceCreateSchema), controller.createService)
   .patch("/:id", validatePayload(ServiceUpdateSchema), controller.updateService)
   .patch("/:id/health-status", controller.updateHealthStatus)

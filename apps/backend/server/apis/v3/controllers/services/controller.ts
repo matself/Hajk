@@ -39,6 +39,11 @@ class ServicesController {
     res.status(HttpStatusCodes.OK).json({ count: maps.length, maps });
   });
 
+  getGroupsByServiceId = asyncHandler(async (req: Request, res: Response) => {
+    const groups = await ServicesService.getGroupsByServiceId(req.params.id);
+    res.status(HttpStatusCodes.OK).json({ count: groups.length, groups });
+  });
+
   getAllProjections = asyncHandler(async (req: Request, res: Response) => {
     const projections = await ServicesService.getAllProjections();
     res

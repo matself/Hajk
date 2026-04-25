@@ -9,6 +9,7 @@ import {
   getServiceById,
   getLayersByServiceId,
   getMapsByServiceId,
+  getGroupsByServiceId,
   createService,
   updateService,
   deleteService,
@@ -84,6 +85,17 @@ export const useMapsByServiceId = (
   return useQuery({
     queryKey: ["mapsByServiceId", serviceId],
     queryFn: () => getMapsByServiceId(serviceId),
+    enabled: Boolean(serviceId),
+  });
+};
+
+export const useGroupsByServiceId = (
+  serviceId: string,
+): UseQueryResult<{ id: string; name: string }[]> => {
+  return useQuery({
+    queryKey: ["groupsByServiceId", serviceId],
+    queryFn: () => getGroupsByServiceId(serviceId),
+    enabled: Boolean(serviceId),
   });
 };
 
@@ -147,6 +159,9 @@ export const useDeleteService = () => {
       });
       void queryClient.invalidateQueries({
         queryKey: ["mapsByServiceId", serviceId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["groupsByServiceId", serviceId],
       });
     },
     onError: (error) => {
