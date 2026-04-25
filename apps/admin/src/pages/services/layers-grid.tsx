@@ -212,7 +212,7 @@ function LayersGrid({
           maxWidth: "400px",
           backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
         }}
-        label={t("layers.searchTitle")}
+        label={t("common.search")}
         variant="outlined"
         value={serviceLayerSearch}
         onChange={(e) => setServiceLayerSearch(e.target.value)}
@@ -221,13 +221,13 @@ function LayersGrid({
         }}
       />
 
-      {!hasExistingLayers && (
+      {!isLoadingLayersByService && !hasExistingLayers && (
         <Typography sx={{ textAlign: "center", fontSize: "large", mt: 1 }}>
           {t("services.layerInServiceNone")}
         </Typography>
       )}
 
-      {hasExistingLayers && (
+      {(isLoadingLayersByService || hasExistingLayers) && (
         <DataGrid
           sx={{
             maxWidth: "100%",
@@ -313,7 +313,7 @@ function LayersGrid({
                   maxWidth: "400px",
                   backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
                 }}
-                label={t("layers.searchTitle")}
+                label={t("common.search")}
                 variant="outlined"
                 value={dialogSearchTerm}
                 onChange={(e) => setDialogSearchTerm(e.target.value)}
