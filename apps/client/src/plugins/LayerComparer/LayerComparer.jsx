@@ -3,16 +3,25 @@ import {
   Alert,
   Box,
   Button,
+  Divider,
   Paper,
   Stack,
   ToggleButton,
   ToggleButtonGroup,
   useTheme,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import CompareIcon from "@mui/icons-material/Compare";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useSnackbar } from "notistack";
 
+import ControlButton, { StyledControlButton } from "components/ControlButton";
+import HajkToolTip from "components/HajkToolTip";
 import DialogWindowPlugin from "../../plugins/DialogWindowPlugin";
 import SelectDropdown from "./SelectDropdown";
 import SDSControl from "./CustomOLControl";
@@ -55,6 +64,25 @@ const ComparerSnackbar = forwardRef(function ComparerSnackbar(
   );
 });
 
+const KeyCap = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 22,
+  height: 22,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 4,
+  boxShadow: `0 2px 0 ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+}));
+
+const KeyHintRow = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 3,
+});
+
 const LayerComparer = (props) => {
   const [layerId1, setLayerId1] = useState("");
   const [layerId2, setLayerId2] = useState("");
@@ -90,6 +118,7 @@ const LayerComparer = (props) => {
   const helperSnack = React.useRef(null);
 
   const isSpy = mode === MODE_SPY_GLASS;
+  const showMobileLensControls = isSpy && layerId1 !== "" && layerId2 !== "";
 
   // Prepare layers that will be available in the comparer.
   // By doing it in this useEffect, we do it once and for all,
@@ -349,72 +378,163 @@ const LayerComparer = (props) => {
   );
 
   return (
-    <DialogWindowPlugin
-      options={props.options} // Supply the unique instance's options…
-      map={props.map} // …but the shared map…
-      app={props.app} // …and app.
-      type="LayerComparer" // Unique name - each plugin needs one. Upper-case first letter, must be valid JS variable name.
-      defaults={{
-        // Some defaults to fall back to in case instanceOptions doesn't provide them.
-        icon: <CompareIcon />, // Default icon for this plugin
-        title: "Lagerjämförare",
-        description: "Jämför lager sida vid sida eller med titthål", // Shown on Widget button as well as Tooltip for Control button
-        headerText: "Jämför lager",
-        buttonText: "Jämför",
-        primaryButtonVariant: "contained",
-        abortText: "Nollställ & stäng",
-        onAbort: onAbort, // Called when user presses the Reset & Close button
-        onClose: onClose, // Called when user presses the main primary button
-        onVisibilityChanged: onVisibilityChanged, // Called when the dialog is shown or hidden
-      }}
-    >
-      <Stack spacing={2} sx={{ width: { xs: "100%", md: 350 } }}>
-        <ToggleButtonGroup
-          value={mode}
-          exclusive
-          fullWidth
-          color="primary"
-          onChange={handleModeChange}
-          aria-label="Jämförelseläge"
-          size="small"
-        >
-          <ToggleButton value={MODE_SIDE_BY_SIDE} aria-label="Sida vid sida">
-            <CompareIcon fontSize="small" sx={{ mr: 1 }} />
-            Sida vid sida
-          </ToggleButton>
-          <ToggleButton value={MODE_SPY_GLASS} aria-label="Titthål">
-            <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
-            Titthål
-          </ToggleButton>
-        </ToggleButtonGroup>
+    <>
+      <DialogWindowPlugin
+        options={props.options} // Supply the unique instance's options…
+        map={props.map} // …but the shared map…
+        app={props.app} // …and app.
+        type="LayerComparer" // Unique name - each plugin needs one. Upper-case first letter, must be valid JS variable name.
+        defaults={{
+          // Some defaults to fall back to in case instanceOptions doesn't provide them.
+          icon: <CompareIcon />, // Default icon for this plugin
+          title: "Lagerjämförare",
+          description: "Jämför lager sida vid sida eller med titthål", // Shown on Widget button as well as Tooltip for Control button
+          headerText: "Jämför lager",
+          buttonText: "Jämför",
+          primaryButtonVariant: "contained",
+          abortText: "Nollställ & stäng",
+          onAbort: onAbort, // Called when user presses the Reset & Close button
+          onClose: onClose, // Called when user presses the main primary button
+          onVisibilityChanged: onVisibilityChanged, // Called when the dialog is shown or hidden
+        }}
+      >
+        <Stack spacing={2} sx={{ width: { xs: "100%", md: 350 } }}>
+          <ToggleButtonGroup
+            value={mode}
+            exclusive
+            fullWidth
+            color="primary"
+            onChange={handleModeChange}
+            aria-label="Jämförelseläge"
+            size="small"
+          >
+            <ToggleButton value={MODE_SIDE_BY_SIDE} aria-label="Sida vid sida">
+              <CompareIcon fontSize="small" sx={{ mr: 1 }} />
+              Sida vid sida
+            </ToggleButton>
+            <ToggleButton value={MODE_SPY_GLASS} aria-label="Titthål">
+              <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
+              Titthål
+            </ToggleButton>
+          </ToggleButtonGroup>
 
-        <Alert
-          icon={isSpy ? <VisibilityIcon /> : <CompareIcon />}
-          variant="info"
-        >
-          {helpContent}
-        </Alert>
+          <Alert
+            icon={isSpy ? <VisibilityIcon /> : <CompareIcon />}
+            variant="info"
+          >
+            {helpContent}
+            {isSpy && (
+              <Box
+                sx={{
+                  mt: 1,
+                  display: { xs: "none", md: "flex" },
+                  flexDirection: "column",
+                  gap: 0.5,
+                }}
+              >
+                <KeyHintRow>
+                  <KeyCap>
+                    <KeyboardArrowLeftIcon sx={{ fontSize: 18 }} />
+                  </KeyCap>
+                  <KeyCap>
+                    <KeyboardArrowRightIcon sx={{ fontSize: 18 }} />
+                  </KeyCap>
+                  <Box
+                    component="span"
+                    sx={{ typography: "caption", pt: "4px", pl: "6px" }}
+                  >
+                    Ändra transparens
+                  </Box>
+                </KeyHintRow>
+                <KeyHintRow>
+                  <KeyCap>
+                    <KeyboardArrowUpIcon sx={{ fontSize: 18 }} />
+                  </KeyCap>
+                  <KeyCap>
+                    <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
+                  </KeyCap>
+                  <Box
+                    component="span"
+                    sx={{ typography: "caption", pt: "4px", pl: "6px" }}
+                  >
+                    Ändra storlek
+                  </Box>
+                </KeyHintRow>
+              </Box>
+            )}
+          </Alert>
 
-        <SelectDropdown
-          setter={setLayerId1}
-          value={layerId1}
-          counterValue={layerId2}
-          baseLayers={baseLayers}
-          chosenLayers={chosenLayers}
-          layers={layers}
-          label={dropdown1Label}
-        />
-        <SelectDropdown
-          setter={setLayerId2}
-          value={layerId2}
-          counterValue={layerId1}
-          baseLayers={baseLayers}
-          chosenLayers={chosenLayers}
-          layers={layers}
-          label={dropdown2Label}
-        />
-      </Stack>
-    </DialogWindowPlugin>
+          <SelectDropdown
+            setter={setLayerId1}
+            value={layerId1}
+            counterValue={layerId2}
+            baseLayers={baseLayers}
+            chosenLayers={chosenLayers}
+            layers={layers}
+            label={dropdown1Label}
+          />
+          <SelectDropdown
+            setter={setLayerId2}
+            value={layerId2}
+            counterValue={layerId1}
+            baseLayers={baseLayers}
+            chosenLayers={chosenLayers}
+            layers={layers}
+            label={dropdown2Label}
+          />
+        </Stack>
+      </DialogWindowPlugin>
+      {showMobileLensControls && (
+        <Box
+          sx={(theme) => ({
+            position: "absolute",
+            top: theme.spacing(8),
+            left: theme.spacing(2),
+            display: { xs: "flex", md: "none" },
+            flexDirection: "column",
+            alignItems: "flex-start",
+            zIndex: 4,
+            pointerEvents: "auto",
+          })}
+        >
+          <Paper>
+            <HajkToolTip title="Gör titthålet större" placement="left">
+              <StyledControlButton
+                aria-label="Gör titthålet större"
+                onClick={() => spyRef.current?.increaseLensSize()}
+                sx={(theme) => ({
+                  borderRadius: `${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0 0`,
+                })}
+              >
+                <RadioButtonUncheckedIcon />
+              </StyledControlButton>
+            </HajkToolTip>
+            <Divider />
+            <HajkToolTip title="Gör titthålet mindre" placement="left">
+              <StyledControlButton
+                aria-label="Gör titthålet mindre"
+                onClick={() => spyRef.current?.decreaseLensSize()}
+                sx={(theme) => ({
+                  borderRadius: `0 0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px`,
+                })}
+              >
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <RadioButtonUncheckedIcon sx={{ fontSize: 14 }} />
+                </Box>
+              </StyledControlButton>
+            </HajkToolTip>
+          </Paper>
+        </Box>
+      )}
+    </>
   );
 };
 
