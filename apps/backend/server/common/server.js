@@ -11,9 +11,7 @@ import cookieParser from "cookie-parser";
 import * as OpenApiValidator from "express-openapi-validator";
 
 import log4js from "./utils/hajkLogger.js";
-import clfDate from "clf-date";
-
-import websockets from "./websockets/index.js";
+import { getCLFDate } from "./utils/get-clf-date.ts";
 
 import { createProxyMiddleware } from "http-proxy-middleware";
 
@@ -142,7 +140,7 @@ export default class ExpressServer {
             ":remote-addr - " + // Host name or IP of accesser. RFC 1413 identity (unreliable, hence always a dash)
               (req.get(process.env.AD_TRUSTED_HEADER || "X-Control-Header") ||
                 "-") + // Value of X-Control-Header (or whatever header specified in .env)
-              ` [${clfDate()}]` + // Timestamp string surrounded by square brackets, e.g. [12/Dec/2012:12:12:12 -0500]
+              ` [${getCLFDate()}]` + // Timestamp string surrounded by square brackets, e.g. [12/Dec/2012:12:12:12 -0500]
               ' ":method :url HTTP/:http-version"' + // HTTP request surrounded by double quotes, e.g., "GET /stuff.html HTTP/1.1"
               ' :status :content-length ":referrer"' + // HTTP status code, content length in bytes and referer (where request came from to your site)
               ' ":user-agent"' // User agent string, e.g. name of the browser
@@ -588,10 +586,6 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
 
     // Let's setup the server and start listening.
     const server = http.createServer(app).listen(port, welcome(port));
-
-    // For WS support we must also supply the server to the WebSocket component.
-    process.env.ENABLE_WEBSOCKETS?.toLowerCase() === "true" &&
-      websockets(server);
 
     return app;
   }
