@@ -18,8 +18,8 @@ export const themes = {
     primarySolid: "#547edaff",
     primarySoft: "#eaf1ff",
 
-    rowHover: "#eef6ff",
-    rowSelected: "#dbeafe",
+    rowHover: "#ffe0b2",
+    rowSelected: "#ffb74d",
     rowViewed: "#1e3a5f",
 
     warning: "#b45309",
@@ -674,6 +674,7 @@ export function makeStyles(t, isMobile) {
       fontSize: isMobile ? 12 : 13,
       padding: isMobile ? "6px 8px" : "8px 16px",
       borderBottom: `1px solid ${t.borderMuted}`,
+      borderRight: `1px solid ${t.borderMuted}`,
       lineHeight: "20px",
       color: t.text,
       verticalAlign: "top",
