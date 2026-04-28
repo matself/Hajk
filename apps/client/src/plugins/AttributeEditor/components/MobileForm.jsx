@@ -70,6 +70,7 @@ export default function MobileForm({
   gpsLoading,
   supportsPointGeometry,
   isLoading,
+  onDiscard,
 }) {
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
   const [savingNow, setSavingNow] = React.useState(false);
@@ -630,6 +631,7 @@ export default function MobileForm({
         open={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}
         onConfirm={confirmSave}
+        onDiscard={onDiscard}
         summary={summary}
         saving={savingNow}
       />

@@ -84,6 +84,7 @@ export default function DesktopForm({
   gpsLoading,
   supportsPointGeometry,
   isLoading,
+  onDiscard,
 }) {
   const { functionalCookiesOk } = useCookieStatus(app.globalObserver);
 
@@ -848,6 +849,7 @@ export default function DesktopForm({
           open={saveDialogOpen}
           onClose={() => setSaveDialogOpen(false)}
           onConfirm={confirmSave}
+          onDiscard={onDiscard}
           summary={summary}
           saving={savingNow}
         />

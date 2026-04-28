@@ -1610,6 +1610,7 @@ function AttributeEditor(props) {
         }),
       commit: () => model.dispatch({ type: Action.COMMIT }),
       undo: () => model.dispatch({ type: Action.UNDO }),
+      discardAll: (features) => model.dispatch({ type: Action.INIT, features }),
     }),
     [model]
   );

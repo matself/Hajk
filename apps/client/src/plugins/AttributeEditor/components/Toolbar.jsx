@@ -34,6 +34,7 @@ export default function Toolbar({
   setSearchText,
   map,
   enqueueSnackbar,
+  onDiscard,
 }) {
   const theme = useTheme();
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
@@ -156,6 +157,17 @@ export default function Toolbar({
         pendingTargetRef.current = null;
         applyServiceSwitch(def, label);
       }
+    }
+  }
+
+  function handleDiscard() {
+    onDiscard?.();
+    setSaveDialogOpen(false);
+
+    if (pendingTargetRef.current) {
+      const { def, label } = pendingTargetRef.current;
+      pendingTargetRef.current = null;
+      applyServiceSwitch(def, label);
     }
   }
 
@@ -412,6 +424,7 @@ export default function Toolbar({
         open={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}
         onConfirm={confirmSave}
+        onDiscard={handleDiscard}
         summary={summary}
         saving={savingNow}
       />

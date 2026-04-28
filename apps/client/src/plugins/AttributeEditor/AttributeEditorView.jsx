@@ -2436,6 +2436,20 @@ export default function AttributeEditorView({
 
   const undoLatestFormChange = undoLatestTableChange;
 
+  const discardAllChanges = useCallback(() => {
+    controller.discardAll(state.features);
+    setEditValues({ ...originalValues });
+    setChangedFields(new Set());
+    setDirty(false);
+    formUndoSnapshotsRef.current.clear();
+    setFormUndoStack([]);
+    setTableUndoLocal([]);
+    setTableEditing(null);
+    setLastTableIndex(null);
+    geomUndoRef.current = [];
+    setGeomUndoCount(0);
+  }, [controller, state.features, originalValues]);
+
   function openInFormFromTable(rowId) {
     controller.setMode("form");
     setSelectedIds(new Set([rowId]));
@@ -2731,6 +2745,7 @@ export default function AttributeEditorView({
         setSearchText={setSearchText}
         map={map}
         enqueueSnackbar={enqueueSnackbar}
+        onDiscard={discardAllChanges}
       />
 
       {serviceId === "NONE_ID" ? (
@@ -2784,6 +2799,7 @@ export default function AttributeEditorView({
           gpsLoading={gpsLoading}
           supportsPointGeometry={supportsPointGeometry}
           isLoading={isLoading}
+          onDiscard={discardAllChanges}
         />
       ) : ui.mode === "table" ? (
         <TableMode
@@ -2842,6 +2858,7 @@ export default function AttributeEditorView({
           gpsLoading={gpsLoading}
           supportsPointGeometry={supportsPointGeometry}
           isLoading={isLoading}
+          onDiscard={discardAllChanges}
         />
       ) : (
         <DesktopForm
@@ -2894,6 +2911,7 @@ export default function AttributeEditorView({
           gpsLoading={gpsLoading}
           supportsPointGeometry={supportsPointGeometry}
           isLoading={isLoading}
+          onDiscard={discardAllChanges}
         />
       )}
       <NotificationBar s={s} theme={theme} text={notification} />

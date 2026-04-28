@@ -187,6 +187,7 @@ export default function TableMode(props) {
     addFeatureFromGps,
     gpsLoading,
     supportsPointGeometry,
+    onDiscard,
   } = props;
 
   const { functionalCookiesOk } = useCookieStatus(app.globalObserver);
@@ -1003,6 +1004,7 @@ export default function TableMode(props) {
         open={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}
         onConfirm={confirmSave}
+        onDiscard={onDiscard}
         summary={summary}
         saving={savingNow}
         error={errorMsg}

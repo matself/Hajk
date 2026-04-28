@@ -12,7 +12,6 @@ import {
   Chip,
   Slide,
   LinearProgress,
-  Tooltip,
   CircularProgress,
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
@@ -36,13 +35,19 @@ export default function ConfirmSaveDialog({
   title = "Spara ändringar",
   body = "Det finns osparade ändringar. Vill du spara nu?",
   primaryLabel = "Spara",
-  discardLabel = "Kassera",
 }) {
   const { adds = 0, edits = 0, deletes = 0 } = summary;
+  const [discardConfirmOpen, setDiscardConfirmOpen] = React.useState(false);
 
   const handleClose = (_e, reason) => {
     if (saving && (reason === "backdropClick" || reason === "escapeKeyDown"))
       return;
+    onClose?.();
+  };
+
+  const handleConfirmDiscard = () => {
+    setDiscardConfirmOpen(false);
+    onDiscard?.();
     onClose?.();
   };
 
@@ -154,24 +159,23 @@ export default function ConfirmSaveDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 2, py: 1.5 }}>
+        {onDiscard && (
+          <Button
+            onClick={() => setDiscardConfirmOpen(true)}
+            variant="contained"
+            color="error"
+            disabled={saving}
+            sx={{ color: "common.white" }}
+          >
+            Radera alla förändringar
+          </Button>
+        )}
+
+        <span style={{ flex: 1 }} />
+
         <Button onClick={handleClose} disabled={saving}>
           Avbryt
         </Button>
-
-        {onDiscard && (
-          <Tooltip title="Ignorera osparade ändringar">
-            <span>
-              <Button
-                onClick={onDiscard}
-                variant="outlined"
-                color="error"
-                disabled={saving}
-              >
-                {discardLabel}
-              </Button>
-            </span>
-          </Tooltip>
-        )}
 
         <Button
           onClick={onConfirm}
@@ -183,6 +187,51 @@ export default function ConfirmSaveDialog({
           {saving ? "Sparar…" : primaryLabel}
         </Button>
       </DialogActions>
+
+      <Dialog
+        open={discardConfirmOpen}
+        onClose={() => setDiscardConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            fontWeight: 700,
+            bgcolor: "error.main",
+            color: "common.white",
+            py: 1.25,
+          }}
+        >
+          <WarningAmberRoundedIcon fontSize="small" />
+          Radera alla förändringar
+        </DialogTitle>
+        <DialogContent sx={{ pt: 4, pb: 3, textAlign: "center" }}>
+          <Typography variant="body1">
+            Det finns förändringar som inte är sparade!
+            <br />
+            Vill du verkligen radera dessa förändringar?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 2, py: 1.5 }}>
+          <Button
+            onClick={() => setDiscardConfirmOpen(false)}
+            variant="outlined"
+          >
+            NEJ
+          </Button>
+          <Button
+            onClick={handleConfirmDiscard}
+            variant="contained"
+            color="error"
+            sx={{ color: "common.white" }}
+          >
+            JA
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }
