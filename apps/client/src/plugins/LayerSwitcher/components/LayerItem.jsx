@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 
 // Material UI components
 import {
@@ -21,6 +21,7 @@ import LsIconButton from "./LsIconButton";
 import BtnShowDetails from "./BtnShowDetails";
 import BtnLayerWarning from "./BtnLayerWarning";
 import BtnShowLegend from "./BtnShowLegend";
+import BtnToggleLayerLabel from "./BtnToggleLayerLabel";
 import LsCheckBox from "./LsCheckBox";
 
 import { useMapZoom } from "../LayerSwitcherProvider";
@@ -104,11 +105,21 @@ function LayerItem({
   const [wmsLayerLoadStatus, setWmsLayerLoadStatus] = useState("ok");
   // State that toggles legend collapse
   const [legendIsActive, setLegendIsActive] = useState(false);
+  // Track if the label layer is active
+  const [showingLabelLayer, setShowingLabelLayer] = useState(false);
   const theme = useTheme();
 
   const mapZoom = useMapZoom();
 
   const { layerIsToggled } = layerState ?? {};
+
+  const toggleLabelLayer = (e) => {
+    e.stopPropagation();
+    setShowingLabelLayer((prev) => !prev);
+    globalObserver.publish("layer.toggleLabelLayer", {
+      layerId,
+    });
+  };
 
   const {
     layerId,
@@ -124,6 +135,12 @@ function LayerItem({
   } = layerConfig ?? {};
 
   const legendIcon = layerInfo?.legendIcon || layerLegendIcon;
+
+  useEffect(() => {
+    if (!layerIsToggled) {
+      setShowingLabelLayer(false);
+    }
+  }, [layerIsToggled]);
 
   useEffect(() => {
     const handleLoadStatusChange = (d) => {
@@ -344,6 +361,12 @@ function LayerItem({
               }}
             >
               {renderStatusIcon()}
+              {layerInfo.hasLabelLayer && (
+                <BtnToggleLayerLabel
+                  active={showingLabelLayer}
+                  onClick={toggleLabelLayer}
+                />
+              )}
               {!toggleable && !draggable ? (
                 <LsIconButton size="small">
                   <HajkToolTip title="Bakgrundskartan ligger låst längst ner i ritordningen">

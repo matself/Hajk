@@ -29,6 +29,7 @@ const getOlLayerState = (l) => ({
   visibleSubLayers: l.get("visible") ? l.get("subLayers") : [],
   wmsLoadError: l.get("wmsLoadStatus") ?? undefined,
   zIndex: l.get("zIndex"),
+  hasLabelLayers: l.get("hasLabelLayers"),
   // "filterAttribute"
   // "filterComparer"
   // "filterValue"

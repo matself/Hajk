@@ -18,6 +18,10 @@ class WMSLayer {
     this.attribution = config.attribution;
     this.layerInfo = new LayerInfo(config);
     this.subLayers = config.params["LAYERS"].split(",");
+    this.globalObserver.subscribe(
+      "layer.toggleLabelLayer",
+      this.onToggleLabelLayer
+    );
 
     const source = {
       url: config.url,
@@ -121,11 +125,26 @@ class WMSLayer {
         ? config.visibleAtStartSubLayers
         : this.subLayers
     );
+    this.layer.set("hasLabelLayers", config.hasLabelLayers);
     this.layer.getSource().set("url", config.url);
     this.type = "wms";
     this.bindHandlers();
   }
 
+  onToggleLabelLayer = ({ layerId }) => {
+    if (layerId !== this.layer.get("name")) return;
+    console.log(layerId);
+    const source = this.layer.getSource();
+    const params = source.getParams();
+
+    const currentStyles = params.STYLES || "";
+    // The naming convention for our wms label layers are "labels"
+    const isLabelActive = currentStyles === "no_labels";
+
+    source.updateParams({
+      STYLES: isLabelActive ? "" : "no_labels",
+    });
+  };
   applyCustomDpiTileLoader(source, config) {
     // Experimental
     //
