@@ -3,6 +3,13 @@ import LabelIcon from "@mui/icons-material/LabelImportant";
 import LsIconButton from "./LsIconButton";
 
 function BtnToggleLayerLabel({ active, onClick }) {
+  const iconSx = (theme) => ({
+    width: "0.7em",
+    height: "0.7em",
+    marginTop: "1px",
+    color: theme.palette.grey[500],
+  });
+
   return (
     <LsIconButton
       size="small"
@@ -21,9 +28,9 @@ function BtnToggleLayerLabel({ active, onClick }) {
       }}
     >
       {active ? (
-        <LabelIcon className="ls-details-icon" />
+        <LabelIcon className="ls-details-icon" sx={iconSx} />
       ) : (
-        <LabelOutlinedIcon className="ls-details-icon" />
+        <LabelOutlinedIcon className="ls-details-icon" sx={iconSx} />
       )}
     </LsIconButton>
   );
