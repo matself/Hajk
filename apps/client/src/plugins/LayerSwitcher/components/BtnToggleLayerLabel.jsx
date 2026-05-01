@@ -5,6 +5,16 @@ import LsIconButton from "./LsIconButton";
 function BtnToggleLayerLabel({ active, onClick }) {
   return (
     <LsIconButton
+      size="small"
+      sx={(theme) => ({
+        marginTop: "3px",
+        "&:hover .ls-details-icon": {
+          color: theme.palette.grey[900],
+          ...theme.applyStyles("dark", {
+            color: "#fff",
+          }),
+        },
+      })}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.(e);

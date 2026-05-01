@@ -336,6 +336,7 @@ const getLayerNodes = (groups, olLayerMap) =>
         infogroupurltext: node.infogroupurltext,
         infogroupopendatalink: node.infogroupopendatalink,
         infogroupowner: node.infogroupowner,
+        olLayer: olLayer,
       },
       ...(children?.length === 0 ? [] : children),
     ];

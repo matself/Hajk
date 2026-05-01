@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useRef } from "react";
 
 // Material UI components
 import {
@@ -107,18 +107,18 @@ function LayerItem({
   const [legendIsActive, setLegendIsActive] = useState(false);
   // Track if the label layer is active
   const [showingLabelLayer, setShowingLabelLayer] = useState(false);
+  // Store the previous STYLES values when toggling labels
+  const previousStylesRef = useRef("");
   const theme = useTheme();
 
   const mapZoom = useMapZoom();
 
   const { layerIsToggled } = layerState ?? {};
 
+  // Toggles the state that useEffect picks up to perform the layer change
   const toggleLabelLayer = (e) => {
     e.stopPropagation();
     setShowingLabelLayer((prev) => !prev);
-    globalObserver.publish("layer.toggleLabelLayer", {
-      layerId,
-    });
   };
 
   const {
@@ -132,6 +132,7 @@ function LayerItem({
     allSubLayers,
     layerInfo,
     layerLegendIcon,
+    olLayer,
   } = layerConfig ?? {};
 
   const legendIcon = layerInfo?.legendIcon || layerLegendIcon;
@@ -141,6 +142,29 @@ function LayerItem({
       setShowingLabelLayer(false);
     }
   }, [layerIsToggled]);
+
+  // Switches between "labels" or last used STYLES if available, otherwise "".
+  useEffect(() => {
+    if (!olLayer || !layerIsToggled) return;
+
+    const source = olLayer.getSource();
+    if (!source) return;
+
+    const currentParams = source.getParams?.() || {};
+    if (showingLabelLayer) {
+      // Save current styles BEFORE overwriting
+      previousStylesRef.current = currentParams.STYLES || "";
+      source.updateParams({
+        ...currentParams,
+        STYLES: "labels",
+      });
+    } else {
+      source.updateParams({
+        ...currentParams,
+        STYLES: previousStylesRef.current || "",
+      });
+    }
+  }, [layerIsToggled, olLayer, showingLabelLayer]);
 
   useEffect(() => {
     const handleLoadStatusChange = (d) => {
