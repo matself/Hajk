@@ -13,6 +13,8 @@ import {
   Slide,
   LinearProgress,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
@@ -38,6 +40,8 @@ export default function ConfirmSaveDialog({
 }) {
   const { adds = 0, edits = 0, deletes = 0 } = summary;
   const [discardConfirmOpen, setDiscardConfirmOpen] = React.useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleClose = (_e, reason) => {
     if (saving && (reason === "backdropClick" || reason === "escapeKeyDown"))
@@ -58,14 +62,16 @@ export default function ConfirmSaveDialog({
       TransitionComponent={Transition}
       fullWidth
       maxWidth="sm"
+      fullScreen={isMobile}
       keepMounted
       disableEscapeKeyDown={saving}
       PaperProps={{
         sx: (theme) => ({
-          borderRadius: 2.5,
+          borderRadius: isMobile ? 0 : 2.5,
           overflow: "hidden",
-          border: `1px solid ${theme.palette.divider}`,
+          border: isMobile ? "none" : `1px solid ${theme.palette.divider}`,
           boxShadow: 12,
+          ...(isMobile && { margin: 0, maxHeight: "100%" }),
         }),
       }}
     >
@@ -100,7 +106,12 @@ export default function ConfirmSaveDialog({
         <Stack spacing={2}>
           <Typography variant="body1">{body}</Typography>
 
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+          >
             <Chip
               icon={<AddCircleOutlineRoundedIcon />}
               label={`Tillagda: ${adds}`}
@@ -109,11 +120,8 @@ export default function ConfirmSaveDialog({
               size="medium"
               sx={{
                 flex: 1,
-                minWidth: 0,
-                ...(adds && {
-                  bgcolor: "success.50",
-                  borderWidth: 2,
-                }),
+                justifyContent: "flex-start",
+                ...(adds && { bgcolor: "success.50", borderWidth: 2 }),
               }}
             />
             <Chip
@@ -124,11 +132,8 @@ export default function ConfirmSaveDialog({
               size="medium"
               sx={{
                 flex: 1,
-                minWidth: 0,
-                ...(edits && {
-                  bgcolor: "warning.50",
-                  borderWidth: 2,
-                }),
+                justifyContent: "flex-start",
+                ...(edits && { bgcolor: "warning.50", borderWidth: 2 }),
               }}
             />
             <Chip
@@ -139,11 +144,8 @@ export default function ConfirmSaveDialog({
               size="medium"
               sx={{
                 flex: 1,
-                minWidth: 0,
-                ...(deletes && {
-                  bgcolor: "error.50",
-                  borderWidth: 2,
-                }),
+                justifyContent: "flex-start",
+                ...(deletes && { bgcolor: "error.50", borderWidth: 2 }),
               }}
             />
           </Stack>
@@ -158,22 +160,34 @@ export default function ConfirmSaveDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 2, py: 1.5 }}>
+      <DialogActions
+        sx={{
+          px: 2,
+          py: 1.5,
+          flexDirection: isMobile ? "column-reverse" : "row",
+          gap: isMobile ? 1 : 0,
+        }}
+      >
         {onDiscard && (
           <Button
             onClick={() => setDiscardConfirmOpen(true)}
-            variant="contained"
+            variant="outlined"
             color="error"
             disabled={saving}
-            sx={{ color: "common.white" }}
+            fullWidth={isMobile}
           >
             Radera alla förändringar
           </Button>
         )}
 
-        <span style={{ flex: 1 }} />
+        {!isMobile && <span style={{ flex: 1 }} />}
 
-        <Button onClick={handleClose} disabled={saving}>
+        <Button
+          onClick={handleClose}
+          disabled={saving}
+          fullWidth={isMobile}
+          variant={isMobile ? "outlined" : "text"}
+        >
           Avbryt
         </Button>
 
@@ -182,7 +196,8 @@ export default function ConfirmSaveDialog({
           variant="contained"
           disabled={saving}
           startIcon={saving ? <CircularProgress size={18} /> : null}
-          sx={{ minWidth: 140 }}
+          fullWidth={isMobile}
+          sx={{ minWidth: isMobile ? "auto" : 140 }}
         >
           {saving ? "Sparar…" : primaryLabel}
         </Button>

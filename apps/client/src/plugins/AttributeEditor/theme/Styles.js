@@ -18,12 +18,13 @@ export const themes = {
     primarySolid: "#547edaff",
     primarySoft: "#eaf1ff",
 
-    rowHover: "#ffe0b2",
-    rowSelected: "#ffb74d",
+    rowHover: "#fff9c4",
+    rowSelected: "#ffe0b2",
     rowViewed: "#1e3a5f",
 
     warning: "#b45309",
-    warningBg: "#fef3c7",
+    warningBg: "#ffe0b2",
+    cellEditedBg: "#ffb74d",
 
     success: "#059669",
     successBg: "#d1fae5",
@@ -58,6 +59,7 @@ export const themes = {
 
     warning: "#f59e0b",
     warningBg: "rgba(245,158,11,0.1)",
+    cellEditedBg: "rgba(245,158,11,0.25)",
 
     success: "#10b981",
     successBg: "rgba(16,185,129,0.1)",
@@ -330,7 +332,7 @@ export function makeStyles(t, isMobile) {
         : isAdd
           ? t.successBg
           : isEdit || isGeom
-            ? t.warningBg
+            ? t.cellEditedBg
             : sel
               ? t.rowSelected
               : "transparent";
@@ -420,6 +422,7 @@ export function makeStyles(t, isMobile) {
       overflow: "auto",
       display: "grid",
       gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+      alignContent: "start",
       gap: isMobile ? 8 : 12,
       flex: 1,
       minHeight: 0,
@@ -478,7 +481,7 @@ export function makeStyles(t, isMobile) {
       border: `1px solid ${t.warning}`,
       borderRadius: 8,
       fontSize: 14,
-      background: t.warningBg,
+      background: t.cellEditedBg,
       color: t.text,
       resize: "vertical",
       minWidth: "100%",
@@ -644,7 +647,7 @@ export function makeStyles(t, isMobile) {
       padding: isMobile ? "6px 8px" : "8px 16px",
       borderBottom: `1px solid ${t.borderMuted}`,
       lineHeight: "20px",
-      background: t.warningBg,
+      background: t.cellEditedBg,
       verticalAlign: "top",
     },
     tdPlaceholder: {
@@ -710,7 +713,7 @@ export function makeStyles(t, isMobile) {
           : pending === "delete"
             ? t.dangerBg
             : pending === "edit" || pending === "geom"
-              ? t.warningBg
+              ? t.cellEditedBg
               : "transparent",
       cursor: "pointer",
       outline: isViewed
@@ -1032,7 +1035,7 @@ export function makeStyles(t, isMobile) {
         status === "delete"
           ? t.dangerBg
           : status === "geom" || status === "edit"
-            ? t.warningBg
+            ? t.cellEditedBg
             : status === "add"
               ? t.successBg
               : selected
