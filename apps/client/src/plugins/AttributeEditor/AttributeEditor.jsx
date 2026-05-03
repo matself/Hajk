@@ -1690,6 +1690,7 @@ function AttributeEditor(props) {
           ],
           height: props.options.winheight,
           width: props.options.winwidth,
+          persistent: true,
         }}
       >
         <AttributeEditorView

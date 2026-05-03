@@ -17,6 +17,7 @@ import {
   getIdsForDeletion,
   isMissingValue,
   autoIsMultiline,
+  renderTableCellDisplay,
 } from "../helpers/helpers";
 import { editBus } from "../../../buses/editBus";
 
@@ -30,7 +31,6 @@ export default function MobileForm({
   selectedIds,
   onFormRowClick,
   focusedId,
-  handleBeforeChangeFocus,
 
   // form
   lastEditTargetIdsRef,
@@ -244,7 +244,14 @@ export default function MobileForm({
                       >
                         {FIELD_META.map((meta) => (
                           <td key={meta.key} style={s.mobileTableTd}>
-                            {f[meta.key] ?? ""}
+                            <div style={s.mobileTableTdInner}>
+                              {renderTableCellDisplay({
+                                meta,
+                                value: f[meta.key],
+                                s,
+                                selected: true,
+                              })}
+                            </div>
                           </td>
                         ))}
                       </tr>

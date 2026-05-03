@@ -1023,6 +1023,11 @@ export function makeStyles(t, isMobile) {
       padding: 8,
       borderBottom: `1px solid ${t.borderMuted}`,
       fontSize: 13,
+    },
+    mobileTableTdInner: {
+      maxWidth: 250,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
       whiteSpace: "nowrap",
     },
     mobileTableTdEmpty: {

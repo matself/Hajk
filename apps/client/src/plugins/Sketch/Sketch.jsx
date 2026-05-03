@@ -576,6 +576,7 @@ const Sketch = (props) => {
         width: 350,
         onWindowHide: onWindowHide,
         onWindowShow: onWindowShow,
+        persistent: true,
       }}
     >
       <SketchView
