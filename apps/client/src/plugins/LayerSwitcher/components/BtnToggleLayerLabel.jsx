@@ -1,6 +1,7 @@
 import LabelOutlinedIcon from "@mui/icons-material/LabelImportantOutline";
 import LabelIcon from "@mui/icons-material/LabelImportant";
 import LsIconButton from "./LsIconButton";
+import HajkToolTip from "components/HajkToolTip";
 
 function BtnToggleLayerLabel({ active, onClick }) {
   const iconSx = (theme) => ({
@@ -27,11 +28,13 @@ function BtnToggleLayerLabel({ active, onClick }) {
         onClick?.(e);
       }}
     >
-      {active ? (
-        <LabelIcon className="ls-details-icon" sx={iconSx} />
-      ) : (
-        <LabelOutlinedIcon className="ls-details-icon" sx={iconSx} />
-      )}
+      <HajkToolTip title={active ? "Dölj etiketter" : "Visa etiketter"}>
+        {active ? (
+          <LabelIcon className="ls-details-icon" sx={iconSx} />
+        ) : (
+          <LabelOutlinedIcon className="ls-details-icon" sx={iconSx} />
+        )}
+      </HajkToolTip>
     </LsIconButton>
   );
 }
