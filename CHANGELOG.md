@@ -13,7 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Client: Better WMTS Support [Issue #1795](https://github.com/hajkmap/Hajk/issues/1795)
+- Client + Admin: DocumentHandler - Added a "Direct Print" setting that prints the currently active document directly without showing the document selection dialog [#1773](https://github.com/hajkmap/Hajk/issues/1773)
+- Client: Infoclick - Functionality to hide links that point to non-existing resources [#1804](https://github.com/hajkmap/Hajk/issues/1804)
+- Client: LayerComparer - Added the long-awaited spy glass mode [#1808](https://github.com/hajkmap/Hajk/issues/1808)
+- Client: LayerComparer - The Spy can now be resized and the transparency can be changed [#1812](https://github.com/hajkmap/Hajk/issues/1812)
+- Client: Better WMTS Support [#1795](https://github.com/hajkmap/Hajk/issues/1795)
 
 ### Changed
 
@@ -22,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Client: DocumentHandler - Fixed subscription accumulation in Contents.jsx that caused duplicate print headers [#1773](https://github.com/hajkmap/Hajk/issues/1773)
 - Client: Ensure the Quick Access function respects the cookie setting [Issue #1798](https://github.com/hajkmap/Hajk/issues/1798)
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
 - Client: Display the filename of imported draw objects along with the time, see issue [#1782](https://github.com/hajkmap/Hajk/issues/1782).
