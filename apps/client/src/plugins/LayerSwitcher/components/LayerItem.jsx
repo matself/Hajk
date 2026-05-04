@@ -143,7 +143,7 @@ function LayerItem({
     }
   }, [layerIsToggled]);
 
-  // Switches between "labels" or last used STYLES if available, otherwise "".
+  // Switches between "*layername*_labels" or last used STYLES if available, otherwise "".
   useEffect(() => {
     if (!olLayer || !layerIsToggled) return;
 
@@ -151,12 +151,19 @@ function LayerItem({
     if (!source) return;
 
     const currentParams = source.getParams?.() || {};
+    const currentLayerName = currentParams.LAYERS;
+
+    if (!currentLayerName) return;
+
     if (showingLabelLayer) {
       // Save current styles BEFORE overwriting
       previousStylesRef.current = currentParams.STYLES || "";
+
+      const labelStyle = `${currentLayerName}_labels`;
+
       source.updateParams({
         ...currentParams,
-        STYLES: "labels",
+        STYLES: labelStyle,
       });
     } else {
       source.updateParams({
