@@ -79,17 +79,16 @@ function LayersGrid({
     try {
       const response = await createLayer({
         serviceId,
+        name: layerName,
         selectedLayers: [layerName],
       });
-      void navigate(
-        type === SERVICE_TYPE.WMS
-          ? "/display-layers/" + response?.id
-          : type === SERVICE_TYPE.WFS
-            ? "/search-layers/" + response?.id
-            : type === SERVICE_TYPE.WFST
-              ? "/editing-layers/" + response?.id
-              : "/display-layers/" + response?.id
-      );
+      const base =
+        type === SERVICE_TYPE.WFS
+          ? "/search-layers/"
+          : type === SERVICE_TYPE.WFST
+            ? "/editing-layers/"
+            : "/display-layers/";
+      void navigate(`${base}${response?.id}?fromService=${serviceId}`);
     } catch (error) {
       console.error("Failed to create layer:", error);
     }

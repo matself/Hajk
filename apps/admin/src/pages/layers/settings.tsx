@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useSearchParams, useNavigate } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,7 +35,7 @@ import { Controller, FieldValues, useForm } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
   useLayerById,
-  //useDeleteLayer,
+  useDeleteLayer,
   LayerUpdateInput,
   useUpdateLayer,
   infoClickFormat,
@@ -89,9 +89,13 @@ const StyledTabButton = styled(Button)<{ isActive: boolean }>(
 export default function LayerSettings() {
   const { t } = useTranslation();
   const { layerId } = useParams<{ layerId: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const fromService = searchParams.get("fromService");
   const { data: layer, isLoading, isError } = useLayerById(layerId ?? "");
   const { mutateAsync: updateLayer, status: updateStatus } = useUpdateLayer();
   const { mutateAsync: createRoleOnLayer } = useCreateAndUpdateRoleOnLayer();
+  const { mutateAsync: deleteLayer } = useDeleteLayer(fromService ?? "");
   const queryClient = useQueryClient();
   const { palette } = useTheme();
   const { data: services } = useServices();
@@ -103,9 +107,13 @@ export default function LayerSettings() {
     layer?.id ?? "",
     !!layer?.id,
   );
-  //const { mutateAsync: deleteLayer, status: deleteStatus } = useDeleteLayer(
-  // service?.id ?? ""
-  //);
+
+  const handleCancelNewLayer = fromService && layerId
+    ? async () => {
+        await deleteLayer(layerId);
+        void navigate(`/services/${fromService}?tab=layers`);
+      }
+    : undefined;
   const [activeTab, setActiveTab] = useState<
     "general" | "display" | "infoclick" | "layers" | "maps"
   >("general");
@@ -763,7 +771,9 @@ export default function LayerSettings() {
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
+        onCancel={handleCancelNewLayer}
         saveButtonText="Spara"
+        backLink={service ? { label: t("services.goToService"), href: `/services/${service.id}?tab=layers` } : undefined}
         createdBy={layer?.createdBy}
         createdDate={layer?.createdDate}
         lastSavedBy={layer?.lastSavedBy}

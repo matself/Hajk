@@ -24,8 +24,8 @@ import useAppStateStore from "../../store/use-app-state-store";
  * - The ´createService` function creates a new service.
  * - The `updateService` function updates a service.
  * - The `deleteService` function deletes a service.
- * - The parseLayersFromXML function parses layer names from an XML string.
- * - The fetchCapabilities function fetches getCapabilities for a given URL.
+ * - The parseCapabilitiesFromXML function parses layer names and metadata from a capabilities XML string.
+ * - The fetchCapabilities function fetches GetCapabilities directly from the external service.
  *
  * These functions utilize a custom Axios instance and throw appropriate error messages for failures.
  *
@@ -360,45 +360,58 @@ export const deleteService = async (serviceId: string): Promise<void> => {
   }
 };
 
-const parseCapabilitiesFromXML = (xmlString: string): ServiceCapabilities => {
+const parseCapabilitiesFromXML = (
+  xmlString: string,
+  type = "WMS",
+): ServiceCapabilities => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
   const layerNames: string[] = [];
-  const layerElements = xmlDoc.getElementsByTagName("Name");
-
-  const layers = xmlDoc.getElementsByTagName("Layer");
   const workspaces: Set<string> = new Set<string>();
   const styles: Record<string, { name: string; legendUrl?: string }[]> = {};
 
-  for (const layer of layers) {
-    const name = layer.getElementsByTagName("Name")[0]?.textContent;
-    if (name?.includes(":")) {
-      const workspace = name.split(":")[0];
-      workspaces.add(workspace);
-    }
-    const styleElements = layer.getElementsByTagName("Style");
-    const styleData: { name: string; legendUrl?: string }[] = [];
+  // WFS capabilities use FeatureType elements; WMS/WMTS use Layer elements.
+  const isWFS = type === "WFS";
+  const elements = isWFS
+    ? xmlDoc.getElementsByTagName("FeatureType")
+    : xmlDoc.getElementsByTagName("Layer");
 
-    for (const styleElement of styleElements) {
-      const styleName =
-        styleElement.getElementsByTagName("Name")[0]?.textContent;
-      const legendElement = styleElement.getElementsByTagName("LegendURL")[0];
-      const legendUrl = legendElement
-        ?.getElementsByTagName("OnlineResource")[0]
-        ?.getAttribute("xlink:href");
-      if (styleName) {
-        styleData.push({ name: styleName, legendUrl: legendUrl ?? undefined });
+  for (const element of elements) {
+    // Scope to direct child Name to avoid picking up names from nested layers or styles.
+    const nameEl = Array.from(element.children).find(
+      (c) => c.localName === "Name",
+    );
+    const name = nameEl?.textContent?.trim();
+
+    if (!name) continue;
+
+    layerNames.push(name);
+
+    if (name.includes(":")) {
+      workspaces.add(name.split(":")[0]);
+    }
+
+    if (!isWFS) {
+      const styleElements = Array.from(element.children).filter(
+        (c) => c.localName === "Style",
+      );
+      const styleData: { name: string; legendUrl?: string }[] = [];
+
+      for (const styleElement of styleElements) {
+        const styleNameEl = Array.from(styleElement.children).find(
+          (c) => c.localName === "Name",
+        );
+        const styleName = styleNameEl?.textContent?.trim();
+        const legendUrl = styleElement
+          .getElementsByTagName("LegendURL")[0]
+          ?.getElementsByTagName("OnlineResource")[0]
+          ?.getAttribute("xlink:href");
+        if (styleName) {
+          styleData.push({ name: styleName, legendUrl: legendUrl ?? undefined });
+        }
       }
-    }
-    if (name) {
       styles[name] = styleData;
-    }
-  }
-  for (const layerElement of layerElements) {
-    const layerName = layerElement.textContent;
-    if (layerName) {
-      layerNames.push(layerName);
     }
   }
 
@@ -446,19 +459,17 @@ export const fetchCapabilities = async (
   baseUrl: string,
   type = "WMS",
 ): Promise<ServiceCapabilities> => {
-  const internalApiClient = getApiClient();
-  const response = await internalApiClient.get<{ capabilities: string }>(
-    "/services/capabilities",
-    {
-      params: {
-        url: baseUrl,
-        type,
-      },
-    },
+  const response = await fetch(
+    `${baseUrl}?SERVICE=${type}&REQUEST=GetCapabilities`,
+    { signal: AbortSignal.timeout(10000) },
   );
-  const xmlData: string = response.data.capabilities;
-  const layers = parseCapabilitiesFromXML(xmlData);
-  return { ...layers };
+
+  if (!response.ok) {
+    throw new Error(`Capabilities request failed with status ${response.status}`);
+  }
+
+  const xmlData = await response.text();
+  return parseCapabilitiesFromXML(xmlData, type);
 };
 
 export const updateServiceHealthStatus = async (

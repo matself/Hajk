@@ -9,7 +9,9 @@ import { useUser } from "../api/users";
 interface FormActionProps {
   updateStatus: "idle" | "pending" | "success" | "error";
   onUpdate: () => void | Promise<void>;
+  onCancel?: () => void | Promise<void>;
   saveButtonText?: string;
+  backLink?: { label: string; href: string };
   createdBy?: string;
   createdDate?: string;
   lastSavedBy?: string;
@@ -22,7 +24,9 @@ interface FormActionProps {
 const FormActionPanel: React.FC<FormActionProps> = ({
   updateStatus,
   onUpdate,
+  onCancel,
   saveButtonText = "",
+  backLink,
   createdBy,
   createdDate,
   lastSavedBy,
@@ -45,7 +49,11 @@ const FormActionPanel: React.FC<FormActionProps> = ({
       .toUpperCase();
 
   const handleCancel = () => {
-    window.history.back();
+    if (onCancel) {
+      void onCancel();
+    } else {
+      window.history.back();
+    }
   };
 
   return (
@@ -98,6 +106,11 @@ const FormActionPanel: React.FC<FormActionProps> = ({
         >
           {t("common.cancel")}
         </Button>
+        {backLink && (
+          <Button component="a" href={backLink.href}>
+            {backLink.label}
+          </Button>
+        )}
 
         {createdBy && createdDate && (
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>

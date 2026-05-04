@@ -139,6 +139,7 @@
     "services.layerInService": "Hajk-layers that uses this service",
     "services.layerInServiceNone": "There are no Hajk-layers that uses this service",
     "services.atLeastOneLayerRequired": "At least one layer must be selected",
+    "services.goToService": "Go to service",
     "services.usageTitle": "Affected maps and groups",
     "services.affectedMaps": "Affected maps",
     "services.affectedGroups": "Affected groups",
