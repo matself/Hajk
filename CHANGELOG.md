@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Infoclick - Functionality to hide links that point to non-existing resources [#1804](https://github.com/hajkmap/Hajk/issues/1804)
 - Client: LayerComparer - Added the long-awaited spy glass mode [#1808](https://github.com/hajkmap/Hajk/issues/1808)
 - Client: LayerComparer - The Spy can now be resized and the transparency can be changed [#1812](https://github.com/hajkmap/Hajk/issues/1812)
+- Client: Better WMTS Support [#1795](https://github.com/hajkmap/Hajk/issues/1795)
 
 ### Changed
 
