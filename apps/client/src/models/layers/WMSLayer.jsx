@@ -122,6 +122,7 @@ class WMSLayer {
         : this.subLayers
     );
     this.layer.set("hasLabelLayers", config.hasLabelLayers);
+    this.layer.set("showLabelLayer", false);
     this.layer.getSource().set("url", config.url);
     this.type = "wms";
     this.bindHandlers();
