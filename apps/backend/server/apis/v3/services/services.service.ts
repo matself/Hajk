@@ -305,6 +305,22 @@ class ServicesService {
 
   async deleteService(id: string) {
     await prisma.$transaction(async (transaction) => {
+      const layerInstanceCount = await transaction.layerInstance.count({
+        where: {
+          layer: {
+            serviceId: id,
+          },
+        },
+      });
+
+      if (layerInstanceCount > 0) {
+        throw new HajkError(
+          HttpStatusCodes.CONFLICT,
+          "Cannot delete service because its layers are still referenced.",
+          HajkStatusCodes.SERVICE_DELETE_BLOCKED_BY_REFERENCES
+        );
+      }
+
       const layers = await transaction.layer.findMany({
         where: { serviceId: id },
         select: { id: true },

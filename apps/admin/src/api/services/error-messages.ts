@@ -3,6 +3,7 @@ import type { TFunction } from "i18next";
 
 interface ServiceDeleteErrorBody {
   error?: string;
+  errors?: { message?: string }[];
 }
 
 export function getDeleteServiceErrorMessage(
@@ -19,7 +20,9 @@ export function getDeleteServiceErrorMessage(
   }
 
   const status = error.response.status;
-  const message = error.response.data?.error;
+  const messageFromError = error.response.data?.error;
+  const messageFromErrorsArray = error.response.data?.errors?.[0]?.message;
+  const message = messageFromError ?? messageFromErrorsArray;
 
   if (typeof message === "string" && message.trim()) {
     return message.trim();

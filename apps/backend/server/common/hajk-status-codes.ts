@@ -38,6 +38,10 @@ enum HajkStatusCodes {
    */
   SERVICE_ALREADY_EXISTS = "DB006",
   /**
+   * Service deletion is blocked because the service is still referenced.
+   */
+  SERVICE_DELETE_BLOCKED_BY_REFERENCES = "DB007",
+  /**
    * The requested layer type is not one of the valid ones. Valid layer
    * types are defined by the enum LayerType.
    */
