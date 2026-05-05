@@ -1,0 +1,401 @@
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  DndContext,
+  TouchSensor,
+  MouseSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  IconButton,
+  Box,
+  FormGroup,
+  FormControlLabel,
+  Switch,
+  Collapse,
+  Typography,
+  Stack,
+} from "@mui/material";
+
+import LayerItem from "./LayerItem";
+import BackgroundLayer from "./BackgroundLayer";
+import GroupLayer from "./GroupLayer";
+
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HajkToolTip from "components/HajkToolTip";
+import SortableList from "./SortableList";
+
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+function DrawOrder({ display, app, map, localObserver, options }) {
+  // Configurable input sensors for the draworder list
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    })
+  );
+  // A Set that will hold type of OL layers that should be shown.
+  // This is a user setting, changed by toggling a switch control.
+  const [filterList, setFilterList] = useState(
+    ["layer", "group", "base"] // Also "system" is available, but let's start without it
+  );
+  // State that contains the layers that are currently visible
+  const [sortedLayers, setSortedLayers] = useState([]);
+  // State that toggles info collapse
+  const [infoIsActive, setInfoIsActive] = useState(false);
+  // State that keeps track if system filter is active
+  const [systemFilterActive, setSystemFilterActive] = useState(false);
+
+  // A helper that grabs all OL layers with state visible, filters so that
+  // only the selected layer types are shown and sorts them
+  // in reverse numerical order (highest zIndex at top of the list).
+  const getSortedLayers = useCallback(() => {
+    // Get all visible layers
+    let visibleLayers = map.getAllLayers().filter((l) => {
+      l.getZIndex() === undefined && l.setZIndex(-2);
+      return (
+        l.get("visible") === true && filterList.includes(l.get("layerType"))
+      );
+    });
+
+    // Return layers in reversed numerical order
+    return visibleLayers.sort((a, b) => b.getZIndex() - a.getZIndex());
+  }, [filterList, map]);
+
+  // A helper that grabs all OL layers, filters on selected layer types.
+  // This is needed for the z-index ordering to be correct with all layers added to map
+  const getAllLayers = useCallback(() => {
+    return (
+      map
+        .getAllLayers()
+        .filter((l) => {
+          l.getZIndex() === undefined && l.setZIndex(-2);
+          return filterList.includes(l.get("layerType"));
+        })
+        // Reversed numerical order
+        .sort((a, b) => b.getZIndex() - a.getZIndex())
+    );
+  }, [filterList, map]);
+
+  // When values of display changes to true, let's update the list
+  useEffect(() => {
+    let visibilityChangedSubscription;
+
+    if (display) {
+      // Subscribe to the layerVisibilityChanged event when display sets to true
+      visibilityChangedSubscription = app.globalObserver.subscribe(
+        "core.layerVisibilityChanged",
+        (l) => {
+          // Update list of layers
+          setSortedLayers(getSortedLayers());
+        }
+      );
+
+      // Update list of layers when display sets to true
+      setSortedLayers(getSortedLayers());
+    }
+
+    // Unsubscribe from the layerVisibilityChanged event
+    return function () {
+      if (visibilityChangedSubscription) {
+        visibilityChangedSubscription.unsubscribe();
+      }
+    };
+  }, [display, getSortedLayers, app.globalObserver]);
+
+  // When values of the filterList set changes, let's update the list
+  useEffect(() => {
+    // Update list of layers
+    setSortedLayers(getSortedLayers());
+  }, [filterList, app.globalObserver, getSortedLayers]);
+
+  // Handler that takes care of the layer zIndex ordering.
+  const onDrop = (e) => {
+    if (!e.over) return;
+
+    // The layer "name" is used for the id we are comparing to.
+    const oldIdx = sortedLayers
+      .map((layer) => layer.get("name"))
+      .indexOf(e.active.id.toString());
+    const newIdx = sortedLayers
+      .map((layer) => layer.get("name"))
+      .indexOf(e.over.id.toString());
+
+    if (e.active.id !== e.over.id) {
+      const rearrangeResult = reorder(sortedLayers, oldIdx, newIdx);
+
+      setSortedLayers(rearrangeResult);
+      const layer = sortedLayers[oldIdx];
+      const removedIndex = oldIdx;
+      const addedIndex = newIdx;
+      // The layers original z-index
+      const oldZIndex = layer.getZIndex() || 0;
+      // Setup two variables that will have different values depending on
+      // whether we're moving the layer up or down the list.
+      let otherAffectedLayers = null;
+
+      // Determine the direction of the reorder
+      const direction = removedIndex - addedIndex;
+
+      if (direction === 0) return; // No reorder
+
+      if (direction > 0) {
+        // Increasing zIndex. We want to get every layer with higher zindex than current layer and increase it too.
+        otherAffectedLayers = getAllLayers().filter(
+          (l) => l.getZIndex() >= oldZIndex && layer !== l // Make sure to ignore current layer
+        );
+        // Get the layer that current layer need to replace zindex with
+        const layerToReplaceZindexWith = getSortedLayers()[addedIndex];
+        const newZIndex = layerToReplaceZindexWith.getZIndex() || 0;
+
+        // Remove layers from otherAffectedLayers that are not affected by the zindex change
+        otherAffectedLayers = otherAffectedLayers.filter(
+          (l) => l.getZIndex() <= newZIndex
+        );
+
+        // Decrease otherAffectedLayers with one zIndex.
+        otherAffectedLayers.forEach((l) => l.setZIndex(l.getZIndex() - 1));
+        // Finally, the layer that is to be moved must get a new zIndex.
+        layer.setZIndex(newZIndex);
+      } else {
+        // Decreasing zIndex. Grab all layers with zIndex below the current layer's.
+        otherAffectedLayers = getAllLayers().filter(
+          (l) => l.getZIndex() <= oldZIndex && layer !== l // Make sure to ignore current layer
+        );
+
+        // Get the layer that current layer need to replace zindex with
+        const layerToReplaceZindexWith = getSortedLayers()[addedIndex];
+        const newZIndex = layerToReplaceZindexWith.getZIndex() || 0;
+
+        // Remove layers from otherAffectedLayers that are not affected by the zindex change
+        otherAffectedLayers = otherAffectedLayers.filter(
+          (l) => l.getZIndex() >= newZIndex
+        );
+
+        // Increase otherAffectedLayers with one zIndex.
+        otherAffectedLayers.forEach((la) => la.setZIndex(la.getZIndex() + 1));
+        // Finally, the layer that is to be moved must get a new zIndex.
+        layer.setZIndex(newZIndex);
+      }
+    }
+  };
+
+  // Handles click on info button in header
+  const handleInfoButtonClick = () => {
+    setInfoIsActive(!infoIsActive);
+  };
+
+  // Sets system filter
+  const setSystemFilter = () => {
+    if (filterList.includes("system")) {
+      // Remove "system" from filerList
+      const newFilterList = filterList.filter((item) => item !== "system");
+      setFilterList(newFilterList);
+    } else {
+      // Add "system" to filerList
+      setFilterList((filterList) => [...filterList, "system"]);
+    }
+    // Change systemFilterActive state
+    setSystemFilterActive(!systemFilterActive);
+  };
+
+  const renderLockedBaseLayerItem = () => {
+    if (!options.lockDrawOrderBaselayer) return null;
+    const l = sortedLayers.find((l) => l.get("layerType") === "base");
+    if (!l) return null;
+    return (
+      <BackgroundLayer
+        key={l.isFakeMapLayer ? l.get("caption") : l.ol_uid}
+        layer={l}
+        app={app}
+        globalObserver={app.globalObserver}
+        draggable={!options.lockDrawOrderBaselayer}
+        toggleable={false}
+      />
+    );
+  };
+
+  const getRenderedLayer = (l) => {
+    const layerState = {
+      layerIsToggled: l.get("visible"),
+      visibleSubLayers: l.get("subLayers"),
+    };
+    const layerConfig = {
+      layerId: l.get("name"),
+      layerCaption: l.get("caption"),
+      layerType: l.get("layerType"),
+      // layerIsFakeMapLayer: l.isFakeMapLayer,
+      layerIsFakeMapLayer: false, // TODO Check this mapLayer.isFakeMapLayer,
+      allSubLayers: l.get("allSubLayers"),
+      layerMinZoom: l.get("minZoom"),
+      layerMaxZoom: l.get("maxZoom"),
+      numberOfSubLayers: l.subLayers?.length,
+      layerInfo: l.get("layerInfo"),
+      layerLegendIcon: l.get("legendIcon"),
+    };
+    return l.get("layerType") === "base" ? (
+      <BackgroundLayer
+        key={l.isFakeMapLayer ? l.get("caption") : l.ol_uid}
+        layer={l}
+        app={app}
+        globalObserver={app.globalObserver}
+        draggable={true}
+        toggleable={false}
+      />
+    ) : l.get("layerType") === "group" ? (
+      <GroupLayer
+        key={l.ol_uid}
+        layerState={layerState}
+        layerConfig={layerConfig}
+        globalObserver={app.globalObserver}
+        toggleable={false}
+        draggable={true}
+      />
+    ) : (
+      <LayerItem
+        key={l.ol_uid}
+        layerState={layerState}
+        layerConfig={layerConfig}
+        draggable={true}
+        toggleable={false}
+        globalObserver={app.globalObserver}
+      />
+    );
+  };
+
+  return (
+    <Box
+      // This class is used to style specific elements when the tab is active
+      // If you search for this class in the codebase, you can find related style-fixes.
+      className={"ls-draworder-tab-view"}
+      id="draw-order-list"
+      sx={[
+        {
+          height: "inherit",
+          maxHeight: "inherit",
+          overflowY: "auto",
+        },
+        display
+          ? {
+              display: "block",
+            }
+          : {
+              display: "none",
+            },
+      ]}
+    >
+      <Box
+        sx={(theme) => ({
+          pr: 2,
+          pl: 2,
+          py: 1,
+          backgroundColor: theme.palette.grey[100],
+          borderBottom: `${theme.spacing(0.2)} solid ${theme.palette.divider}`,
+          ...theme.applyStyles("dark", {
+            backgroundColor: "#373737",
+          }),
+        })}
+      >
+        <Stack direction="row" alignItems="center">
+          {options.enableSystemLayersSwitch && (
+            <FormGroup id="draw-order-switch">
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={systemFilterActive}
+                    onChange={setSystemFilter}
+                  />
+                }
+                label="Systemlager"
+              />
+            </FormGroup>
+          )}
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton onClick={handleInfoButtonClick}>
+            <HajkToolTip title={infoIsActive ? "Dölj info" : "Visa info"}>
+              <InfoOutlinedIcon />
+            </HajkToolTip>
+          </IconButton>
+        </Stack>
+        <Collapse
+          in={infoIsActive}
+          timeout="auto"
+          unmountOnExit
+          className="infoCollapse"
+        >
+          <Box sx={{ p: 1, pt: 0 }}>
+            <hr></hr>
+            <Typography variant="subtitle2">
+              {options.drawOrderViewInfoText}
+            </Typography>
+          </Box>
+        </Collapse>
+      </Box>
+      <DndContext
+        onDragEnd={onDrop}
+        sensors={sensors}
+        modifiers={[restrictToVerticalAxis]}
+        collisionDetection={closestCenter}
+        autoScroll={{
+          threshold: {
+            x: 0,
+            y: 0.2,
+          },
+        }}
+      >
+        <SortableContext
+          items={sortedLayers.map((x) => x.get("name"))}
+          strategy={verticalListSortingStrategy}
+        >
+          {sortedLayers.map((l) => {
+            if (
+              l.get("layerType") !== "base" ||
+              (l.get("layerType") === "base" &&
+                options.lockDrawOrderBaselayer === false)
+            ) {
+              return (
+                <SortableList key={l.get("name")} id={l.get("name")}>
+                  {getRenderedLayer(l)}
+                </SortableList>
+              );
+            }
+            return null;
+          })}
+        </SortableContext>
+      </DndContext>
+      {renderLockedBaseLayerItem()}
+    </Box>
+  );
+}
+
+export default DrawOrder;

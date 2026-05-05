@@ -23,6 +23,8 @@ var defaultState = {
   target: "toolbar",
   instruction: "",
   copyright: "",
+  textFontSize: 8,
+  textFontWeight: "normal",
   disclaimer: "",
   date: "",
   scales: "200, 400, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 200000",
@@ -49,6 +51,8 @@ var defaultState = {
   mapTextColor: "#000000",
   useCustomTileLoaders: true,
   includeImageBorder: false,
+  allowLegendsInPdfOutput: false,
+  generateLegendsByDefault: false,
   maxTileSize: 4096,
 };
 
@@ -70,6 +74,9 @@ class ToolOptions extends Component {
         index: tool.index,
         target: tool.options.target || "toolbar",
         copyright: tool.options.copyright || this.state.copyright,
+        textFontSize: tool.options.textFontSize || this.state.textFontSize,
+        textFontWeight:
+          tool.options.textFontWeight || this.state.textFontWeight,
         disclaimer: tool.options.disclaimer || this.state.disclaimer,
         date: tool.options.date || this.state.date,
         position: tool.options.position,
@@ -123,6 +130,14 @@ class ToolOptions extends Component {
           tool.options.northArrowPlacement || this.state.northArrowPlacement,
         includeImageBorder:
           tool.options.includeImageBorder || this.state.includeImageBorder,
+        allowLegendsInPdfOutput:
+          typeof tool.options.allowLegendsInPdfOutput === "boolean"
+            ? tool.options.allowLegendsInPdfOutput
+            : this.state.allowLegendsInPdfOutput,
+        generateLegendsByDefault:
+          typeof tool.options.generateLegendsByDefault === "boolean"
+            ? tool.options.generateLegendsByDefault
+            : this.state.generateLegendsByDefault,
         useCustomTileLoaders:
           tool.options.useCustomTileLoaders ?? this.state.useCustomTileLoaders,
         maxTileSize: tool.options.maxTileSize || this.state.maxTileSize,
@@ -189,6 +204,8 @@ class ToolOptions extends Component {
         target: this.state.target,
         position: this.state.position,
         copyright: this.state.copyright,
+        textFontSize: this.state.textFontSize,
+        textFontWeight: this.state.textFontWeight,
         disclaimer: this.state.disclaimer,
         date: this.state.date,
         width: this.state.width,
@@ -208,7 +225,7 @@ class ToolOptions extends Component {
         visibleAtStart: this.state.visibleAtStart,
         visibleForGroups: this.state.visibleForGroups.map(
           Function.prototype.call,
-          String.prototype.trim
+          String.prototype.trim,
         ),
         includeLogo: this.state.includeLogo,
         logoPlacement: this.state.logoPlacement,
@@ -219,6 +236,8 @@ class ToolOptions extends Component {
         includeNorthArrow: this.state.includeNorthArrow,
         northArrowPlacement: this.state.northArrowPlacement,
         includeImageBorder: this.state.includeImageBorder,
+        allowLegendsInPdfOutput: this.state.allowLegendsInPdfOutput,
+        generateLegendsByDefault: this.state.generateLegendsByDefault,
         useCustomTileLoaders: this.state.useCustomTileLoaders,
         maxTileSize: this.state.maxTileSize,
       },
@@ -234,7 +253,7 @@ class ToolOptions extends Component {
             alert: true,
             alertMessage: "Uppdateringen lyckades",
           });
-        }
+        },
       );
     }
 
@@ -381,8 +400,8 @@ class ToolOptions extends Component {
             mycket minne. Standard för GeoServer är 128MB och det är inte säkert
             det räcker för att alla requests ska returneras korrekt. <br />
             <div className="separator">För att ändra minnesanvändningen</div>
-            Logga in i GeoServer > Tjänster > WMS > Gränser för
-            resursförbrukning > Max renderingsminne (KB)
+            Logga in i GeoServer {">"} Tjänster {">"} WMS {">"} Gränser för
+            resursförbrukning {">"} Max renderingsminne (KB)
           </div>
           <div>
             <input
@@ -505,7 +524,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderUseCustomTileLoadersSelect(
               this.state.useCustomTileLoaders,
-              "useCustomTileLoaders"
+              "useCustomTileLoaders",
             )}
           </div>
           <div>
@@ -647,7 +666,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderPlacementSelect(
               this.state.logoPlacement,
-              "logoPlacement"
+              "logoPlacement",
             )}
           </div>
           <div>
@@ -700,7 +719,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderIncludeSelect(
               this.state.includeNorthArrow,
-              "includeNorthArrow"
+              "includeNorthArrow",
             )}
           </div>
           <div>
@@ -714,7 +733,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderPlacementSelect(
               this.state.northArrowPlacement,
-              "northArrowPlacement"
+              "northArrowPlacement",
             )}
           </div>
 
@@ -751,7 +770,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderIncludeSelect(
               this.state.includeScaleBar,
-              "includeScaleBar"
+              "includeScaleBar",
             )}
           </div>
           <div>
@@ -765,7 +784,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderPlacementSelect(
               this.state.scaleBarPlacement,
-              "scaleBarPlacement"
+              "scaleBarPlacement",
             )}
           </div>
           <div>
@@ -779,7 +798,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderIncludeSelect(
               this.state.includeQrCode,
-              "includeQrCode"
+              "includeQrCode",
             )}
           </div>
           <div>
@@ -793,7 +812,7 @@ class ToolOptions extends Component {
             </label>
             {this.renderPlacementSelect(
               this.state.qrCodePlacement,
-              "qrCodePlacement"
+              "qrCodePlacement",
             )}
           </div>
           <div>
@@ -807,7 +826,35 @@ class ToolOptions extends Component {
             </label>
             {this.renderIncludeSelect(
               this.state.includeImageBorder,
-              "includeImageBorder"
+              "includeImageBorder",
+            )}
+          </div>
+          <div>
+            <label htmlFor="allowLegendsInPdfOutput">
+              Tillåt teckenförklaring i PDF (experimentell funktion){" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Om aktivt kan användaren välja att inkludera teckenförklaring i PDF-utskrift. (experimentell funktion)"
+              />
+            </label>
+            {this.renderIncludeSelect(
+              this.state.allowLegendsInPdfOutput,
+              "allowLegendsInPdfOutput",
+            )}
+          </div>
+          <div>
+            <label htmlFor="generateLegendsByDefault">
+              Generera teckenförklaring som standard{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Om aktivt är teckenförklaring förvald för PDF-utskrift i klienten."
+              />
+            </label>
+            {this.renderIncludeSelect(
+              this.state.generateLegendsByDefault,
+              "generateLegendsByDefault",
             )}
           </div>
           <div>
@@ -888,6 +935,51 @@ class ToolOptions extends Component {
                   : "Utskriften sker på klienten och inte på servern som den gamla gjorde."
               }
             />
+          </div>
+          <div>
+            <label htmlFor="textFontSize">
+              Teckenstorlek{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Teckenstorlek för copyright, date och disclaimer texten i utskriften."
+              />
+            </label>
+            <select
+              id="textFontSize"
+              name="textFontSize"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              value={this.state.textFontSize}
+            >
+              <option value={8}>Liten</option>
+              <option value={11}>Mellan</option>
+              <option value={13}>Stor</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="textFontWeight">
+              Typsnitt{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Typsnitt för copyright, date och disclaimer texten i utskriften."
+              />
+            </label>
+            <select
+              id="textFontWeight"
+              name="textFontWeight"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              value={this.state.textFontWeight}
+            >
+              <option value="normal">Normal</option>
+              <option value="bold">Fet</option>
+            </select>
           </div>
           {this.renderVisibleForGroups()}
         </form>

@@ -13,9 +13,9 @@ import { isMobile } from "../utils/IsMobile";
 import { getMergedSearchAndHashParams } from "../utils/getMergedSearchAndHashParams";
 // import ArcGISLayer from "./layers/ArcGISLayer.js";
 // import DataLayer from "./layers/DataLayer.js";
-import WMSLayer from "./layers/WMSLayer.js";
-import WMTSLayer from "./layers/WMTSLayer.js";
-import WFSVectorLayer from "./layers/VectorLayer.js";
+import WMSLayer from "./layers/WMSLayer";
+import WMTSLayer from "./layers/WMTSLayer";
+import WFSVectorLayer from "./layers/VectorLayer";
 import OSM from "ol/source/OSM";
 import TileLayer from "ol/layer/Tile";
 import { mapDirectionToAngle } from "../utils/mapDirectionToAngle";
@@ -230,12 +230,14 @@ class AppModel {
    * have a way to determine whether the Drawer toggle button should be
    * rendered. It's not as easy as checking for Drawer plugins only (i.e.
    * those with target=toolbar) - this simple logic gets complicated by
-   * the fact that Widget plugins (target=left|right) also render Drawer
-   * buttons on small screens.
+   * the fact that Widget plugins (target=left|right) and Control buttons (target=control)
+   * also render Drawer buttons on small screens.
    */
   getPluginsThatMightRenderInDrawer() {
     return this.getPlugins().filter((plugin) => {
-      return ["toolbar", "left", "right"].includes(plugin.options.target);
+      return ["toolbar", "left", "right", "control"].includes(
+        plugin.options.target
+      );
     });
   }
 
@@ -248,10 +250,15 @@ class AppModel {
    */
   loadPlugins(plugins) {
     const promises = [];
+    const modules = import.meta.glob([
+      "../components/Search/*.j*",
+      "../plugins/*/*.j*",
+    ]);
     plugins.forEach((plugin) => {
       const dir = ["Search"].includes(plugin) ? "components" : "plugins";
-      const prom = import(`../${dir}/${plugin}/${plugin}.js`)
-        .then((module) => {
+
+      const prom = modules[`../${dir}/${plugin}/${plugin}.jsx`]()
+        ?.then((module) => {
           const toolConfig =
             this.config.mapConfig.tools.find(
               (plug) => plug.type.toLowerCase() === plugin.toLowerCase()
@@ -571,8 +578,16 @@ class AppModel {
       name: "-3",
       caption: "OpenStreetMap",
       layerInfo: {
-        caption: "OpenStreetMap",
+        infoText:
+          "OpenStreetMap är en öppen, användargenererad karta där vem som helst kan bidra med information. Innehållet är inte kvalitetssäkrat, granskat eller godkänt av Lantmäteriet.",
+        infoTitle: "Om OpenStreetMap",
+        infoUrl:
+          "https://wiki.openstreetmap.org/wiki/OpenStreetMap_Carto/Symbols",
+        infoUrlText: "Länk till teckenförklaring",
+        information: "Här finns mer info",
         layerType: "base",
+        hideExpandArrow: false,
+        showAttributeTableButton: false,
       },
     });
 
@@ -872,16 +887,7 @@ class AppModel {
         // Let's handle multiple features as array and keep backward compatibility with single features.
         features = Array.isArray(features) ? features : [features];
         this.highlightSource.addFeatures(features);
-
-        if (window.innerWidth < 600) {
-          // Do we have any geometries? It's needed if you want to get a center.
-          if (features[0].getGeometry()) {
-            // Use the source extent to get a good center.
-            this.map
-              .getView()
-              .setCenter(this.getCenter(this.highlightSource.getExtent()));
-          }
-        }
+        
       }
     }
   }
