@@ -414,7 +414,7 @@ function LayerItem({
               }}
             >
               {renderStatusIcon()}
-              {layerInfo.hasLabelLayer && (
+              {layerInfo?.hasLabelLayer && (
                 <BtnToggleLayerLabel
                   active={showingLabelLayer}
                   onClick={toggleLabelLayer}
