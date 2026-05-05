@@ -49,52 +49,32 @@ const ImageComponent = (props) => {
   const [source, setSource] = useState(dataSource);
   const [popup, setPopup] = useState(dataPopup);
   const [imagePosition, setImagePosition] = useState(
-    dataImagePosition || "left"
+    dataImagePosition || "left",
   );
   const [title, setTitle] = useState(iframeTitle);
+  const [iframeSrc, setIframeSrc] = useState(src || "");
   const [saveButton, showSaveButton] = useState(true);
 
   useEffect(() => {
     if (dataType === "iframe") {
-      if (iframeTitle !== title) {
-        setTitle(iframeTitle);
-      }
-      if (iframeWidth !== width) {
-        setWidth(iframeWidth);
-      }
-      if (iframeHeight !== height) {
-        setHeight(iframeHeight);
-      }
-      if (dataImagePosition !== imagePosition) {
-        setImagePosition(dataImagePosition || "left");
-      }
+      setTitle(iframeTitle);
+      setIframeSrc(src || "");
+      setWidth(iframeWidth);
+      setHeight(iframeHeight);
+      setImagePosition(dataImagePosition || "left");
     } else {
-      if (imageAlt !== alt) {
-        setAlt(imageAlt);
-      }
-      if (imageWidth !== width) {
-        setWidth(imageWidth);
-      }
-      if (imageHeight !== height) {
-        setHeight(imageHeight);
-      }
-      if (dataCaption !== caption) {
-        setCaption(dataCaption);
-      }
-      if (dataSource !== source) {
-        setSource(dataSource);
-      }
-      if (dataPopup !== popup) {
-        setPopup(dataPopup);
-      }
-      if (dataImagePosition !== imagePosition) {
-        setImagePosition(dataImagePosition || "left");
-      }
+      setAlt(imageAlt);
+      setWidth(imageWidth);
+      setHeight(imageHeight);
+      setCaption(dataCaption);
+      setSource(dataSource);
+      setPopup(dataPopup);
+      setImagePosition(dataImagePosition || "left");
     }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dataType,
     iframeTitle,
+    src,
     iframeWidth,
     iframeHeight,
     dataImagePosition,
@@ -144,6 +124,7 @@ const ImageComponent = (props) => {
     } else if (dataType === "iframe") {
       if (
         iframeTitle !== title ||
+        (src || "") !== iframeSrc ||
         iframeWidth !== width ||
         iframeHeight !== height ||
         dataImagePosition !== imagePosition
@@ -169,6 +150,8 @@ const ImageComponent = (props) => {
     dataType,
     iframeTitle,
     title,
+    src,
+    iframeSrc,
     iframeWidth,
     iframeHeight,
   ]);
@@ -191,7 +174,7 @@ const ImageComponent = (props) => {
   const handleSaveIframeSettings = () => {
     const { imageData } = props.blockProps;
     let data = {
-      src: src,
+      src: iframeSrc,
       "data-type": "iframe",
       title: title === undefined ? "" : title,
       "data-iframe-width": width ? width : null,
@@ -206,7 +189,7 @@ const ImageComponent = (props) => {
   const handleSubmit = () => {
     const { imageData } = props.blockProps;
     let data = {
-      src: src,
+      src: dataType === "iframe" ? iframeSrc : src,
       alt: alt === undefined ? setAlt("") : alt,
       "data-image-width": width ? width + "px" : null,
       "data-image-height": height ? height + "px" : null,
@@ -222,6 +205,7 @@ const ImageComponent = (props) => {
     else if (dataType === "iframe") {
       data["data-type"] = "iframe";
       data.title = title === undefined ? "" : title;
+      data.src = iframeSrc;
       data["data-iframe-width"] = width ? width : null;
       data["data-iframe-height"] = height ? height : null;
       data["data-image-position"] = imagePosition || "left";
@@ -295,6 +279,14 @@ const ImageComponent = (props) => {
   };
 
   const popupDisabled = dataType !== "image";
+
+  const handleRemove = () => {
+    if (props.blockProps && typeof props.blockProps.removeSelf === "function") {
+      props.blockProps.removeSelf();
+      setOpen(false);
+      readOnlyMode();
+    }
+  };
 
   const body = (
     <div className={classes.paper}>
@@ -391,20 +383,55 @@ const ImageComponent = (props) => {
             </>
           )}
           {dataType === "iframe" && (
-            <Grid container spacing={1} alignItems="flex-end">
-              <Grid item>
-                <SubtitlesIcon />
+            <>
+              <Grid container spacing={1} alignItems="flex-end">
+                <Grid item>
+                  <LinkIcon />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    id="iframe-src"
+                    value={iframeSrc}
+                    onChange={(e) => setIframeSrc(e.target.value)}
+                    label="URL"
+                    fullWidth
+                  />
+                </Grid>
               </Grid>
-              <Grid item>
-                <TextField
-                  id="iframe-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  label="Titel"
-                  fullWidth
-                />
+              <Grid container spacing={1} alignItems="flex-end">
+                <Grid item>
+                  <SubtitlesIcon />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    id="iframe-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    label="Titel"
+                    fullWidth
+                  />
+                </Grid>
               </Grid>
-            </Grid>
+              <div style={{ marginTop: 32 }}>
+                <Typography variant="subtitle2">Förhandsvisning</Typography>
+                {iframeSrc ? (
+                  <iframe
+                    title={title || "Förhandsvisning"}
+                    src={iframeSrc}
+                    style={{
+                      width: width ? `${width}px` : "100%",
+                      height: height ? `${height}px` : "300px",
+                      border: "1px solid #ddd",
+                      marginTop: 8,
+                    }}
+                  />
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    Ange en URL för att se en förhandsvisning.
+                  </Typography>
+                )}
+              </div>
+            </>
           )}
           <Grid container alignItems="flex-end" style={{ margin: "24px" }}>
             <Grid item>
@@ -417,6 +444,20 @@ const ImageComponent = (props) => {
               >
                 Stäng
               </Button>
+              {dataType === "iframe" && (
+                <Button
+                  style={{ marginLeft: 8, marginBottom: "8px" }}
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleRemove}
+                  disabled={
+                    !props.blockProps ||
+                    typeof props.blockProps.removeSelf !== "function"
+                  }
+                >
+                  Ta bort
+                </Button>
+              )}
               <Button
                 startIcon={<CheckIcon />}
                 variant="contained"
@@ -679,6 +720,10 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.paper,
     border: "2px solid #000",
     boxShadow: theme.shadows[5],
+    // Keep dialog usable even with large content (e.g. tall iframe preview).
+    maxHeight: "80vh",
+    overflowY: "auto",
+    overflowX: "hidden",
   },
   imgContainer: {
     position: "relative",

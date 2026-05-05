@@ -145,6 +145,35 @@ export default class DocumentTextEditor extends React.Component {
     this.blockRenderer = this._blockRenderer.bind(this);
     this.onImgLoad = this.onImgLoad.bind(this);
     this.onVideoLoad = this.onVideoLoad.bind(this);
+    this.removeAtomicBlockByKey = this.removeAtomicBlockByKey.bind(this);
+  }
+
+  removeAtomicBlockByKey(blockKey, editorState) {
+    const contentState = editorState.getCurrentContent();
+    const blockMap = contentState.getBlockMap();
+    if (!blockMap.has(blockKey)) {
+      return editorState;
+    }
+
+    const keys = blockMap.keySeq().toArray();
+    const index = keys.indexOf(blockKey);
+    const nextKey = keys[index + 1] || keys[index - 1];
+
+    const newBlockMap = blockMap.delete(blockKey);
+    const newContentState = contentState.merge({
+      blockMap: newBlockMap,
+    });
+
+    const pushed = EditorState.push(editorState, newContentState, "remove-range");
+
+    if (nextKey && newBlockMap.has(nextKey)) {
+      return EditorState.forceSelection(
+        pushed,
+        SelectionState.createEmpty(nextKey)
+      );
+    }
+
+    return pushed;
   }
 
   _stateFromHtmlWithOptions = (html) => {
@@ -858,6 +887,10 @@ export default class DocumentTextEditor extends React.Component {
                 contentBlockKey,
                 getEditorState(),
                 data
+              ),
+            removeSelf: () =>
+              this.onChange(
+                this.removeAtomicBlockByKey(contentBlockKey, getEditorState())
               ),
             isFocused: () => isFocused,
             onClick: () =>
