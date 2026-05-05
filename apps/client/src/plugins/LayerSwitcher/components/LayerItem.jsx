@@ -137,20 +137,46 @@ function LayerItem({
 
   const legendIcon = layerInfo?.legendIcon || layerLegendIcon;
 
+  const applyLabelStyle = () => {
+    if (!olLayer) return;
+
+    const source = olLayer.getSource();
+    if (!source) return;
+
+    const currentParams = source.getParams?.() || {};
+    const currentLayerName = currentParams.LAYERS;
+
+    if (!currentLayerName) return;
+
+    const isActive = !!olLayer.get("showLabelLayer");
+
+    if (isActive) {
+      // Save previous style
+      if (!currentParams.STYLES?.includes("_labels")) {
+        previousStylesRef.current = currentParams.STYLES || "";
+      }
+
+      source.updateParams({
+        ...currentParams,
+        STYLES: `${currentLayerName}_labels`,
+      });
+    } else {
+      source.updateParams({
+        ...currentParams,
+        STYLES: previousStylesRef.current || "",
+      });
+    }
+  };
+
   useEffect(() => {
     if (!olLayer) return;
 
-    // Ensure property exists
-    if (olLayer.get("showLabelLayer") === undefined) {
-      olLayer.set("showLabelLayer", false);
-    }
-
     const update = () => {
       setShowingLabelLayer(!!olLayer.get("showLabelLayer"));
+      applyLabelStyle();
     };
-
+    // Initial sync on mount or layer change
     update();
-
     olLayer.on("change:showLabelLayer", update);
 
     return () => {
@@ -159,47 +185,15 @@ function LayerItem({
   }, [olLayer]);
 
   useEffect(() => {
+    // Do not run unless we have olLayer and layer is toggled
     if (!olLayer) return;
+    if (!layerIsToggled) return;
 
-    const source = olLayer.getSource();
-    if (!source) return;
-
-    const updateStyles = () => {
-      const currentParams = source.getParams?.() || {};
-      const currentLayerName = currentParams.LAYERS;
-
-      if (!currentLayerName) return;
-
-      const isActive = !!olLayer.get("showLabelLayer");
-
-      if (isActive) {
-        // Overwrite if we are not already in label mode
-        if (!currentParams.STYLES?.includes("_labels")) {
-          previousStylesRef.current = currentParams.STYLES || "";
-        }
-
-        source.updateParams({
-          ...currentParams,
-          STYLES: `${currentLayerName}_labels`,
-        });
-      } else {
-        source.updateParams({
-          ...currentParams,
-          STYLES: previousStylesRef.current || "",
-        });
-      }
-    };
-
-    // run once
-    updateStyles();
-
-    // listen for toggle
-    olLayer.on("change:showLabelLayer", updateStyles);
-
-    return () => {
-      olLayer.un("change:showLabelLayer", updateStyles);
-    };
-  }, [olLayer]);
+    // Wait for OL state to be ready
+    requestAnimationFrame(() => {
+      applyLabelStyle();
+    });
+  }, [layerIsToggled, olLayer]);
 
   useEffect(() => {
     const handleLoadStatusChange = (d) => {
