@@ -395,7 +395,7 @@ export default class FeaturePropsParsing {
       // Requires allowDangerousHtml (rehype-raw) to render the resulting HTML.
       if (this.allowDangerousHtml) {
         this.markdown = this.markdown.replace(
-          /\[([^\]]*)\]\(([^)]*)\)\{([^}]+)\}/g,
+          /\[([^\]]*)\]\(([^)]*)\)\{(?!\{)([^}]+)\}/g,
           this.#linkAttributeReplacer
         );
       }
