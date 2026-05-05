@@ -2,6 +2,9 @@ import { hfetch } from "../../../utils/FetchWrapper";
 import { WFS, GeoJSON } from "ol/format";
 import GML2 from "ol/format/GML2";
 import Feature from "ol/Feature";
+import MultiPoint from "ol/geom/MultiPoint";
+import MultiLineString from "ol/geom/MultiLineString";
+import MultiPolygon from "ol/geom/MultiPolygon";
 
 const wfsFormat = new WFS();
 const wfsGml2Format = new WFS({ gmlFormat: new GML2() });
@@ -220,6 +223,17 @@ export function createOgcApi(baseUrl) {
       if (firstFeature?.geometry?.coordinates) {
         fc.hasZ = coordsHaveZ(firstFeature.geometry.coordinates);
       }
+      if (firstFeature?.geometry?.type) {
+        fc.geometryType = firstFeature.geometry.type;
+      }
+      if (!fc.geometryType) {
+        fc.geometryType = await fetchWfsGeometryType(
+          layerUrl,
+          typeName,
+          version,
+          signal
+        );
+      }
       fc.layerConfig = layer;
       return fc;
     }
@@ -248,6 +262,7 @@ export function createOgcApi(baseUrl) {
     const detectedGeomName =
       features.length > 0 ? features[0].getGeometryName() : null;
     const firstLayout = features[0]?.getGeometry?.()?.getLayout?.();
+    const detectedGeomType = features[0]?.getGeometry?.()?.getType?.() ?? null;
 
     const fc = toFeatureCollection(features, srs, layerProj);
     if (detectedGeomName) {
@@ -255,6 +270,17 @@ export function createOgcApi(baseUrl) {
     }
     if (firstLayout) {
       fc.hasZ = firstLayout === "XYZ" || firstLayout === "XYZM";
+    }
+    if (detectedGeomType) {
+      fc.geometryType = detectedGeomType;
+    }
+    if (!fc.geometryType) {
+      fc.geometryType = await fetchWfsGeometryType(
+        layerUrl,
+        typeName,
+        version,
+        signal
+      );
     }
     fc.layerConfig = layer;
     return fc;
@@ -274,6 +300,7 @@ export function createOgcApi(baseUrl) {
       srsName,
       geometryName: txGeomName,
       hasZ: txHasZ,
+      geometryType: txGeomType,
     } = transaction;
 
     try {
@@ -291,14 +318,31 @@ export function createOgcApi(baseUrl) {
       const featureNS = layer.uri || `http://hajk.se/wfs/${prefix}`;
       const crs = srsName || layer.projection || "EPSG:3006";
       const hasZ = Boolean(txHasZ ?? layer.forceZ);
+      const needsMultiWrap = /^Multi/i.test(txGeomType);
 
       // Convert GeoJSON-like objects to OpenLayers Feature objects
-      const olInserts = inserts.map((f) =>
-        toOlFeature(f, crs, geometryName, undefined, hasZ)
-      );
-      const olUpdates = updates.map((f) =>
-        toOlFeature(f, crs, geometryName, formatFeatureId(f.id, layer), hasZ)
-      );
+      const olInserts = inserts.map((f) => {
+        const olF = toOlFeature(f, crs, geometryName, undefined, hasZ);
+        if (needsMultiWrap) {
+          const geom = olF.getGeometry();
+          if (geom) olF.setGeometry(wrapGeomAsMulti(geom));
+        }
+        return olF;
+      });
+      const olUpdates = updates.map((f) => {
+        const olF = toOlFeature(
+          f,
+          crs,
+          geometryName,
+          formatFeatureId(f.id, layer),
+          hasZ
+        );
+        if (needsMultiWrap) {
+          const geom = olF.getGeometry();
+          if (geom) olF.setGeometry(wrapGeomAsMulti(geom));
+        }
+        return olF;
+      });
       const olDeletes = deletes.map((fid) => {
         const feat = new Feature();
         feat.setId(formatFeatureId(fid, layer));
@@ -519,6 +563,55 @@ function formatFeatureId(featureId, layer) {
   // e.g. "mylayer.1" not "myworkspace:mylayer.1".
   const [, localType] = splitTypeName(resolveTypeName(layer));
   return `${localType}.${idStr}`;
+}
+
+/**
+ * Fetch the geometry column type from WFS DescribeFeatureType (JSON format).
+ * Called as fallback when no features were loaded (empty layer).
+ * Returns an OL-compatible geometry type string (e.g. "MultiPolygon") or null.
+ */
+async function fetchWfsGeometryType(layerUrl, typeName, version, signal) {
+  try {
+    const sep = layerUrl.includes("?") ? "&" : "?";
+    const url =
+      `${layerUrl}${sep}SERVICE=WFS&REQUEST=DescribeFeatureType` +
+      `&VERSION=${version}&TYPENAME=${encodeURIComponent(typeName)}` +
+      `&OUTPUTFORMAT=application%2Fjson`;
+    const res = await hfetch(url, { signal });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const props = json?.featureTypes?.[0]?.properties;
+    if (!Array.isArray(props)) return null;
+    const geomProp = props.find((p) => /^gml:/i.test(p.type ?? ""));
+    if (!geomProp?.localType) return null;
+    // Normalize GML3 surface/curve aliases to OL type names
+    const aliases = {
+      MultiSurface: "MultiPolygon",
+      MultiCurve: "MultiLineString",
+      Surface: "Polygon",
+      Curve: "LineString",
+    };
+    return aliases[geomProp.localType] ?? geomProp.localType;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Wrap a singular OL geometry in its Multi equivalent.
+ * Already-multi or unsupported types are returned unchanged.
+ */
+function wrapGeomAsMulti(geom) {
+  switch (geom.getType()) {
+    case "Point":
+      return new MultiPoint([geom.getCoordinates()]);
+    case "LineString":
+      return new MultiLineString([geom.getCoordinates()]);
+    case "Polygon":
+      return new MultiPolygon([geom.getCoordinates()]);
+    default:
+      return geom;
+  }
 }
 
 /**

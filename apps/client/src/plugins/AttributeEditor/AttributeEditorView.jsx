@@ -1465,6 +1465,7 @@ export default function AttributeEditorView({
       const featureCollection = model.getFeatureCollection();
       const detectedGeomName = featureCollection?.geometryName;
       const detectedHasZ = featureCollection?.hasZ ?? false;
+      const detectedGeomType = featureCollection?.geometryType;
       const result = await ogc.commitWfstTransaction(serviceId, {
         inserts,
         updates,
@@ -1472,6 +1473,7 @@ export default function AttributeEditorView({
         srsName: layerCRS,
         geometryName: detectedGeomName,
         hasZ: detectedHasZ,
+        geometryType: detectedGeomType,
       });
 
       if (result.success) {
