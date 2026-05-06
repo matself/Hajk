@@ -191,6 +191,7 @@ model Service {
   lastSavedDate   DateTime?   @db.Timestamptz(3)
   healthStatus    String?
   healthCheckedAt DateTime?   @db.Timestamptz(3)
+  deletedAt       DateTime?   @db.Timestamptz(3)
   layers          Layer[]
   metadata        Metadata?   @relation(fields: [metadataId], references: [id])
 }
@@ -281,6 +282,7 @@ model Layer {
   createdDate                 DateTime?          @db.Timestamptz(3)
   lastSavedBy                 String?
   lastSavedDate               DateTime?          @db.Timestamptz(3)
+  deletedAt                   DateTime?          @db.Timestamptz(3)
   restrictedToRoles           RoleOnLayer[]
   instances                   LayerInstance[]
   options                     Json               @default("{}")

@@ -13,7 +13,10 @@ class LayerService {
   }
 
   async getLayers() {
-    return await prisma.layer.findMany({ orderBy: { name: "asc" } });
+    return await prisma.layer.findMany({
+      where: { deletedAt: null },
+      orderBy: { name: "asc" },
+    });
   }
 
   async getLayerById(id: string) {
@@ -26,6 +29,10 @@ class LayerService {
       },
     });
 
+    if (layer?.deletedAt) {
+      return null;
+    }
+
     return layer;
   }
 
@@ -35,7 +42,7 @@ class LayerService {
 
   async getLayersByType(type: ServiceType) {
     return await prisma.layer.findMany({
-      where: { service: { type } },
+      where: { deletedAt: null, service: { type, deletedAt: null } },
     });
   }
 
@@ -44,6 +51,10 @@ class LayerService {
       where: { id },
       include: { service: true },
     });
+
+    if (service?.deletedAt || service?.service?.deletedAt) {
+      return null;
+    }
 
     return service?.service;
   }
@@ -168,7 +179,7 @@ class LayerService {
 
   async getUsageByLayerId(id: string) {
     return await prisma.layerInstance.findMany({
-      where: { layerId: id },
+      where: { layerId: id, layer: { deletedAt: null } },
       select: {
         id: true,
         usage: true,

@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client";
 import log4js from "log4js";
 
 import prisma from "../../../common/prisma.ts";
-import LayerService from "./layer.service.ts";
 import { HajkError } from "../../../common/classes.ts";
 import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import HttpStatusCodes from "../../../common/http-status-codes.ts";
@@ -18,6 +17,7 @@ class ServicesService {
     // Get all services and the sum of layers
     // per each service
     const services = await prisma.service.findMany({
+      where: { deletedAt: null },
       include: {
         // select all columns in the service table
         metadata: true,
@@ -40,12 +40,16 @@ class ServicesService {
       include: { metadata: true, projection: true },
     });
 
+    if (service?.deletedAt) {
+      return null;
+    }
+
     return service;
   }
 
   async getLayersByServiceId(id: string) {
     const layers = await prisma.layer.findMany({
-      where: { serviceId: id },
+      where: { serviceId: id, deletedAt: null },
     });
 
     return layers;
@@ -66,6 +70,7 @@ class ServicesService {
               some: {
                 layer: {
                   serviceId: id,
+                  deletedAt: null,
                 },
               },
             },
@@ -78,6 +83,7 @@ class ServicesService {
                     some: {
                       layer: {
                         serviceId: id,
+                        deletedAt: null,
                       },
                     },
                   },
@@ -98,7 +104,7 @@ class ServicesService {
       where: {
         layers: {
           some: {
-            layer: { serviceId: id },
+            layer: { serviceId: id, deletedAt: null },
           },
         },
       },
@@ -305,10 +311,24 @@ class ServicesService {
 
   async deleteService(id: string) {
     await prisma.$transaction(async (transaction) => {
+      const service = await transaction.service.findFirst({
+        where: { id, deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!service) {
+        throw new HajkError(
+          HttpStatusCodes.NOT_FOUND,
+          `No service with id: ${id} could be found.`,
+          HajkStatusCodes.UNKNOWN_SERVICE_ID
+        );
+      }
+
       const layerInstanceCount = await transaction.layerInstance.count({
         where: {
           layer: {
             serviceId: id,
+            deletedAt: null,
           },
         },
       });
@@ -321,27 +341,17 @@ class ServicesService {
         );
       }
 
-      const layers = await transaction.layer.findMany({
-        where: { serviceId: id },
-        select: { id: true },
+      const deletedAt = new Date();
+
+      await transaction.layer.updateMany({
+        where: { serviceId: id, deletedAt: null },
+        data: { deletedAt, lastSavedDate: deletedAt },
       });
 
-      for (const { id: layerId } of layers) {
-        await LayerService.deleteLayerInTransaction(transaction, layerId);
-      }
-
-      const service = await transaction.service.findUnique({
-        where: { id },
-        select: { metadata: true },
+      await transaction.service.updateMany({
+        where: { id, deletedAt: null },
+        data: { deletedAt, lastSavedDate: deletedAt },
       });
-
-      if (service?.metadata) {
-        await transaction.metadata.delete({
-          where: { id: service.metadata.id },
-        });
-      }
-
-      await transaction.service.delete({ where: { id } });
     });
   }
 }
