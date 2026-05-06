@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Ensure the Quick Access function respects the cookie setting [Issue #1798](https://github.com/hajkmap/Hajk/issues/1798)
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
 - Client: Display the filename of imported draw objects along with the time, see issue [#1782](https://github.com/hajkmap/Hajk/issues/1782).
+- Client: DocumentHandler - Mobile UI - Removed double padding and forced images to fit width instead of breaking the layout. [commit](https://github.com/hajkmap/Hajk/commit/458437ad98184d2ef049a3915c83ac75d8675fff)
 
 ## [4.3.0] 2026-04-20
 
