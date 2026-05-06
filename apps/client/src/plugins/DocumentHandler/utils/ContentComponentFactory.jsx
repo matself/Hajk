@@ -393,6 +393,7 @@ export const Figure = ({ figureTag }) => {
  * @memberof Contents
  */
 export const Img = ({ imgTag, localObserver, componentId, baseUrl }) => {
+  const theme = useTheme();
   const tagIsPresent = (imgTag, attribute) => {
     return imgTag.attributes.getNamedItem(attribute) == null ? false : true;
   };
@@ -495,6 +496,10 @@ export const Img = ({ imgTag, localObserver, componentId, baseUrl }) => {
             image.width && {
               height: image.height,
               width: image.width,
+              [theme.breakpoints.down("sm")]: {
+                maxWidth: "100%",
+                height: "auto",
+              },
             },
         ]}
       />
