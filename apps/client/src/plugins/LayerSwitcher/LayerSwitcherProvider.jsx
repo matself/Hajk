@@ -29,6 +29,7 @@ const getOlLayerState = (l) => ({
   visibleSubLayers: l.get("visible") ? l.get("subLayers") : [],
   wmsLoadError: l.get("wmsLoadStatus") ?? undefined,
   zIndex: l.get("zIndex"),
+  hasLabelLayers: l.get("hasLabelLayers"),
   // "filterAttribute"
   // "filterComparer"
   // "filterValue"
@@ -333,6 +334,7 @@ const getLayerNodes = (groups, olLayerMap) =>
         infogroupurltext: node.infogroupurltext,
         infogroupopendatalink: node.infogroupopendatalink,
         infogroupowner: node.infogroupowner,
+        olLayer: olLayer,
       },
       ...(children?.length === 0 ? [] : children),
     ];
