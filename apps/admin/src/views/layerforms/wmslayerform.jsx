@@ -47,6 +47,7 @@ const defaultState = {
   minMaxZoomAlertOnToggleOnly: false,
   tiled: false,
   showAttributeTableButton: false,
+  hasLabelStyle: false,
   singleTile: false,
   hidpi: true,
   useCustomDpiList: false,
@@ -193,7 +194,7 @@ class WMSLayerForm extends Component {
   loadLayersInfoLegendIcon(e) {
     $("#select-layers-info-legend-icon").attr(
       "caller",
-      "select-layers-info-legend-icon"
+      "select-layers-info-legend-icon",
     );
     $("#select-layers-info-legend-icon").trigger("click");
   }
@@ -294,7 +295,7 @@ class WMSLayerForm extends Component {
           addedLayers: [...this.state.addedLayers, checkedLayer],
           addedLayersInfo: addedLayersInfo,
         },
-        () => this.validateLayers(opts)
+        () => this.validateLayers(opts),
       );
     } else {
       // unchecked..
@@ -315,10 +316,10 @@ class WMSLayerForm extends Component {
         {
           addedLayersInfo: addedLayersInfo,
           addedLayers: this.state.addedLayers.filter(
-            (layer) => layer !== checkedLayer
+            (layer) => layer !== checkedLayer,
           ),
         },
-        () => this.validateLayers(opts)
+        () => this.validateLayers(opts),
       );
     }
   }
@@ -337,7 +338,7 @@ class WMSLayerForm extends Component {
     layerName,
     arrayToSearchIn = this.state.capabilities?.Capability?.Layer?.Layer
       ? this.state.capabilities.Capability.Layer.Layer
-      : [this.state.capabilities?.Capability?.Layer]
+      : [this.state.capabilities?.Capability?.Layer],
   ) {
     if (!arrayToSearchIn) return null;
 
@@ -399,7 +400,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
               type="text"
@@ -424,7 +425,7 @@ class WMSLayerForm extends Component {
                 },
                 () => {
                   this.renderLayerInfoDialog(layerInfo);
-                }
+                },
               );
             }}
             type="text"
@@ -448,7 +449,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -468,11 +469,11 @@ class WMSLayerForm extends Component {
                       () => {
                         this.renderLayerInfoDialog(layerInfo);
                         this.props.model.off(
-                          "change:select-layers-info-legend-icon"
+                          "change:select-layers-info-legend-icon",
                         );
-                      }
+                      },
                     );
-                  }
+                  },
                 );
                 this.loadLayersInfoLegendIcon(e);
               }}
@@ -500,7 +501,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             >
@@ -530,7 +531,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -564,7 +565,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
               type="text"
@@ -598,7 +599,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -628,7 +629,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -658,7 +659,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -685,7 +686,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -715,7 +716,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -741,7 +742,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -766,7 +767,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  }
+                  },
                 );
               }}
             />
@@ -795,7 +796,7 @@ class WMSLayerForm extends Component {
             checked: false,
           },
         },
-        layer
+        layer,
       );
       // Don't assume there is something to uncheck - the layer might have been deleted from WMS server,
       // and hence non existing in layers list and impossible to uncheck.
@@ -864,7 +865,7 @@ class WMSLayerForm extends Component {
         addedLayers: [...layerNames],
         addedLayersInfo: addedLayersInfo,
       },
-      () => this.validateLayers(opts)
+      () => this.validateLayers(opts),
     );
   }
 
@@ -986,7 +987,7 @@ class WMSLayerForm extends Component {
 
       var addedLayersInfo = {};
       var capabilities = this.state.capabilitiesList.find(
-        (capabilities) => capabilities.version === layer.version
+        (capabilities) => capabilities.version === layer.version,
       );
       if (layer.layersInfo) {
         addedLayersInfo = layer.layersInfo.reduce((c, l) => {
@@ -1040,7 +1041,7 @@ class WMSLayerForm extends Component {
           this.validate();
 
           if (callback) callback();
-        }
+        },
       );
     });
   }
@@ -1111,7 +1112,7 @@ class WMSLayerForm extends Component {
         : undefined;
     var capabilitiesPromise = this.props.model.getAllWMSCapabilities(
       this.state.url,
-      versions
+      versions,
     );
 
     capabilitiesPromise
@@ -1134,10 +1135,10 @@ class WMSLayerForm extends Component {
                 () => {
                   this.setLayerOpts(capabilities);
                   this.setServerType();
-                }
+                },
               );
             }
-          }
+          },
         );
       })
       .catch((err) => {
@@ -1158,7 +1159,7 @@ class WMSLayerForm extends Component {
   selectVersion(e) {
     var version = e.target.value;
     var capabilities = this.state.capabilitiesList.find(
-      (capabilities) => capabilities.version === version
+      (capabilities) => capabilities.version === version,
     );
 
     var singleTile = this.state.singleTile;
@@ -1250,7 +1251,7 @@ class WMSLayerForm extends Component {
       }
 
       projections = projections.map((projection) =>
-        projection ? projection.toUpperCase() : null
+        projection ? projection.toUpperCase() : null,
       );
     }
 
@@ -1261,7 +1262,7 @@ class WMSLayerForm extends Component {
           } else {
             console.log(
               "Unsupported spatial reference system found in WMS capabilities document, ignoring:",
-              proj
+              proj,
             );
             return null;
           }
@@ -1360,6 +1361,7 @@ class WMSLayerForm extends Component {
       visibleAtStart: this.getValue("visibleAtStart"),
       tiled: this.getValue("tiled"),
       showAttributeTableButton: this.getValue("showAttributeTableButton"),
+      hasLabelStyle: this.getValue("hasLabelStyle"),
       opacity: this.getValue("opacity"),
       maxZoom: this.getValue("maxZoom"),
       minZoom: this.getValue("minZoom"),
@@ -1441,6 +1443,7 @@ class WMSLayerForm extends Component {
       value = parseFloat(Number(value).toFixed(2));
     if (fieldName === "tiled") value = input.checked;
     if (fieldName === "showAttributeTableButton") value = input.checked;
+    if (fieldName === "hasLabelStyle") value = input.checked;
     if (fieldName === "layers") value = format_layers(this.state.addedLayers);
     if (fieldName === "layersInfo")
       value = format_layers_info(this.state.addedLayersInfo);
@@ -1538,7 +1541,7 @@ class WMSLayerForm extends Component {
       } else {
         this.setState({
           validationErrors: this.state.validationErrors.filter(
-            (v) => v !== fieldName
+            (v) => v !== fieldName,
           ),
         });
       }
@@ -1560,7 +1563,7 @@ class WMSLayerForm extends Component {
       }
       const json = await res.json();
       var sortedWorkspaces = json.workspaces.workspace.sort(
-        GetSortOrder("name")
+        GetSortOrder("name"),
       ); //Pass the attribute to be sorted on
 
       function GetSortOrder(prop) {
@@ -1593,7 +1596,7 @@ class WMSLayerForm extends Component {
 
     if (e.target.value.includes(".") || e.target.value.includes(",")) {
       kv[key] = parseFloat(
-        parseFloat(e.target.value.replace(",", ".")).toFixed(1)
+        parseFloat(e.target.value.replace(",", ".")).toFixed(1),
       );
     } else {
       kv[key] = parseInt(e.target.value);
@@ -1700,7 +1703,7 @@ class WMSLayerForm extends Component {
                   url:
                     this.state.url.substring(
                       0,
-                      this.state.url.lastIndexOf("geoserver/") + 10
+                      this.state.url.lastIndexOf("geoserver/") + 10,
                     ) + e.target.value,
                 })
               }
@@ -1961,6 +1964,26 @@ class WMSLayerForm extends Component {
             />
           </label>
         </div>
+        <div>
+          <input
+            type="checkbox"
+            ref="input_hasLabelStyle"
+            id="input_hasLabelStyle"
+            onChange={(e) => {
+              this.setState({ hasLabelStyle: e.target.checked });
+            }}
+            checked={this.state.hasLabelStyle}
+          />
+          &nbsp;
+          <label htmlFor="input_hasLabelStyle">
+            Har etikettstil (måste sluta på "_labels"){" "}
+            <i
+              className="fa fa-question-circle"
+              data-toggle="tooltip"
+              title="Aktivera om lagret har en tillhörande etikettstil i WMS:en, där namnet på stilen är samma som lagret med tillägget '_labels'. Exempelvis: 'mystyle' och 'mystyle_labels'. Se issue #1816."
+            />
+          </label>
+        </div>
         <div className="separator">Tillgängliga lager</div>
         <div>
           <table
@@ -2180,7 +2203,7 @@ class WMSLayerForm extends Component {
             onChange={(e) => {
               const v = e.target.value;
               this.setState({ maxZoom: v }, () =>
-                this.validateField("maxZoom")
+                this.validateField("maxZoom"),
               );
             }}
           />
