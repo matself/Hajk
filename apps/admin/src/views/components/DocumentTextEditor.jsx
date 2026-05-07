@@ -102,7 +102,8 @@ export default class DocumentTextEditor extends React.Component {
       console.log("---");
     };
     this.onChange = this._onChange.bind(this);
-    this.onURLChange = (e) => this.setState({ urlValue: e.target.value });
+    this.onURLChange = (e) =>
+      this.setState({ urlValue: this.sanitizeMediaUrl(e.target.value) });
     this.onImageAltChange = (e) => this.setState({ imageAlt: e.target.value });
     this.onTitleChange = (e) => this.setState({ urlTitle: e.target.value });
     this.onTitleIdChange = (e) => this.setState({ urlTitleId: e.target.value });
@@ -1298,6 +1299,17 @@ export default class DocumentTextEditor extends React.Component {
           })
         : [];
     return [];
+  };
+
+  sanitizeMediaUrl = (value) => {
+    if (!value) return "";
+    try {
+      const parsed = new URL(value, window.location.origin);
+      const allowedProtocols = ["http:", "https:"];
+      return allowedProtocols.includes(parsed.protocol) ? parsed.href : "";
+    } catch (error) {
+      return "";
+    }
   };
 
   preview = (type) => {
