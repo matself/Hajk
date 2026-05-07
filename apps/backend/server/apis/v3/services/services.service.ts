@@ -313,7 +313,7 @@ class ServicesService {
     await prisma.$transaction(async (transaction) => {
       const service = await transaction.service.findFirst({
         where: { id, deletedAt: null },
-        select: { id: true },
+        select: { id: true, metadataId: true },
       });
 
       if (!service) {
@@ -324,34 +324,84 @@ class ServicesService {
         );
       }
 
-      const layerInstanceCount = await transaction.layerInstance.count({
-        where: {
-          layer: {
-            serviceId: id,
-            deletedAt: null,
-          },
+      const layers = await transaction.layer.findMany({
+        where: { serviceId: id, deletedAt: null },
+        select: {
+          id: true,
+          metadataId: true,
+          searchSettingsId: true,
+          infoClickSettingsId: true,
         },
       });
 
-      if (layerInstanceCount > 0) {
-        throw new HajkError(
-          HttpStatusCodes.CONFLICT,
-          "Cannot delete service because its layers are still referenced.",
-          HajkStatusCodes.SERVICE_DELETE_BLOCKED_BY_REFERENCES
+      const layerIds = layers.map((layer) => layer.id);
+      const layerMetadataIds = layers
+        .map((layer) => layer.metadataId)
+        .filter((metadataId): metadataId is string => Boolean(metadataId));
+      const layerSearchSettingsIds = layers
+        .map((layer) => layer.searchSettingsId)
+        .filter(
+          (searchSettingsId): searchSettingsId is string =>
+            Boolean(searchSettingsId)
         );
-      }
+      const layerInfoClickSettingsIds = layers
+        .map((layer) => layer.infoClickSettingsId)
+        .filter(
+          (infoClickSettingsId): infoClickSettingsId is string =>
+            Boolean(infoClickSettingsId)
+        );
 
       const deletedAt = new Date();
 
-      await transaction.layer.updateMany({
-        where: { serviceId: id, deletedAt: null },
-        data: { deletedAt, lastSavedDate: deletedAt },
-      });
+      if (layerIds.length > 0) {
+        await transaction.layerInstance.deleteMany({
+          where: { layerId: { in: layerIds } },
+        });
+
+        await transaction.roleOnLayer.deleteMany({
+          where: { layerId: { in: layerIds } },
+        });
+
+        await transaction.layer.updateMany({
+          where: { id: { in: layerIds }, deletedAt: null },
+          data: {
+            deletedAt,
+            lastSavedDate: deletedAt,
+            metadataId: null,
+            searchSettingsId: null,
+            infoClickSettingsId: null,
+          },
+        });
+      }
 
       await transaction.service.updateMany({
         where: { id, deletedAt: null },
-        data: { deletedAt, lastSavedDate: deletedAt },
+        data: { deletedAt, lastSavedDate: deletedAt, metadataId: null },
       });
+
+      if (layerMetadataIds.length > 0) {
+        await transaction.metadata.deleteMany({
+          where: { id: { in: layerMetadataIds } },
+        });
+      }
+
+      if (layerSearchSettingsIds.length > 0) {
+        await transaction.searchSettings.deleteMany({
+          where: { id: { in: layerSearchSettingsIds } },
+        });
+      }
+
+      if (layerInfoClickSettingsIds.length > 0) {
+        await transaction.infoClickSettings.deleteMany({
+          where: { id: { in: layerInfoClickSettingsIds } },
+        });
+      }
+
+      if (service.metadataId) {
+        await transaction.metadata.delete({
+          where: { id: service.metadataId },
+        });
+      }
     });
   }
 }
