@@ -106,7 +106,15 @@ class AnchorModel {
           isValidLayerId(layer.getProperties().name)
         );
       })
-      .map((layer) => layer.getProperties().name)
+      .map((layer) => {
+        // Add a check if we want this layer to use labels or not
+        // If so, append _l to the layer in the url
+        const name = layer.getProperties().name;
+        if (layer.get("showLabelLayer")) {
+          return `${name}_l`;
+        }
+        return name;
+      })
       .join(",");
   }
 

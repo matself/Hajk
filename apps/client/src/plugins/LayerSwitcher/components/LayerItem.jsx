@@ -107,8 +107,6 @@ function LayerItem({
   const [legendIsActive, setLegendIsActive] = useState(false);
   // Track if the label layer is active
   const [showingLabelLayer, setShowingLabelLayer] = useState(false);
-  // Store the previous STYLES values when toggling labels
-  const previousStylesRef = useRef("");
   const theme = useTheme();
 
   const mapZoom = useMapZoom();
@@ -117,7 +115,19 @@ function LayerItem({
 
   const toggleLabelLayer = (e) => {
     e.stopPropagation();
+
+    if (!olLayer) return;
+
+    const source = olLayer.getSource?.();
+    const params = source?.getParams?.() || {};
+
+    // Save the provided startstyle
+    if (olLayer.get("initialStyles") === undefined) {
+      olLayer.set("initialStyles", params.STYLES || "");
+    }
+
     const newValue = !olLayer.get("showLabelLayer");
+
     olLayer.set("showLabelLayer", newValue);
   };
 
@@ -140,39 +150,44 @@ function LayerItem({
   const applyLabelStyle = () => {
     if (!olLayer) return;
 
-    const source = olLayer.getSource();
+    const source = olLayer.getSource?.();
     if (!source) return;
 
     const currentParams = source.getParams?.() || {};
-    const currentLayerName = currentParams.LAYERS;
+    const layerName = currentParams.LAYERS;
 
-    if (!currentLayerName) return;
+    if (!layerName) return;
 
     const isActive = !!olLayer.get("showLabelLayer");
 
-    if (isActive) {
-      // Save previous style
-      if (!currentParams.STYLES?.includes("_labels")) {
-        previousStylesRef.current = currentParams.STYLES || "";
-      }
+    const baseStyle = olLayer.get("initialStyles") || "";
 
-      source.updateParams({
-        ...currentParams,
-        STYLES: `${currentLayerName}_labels`,
-      });
-    } else {
-      source.updateParams({
-        ...currentParams,
-        STYLES: previousStylesRef.current || "",
-      });
-    }
+    source.updateParams({
+      ...currentParams,
+      STYLES: isActive ? `${layerName}_labels` : baseStyle,
+    });
   };
 
   useEffect(() => {
     if (!olLayer) return;
 
+    const source = olLayer.getSource?.();
+    if (!source) return;
+
+    const params = source.getParams?.() || {};
+
+    // store original style once
+    if (olLayer.get("initialStyles") == null) {
+      olLayer.set("initialStyles", params.STYLES || "");
+    }
+  }, [olLayer]);
+
+  useEffect(() => {
+    if (!olLayer) return;
+
     const update = () => {
-      setShowingLabelLayer(!!olLayer.get("showLabelLayer"));
+      const active = !!olLayer.get("showLabelLayer");
+      setShowingLabelLayer(active);
       applyLabelStyle();
     };
     // Initial sync on mount or layer change
@@ -183,6 +198,17 @@ function LayerItem({
       olLayer.un("change:showLabelLayer", update);
     };
   }, [olLayer]);
+
+  useEffect(() => {
+    if (!olLayer) return;
+
+    const isLabelLayerFromUrl =
+      typeof layerId === "string" && layerId.endsWith("_l");
+
+    if (isLabelLayerFromUrl) {
+      olLayer.set("showLabelLayer", true);
+    }
+  }, [olLayer, layerId]);
 
   useEffect(() => {
     // Do not run unless we have olLayer and layer is toggled

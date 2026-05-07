@@ -688,10 +688,32 @@ class AppModel {
       case "wms":
         layerConfig = configMapper.mapWMSConfig(layer, this.config);
         layerItem = new WMSLayer(
-          layerConfig.options,
+          {
+            ...layerConfig.options,
+            requestLabelLayer: layer._requestLabelLayer === true,
+          },
           this.config.appConfig.proxy,
           this.globalObserver
         );
+        // Check if te should load use the label layer for this layer
+        if (
+          layer._requestLabelLayer &&
+          layerItem?.layer?.getSource?.()?.updateParams
+        ) {
+          const olLayer = layerItem.layer;
+          const source = olLayer.getSource();
+          const params = source.getParams?.() || {};
+          const layerName = params.LAYERS;
+
+          // Save the provided style before we change it
+          olLayer.set("initialStyles", params.STYLES || "");
+          olLayer.set("showLabelLayer", true);
+
+          source.updateParams({
+            ...params,
+            STYLES: `${layerName}_labels`,
+          });
+        }
         this.map.addLayer(layerItem.layer);
         break;
       case "wmts":
@@ -781,10 +803,14 @@ class AppModel {
     // Loop the layers and add each of them to the map
     this.layers.forEach((layer) => {
       if (this.layersFromParams.length > 0) {
-        // Override the default visibleAtStart if a value was provided in URLSearchParams
-        layer.visibleAtStart = this.layersFromParams.some(
-          (layerId) => layerId === layer.id
-        );
+        // Override the default visibleAtStart if a value was provided in URLSearchParams or has our _l label flag
+        layer.visibleAtStart = this.layersFromParams.some((layerId) => {
+          return layerId === layer.id || layerId === `${layer.id}_l`;
+        });
+
+        layer._requestLabelLayer =
+          layer.hasLabelLayer === true &&
+          this.layersFromParams.includes(`${layer.id}_l`);
 
         // groupLayersFromParams is an object where keys are layer IDs and values are
         // the sublayers that should be active for this given layer. A layer's key will
@@ -896,7 +922,6 @@ class AppModel {
         // Let's handle multiple features as array and keep backward compatibility with single features.
         features = Array.isArray(features) ? features : [features];
         this.highlightSource.addFeatures(features);
-        
       }
     }
   }
