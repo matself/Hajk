@@ -31,5 +31,6 @@ export default class LayerInfo {
     this.hideExpandArrow = properties.hideExpandArrow;
     this.showAttributeTableButton = properties.showAttributeTableButton;
     this.params = properties.params;
+    this.hasLabelLayer = properties.hasLabelLayer;
   }
 }
