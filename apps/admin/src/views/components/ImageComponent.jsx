@@ -55,6 +55,21 @@ const ImageComponent = (props) => {
   const [iframeSrc, setIframeSrc] = useState(src || "");
   const [saveButton, showSaveButton] = useState(true);
 
+  const sanitizeIframeUrl = (value) => {
+    if (!value || typeof value !== "string") return "";
+    try {
+      const parsed = new URL(value, window.location.origin);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        return parsed.href;
+      }
+    } catch (error) {
+      return "";
+    }
+    return "";
+  };
+
+  const safeIframeSrc = sanitizeIframeUrl(iframeSrc);
+
   useEffect(() => {
     if (dataType === "iframe") {
       setTitle(iframeTitle);
@@ -414,10 +429,10 @@ const ImageComponent = (props) => {
               </Grid>
               <div style={{ marginTop: 32 }}>
                 <Typography variant="subtitle2">Förhandsvisning</Typography>
-                {iframeSrc ? (
+                {safeIframeSrc ? (
                   <iframe
                     title={title || "Förhandsvisning"}
-                    src={iframeSrc}
+                    src={safeIframeSrc}
                     style={{
                       width: width ? `${width}px` : "100%",
                       height: height ? `${height}px` : "300px",
@@ -427,7 +442,7 @@ const ImageComponent = (props) => {
                   />
                 ) : (
                   <Typography variant="body2" color="textSecondary">
-                    Ange en URL för att se en förhandsvisning.
+                    Ange en giltig URL (http/https) för att se en förhandsvisning.
                   </Typography>
                 )}
               </div>
