@@ -256,8 +256,17 @@ class AppModel {
     ]);
     plugins.forEach((plugin) => {
       const dir = ["Search"].includes(plugin) ? "components" : "plugins";
+      const modulePath = `../${dir}/${plugin}/${plugin}.jsx`;
+      const importModule = modules[modulePath];
 
-      const prom = modules[`../${dir}/${plugin}/${plugin}.jsx`]()
+      if (typeof importModule !== "function") {
+        console.error(
+          `Unable to load plugin '${plugin}'. Expected module '${modulePath}'.`
+        );
+        return;
+      }
+
+      const prom = importModule()
         ?.then((module) => {
           const toolConfig =
             this.config.mapConfig.tools.find(

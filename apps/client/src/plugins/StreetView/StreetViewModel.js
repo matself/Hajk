@@ -89,11 +89,15 @@ class StreetViewModel {
   deactivate() {
     this.map.clickLock.delete("streetview");
     document.querySelector(".ol-viewport").style.cursor = "default";
-    this.map.un("singleclick", this._onSingleClick);
+    if (this._onSingleClick) {
+      this.map.un("singleclick", this._onSingleClick);
+      this._onSingleClick = undefined;
+    }
     this.activated = false;
     this.streetViewMarkerLayer.getSource().clear();
     this.panorama = undefined;
-    var win = document.getElementById("street-view-window");
+
+    const win = document.getElementById("street-view-window");
     if (win) win.innerHTML = "";
   }
 
