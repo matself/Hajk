@@ -129,6 +129,8 @@
     "services.deleteServiceNetworkError": "Network error while deleting service {{name}}. Check your connection and try again.",
     "services.deleteServiceConfirmTitle": "Confirm service deletion",
     "services.deleteServiceConfirmMessage": "You are about to delete service {{name}}. This action cannot be undone. Are you sure you want to continue?",
+    "services.deleteServiceTypeNameLabel": "Type the service name to confirm",
+    "services.deleteServiceTypeNameHelper": "To enable deletion, type the service name exactly: {{name}}",
     "services.deleteServiceAffectedLayers": "Deleting this service will also remove <strong>{{count}} connected Hajk layers.</strong>",
     "services.affectedLayers": "If you change the url, it may cause other settings to stop working. The change will <strong>affect {{count}} layers.</strong>",
     "services.settingsWarning": "This service is used by <strong>{{count}} Hajk layers</strong>. Changes to the URL or type may cause map layers to stop working in all maps that use them.",

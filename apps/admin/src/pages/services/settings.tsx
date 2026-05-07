@@ -96,6 +96,7 @@ export default function ServiceSettings() {
   const [dialogUrl, setDialogUrl] = useState("");
   const [dialogServiceType, setDialogServiceType] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const { data: projections } = useProjections();
   const epsgProjections =
@@ -202,16 +203,21 @@ export default function ServiceSettings() {
     if (isDeletingService) return;
     event.preventDefault();
     event.stopPropagation();
+    setDeleteConfirmName("");
     setIsDeleteDialogOpen(true);
   };
 
   const handleCloseDeleteDialog = () => {
     if (isDeletingService) return;
     setIsDeleteDialogOpen(false);
+    setDeleteConfirmName("");
   };
 
+  const isDeleteConfirmNameMatching =
+    Boolean(service?.name) && deleteConfirmName === service?.name;
+
   const handleConfirmDelete = async () => {
-    if (!service?.id) return;
+    if (!service?.id || !isDeleteConfirmNameMatching) return;
     try {
       await removeService(service.id);
       toast.success(
@@ -849,7 +855,7 @@ export default function ServiceSettings() {
               {t("common.cancel")}
             </Button>
             <Button
-              disabled={isDeletingService}
+              disabled={isDeletingService || !isDeleteConfirmNameMatching}
               onClick={() => {
                 void handleConfirmDelete();
               }}
@@ -882,6 +888,18 @@ export default function ServiceSettings() {
             />
           </Alert>
         ) : null}
+        <TextField
+          fullWidth
+          autoComplete="off"
+          margin="normal"
+          label={t("services.deleteServiceTypeNameLabel")}
+          helperText={t("services.deleteServiceTypeNameHelper", {
+            name: service?.name ?? "",
+          })}
+          value={deleteConfirmName}
+          onChange={(e) => setDeleteConfirmName(e.target.value)}
+          disabled={isDeletingService}
+        />
       </DialogWrapper>
     </Page>
   );

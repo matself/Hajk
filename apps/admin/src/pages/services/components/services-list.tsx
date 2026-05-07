@@ -128,6 +128,7 @@ export default function ServicesList({
     null,
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const actionsMenuOpen = Boolean(anchorEl);
   const selectedService = useMemo(
     () => services?.find((service) => service.id === selectedServiceId),
@@ -157,6 +158,7 @@ export default function ServicesList({
 
   const handleOpenDeleteDialog = () => {
     handleCloseActionsMenu();
+    setDeleteConfirmName("");
     setIsDeleteDialogOpen(true);
   };
 
@@ -164,10 +166,16 @@ export default function ServicesList({
     if (isDeletingService) return;
     setIsDeleteDialogOpen(false);
     setSelectedServiceId(null);
+    setDeleteConfirmName("");
   };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedService?.name) &&
+    deleteConfirmName === selectedService?.name;
 
   const handleConfirmDelete = async () => {
     if (!selectedServiceId || !selectedService) return;
+    if (!isDeleteConfirmNameMatching) return;
     try {
       await removeService(selectedServiceId);
       toast.success(
@@ -612,7 +620,7 @@ export default function ServicesList({
                     <Button
                       variant="contained"
                       color="error"
-                      disabled={isDeletingService}
+                      disabled={isDeletingService || !isDeleteConfirmNameMatching}
                       onClick={() => {
                         void handleConfirmDelete();
                       }}
@@ -643,6 +651,18 @@ export default function ServicesList({
                     />
                   </Alert>
                 ) : null}
+                <TextField
+                  fullWidth
+                  autoComplete="off"
+                  margin="normal"
+                  label={t("services.deleteServiceTypeNameLabel")}
+                  helperText={t("services.deleteServiceTypeNameHelper", {
+                    name: selectedService?.name ?? "",
+                  })}
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  disabled={isDeletingService}
+                />
               </DialogWrapper>
             </Grid>
           </Page>
