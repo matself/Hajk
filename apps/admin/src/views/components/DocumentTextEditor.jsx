@@ -177,13 +177,26 @@ export default class DocumentTextEditor extends React.Component {
   }
 
   _stateFromHtmlWithOptions = (html) => {
+    const sanitizeIframeSrc = (value) => {
+      if (!value || typeof value !== "string") return "";
+      const trimmed = value.trim();
+      try {
+        const parsed = new URL(trimmed, window.location.origin);
+        return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
+      } catch (e) {
+        return "";
+      }
+    };
+
     if (html && typeof html === "string") {
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = html;
 
       const iframeSpans = tempDiv.querySelectorAll('span[data-type="iframe"]');
       iframeSpans.forEach((span) => {
-        const src = span.getAttribute("data-iframe-src") || "";
+        const src = sanitizeIframeSrc(
+          span.getAttribute("data-iframe-src") || ""
+        );
         const title = span.getAttribute("data-iframe-title") || "";
         const width = span.getAttribute("data-iframe-width") || "";
         const height = span.getAttribute("data-iframe-height") || "";
