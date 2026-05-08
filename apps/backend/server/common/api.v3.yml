@@ -209,28 +209,6 @@ paths:
       responses:
         200:
           description: Return the list of projections
-  /services/capabilities:
-    get:
-      tags:
-        - Admin only
-      parameters:
-        - name: url
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: type
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Return the capabilities for the given service URL
-        400:
-          description: Invalid URL or type
-        504:
-          description: External service timed out
   /services/{id}:
     get:
       tags:

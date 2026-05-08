@@ -64,10 +64,6 @@ enum HajkStatusCodes {
    */
   USER_NOT_AUTHORIZED = "RQ003",
 
-  /**
-   * External service could not be reached or returned an invalid response.
-   */
-  EXTERNAL_SERVICE_CAPABILITIES_FAILED = "CF003",
 }
 
 export default HajkStatusCodes;
