@@ -178,7 +178,8 @@ class ToolOptions extends Component {
     const repositories = [];
     try {
       const response = await hfetch(
-        `${this.fmeServerUrl}/fmerest/v3/repositories?limit=-1&offset=-1`
+        //v3:`${this.fmeServerUrl}/fmerest/v3/repositories?limit=-1&offset=-1`
+        `${this.fmeServerUrl}/fmeapiv4/repositories?limit=100&offset=0`
       );
       const data = await response.json();
       if (!data.items) {
@@ -204,7 +205,8 @@ class ToolOptions extends Component {
     const workspaces = [];
     try {
       const response = await hfetch(
-        `${this.fmeServerUrl}/fmerest/v3/repositories/${repositoryName}/items`
+        //v3: `${this.fmeServerUrl}/fmerest/v3/repositories/${repositoryName}/items`
+        `${this.fmeServerUrl}/fmeapiv4/repositories/${repositoryName}/items`
       );
       const data = await response.json();
       if (!data.items) {
@@ -230,7 +232,8 @@ class ToolOptions extends Component {
     const parameters = [];
     try {
       const response = await hfetch(
-        `${this.fmeServerUrl}/fmerest/v3/repositories/${repositoryName}/items/${workspaceName}/parameters`
+        //v3: `${this.fmeServerUrl}/fmerest/v3/repositories/${repositoryName}/items/${workspaceName}/parameters`
+        `${this.fmeServerUrl}/fmeapiv4/workspaces/${repositoryName}/${workspaceName}/parameters`
       );
       const data = await response.json();
       if (!data) {

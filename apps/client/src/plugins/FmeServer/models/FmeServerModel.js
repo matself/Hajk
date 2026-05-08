@@ -266,7 +266,30 @@ class FmeServerModel {
     try {
       const response = await hfetch(url);
       const data = await response.json();
-      return { error: false, parameters: data };
+      // Normalize v4 parameter shapes to match v3 expectations
+      const parameters = data.map((parameter) => {
+        // Normalize type
+        const typeMap = {
+          dropdown: "CHOICE",
+          text: "TEXT",
+          listbox: "LISTBOX", // v4
+        };
+        const normalizedType = typeMap[parameter.type] ?? parameter.type;
+        // Normalize listOptions from v4 choiceSettings.choices
+        const listOptions =
+          parameter.choiceSettings?.choices?.map((choice) => ({
+            value: choice.value,
+            caption: choice.display,
+          })) ?? parameter.listOptions;
+        // Normalize prompt -> description
+        return {
+          ...parameter,
+          type: normalizedType,
+          listOptions: listOptions,
+          description: parameter.prompt ?? parameter.description,
+        };
+      });
+      return { error: false, parameters };
     } catch (error) {
       return { error: true, parameters: [] };
     }
@@ -283,8 +306,17 @@ class FmeServerModel {
     );
     // Let's create the request url
     const url = this.#createSubmitProductRequestUrl(product);
+
+    const publishedParameters = Object.fromEntries(
+      parametersToSend.map(({ name, value }) => [name, value])
+    );
     // And the body containing all the parameters
-    const body = JSON.stringify({ publishedParameters: parametersToSend });
+    const body = JSON.stringify({
+      repository: product.repository,
+      workspace: product.workspace,
+      publishedParameters: publishedParameters,
+    });
+
     // And then try to submit the job using that url...
     try {
       const response = await hfetch(url, {
@@ -350,24 +382,28 @@ class FmeServerModel {
 
   // Returns the url needed to fetch the product parameters from FME-server.
   #createGetParametersUrl = (product) => {
-    return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/repositories/${product.repository}/items/${product.workspace}/parameters/`;
+    //v3: return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/repositories/${product.repository}/items/${product.workspace}/parameters/`;
+    return `${this.#mapServiceBase}/fmeproxy/fmeapiv4/workspaces/${product.repository}/${product.workspace}/parameters`;
   };
 
   // Returns the url needed to post a request to start a workspace.
-  #createSubmitProductRequestUrl = (product) => {
-    return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/transformations/submit/${product.repository}/${product.workspace}/`;
+  //v3: #createSubmitProductRequestUrl = (product) =>
+  #createSubmitProductRequestUrl = () => {
+    //v3: return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/transformations/submit/${product.repository}/${product.workspace}/`;
+    return `${this.#mapServiceBase}/fmeproxy/fmeapiv4/jobs`;
   };
 
   // Returns the base url used to post a request to submit a
   // data-download job.
   #createDataDownloadUrl = (product) => {
+    //v3: return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/transformations/jobs/id/${jobId}/`;
     return `${this.#mapServiceBase}/fmeproxy/fmedatadownload/${product.repository}/${product.workspace}/`;
   };
 
   // Returns the url needed to fetch information about a submitted job.
   // The required parameter, jobId is a string returned when queuing a job.
   #createProductStatusUrl = (jobId) => {
-    return `${this.#mapServiceBase}/fmeproxy/fmerest/v3/transformations/jobs/id/${jobId}/`;
+    return `${this.#mapServiceBase}/fmeproxy/fmeapiv4/jobs/${jobId}`;
   };
 }
 export default FmeServerModel;

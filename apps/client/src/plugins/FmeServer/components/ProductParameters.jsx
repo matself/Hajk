@@ -179,17 +179,17 @@ const ProductParameters = (props) => {
         {props.parameters.map((parameter, index) => {
           switch (parameter.type) {
             case "CHOICE":
-              return renderChoice(parameter, index);
             case "LOOKUP_CHOICE":
+            case "dropdown":
               return renderChoice(parameter, index);
             case "LISTBOX":
-              return renderListBox(parameter, index);
             case "LOOKUP_LISTBOX":
               return renderListBox(parameter, index);
             case "RANGE_SLIDER":
               return renderRangeSlider(parameter, index);
             case "STRING":
             case "TEXT":
+            case "text":
             case "PASSWORD":
               return renderText(parameter, index);
             default:
