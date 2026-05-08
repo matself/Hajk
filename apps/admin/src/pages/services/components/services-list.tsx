@@ -122,6 +122,8 @@ export default function ServicesList({
   const { palette } = useTheme();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<SERVICE_TYPE | "">("");
+  const [statusFilter, setStatusFilter] = useState<SERVICE_STATUS | "">("");
   const [open, setOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
@@ -203,16 +205,20 @@ export default function ServicesList({
   const filteredServices = useMemo<Service[]>(() => {
     if (!services) return [];
 
-    const typeFilteredServices = filterServices(services);
-
-    const searchFilter = (service: Service) => {
-      const combinedText =
-        `${service.name} ${service.url} ${service.type} ${service.version ?? ""}`.toLowerCase();
-      return combinedText.includes(searchTerm.toLowerCase());
-    };
-
-    return typeFilteredServices.filter(searchFilter);
-  }, [services, searchTerm, filterServices]);
+    return filterServices(services).filter((service) => {
+      if (
+        searchTerm &&
+        !`${service.name} ${service.url} ${service.type} ${service.version ?? ""}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+      if (typeFilter && service.type !== typeFilter) return false;
+      if (statusFilter !== "" && service.status !== statusFilter) return false;
+      return true;
+    });
+  }, [services, searchTerm, typeFilter, statusFilter, filterServices]);
 
   const defaultValues: ServiceCreateInput = {
     name: "",
@@ -499,14 +505,66 @@ export default function ServicesList({
               </Grid>
             </DialogWrapper>
 
-            <Grid size={12} container sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                label={t("layers.searchTitle")}
-                variant="outlined"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
+            <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <TextField
+                  fullWidth
+                  label={t("layers.searchTitle")}
+                  variant="outlined"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="type-filter-label">
+                    {t("services.filterByType")}
+                  </InputLabel>
+                  <Select
+                    labelId="type-filter-label"
+                    label={t("services.filterByType")}
+                    value={typeFilter}
+                    onChange={(e) =>
+                      setTypeFilter(e.target.value as SERVICE_TYPE | "")
+                    }
+                  >
+                    <MenuItem value="">{t("common.all")}</MenuItem>
+                    {(
+                      Object.values(SERVICE_TYPE) as SERVICE_TYPE[]
+                    ).map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="status-filter-label">
+                    {t("services.filterByStatus")}
+                  </InputLabel>
+                  <Select
+                    labelId="status-filter-label"
+                    label={t("services.filterByStatus")}
+                    value={statusFilter}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value as SERVICE_STATUS | "")
+                    }
+                  >
+                    <MenuItem value="">{t("common.all")}</MenuItem>
+                    <MenuItem value={SERVICE_STATUS.HEALTHY}>
+                      {t("services.status.healthy")}
+                    </MenuItem>
+                    <MenuItem value={SERVICE_STATUS.UNHEALTHY}>
+                      {t("services.status.unhealthy")}
+                    </MenuItem>
+                    <MenuItem value={SERVICE_STATUS.UNKNOWN}>
+                      {t("services.status.unknown")}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
             <Grid size={12}>
               <StyledDataGrid<Service>
