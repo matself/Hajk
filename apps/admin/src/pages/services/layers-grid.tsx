@@ -14,11 +14,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useTheme,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import CircularProgress from "../../components/progress/circular-progress";
+import { toast } from "react-toastify";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import { LayersGridProps, useLayersByServiceId } from "../../api/services";
@@ -26,6 +28,8 @@ import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
 import { useCreateLayer } from "../../api/layers";
 import { SERVICE_TYPE } from "../../api/services/types";
+
+interface CapabilityRow { id: number; layer: string; infoClick: string; publications: string }
 
 function LayersGrid({
   layers,
@@ -42,17 +46,23 @@ function LayersGrid({
   const language = useAppStateStore((state) => state.language);
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
-  const { mutateAsync: createLayer } = useCreateLayer(serviceId ?? "");
+  const { palette } = useTheme();
+  const { mutateAsync: createLayer, isPending: isCreatingLayer } =
+    useCreateLayer(serviceId ?? "");
+  const [creatingLayerName, setCreatingLayerName] = useState<string | null>(
+    null,
+  );
   const { data: layersByService, isLoading: isLoadingLayersByService } =
     useLayersByServiceId(serviceId);
   const [open, setOpen] = React.useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState("");
-  const [capabilitiesPaginationModel, setCapabilitiesPaginationModel] = useState(() => {
-    const stored = localStorage.getItem("capabilities-dialog-page-size");
-    const parsed = Number(stored);
-    const pageSize = [10, 25, 50, 100].includes(parsed) ? parsed : 10;
-    return { page: 0, pageSize };
-  });
+  const [capabilitiesPaginationModel, setCapabilitiesPaginationModel] =
+    useState(() => {
+      const stored = localStorage.getItem("capabilities-dialog-page-size");
+      const parsed = Number(stored);
+      const pageSize = [10, 25, 50, 100].includes(parsed) ? parsed : 10;
+      return { page: 0, pageSize };
+    });
   const navigate = useNavigate();
 
   const handleClose = () => {
@@ -76,6 +86,7 @@ function LayersGrid({
   } as const;
 
   const handleCreateLayer = async (layerName: string) => {
+    setCreatingLayerName(layerName);
     try {
       const response = await createLayer({
         serviceId,
@@ -91,6 +102,13 @@ function LayersGrid({
       void navigate(`${base}${response?.id}?fromService=${serviceId}`);
     } catch (error) {
       console.error("Failed to create layer:", error);
+      toast.error(t("layers.createLayerFailed"), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    } finally {
+      setCreatingLayerName(null);
     }
   };
 
@@ -99,9 +117,9 @@ function LayersGrid({
       field: "layer",
       headerName: t("common.layerName"),
       flex: 1,
-      renderCell: (params: GridRenderCellParams) => (
+      renderCell: (params: GridRenderCellParams<CapabilityRow>) => (
         <Tooltip
-          title={params.value}
+          title={params.value as string}
           enterDelay={500}
           enterNextDelay={500}
           slotProps={tooltipSlotProps}
@@ -126,19 +144,32 @@ function LayersGrid({
       headerName: "",
       width: 56,
       sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
-        <Tooltip title={t("services.publishLayerAction")} slotProps={tooltipSlotProps}>
-          <IconButton
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              void handleCreateLayer(params.row.layer as string);
-            }}
+      renderCell: (params: GridRenderCellParams<CapabilityRow>) => {
+        const layerName = params.row.layer;
+        return (
+          <Tooltip
+            title={t("services.publishLayerAction")}
+            slotProps={tooltipSlotProps}
           >
-            <AddCircleOutlineIcon />
-          </IconButton>
-        </Tooltip>
-      ),
+            <span>
+              <IconButton
+                color="primary"
+                disabled={isCreatingLayer}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleCreateLayer(layerName);
+                }}
+              >
+                {creatingLayerName === layerName ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <AddCircleOutlineIcon />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
+        );
+      },
     },
   ];
 
@@ -157,8 +188,7 @@ function LayersGrid({
           .toLowerCase()
           .includes(dialogSearchTerm.toLowerCase());
         const matchesWorkspace =
-          !selectedWorkspace ||
-          layer.layer.startsWith(selectedWorkspace + ":");
+          !selectedWorkspace || layer.layer.startsWith(selectedWorkspace + ":");
         return matchesSearch && matchesWorkspace;
       });
   }, [layers, dialogSearchTerm, selectedWorkspace]);
@@ -168,7 +198,7 @@ function LayersGrid({
     if (!layersByService?.layers) return [];
     return layersByService.layers
       .filter((layer) =>
-        layer.name.toLowerCase().includes(serviceLayerSearch.toLowerCase())
+        layer.name.toLowerCase().includes(serviceLayerSearch.toLowerCase()),
       )
       .map((layer) => ({ id: layer.id, name: layer.name }));
   }, [layersByService?.layers, serviceLayerSearch]);
@@ -193,9 +223,7 @@ function LayersGrid({
           mt: -0.5,
         }}
       >
-        <Typography variant="h6">
-          {t("services.publishedLayers")}
-        </Typography>
+        <Typography variant="h6">{t("services.publishedLayers")}</Typography>
         <Button variant="contained" onClick={() => setOpen(true)}>
           {hasExistingLayers
             ? t("services.publishLayerAction")
@@ -276,17 +304,15 @@ function LayersGrid({
           pageSizeOptions={[10, 25, 50, 100]}
           pagination
           loading={isLoadingLayersByService}
-          localeText={
-            language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
-          }
-          onRowClick={({ row }) => {
-            const id = row.id as string;
+          localeText={language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined}
+          onRowClick={({ row }: { row: { id: string; name: string } }) => {
+            const id = row.id;
             void navigate(
               type === SERVICE_TYPE.WFS
                 ? `/search-layers/${id}`
                 : type === SERVICE_TYPE.WFST
                   ? `/editing-layers/${id}`
-                  : `/display-layers/${id}`
+                  : `/display-layers/${id}`,
             );
           }}
           disableMultipleRowSelection
@@ -385,7 +411,10 @@ function LayersGrid({
               paginationModel={capabilitiesPaginationModel}
               onPaginationModelChange={(model) => {
                 setCapabilitiesPaginationModel(model);
-                localStorage.setItem("capabilities-dialog-page-size", String(model.pageSize));
+                localStorage.setItem(
+                  "capabilities-dialog-page-size",
+                  String(model.pageSize),
+                );
               }}
               slotProps={{
                 loadingOverlay: {
@@ -393,7 +422,10 @@ function LayersGrid({
                   noRowsVariant: "skeleton",
                 },
               }}
-              hideFooter={filteredCapabilityLayers.length <= capabilitiesPaginationModel.pageSize}
+              hideFooter={
+                filteredCapabilityLayers.length <=
+                capabilitiesPaginationModel.pageSize
+              }
               pageSizeOptions={[10, 25, 50, 100]}
               pagination
               loading={isLoading}

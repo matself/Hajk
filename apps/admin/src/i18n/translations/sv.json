@@ -83,6 +83,8 @@
     "common.reorderDescription": "Placera gruppen på samma nivå som målgruppen",
     "common.insertAsChild": "Infoga som underordnad",
     "common.insertAsChildDescription": "Placera gruppen inuti målgruppen som en underordnad",
+    "common.saveFailed": "Sparandet misslyckades. Försök igen.",
+    "layers.noLayersSelected": "Välj minst ett lager från tjänsten innan du sparar.",
     "dark": "Mörkt",
     "light": "Ljust",
     "roles.adminDescription": "Användare som är tillåtna att använda Hajk-admin.",

@@ -84,6 +84,8 @@
     "common.reorderDescription": "Place the group at the same level as the target group",
     "common.insertAsChild": "Insert as Child",
     "common.insertAsChildDescription": "Place the group inside the target group as a child",
+    "common.saveFailed": "Failed to save. Please try again.",
+    "layers.noLayersSelected": "Select at least one layer from the service before saving.",
     "dark": "Dark",
     "light": "Light",
     "roles.adminDescription": "Users that are allowed to use Hajks admin interface",

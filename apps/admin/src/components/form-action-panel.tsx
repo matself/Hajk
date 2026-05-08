@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Typography, Avatar, Tooltip } from "@mui/material";
+import { Alert, Box, Button, Typography, Avatar, Tooltip } from "@mui/material";
 import CircularProgress from "../components/progress/circular-progress";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../api/users";
@@ -83,6 +83,11 @@ const FormActionPanel: React.FC<FormActionProps> = ({
           width: "100%",
         }}
       >
+        {updateStatus === "error" && (
+          <Alert severity="error" sx={{ textAlign: "left" }}>
+            {t("common.saveFailed")}
+          </Alert>
+        )}
         <Button
           onClick={(e) => {
             e.preventDefault();

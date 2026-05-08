@@ -925,6 +925,18 @@ export default function LayerSettings() {
                 selectedLayers: selectedRowObjects,
               };
 
+              if (
+                selectedRowObjects !== undefined &&
+                selectedRowObjects.length === 0
+              ) {
+                toast.warning(t("layers.noLayersSelected"), {
+                  position: "bottom-left",
+                  theme: palette.mode,
+                  hideProgressBar: true,
+                });
+                return;
+              }
+
               void handleUpdateLayer(normalized);
             })(e);
           }}
@@ -948,15 +960,14 @@ export default function LayerSettings() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 10 }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="serviceId-label">
-                      {t("layers.common.service")}
-                    </InputLabel>
-                    <Controller
-                      name="serviceId"
-                      control={control}
-                      rules={{ required: `${t("common.required")}` }}
-                      render={({ field }) => (
+                  <Controller
+                    name="serviceId"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth>
+                        <InputLabel id="serviceId-label">
+                          {t("layers.common.service")}
+                        </InputLabel>
                         <Select
                           labelId="serviceId-label"
                           label={t("layers.common.service")}
@@ -969,9 +980,9 @@ export default function LayerSettings() {
                             </MenuItem>
                           ))}
                         </Select>
-                      )}
-                    />
-                  </FormControl>
+                      </FormControl>
+                    )}
+                  />
                 </Grid>
                 {service && (
                   <Grid size={12}>
