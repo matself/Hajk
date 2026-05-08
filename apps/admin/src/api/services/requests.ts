@@ -6,6 +6,7 @@ import {
   ServiceUpdateInput,
   ServiceCapabilities,
   SERVICE_STATUS,
+  SERVICE_TYPE,
 } from "./types";
 import { LayersApiResponse } from "../layers";
 import { Map } from "../maps";
@@ -491,9 +492,7 @@ export const checkServiceHealth = async (
   updateCache: (id: string, status: SERVICE_STATUS) => void,
 ) => {
   try {
-    const healthUrl = ["WMS", "WMTS"].includes(service.type)
-      ? `${service.url}?service=${service.type}`
-      : `${service.url}?service=WFS&request=GetFeature&maxFeatures=1`;
+    const healthUrl = `${service.url}?service=${service.type === SERVICE_TYPE.WFST ? "WFS" : service.type}&request=GetCapabilities`;
     const response = await fetch(healthUrl, {
       method: "GET",
       signal: AbortSignal.timeout(5000),
