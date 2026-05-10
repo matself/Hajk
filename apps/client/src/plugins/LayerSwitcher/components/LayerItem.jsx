@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useRef } from "react";
+import { useEffect, useState, memo } from "react";
 
 // Material UI components
 import {
@@ -113,29 +113,10 @@ function LayerItem({
 
   const { layerIsToggled } = layerState ?? {};
 
-  const toggleLabelLayer = (e) => {
-    e.stopPropagation();
-
-    if (!olLayer) return;
-
-    const source = olLayer.getSource?.();
-    const params = source?.getParams?.() || {};
-
-    // Save the provided startstyle
-    if (olLayer.get("initialStyles") === undefined) {
-      olLayer.set("initialStyles", params.STYLES || "");
-    }
-
-    const newValue = !olLayer.get("showLabelLayer");
-
-    olLayer.set("showLabelLayer", newValue);
-  };
-
   const {
     layerId,
     layerCaption,
     layerType,
-
     layerIsFakeMapLayer,
     layerMinZoom,
     layerMaxZoom,
@@ -151,7 +132,7 @@ function LayerItem({
     if (!olLayer) return;
 
     const source = olLayer.getSource?.();
-    if (!source) return;
+    if (!source || typeof source.updateParams !== "function") return;
 
     const currentParams = source.getParams?.() || {};
     const layerName = currentParams.LAYERS;
@@ -159,7 +140,6 @@ function LayerItem({
     if (!layerName) return;
 
     const isActive = !!olLayer.get("showLabelLayer");
-
     const baseStyle = olLayer.get("initialStyles") || "";
 
     source.updateParams({
@@ -168,6 +148,15 @@ function LayerItem({
     });
   };
 
+  const toggleLabelLayer = (e) => {
+    e.stopPropagation();
+    if (!olLayer) return;
+
+    const newValue = !olLayer.get("showLabelLayer");
+    olLayer.set("showLabelLayer", newValue);
+  };
+
+  // Save the initial styles in "initialStyles" once when olLayer is ready
   useEffect(() => {
     if (!olLayer) return;
 
@@ -176,12 +165,13 @@ function LayerItem({
 
     const params = source.getParams?.() || {};
 
-    // store original style once
+    // Store original style once
     if (olLayer.get("initialStyles") == null) {
       olLayer.set("initialStyles", params.STYLES || "");
     }
   }, [olLayer]);
 
+  // Sync showingLabelLayer state with olLayer property and apply styles
   useEffect(() => {
     if (!olLayer) return;
 
@@ -190,8 +180,11 @@ function LayerItem({
       setShowingLabelLayer(active);
       applyLabelStyle();
     };
+
     // Initial sync on mount or layer change
     update();
+
+    // Listen for changes on label change
     olLayer.on("change:showLabelLayer", update);
 
     return () => {
@@ -199,19 +192,8 @@ function LayerItem({
     };
   }, [olLayer]);
 
+  // Apply label style when layer becomes visible (in case it was set while hidden)
   useEffect(() => {
-    if (!olLayer) return;
-
-    const isLabelLayerFromUrl =
-      typeof layerId === "string" && layerId.endsWith("_l");
-
-    if (isLabelLayerFromUrl) {
-      olLayer.set("showLabelLayer", true);
-    }
-  }, [olLayer, layerId]);
-
-  useEffect(() => {
-    // Do not run unless we have olLayer and layer is toggled
     if (!olLayer) return;
     if (!layerIsToggled) return;
 

@@ -53,10 +53,18 @@ class AnchorModel {
         const layerId = layer.get("name");
 
         // Update anchor each time layer visibility changes (to reflect current visible layers)
-        layer.on("change:visible", async (event) => {
+        layer.on("change:visible", async (_event) => {
           this.#app.globalObserver.publish("core.mapUpdated", {
             url: await this.getAnchor(),
             source: "layerVisibility",
+          });
+        });
+
+        // E: Update anchor when label layer state changes
+        layer.on("change:showLabelLayer", async (_event) => {
+          this.#app.globalObserver.publish("core.mapUpdated", {
+            url: await this.getAnchor(),
+            source: "labelLayerToggle",
           });
         });
 
@@ -99,21 +107,20 @@ class AnchorModel {
       .getArray()
       .filter((layer) => {
         return (
-          // We consider a layer to be visible only if…
-          // …has a specified name property…
-          layer.getVisible() && // …it's visible…
-          layer.getProperties().name &&
-          isValidLayerId(layer.getProperties().name)
+          layer.getVisible() === true &&
+          ["group", "layer", "base"].includes(layer.get("layerType"))
         );
       })
       .map((layer) => {
-        // Add a check if we want this layer to use labels or not
-        // If so, append _l to the layer in the url
-        const name = layer.getProperties().name;
-        if (layer.get("showLabelLayer")) {
-          return `${name}_l`;
+        const layerId = layer.get("name");
+        // Check if the layer should show labels
+        const showLabelLayer = layer.get("showLabelLayer");
+        const hasLabelLayer = layer.get("hasLabelLayer");
+
+        if (showLabelLayer && hasLabelLayer) {
+          return `${layerId}_l`;
         }
-        return name;
+        return layerId;
       })
       .join(",");
   }
