@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import type { DialogProps as MuiDialogProps } from "@mui/material/Dialog";
 
 interface DialogProps {
   open: boolean;
@@ -14,6 +15,8 @@ interface DialogProps {
   children: React.ReactNode;
   actions?: React.ReactNode;
   fullWidth?: boolean;
+  maxWidth?: MuiDialogProps["maxWidth"];
+  fullScreen?: MuiDialogProps["fullScreen"];
   /** When set, forwarded to `<form noValidate>` (e.g. use with react-hook-form). */
   formNoValidate?: boolean;
 }
@@ -26,9 +29,17 @@ const DialogWrapper = ({
   children,
   actions,
   fullWidth,
+  maxWidth,
+  fullScreen,
   formNoValidate,
 }: DialogProps) => (
-  <Dialog fullWidth={fullWidth} open={open} onClose={onClose}>
+  <Dialog
+    fullWidth={fullWidth}
+    maxWidth={maxWidth}
+    fullScreen={fullScreen}
+    open={open}
+    onClose={onClose}
+  >
     <DialogTitle>{title}</DialogTitle>
 
     {onSubmit ? (

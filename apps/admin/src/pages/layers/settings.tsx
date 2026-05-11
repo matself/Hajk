@@ -108,12 +108,13 @@ export default function LayerSettings() {
     !!layer?.id,
   );
 
-  const handleCancelNewLayer = fromService && layerId
-    ? async () => {
-        await deleteLayer(layerId);
-        void navigate(`/services/${fromService}?tab=layers`);
-      }
-    : undefined;
+  const handleCancelNewLayer =
+    fromService && layerId
+      ? async () => {
+          await deleteLayer(layerId);
+          void navigate(`/services/${fromService}?tab=layers`);
+        }
+      : undefined;
   const [activeTab, setActiveTab] = useState<
     "general" | "display" | "infoclick" | "layers" | "maps"
   >("general");
@@ -132,23 +133,21 @@ export default function LayerSettings() {
     isError: capabilitiesError,
     isLoading: capabilitiesLoading,
     refetch: refetchCapabilities,
-  } = useServiceCapabilities(
-    {
-      baseUrl: service?.url ?? "",
-      type:
-        service?.type === SERVICE_TYPE.WMS
+  } = useServiceCapabilities({
+    baseUrl: service?.url ?? "",
+    type:
+      service?.type === SERVICE_TYPE.WMS
+        ? SERVICE_TYPE.WMS
+        : service?.type === SERVICE_TYPE.WMTS
           ? SERVICE_TYPE.WMS
-          : service?.type === SERVICE_TYPE.WMTS
-            ? SERVICE_TYPE.WMS
-            : service?.type === SERVICE_TYPE.WFS
+          : service?.type === SERVICE_TYPE.WFS
+            ? SERVICE_TYPE.WFS
+            : service?.type === SERVICE_TYPE.WFST
               ? SERVICE_TYPE.WFS
-              : service?.type === SERVICE_TYPE.WFST
+              : service?.type === SERVICE_TYPE.VECTOR
                 ? SERVICE_TYPE.WFS
-                : service?.type === SERVICE_TYPE.VECTOR
-                  ? SERVICE_TYPE.WFS
-                  : service?.type,
-    },
-  );
+                : service?.type,
+  });
 
   const styles = layer?.selectedLayers.flatMap(
     (key) => getCapStyles[key] || [],
@@ -767,13 +766,26 @@ export default function LayerSettings() {
   if (isError) return <div>Error fetching layer details.</div>;
 
   return (
-    <Page title={layer?.name ? `${t("common.settings")} - ${layer.name}` : t("common.settings")}>
+    <Page
+      title={
+        layer?.name
+          ? `${t("common.settings")} - ${layer.name}`
+          : t("common.settings")
+      }
+    >
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
         onCancel={handleCancelNewLayer}
         saveButtonText="Spara"
-        backLink={service ? { label: t("services.goToService"), href: `/services/${service.id}?tab=layers` } : undefined}
+        backLink={
+          service
+            ? {
+                label: t("services.goToService"),
+                href: `/services/${service.id}?tab=layers`,
+              }
+            : undefined
+        }
         createdBy={layer?.createdBy}
         createdDate={layer?.createdDate}
         lastSavedBy={layer?.lastSavedBy}
