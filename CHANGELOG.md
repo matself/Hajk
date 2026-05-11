@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: LayerComparer - The Spy can now be resized and the transparency can be changed [#1812](https://github.com/hajkmap/Hajk/issues/1812)
 - Client: Better WMTS Support [#1795](https://github.com/hajkmap/Hajk/issues/1795)
 - Client: LayerSwitcher - it is possible to add an additional style to WMS layers that contains feature labels. A button in the LayerSwitcher allows user to control labels' visibility for such a layer. [#1816](https://github.com/hajkmap/Hajk/issues/1816)
+- Client + Admin: DocumentHandler — Added support for embedding external content via iframes, such as Microsoft Power BI reports, directly in documents.
 
 ### Changed
 
