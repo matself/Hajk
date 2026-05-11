@@ -168,7 +168,7 @@ class Manager extends Component {
         layerType: "ArcGIS",
       });
 
-      setTimeout(() => { 
+      setTimeout(() => {
         this.refs["ArcGISLayerForm"].setState({
           id: layer.id,
           caption: layer.caption,
@@ -310,6 +310,7 @@ class Manager extends Component {
           infoClickSortDesc: layer.infoClickSortDesc ?? true,
           tiled: layer.tiled,
           showAttributeTableButton: layer.showAttributeTableButton || false,
+          hasLabelStyle: layer.hasLabelStyle || false,
           singleTile: layer.singleTile,
           hidpi: layer.hidpi,
           customRatio: layer.customRatio,
@@ -377,11 +378,12 @@ class Manager extends Component {
           sizes: layer.sizes
             ? layer.sizes.map((s) => s.join(" ")).join("; ")
             : "",
-          tileSize: layer.tileSize != null
-            ? Array.isArray(layer.tileSize)
-              ? layer.tileSize.join(" ")
-              : String(layer.tileSize)
-            : "",
+          tileSize:
+            layer.tileSize != null
+              ? Array.isArray(layer.tileSize)
+                ? layer.tileSize.join(" ")
+                : String(layer.tileSize)
+              : "",
           layerType: layer.type,
           attribution: layer.attribution,
           infoVisible: layer.infoVisible,
@@ -410,7 +412,7 @@ class Manager extends Component {
           layerProperties: properties,
           layerPropertiesName: layerName,
         });
-      }
+      },
     );
   }
 
@@ -666,7 +668,7 @@ class Manager extends Component {
         }
 
         let node = $(this.refs[`${type}Iframe`].contentDocument).find(
-          "body"
+          "body",
         )[0];
         let url = `${window.location.origin}/${node.innerHTML}`;
         this.props.model.set(type, url);

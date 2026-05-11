@@ -152,7 +152,7 @@ export default class ConfigMapper {
         layerType: args.layerType,
         caption: args.caption,
         visible: args.visibleAtStart,
-        hasLabelLayer: args.hasLabelLayer || false,
+        hasLabelStyle: args.hasLabelStyle || false,
         opacity: args.opacity || 1,
         zIndex: args.drawOrder || 0,
         maxZoom: args.maxZoom,
@@ -187,6 +187,7 @@ export default class ConfigMapper {
           LAYERS: args.layers.join(","),
           ...(args.cqlFilter && { CQL_FILTER: args.cqlFilter }), // nice way to add property only if needed
           FORMAT: args.imageFormat,
+          CQL_FILTER: args.defaultCqlFilter,
           INFO_FORMAT: args.infoFormat,
           VERSION: args.version || "1.1.1",
           [srsOrCrs]: projection || "EPSG:3006",
