@@ -696,8 +696,8 @@ class AppModel {
           this.globalObserver
         );
 
-        if (layer.hasLabelLayer === true) {
-          layerItem.layer.set("hasLabelLayer", true);
+        if (layer.hasLabelStyle === true) {
+          layerItem.layer.set("hasLabelStyle", true);
         }
 
         // Check if we should load the label layer for this layer
@@ -814,7 +814,7 @@ class AppModel {
         });
 
         layer._requestLabelLayer =
-          layer.hasLabelLayer === true &&
+          layer.hasLabelStyle === true &&
           this.layersFromParams.includes(`${layer.id}_l`);
 
         // groupLayersFromParams is an object where keys are layer IDs and values are
@@ -839,7 +839,7 @@ class AppModel {
           .getAllLayers()
           .find((l) => l.get("name") === layer.id);
 
-        if (olLayer && olLayer.get("hasLabelLayer")) {
+        if (olLayer && olLayer.get("hasLabelStyle")) {
           if (!olLayer.get("showLabelLayer")) {
             olLayer.set("showLabelLayer", true);
           }
@@ -1314,7 +1314,7 @@ class AppModel {
             `Attempt to update layer style for ${baseId} failed: layer not found in current map`
           );
         } else {
-          if (hasLabelSuffix && olLayer.get("hasLabelLayer")) {
+          if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
             olLayer.set("showLabelLayer", true);
           } else {
             olLayer.set("showLabelLayer", false);
@@ -1350,7 +1350,7 @@ class AppModel {
           // the checkbox in LayerSwitcher.
           olLayer.setVisible(true);
 
-          if (hasLabelSuffix && olLayer.get("hasLabelLayer")) {
+          if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
             olLayer.set("showLabelLayer", true);
           } else {
             olLayer.set("showLabelLayer", false);

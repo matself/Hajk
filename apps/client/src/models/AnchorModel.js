@@ -143,9 +143,9 @@ class AnchorModel {
         const layerId = layer.get("name");
         // Check if the layer should show labels
         const showLabelLayer = layer.get("showLabelLayer");
-        const hasLabelLayer = layer.get("hasLabelLayer");
+        const hasLabelStyle = layer.get("hasLabelStyle");
 
-        if (showLabelLayer && hasLabelLayer) {
+        if (showLabelLayer && hasLabelStyle) {
           return `${layerId}_l`;
         }
         return layerId;
