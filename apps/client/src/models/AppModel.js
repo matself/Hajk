@@ -712,7 +712,7 @@ class AppModel {
 
           // Save the provided style before we change it
           olLayer.set("initialStyles", params.STYLES || "");
-          olLayer.set("showLabelLayer", true);
+          olLayer.set("useLabelStyle", true);
 
           source.updateParams({
             ...params,
@@ -832,7 +832,7 @@ class AppModel {
       this.addMapLayer(layer);
     });
 
-    // Now that layers exist, we set showLabelLayer on the proper layers
+    // Now that layers exist, we set useLabelStyle on the proper layers
     this.layers.forEach((layer) => {
       if (layer._requestLabelLayer === true) {
         const olLayer = this.map
@@ -840,8 +840,8 @@ class AppModel {
           .find((l) => l.get("name") === layer.id);
 
         if (olLayer && olLayer.get("hasLabelStyle")) {
-          if (!olLayer.get("showLabelLayer")) {
-            olLayer.set("showLabelLayer", true);
+          if (!olLayer.get("useLabelStyle")) {
+            olLayer.set("useLabelStyle", true);
           }
         }
       }
@@ -1315,9 +1315,9 @@ class AppModel {
           );
         } else {
           if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
-            olLayer.set("showLabelLayer", true);
+            olLayer.set("useLabelStyle", true);
           } else {
-            olLayer.set("showLabelLayer", false);
+            olLayer.set("useLabelStyle", false);
           }
         }
       });
@@ -1351,9 +1351,9 @@ class AppModel {
           olLayer.setVisible(true);
 
           if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
-            olLayer.set("showLabelLayer", true);
+            olLayer.set("useLabelStyle", true);
           } else {
-            olLayer.set("showLabelLayer", false);
+            olLayer.set("useLabelStyle", false);
           }
         }
       });

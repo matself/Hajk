@@ -72,7 +72,7 @@ class AnchorModel {
         });
 
         // E: Update anchor when label layer state changes
-        layer.on("change:showLabelLayer", async (_event) => {
+        layer.on("change:useLabelStyle", async (_event) => {
           this.#app.globalObserver.publish("core.mapUpdated", {
             url: await this.getAnchor(),
             source: "labelLayerToggle",
@@ -142,10 +142,10 @@ class AnchorModel {
       .map((layer) => {
         const layerId = layer.get("name");
         // Check if the layer should show labels
-        const showLabelLayer = layer.get("showLabelLayer");
+        const useLabelStyle = layer.get("useLabelStyle");
         const hasLabelStyle = layer.get("hasLabelStyle");
 
-        if (showLabelLayer && hasLabelStyle) {
+        if (useLabelStyle && hasLabelStyle) {
           return `${layerId}_l`;
         }
         return layerId;

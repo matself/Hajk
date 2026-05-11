@@ -139,7 +139,7 @@ function LayerItem({
 
     if (!layerName) return;
 
-    const isActive = !!olLayer.get("showLabelLayer");
+    const isActive = !!olLayer.get("useLabelStyle");
     const baseStyle = olLayer.get("initialStyles") || "";
 
     source.updateParams({
@@ -152,8 +152,8 @@ function LayerItem({
     e.stopPropagation();
     if (!olLayer) return;
 
-    const newValue = !olLayer.get("showLabelLayer");
-    olLayer.set("showLabelLayer", newValue);
+    const newValue = !olLayer.get("useLabelStyle");
+    olLayer.set("useLabelStyle", newValue);
   };
 
   // Save the initial styles in "initialStyles" once when olLayer is ready
@@ -176,7 +176,7 @@ function LayerItem({
     if (!olLayer) return;
 
     const update = () => {
-      const active = !!olLayer.get("showLabelLayer");
+      const active = !!olLayer.get("useLabelStyle");
       setShowingLabelLayer(active);
       applyLabelStyle();
     };
@@ -185,10 +185,10 @@ function LayerItem({
     update();
 
     // Listen for changes on label change
-    olLayer.on("change:showLabelLayer", update);
+    olLayer.on("change:useLabelStyle", update);
 
     return () => {
-      olLayer.un("change:showLabelLayer", update);
+      olLayer.un("change:useLabelStyle", update);
     };
   }, [olLayer]);
 
