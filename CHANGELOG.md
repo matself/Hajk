@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
+- Client: PropertyChecker got a substantial overhaul, including changing the format requirements for the underlying WMS layer. See [#1761](https://github.com/hajkmap/Hajk/issues/1761) as well as the tool's updated [README.md](https://github.com/hajkmap/Hajk/blob/f1bdbb77aff736df0675dc1e65234ec8be9ed3aa/apps/client/src/plugins/PropertyChecker/readme.md).
+
 ### Added
 
 - Client + Admin: DocumentHandler - Added a "Direct Print" setting that prints the currently active document directly without showing the document selection dialog [#1773](https://github.com/hajkmap/Hajk/issues/1773)
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Client: New Mobile UI etc, see [#1778](https://github.com/hajkmap/Hajk/issues/1778).
 - Client: New CQL filter UI, PR [#1756](https://github.com/hajkmap/Hajk/pull/1756).
+- Client: TypeScript is now supported, see [#1824.](https://github.com/hajkmap/Hajk/pull/1824)
 
 ### Fixed
 
