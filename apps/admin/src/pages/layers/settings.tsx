@@ -30,6 +30,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import LayersIcon from "@mui/icons-material/Layers";
 import MapIcon from "@mui/icons-material/Map";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
@@ -116,7 +117,7 @@ export default function LayerSettings() {
         }
       : undefined;
   const [activeTab, setActiveTab] = useState<
-    "general" | "display" | "infoclick" | "layers" | "maps"
+    "general" | "display" | "metadata" | "infoclick" | "layers" | "maps"
   >("general");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectGridId, setSelectGridId] = useState<GridRowSelectionModel>();
@@ -179,8 +180,14 @@ export default function LayerSettings() {
         internalName: layer.internalName ?? "",
         description: layer.description ?? "",
         hidpi: layer.hidpi ?? false,
+        tiled: layer.tiled ?? false,
         singleTile: layer.singleTile ?? false,
         customRatio: layer.customRatio,
+        timeSliderVisible: layer.timeSliderVisible ?? false,
+        timeSliderStart: layer.timeSliderStart ?? "",
+        timeSliderEnd: layer.timeSliderEnd ?? "",
+        hideExpandArrow: layer.hideExpandArrow ?? false,
+        zIndex: layer.zIndex ?? 0,
         style: layer.style ?? "",
         opacity: layer.opacity,
         minZoom: layer.minZoom,
@@ -195,6 +202,8 @@ export default function LayerSettings() {
         roleId: roleOnLayer?.roleId ?? "",
         metadata: {
           title: layer.metadata?.title ?? "",
+          description: layer.metadata?.description ?? "",
+          owner: layer.metadata?.owner ?? "",
           url: layer.metadata?.url ?? "",
           urlTitle: layer.metadata?.urlTitle ?? "",
           attribution: layer.metadata?.attribution ?? "",
@@ -236,6 +245,7 @@ export default function LayerSettings() {
   }, [layer, roleOnLayer, reset]);
 
   const watchRoleIdInput = watch("roleId") as string | undefined;
+  const watchSingleTile = watch("singleTile") as boolean | undefined;
 
   const filteredLayers = useMemo(() => {
     if (!getCapLayers) return [];
@@ -427,8 +437,14 @@ export default function LayerSettings() {
       internalName: layer.internalName ?? "",
       description: layer.description ?? "",
       hidpi: layer.hidpi ?? false,
+      tiled: layer.tiled ?? false,
       singleTile: layer.singleTile ?? false,
       customRatio: layer.customRatio,
+      timeSliderVisible: layer.timeSliderVisible ?? false,
+      timeSliderStart: layer.timeSliderStart ?? "",
+      timeSliderEnd: layer.timeSliderEnd ?? "",
+      hideExpandArrow: layer.hideExpandArrow ?? false,
+      zIndex: layer.zIndex ?? 0,
       style: layer.style ?? "",
       opacity: layer.opacity,
       minZoom: layer.minZoom,
@@ -442,6 +458,8 @@ export default function LayerSettings() {
       options: mergedOptions,
       metadata: {
         title: layer.metadata?.title ?? "",
+        description: layer.metadata?.description ?? "",
+        owner: layer.metadata?.owner ?? "",
         url: layer.metadata?.url ?? "",
         urlTitle: layer.metadata?.urlTitle ?? "",
         attribution: layer.metadata?.attribution ?? "",
@@ -594,8 +612,14 @@ export default function LayerSettings() {
         internalName: layerData.internalName,
         description: layerData.description,
         hidpi: layerData.hidpi,
+        tiled: layerData.tiled,
         singleTile: layerData.singleTile,
         customRatio: layerData.customRatio,
+        timeSliderVisible: layerData.timeSliderVisible,
+        timeSliderStart: layerData.timeSliderStart,
+        timeSliderEnd: layerData.timeSliderEnd,
+        hideExpandArrow: layerData.hideExpandArrow,
+        zIndex: layerData.zIndex,
         style: layerData.style,
         opacity: layerData.opacity,
         minMaxZoomAlertOnToggleOnly: layerData.minMaxZoomAlertOnToggleOnly,
@@ -609,6 +633,8 @@ export default function LayerSettings() {
         options: updatedOptions,
         metadata: {
           title: layerData?.metadata?.title,
+          description: layerData?.metadata?.description,
+          owner: layerData?.metadata?.owner,
           url: layerData?.metadata?.url,
           urlTitle: layerData?.metadata?.urlTitle,
           attribution: layerData?.metadata?.attribution,
@@ -661,8 +687,14 @@ export default function LayerSettings() {
             internalName: layerData.internalName,
             description: layerData.description,
             hidpi: layerData.hidpi,
+            tiled: layerData.tiled,
             singleTile: layerData.singleTile,
             customRatio: layerData.customRatio,
+            timeSliderVisible: layerData.timeSliderVisible,
+            timeSliderStart: layerData.timeSliderStart,
+            timeSliderEnd: layerData.timeSliderEnd,
+            hideExpandArrow: layerData.hideExpandArrow,
+            zIndex: layerData.zIndex,
             style: layerData.style,
             opacity: layerData.opacity,
             minZoom: layerData.minZoom,
@@ -677,6 +709,8 @@ export default function LayerSettings() {
             roleId: watchRoleIdInput,
             metadata: {
               title: layerData.metadata?.title,
+              description: layerData.metadata?.description,
+              owner: layerData.metadata?.owner,
               url: layerData.metadata?.url,
               urlTitle: layerData.metadata?.urlTitle,
               attribution: layerData.metadata?.attribution,
@@ -815,6 +849,11 @@ export default function LayerSettings() {
                 icon: <TuneIcon />,
               },
               {
+                key: "metadata",
+                label: t("layers.metadataTab"),
+                icon: <InfoOutlinedIcon />,
+              },
+              {
                 key: "infoclick",
                 label: t("common.infoclick"),
                 icon: <TouchAppIcon />,
@@ -847,10 +886,18 @@ export default function LayerSettings() {
           onSubmit={(e) => {
             e.preventDefault();
             void handleSubmit((data: FieldValues) => {
-              const toNumber = (v: unknown) =>
-                typeof v === "string" && v.trim() !== ""
-                  ? Number(v)
-                  : (v as number | undefined);
+              const toNumber = (v: unknown) => {
+                if (typeof v === "string") {
+                  const trimmed = v.trim();
+                  if (trimmed === "") return undefined;
+                  const n = Number(trimmed);
+                  return Number.isNaN(n) ? undefined : n;
+                }
+                if (typeof v === "number") {
+                  return Number.isNaN(v) ? undefined : v;
+                }
+                return undefined;
+              };
               const toArray = (v: unknown) =>
                 Array.isArray(v)
                   ? (v as string[])
@@ -871,14 +918,25 @@ export default function LayerSettings() {
                 maxZoom: toNumber(data.maxZoom),
                 minMaxZoomAlertOnToggleOnly:
                   data.minMaxZoomAlertOnToggleOnly as boolean | undefined,
+                tiled: data.tiled as boolean | undefined,
                 singleTile: data.singleTile as boolean | undefined,
                 hidpi: data.hidpi as boolean | undefined,
                 customRatio: toNumber(data.customRatio),
+                timeSliderVisible: data.timeSliderVisible as
+                  | boolean
+                  | undefined,
+                timeSliderStart: data.timeSliderStart as string | undefined,
+                timeSliderEnd: data.timeSliderEnd as string | undefined,
+                hideExpandArrow: data.hideExpandArrow as boolean | undefined,
+                zIndex: toNumber(data.zIndex),
                 showMetadata: data.showMetadata as boolean | undefined,
                 infoClickActive: data.infoClickActive as boolean | undefined,
                 style: data.style as string | undefined,
                 metadata: {
                   title: (data.metadata as { title?: string })?.title,
+                  description: (data.metadata as { description?: string })
+                    ?.description,
+                  owner: (data.metadata as { owner?: string })?.owner,
                   url: (data.metadata as { url?: string })?.url,
                   urlTitle: (data.metadata as { urlTitle?: string })?.urlTitle,
                   attribution: (data.metadata as { attribution?: string })
@@ -1099,6 +1157,21 @@ export default function LayerSettings() {
                       )}
                     />
                     <Controller
+                      name="tiled"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.tiled")}
+                        />
+                      )}
+                    />
+                    <Controller
                       name="singleTile"
                       control={control}
                       render={({ field }) => (
@@ -1109,12 +1182,25 @@ export default function LayerSettings() {
                               onChange={(e) => field.onChange(e.target.checked)}
                             />
                           }
-                          label="Single tile"
+                          label={t("layers.singleTile")}
                         />
                       )}
                     />
                   </FormGroup>
                 </Grid>
+                {watchSingleTile ? (
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label={t("layers.customRatio")}
+                      fullWidth
+                      type="number"
+                      slotProps={{
+                        htmlInput: { step: 1 },
+                      }}
+                      {...register("customRatio")}
+                    />
+                  </Grid>
+                ) : null}
               </Grid>
             </FormPanel>
 
@@ -1247,6 +1333,122 @@ export default function LayerSettings() {
                     }
                   />
                 </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label={t("layers.minZoom")}
+                    fullWidth
+                    type="number"
+                    slotProps={{
+                      htmlInput: { step: 1 },
+                    }}
+                    helperText={t("layers.zoomNegativeOneHint")}
+                    {...register("minZoom")}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label={t("layers.maxZoom")}
+                    fullWidth
+                    type="number"
+                    slotProps={{
+                      htmlInput: { step: 1 },
+                    }}
+                    helperText={t("layers.zoomNegativeOneHint")}
+                    {...register("maxZoom")}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label={t("layers.zIndex")}
+                    fullWidth
+                    type="number"
+                    slotProps={{
+                      htmlInput: { step: 1 },
+                    }}
+                    {...register("zIndex")}
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <FormGroup>
+                    <Controller
+                      name="minMaxZoomAlertOnToggleOnly"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.minMaxZoomAlertOnToggleOnly")}
+                        />
+                      )}
+                    />
+                  </FormGroup>
+                </Grid>
+              </Grid>
+            </FormPanel>
+
+            <FormPanel title={t("layers.timeSlider")}>
+              <Grid container rowSpacing={2}>
+                <Grid size={12}>
+                  <FormGroup>
+                    <Controller
+                      name="timeSliderVisible"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.timeSliderVisible")}
+                        />
+                      )}
+                    />
+                  </FormGroup>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label={t("layers.timeSliderStart")}
+                    fullWidth
+                    {...register("timeSliderStart")}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label={t("layers.timeSliderEnd")}
+                    fullWidth
+                    {...register("timeSliderEnd")}
+                  />
+                </Grid>
+              </Grid>
+            </FormPanel>
+
+            <FormPanel title={t("layers.layerSwitcher")}>
+              <Grid container rowSpacing={2}>
+                <Grid size={12}>
+                  <FormGroup>
+                    <Controller
+                      name="hideExpandArrow"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.hideExpandArrow")}
+                        />
+                      )}
+                    />
+                  </FormGroup>
+                </Grid>
               </Grid>
             </FormPanel>
 
@@ -1275,8 +1477,10 @@ export default function LayerSettings() {
                 </Grid>
               </Grid>
             </FormPanel>
+          </Box>
 
-            <FormPanel title={t("common.infobutton")}>
+          <Box sx={{ display: activeTab === "metadata" ? "block" : "none" }}>
+            <FormPanel title={t("layers.metadataTab")}>
               <Grid container rowSpacing={2}>
                 <Grid size={12}>
                   <FormGroup>
@@ -1306,14 +1510,30 @@ export default function LayerSettings() {
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
+                    label={t("layers.metadata.owner")}
+                    fullWidth
+                    {...register("metadata.owner")}
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <TextField
+                    label={t("layers.metadata.description")}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    {...register("metadata.description")}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
                     label={t("layers.metadata.urlTitle")}
                     fullWidth
                     {...register("metadata.urlTitle")}
                   />
                 </Grid>
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
-                    label="Url"
+                    label={t("layers.metadata.url")}
                     fullWidth
                     {...register("metadata.url")}
                   />

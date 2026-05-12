@@ -147,7 +147,7 @@ export default function LayerInfoClickModal({
       // For now, just set the filename. In a real implementation,
       // you'd upload the file and get a URL back
       const fileName = file.name;
-      reset((prev) => ({ ...prev, legendIcon: fileName }));
+      setValue("legendIcon", fileName, { shouldDirty: true });
       // Reset file input so same file can be selected again
       if (event.target) {
         event.target.value = "";
@@ -379,10 +379,14 @@ export default function LayerInfoClickModal({
                   />
                 </Grid>
                 <Grid size={12}>
-                  <Box display="flex" gap={1} alignItems="flex-end">
+                  <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
                     <TextField
                       label={t("layers.legendIcon")}
                       fullWidth
+                      sx={{ flex: "1 1 200px", minWidth: 0 }}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                      }}
                       {...register("legendIcon")}
                     />
                     <input
@@ -395,7 +399,7 @@ export default function LayerInfoClickModal({
                     <Button
                       variant="outlined"
                       onClick={() => fileInputRef.current?.click()}
-                      sx={{ whiteSpace: "nowrap" }}
+                      sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
                     >
                       {t("layers.uploadFile")}
                     </Button>

@@ -35,13 +35,17 @@ export interface Layer {
   createdDate?: string;
   lastSavedBy?: string;
   lastSavedDate?: string;
-  metadata: {
-    id: string;
-    title?: string;
-    url?: string;
-    urlTitle?: string;
-    attribution?: string;
-  };
+  metadata?:
+    | {
+        id: string;
+        title?: string;
+        description?: string;
+        owner?: string;
+        url?: string;
+        urlTitle?: string;
+        attribution?: string;
+      }
+    | null;
   searchSettings: {
     id: string;
     active: boolean;
@@ -118,6 +122,8 @@ export interface LayerUpdateInput {
   style?: string;
   metadata?: {
     title?: string;
+    description?: string;
+    owner?: string;
     url?: string;
     urlTitle?: string;
     attribution?: string;
