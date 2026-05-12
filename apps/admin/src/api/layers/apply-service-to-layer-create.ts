@@ -11,11 +11,6 @@ function hasNonEmptyString(v: unknown): boolean {
   return typeof v === "string" && v.trim().length > 0;
 }
 
-/**
- * Fills layer create payload fields that belong to the service conceptually:
- * - WFS search endpoint URL defaults to the service URL (same physical endpoint).
- * - Layer metadata may inherit title/description/owner from service metadata when omitted.
- */
 export function applyServiceDefaultsToLayerCreate(
   merged: Record<string, unknown>,
   service: Service,
@@ -23,8 +18,7 @@ export function applyServiceDefaultsToLayerCreate(
   if (WFS_FAMILY.has(service.type)) {
     const existing =
       (merged.searchSettings as Record<string, unknown> | undefined) ?? {};
-    const url =
-      typeof existing.url === "string" ? existing.url.trim() : "";
+    const url = typeof existing.url === "string" ? existing.url.trim() : "";
     if (!url) {
       merged.searchSettings = { ...existing, url: service.url };
     }
@@ -34,21 +28,23 @@ export function applyServiceDefaultsToLayerCreate(
     return;
   }
 
-  const meta =
-    (merged.metadata as Record<string, unknown> | undefined) ?? {};
+  const meta = (merged.metadata as Record<string, unknown> | undefined) ?? {};
   let changed = false;
 
-  if (!hasNonEmptyString(meta.title) && service.metadata.title) {
-    meta.title = service.metadata.title;
-    changed = true;
-  }
-  if (!hasNonEmptyString(meta.description) && service.metadata.description) {
-    meta.description = service.metadata.description;
-    changed = true;
-  }
-  if (!hasNonEmptyString(meta.owner) && service.metadata.owner) {
-    meta.owner = service.metadata.owner;
-    changed = true;
+  const metadataInheritanceMap: { key: keyof typeof meta; from?: string }[] = [
+    { key: "title", from: service.metadata.title ?? undefined },
+    { key: "description", from: service.metadata.description ?? undefined },
+    { key: "owner", from: service.metadata.owner ?? undefined },
+    { key: "url", from: service.metadata.url ?? undefined },
+    { key: "urlTitle", from: service.metadata.urlTitle ?? undefined },
+    { key: "attribution", from: service.metadata.attribution ?? undefined },
+  ];
+
+  for (const { key, from } of metadataInheritanceMap) {
+    if (!hasNonEmptyString(meta[key]) && hasNonEmptyString(from)) {
+      meta[key] = from;
+      changed = true;
+    }
   }
 
   if (changed) {
