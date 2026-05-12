@@ -84,21 +84,16 @@ class Manager extends Component {
     let matchedConfigs = [];
 
     function findInBaselayers(baselayers, layerId) {
-      return baselayers.find((l) => l.id === layerId);
+      return baselayers.some((l) => l.id === layerId);
     }
 
     function findInGroups(groups, layerId) {
-      let config;
-      groups.forEach((group) => {
-        let found = group.layers.find((l) => l.id === layerId);
-        if (found) {
-          config = found;
-        }
-        if (group.hasOwnProperty("groups")) {
-          findInGroups(group.groups, layerId);
-        }
-      });
-      return config;
+      for (const group of groups) {
+        if (group.layers.some((l) => l.id === layerId)) return true;
+        if (group.groups?.length && findInGroups(group.groups, layerId))
+          return true;
+      }
+      return false;
     }
 
     for (let i = 0; i < mapsWithLayers.length; i++) {
