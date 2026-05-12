@@ -118,9 +118,7 @@ const DigitalPlanItem = ({
             }}
           >
             <HajkToolTip
-              title={
-                showTooltips ? "Inkludera planbestämmelsen i rapport" : ""
-              }
+              title={showTooltips ? "Inkludera planbestämmelsen i rapport" : ""}
             >
               <Checkbox
                 size="small"
@@ -138,9 +136,7 @@ const DigitalPlanItem = ({
                 checked={isSelected()}
               />
             </HajkToolTip>
-            <HajkToolTip
-              title={showTooltips ? "Lägg till notering" : ""}
-            >
+            <HajkToolTip title={showTooltips ? "Lägg till notering" : ""}>
               <IconButton
                 size="small"
                 onClick={handleExpandClick}
