@@ -1228,7 +1228,23 @@ export default function LayerSettings() {
                     label={t("layers.opacity")}
                     fullWidth
                     type="number"
-                    {...register("opacity")}
+                    slotProps={{
+                      htmlInput: {
+                        min: 0,
+                        max: 1,
+                        step: 0.01,
+                      },
+                    }}
+                    {...register("opacity", {
+                      valueAsNumber: true,
+                      min: { value: 0, message: t("layers.opacityRange") },
+                      max: { value: 1, message: t("layers.opacityRange") },
+                    })}
+                    error={!!errors.opacity}
+                    helperText={
+                      (errors.opacity as unknown as { message?: string })
+                        ?.message
+                    }
                   />
                 </Grid>
               </Grid>

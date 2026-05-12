@@ -347,6 +347,7 @@
     "layers.customRatio": "Custom ratio (Leave as 0 for OL-default)",
     "layers.style": "Style",
     "layers.opacity": "Opacity",
+    "layers.opacityRange": "Value must be between 0 and 1",
     "layers.legend": "Legend",
     "layers.legendIcon": "Legend icon",
     "layers.legendOptions": "Legend options",
