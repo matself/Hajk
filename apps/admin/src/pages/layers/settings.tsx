@@ -61,31 +61,31 @@ import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
 import LayerInfoClickModal from "./components/layer-infoclick-modal";
 
-const StyledTabButton = styled(Button)<{ isActive: boolean }>(
-  ({ theme, isActive }) => ({
-    textTransform: "none",
-    width: "100%",
-    borderRadius: 14,
-    justifyContent: "flex-start",
-    color: theme.palette.text.primary,
-    paddingTop: theme.spacing(1.8),
-    paddingBottom: theme.spacing(1.8),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    minHeight: 48,
-    backgroundColor: isActive ? theme.palette.action.focus : "transparent",
-    transition: "all 200ms ease",
-    "&:hover": {
-      backgroundColor: isActive
-        ? theme.palette.action.selected
-        : theme.palette.action.hover,
-    },
-    "& .MuiButton-startIcon": {
-      fontSize: "1.25rem",
-      marginRight: theme.spacing(2),
-    },
-  }),
-);
+const StyledTabButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "isActive",
+})<{ isActive: boolean }>(({ theme, isActive }) => ({
+  textTransform: "none",
+  width: "100%",
+  borderRadius: 14,
+  justifyContent: "flex-start",
+  color: theme.palette.text.primary,
+  paddingTop: theme.spacing(1.8),
+  paddingBottom: theme.spacing(1.8),
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  minHeight: 48,
+  backgroundColor: isActive ? theme.palette.action.focus : "transparent",
+  transition: "all 200ms ease",
+  "&:hover": {
+    backgroundColor: isActive
+      ? theme.palette.action.selected
+      : theme.palette.action.hover,
+  },
+  "& .MuiButton-startIcon": {
+    fontSize: "1.25rem",
+    marginRight: theme.spacing(2),
+  },
+}));
 
 export default function LayerSettings() {
   const { t } = useTranslation();
@@ -1725,8 +1725,8 @@ export default function LayerSettings() {
             </FormPanel>
           </Box>
 
-          <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
-            {layer && (
+          {activeTab === "layers" && layer && (
+            <Box>
               <AvailableLayersGrid
                 isLoading={serviceLoading || capabilitiesLoading}
                 isError={capabilitiesError}
@@ -1741,12 +1741,14 @@ export default function LayerSettings() {
                 selectedRowObjects={selectedRowObjects}
                 onLayerClick={handleLayerClick}
               />
-            )}
-          </Box>
+            </Box>
+          )}
 
-          <Box sx={{ display: activeTab === "maps" ? "block" : "none" }}>
-            <UsedInMapsGrid layerId={layerId ?? ""} />
-          </Box>
+          {activeTab === "maps" && (
+            <Box>
+              <UsedInMapsGrid layerId={layerId ?? ""} />
+            </Box>
+          )}
         </FormContainer>
       </FormActionPanel>
       <LayerInfoClickModal

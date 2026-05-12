@@ -29,7 +29,12 @@ import useAppStateStore from "../../store/use-app-state-store";
 import { useCreateLayer } from "../../api/layers";
 import { SERVICE_TYPE } from "../../api/services/types";
 
-interface CapabilityRow { id: number; layer: string; infoClick: string; publications: string }
+interface CapabilityRow {
+  id: number;
+  layer: string;
+  infoClick: string;
+  publications: string;
+}
 
 function LayersGrid({
   layers,

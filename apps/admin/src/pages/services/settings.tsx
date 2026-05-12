@@ -40,8 +40,9 @@ import {
 import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
 import Grid from "@mui/material/Grid2";
 
-const StyledTabButton = styled(Button)<{ isActive: boolean }>(
-  ({ theme, isActive }) => ({
+const StyledTabButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "isActive",
+})<{ isActive: boolean }>(({ theme, isActive }) => ({
     textTransform: "none",
     width: "100%",
     borderRadius: 14,
@@ -773,18 +774,20 @@ export default function ServiceSettings() {
             </SearchablePanel>
           </Box>
 
-          <Box sx={{ display: activeTab === "layers" ? "block" : "none" }}>
-            <LayersGrid
-              layers={getCapLayers}
-              workspaces={getCapWorkspaces}
-              serviceId={service.id}
-              isError={layersError}
-              isLoading={layersLoading}
-              type={service?.type}
-              onRetry={() => void refetchLayers()}
-            />
-            <ServiceUsagePanel serviceId={service.id} />
-          </Box>
+          {activeTab === "layers" && (
+            <Box>
+              <LayersGrid
+                layers={getCapLayers}
+                workspaces={getCapWorkspaces}
+                serviceId={service.id}
+                isError={layersError}
+                isLoading={layersLoading}
+                type={service?.type}
+                onRetry={() => void refetchLayers()}
+              />
+              <ServiceUsagePanel serviceId={service.id} />
+            </Box>
+          )}
         </FormContainer>
       </FormActionPanel>
       <DialogWrapper
