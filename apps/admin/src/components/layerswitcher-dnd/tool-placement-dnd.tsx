@@ -11,7 +11,6 @@ import {
   useSensors,
   useDraggable,
   pointerWithin,
-  DragOverEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -595,7 +594,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
       // Dropping on a different zone (container or item in another zone)
       const targetZone: ToolPlacement | null = isDropOnZoneContainer
         ? (overId as ToolPlacement)
-        : overZone?.zone ?? null;
+        : (overZone?.zone ?? null);
 
       if (!targetZone) return;
 

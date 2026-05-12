@@ -23,7 +23,9 @@ interface Props {
   onToggle: () => void;
 }
 
-const StyledButton = styled(Button)<{
+const StyledButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "hasActiveSubItem",
+})<{
   hasActiveSubItem: boolean;
 }>(({ theme, hasActiveSubItem }) => ({
   textTransform: "none",
