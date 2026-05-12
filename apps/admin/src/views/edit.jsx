@@ -51,6 +51,7 @@ const defaultState = {
   polygon: false,
   multipolygon: false,
   allowMultiGeom: false,
+  forceZ: false,
   layerProperties: [],
   alert: false,
   corfirm: false,
@@ -145,6 +146,7 @@ class Edit extends Component {
       polygon: layer.editPolygon,
       multipolygon: layer.editMultiPolygon,
       allowMultiGeom: layer.allowMultiGeom || false,
+      forceZ: layer.forceZ || false,
     });
 
     setTimeout(() => {
@@ -667,6 +669,7 @@ class Edit extends Component {
         editLine: this.getValue("linestring"),
         editMultiLine: this.getValue("multilinestring"),
         allowMultiGeom: this.state.allowMultiGeom,
+        forceZ: this.state.forceZ,
       };
 
       this.modifyBooleans(layer);
@@ -1493,6 +1496,24 @@ class Edit extends Component {
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
                     title="Aktiverar multi-ritningsläget i rita-verktyget när redigeringslager är aktivt. Användaren kan då rita flera separata geometrier som slås ihop till ett gemensamt objekt (t.ex. MultiPolygon, MultiPoint)."
+                  />
+                  <br />
+                  <br />
+                  <input
+                    checked={this.state.forceZ}
+                    onChange={(e) => {
+                      this.setState({ forceZ: e.target.checked });
+                    }}
+                    name="forceZ"
+                    id="forceZ"
+                    type="checkbox"
+                  />
+                  <label htmlFor="forceZ">&nbsp;Lagret har 3D-geometri (Z)</label>
+                  <i
+                    style={{ marginLeft: "4px" }}
+                    className="fa fa-question-circle"
+                    data-toggle="tooltip"
+                    title="Aktivera för lager med 3D-geometri (t.ex. PointZ, PolygonZ) när servern inte automatiskt kan detektera Z-dimensionen, exempelvis GeoServer med tomma tabeller."
                   />
                   <br />
                   <br />

@@ -227,12 +227,16 @@ export function createOgcApi(baseUrl) {
         fc.geometryType = firstFeature.geometry.type;
       }
       if (!fc.geometryType) {
-        fc.geometryType = await fetchWfsGeometryType(
+        const dtResult = await fetchWfsGeometryType(
           layerUrl,
           typeName,
           version,
           signal
         );
+        if (dtResult) {
+          fc.geometryType = dtResult.type;
+          if (!fc.hasZ) fc.hasZ = dtResult.hasZ;
+        }
       }
       fc.layerConfig = layer;
       return fc;
@@ -275,12 +279,16 @@ export function createOgcApi(baseUrl) {
       fc.geometryType = detectedGeomType;
     }
     if (!fc.geometryType) {
-      fc.geometryType = await fetchWfsGeometryType(
+      const dtResult = await fetchWfsGeometryType(
         layerUrl,
         typeName,
         version,
         signal
       );
+      if (dtResult) {
+        fc.geometryType = dtResult.type;
+        if (!fc.hasZ) fc.hasZ = dtResult.hasZ;
+      }
     }
     fc.layerConfig = layer;
     return fc;
@@ -317,7 +325,7 @@ export function createOgcApi(baseUrl) {
       // (matches transaction-builder.js: `http://hajk.se/wfs/${nsPrefix}`)
       const featureNS = layer.uri || `http://hajk.se/wfs/${prefix}`;
       const crs = srsName || layer.projection || "EPSG:3006";
-      const hasZ = Boolean(txHasZ ?? layer.forceZ);
+      const hasZ = Boolean(txHasZ || layer.forceZ);
       const needsMultiWrap = /^Multi/i.test(txGeomType);
 
       // Convert GeoJSON-like objects to OpenLayers Feature objects
@@ -568,7 +576,8 @@ function formatFeatureId(featureId, layer) {
 /**
  * Fetch the geometry column type from WFS DescribeFeatureType (JSON format).
  * Called as fallback when no features were loaded (empty layer).
- * Returns an OL-compatible geometry type string (e.g. "MultiPolygon") or null.
+ * Returns { type, hasZ } where type is an OL-compatible geometry type string
+ * (e.g. "MultiPolygon") and hasZ is true for 3D geometry columns, or null on failure.
  */
 async function fetchWfsGeometryType(layerUrl, typeName, version, signal) {
   try {
@@ -584,6 +593,14 @@ async function fetchWfsGeometryType(layerUrl, typeName, version, signal) {
     if (!Array.isArray(props)) return null;
     const geomProp = props.find((p) => /^gml:/i.test(p.type ?? ""));
     if (!geomProp?.localType) return null;
+    const rawLocalType = geomProp.localType;
+    // Detect 3D from type name — QGIS Server exposes e.g. "PointZPropertyType"
+    const hasZ = /Z(?:M)?(?:PropertyType)?$/i.test(rawLocalType);
+    // Strip Z/ZM and PropertyType suffixes to get a plain base type name
+    const stripped = rawLocalType
+      .replace(/Z(?:M)?(?:PropertyType)?$/i, "")
+      .replace(/PropertyType$/i, "");
+    const baseType = stripped || rawLocalType;
     // Normalize GML3 surface/curve aliases to OL type names
     const aliases = {
       MultiSurface: "MultiPolygon",
@@ -591,7 +608,7 @@ async function fetchWfsGeometryType(layerUrl, typeName, version, signal) {
       Surface: "Polygon",
       Curve: "LineString",
     };
-    return aliases[geomProp.localType] ?? geomProp.localType;
+    return { type: aliases[baseType] ?? baseType, hasZ };
   } catch {
     return null;
   }
