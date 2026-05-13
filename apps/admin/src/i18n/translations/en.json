@@ -399,6 +399,7 @@
     "layers.availableLayers": "Available layers",
     "layers.errorLoadingCapabilities": "Failed to fetch available layers from the service.",
     "layers.settings": "Layer settings",
+    "layers.display": "Display",
     "layers.settings.displayFields": "Presentation of results",
     "layers.settings.searchSettings": "Search in settings",
     "layers.createNewLayer": "Publish layer",

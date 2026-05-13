@@ -356,7 +356,7 @@
     "layers.zoomNegativeOneHint": "Använd -1 för ingen gräns (standard).",
     "layers.zIndex": "Z-index",
     "layers.tiled": "Rutindelad",
-    "layers.singleTile": "En enda ruta (single tile)",
+    "layers.singleTile": "Single tile",
     "layers.timeSlider": "Tidsreglage",
     "layers.timeSliderVisible": "Visa tidsreglage",
     "layers.timeSliderStart": "Tidsreglage start",
