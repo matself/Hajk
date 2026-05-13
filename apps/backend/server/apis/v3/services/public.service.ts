@@ -20,7 +20,7 @@ class PublicService {
     logger.debug("Initiating Public Service");
   }
 
-  async #getAllMaps(user?: Express.User) {
+  async #getAllMaps() {
     const maps = await prisma.map.findMany({
       // TODO: If isAuthActive, restrict to only include maps with current user's roles within `roles`.
       select: {
@@ -78,7 +78,7 @@ class PublicService {
     // TODO: Implement tools response.
 
     // ** userSpecificMaps **
-    const userSpecificMaps = await this.#getAllMaps(user);
+    const userSpecificMaps = await this.#getAllMaps();
 
     return this.#useLegacyConfig
       ? {

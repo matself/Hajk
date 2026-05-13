@@ -166,7 +166,11 @@ class AdLdapService extends AdBaseService {
     this.logger.debug(
       `Setting up AD connection to using the following options (\`logging\`, \`password\` and \`tlsOptions\` are obfuscated from this log message):`
     );
-    const { password, tlsOptions, logging, ...obfuscatedConfig } = this.#config;
+    const { password, tlsOptions, logging, ...obfuscatedConfig } = this
+      .#config as ADConfig;
+    void password;
+    void tlsOptions;
+    void logging;
     this.logger.debug("%o", obfuscatedConfig);
 
     this._ad = new ActiveDirectory(this.#config);
