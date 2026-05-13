@@ -350,6 +350,7 @@
     "layers.legendOptions": "Teckenförklaringsinställningar",
     "layers.uploadFile": "Välj fil",
     "layers.showAttributeTableButton": "Visa knapp för attributtabell",
+    "layers.geoWebCache": "Använd GeoWebCache",
     "layers.minMaxZoomAlertOnToggleOnly": "Visa endast varningruta för min/max vid klick",
     "layers.minZoom": "Minsta zoom",
     "layers.maxZoom": "Maximal zoom",

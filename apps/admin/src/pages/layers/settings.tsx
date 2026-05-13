@@ -309,6 +309,7 @@ export default function LayerSettings() {
 
   const handleSaveLayerInfoClick = async (data: {
     caption?: string;
+    legendUrl?: string;
     legendIcon?: string;
     style?: string;
     queryable?: boolean;
@@ -335,6 +336,7 @@ export default function LayerSettings() {
         string,
         {
           caption?: string;
+          legendUrl?: string;
           legendIcon?: string;
           style?: string;
           queryable?: boolean;
@@ -367,6 +369,8 @@ export default function LayerSettings() {
     // Update fields that were provided (including falsy values like false for booleans)
     if (data.caption !== undefined)
       layerInstanceData.caption = data.caption || undefined;
+    if (data.legendUrl !== undefined)
+      layerInstanceData.legendUrl = data.legendUrl || undefined;
     if (data.legendIcon !== undefined)
       layerInstanceData.legendIcon = data.legendIcon || undefined;
     if (data.style !== undefined)
@@ -991,6 +995,11 @@ export default function LayerSettings() {
                   layerDisplayDescription: (
                     data.options as { layerDisplayDescription?: string }
                   )?.layerDisplayDescription,
+                  geoWebCache: (data.options as { geoWebCache?: boolean })
+                    ?.geoWebCache,
+                  showAttributeTableButton: (
+                    data.options as { showAttributeTableButton?: boolean }
+                  )?.showAttributeTableButton,
                 } as Record<string, unknown>,
                 selectedLayers: selectedRowObjects,
               };
@@ -1186,6 +1195,21 @@ export default function LayerSettings() {
                         />
                       )}
                     />
+                    <Controller
+                      name="options.geoWebCache"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.geoWebCache")}
+                        />
+                      )}
+                    />
                   </FormGroup>
                 </Grid>
                 {watchSingleTile ? (
@@ -1369,6 +1393,13 @@ export default function LayerSettings() {
                   />
                 </Grid>
                 <Grid size={12}>
+                  <TextField
+                    label={t("layers.legendOptions")}
+                    fullWidth
+                    {...register("legendOptions")}
+                  />
+                </Grid>
+                <Grid size={12}>
                   <FormGroup>
                     <Controller
                       name="minMaxZoomAlertOnToggleOnly"
@@ -1496,6 +1527,21 @@ export default function LayerSettings() {
                             />
                           }
                           label={t("layers.showMetadata")}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="options.showAttributeTableButton"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={Boolean(field.value as boolean)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          }
+                          label={t("layers.showAttributeTableButton")}
                         />
                       )}
                     />
@@ -1765,6 +1811,7 @@ export default function LayerSettings() {
               string,
               {
                 caption?: string;
+                legendUrl?: string;
                 legendIcon?: string;
                 style?: string;
                 queryable?: boolean;
@@ -1790,6 +1837,7 @@ export default function LayerSettings() {
 
           return {
             caption: layerInstanceSettings.caption ?? "",
+            legendUrl: layerInstanceSettings.legendUrl ?? layer?.legendUrl ?? "",
             legendIcon:
               layerInstanceSettings.legendIcon ?? layer?.legendIconUrl ?? "",
             style: layerInstanceSettings.style ?? layer?.style ?? "",

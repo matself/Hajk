@@ -386,6 +386,7 @@
     "layers.createDialog.serviceDefaults": "Endpoint: {{url}} · version {{version}} · {{imageFormat}} · {{projection}}",
     "layers.showMetadata": "Infobutton visible to layer",
     "layers.layerDisplayDescription": "Display description of the layer",
+    "layers.geoWebCache": "Use GeoWebCache",
     "layers.updateLayersSuccess": "Selected layers updated!",
     "layers.updateLayersFailed": "Failed to update selected layers.",
     "layers.metadata.urlTitle": "Url-title",
