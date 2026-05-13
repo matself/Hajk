@@ -22,9 +22,7 @@
     "lint:fix": "eslint --fix server"
   },
   "dependencies": {
-    "@babel/runtime": "^7.29.2",
     "activedirectory2": "^2.2.0",
-    "clf-date": "^0.2.1",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -35,9 +33,7 @@
     "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "log4js": "^6.9.1",
-    "query-string": "^9.3.1",
-    "write-excel-file": "^3.0.8",
-    "ws": "^8.20.0"
+    "write-excel-file": "^3.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9",
