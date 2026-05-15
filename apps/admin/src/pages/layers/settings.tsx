@@ -24,6 +24,7 @@ import {
   Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -116,6 +117,11 @@ export default function LayerSettings() {
           void navigate(`/services/${fromService}?tab=layers`);
         }
       : undefined;
+
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
   const [activeTab, setActiveTab] = useState<
     "general" | "display" | "metadata" | "infoclick" | "layers" | "maps"
   >("general");
@@ -829,6 +835,23 @@ export default function LayerSettings() {
         lastSavedBy={layer?.lastSavedBy}
         lastSavedDate={layer?.lastSavedDate}
         isDirty={isDirty}
+        warning={
+          <Box sx={{ mt: 1 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteOutlineIcon />}
+              onClick={handleDeleteClick}
+              sx={{
+                width: "100%",
+                justifyContent: "center",
+                borderStyle: "dashed",
+              }}
+            >
+              {t("common.delete")}
+            </Button>
+          </Box>
+        }
       >
         <List
           sx={{
