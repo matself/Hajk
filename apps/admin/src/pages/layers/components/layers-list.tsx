@@ -15,6 +15,7 @@ import {
   Menu,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -81,8 +82,13 @@ export default function LayersList({
   >([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const actionsMenuOpen = Boolean(anchorEl);
-
+  const selectedLayer = useMemo(
+    () => layers?.find((layer) => layer.id === selectedLayerId),
+    [layers, selectedLayerId],
+  );
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -98,6 +104,26 @@ export default function LayersList({
 
   const handleCloseActionsMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedLayerId(null);
+    setDeleteConfirmName("");
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedLayer?.name) && deleteConfirmName === selectedLayer?.name;
+
+  const handleConfirmDelete = () => {
+    if (!selectedLayerId || !isDeleteConfirmNameMatching) return;
+    handleCloseDeleteDialog();
   };
 
   const serviceUrlOptions = useMemo(() => {
@@ -595,12 +621,55 @@ export default function LayersList({
               onClick={(event) => event.stopPropagation()}
             >
               <MenuItem
-                onClick={handleCloseActionsMenu}
+                onClick={handleOpenDeleteDialog}
                 data-layer-id={selectedLayerId ?? ""}
               >
                 {t("common.delete")}
               </MenuItem>
             </Menu>
+            <DialogWrapper
+              fullWidth
+              open={isDeleteDialogOpen}
+              title={t("layers.deleteLayerConfirmTitle")}
+              onClose={handleCloseDeleteDialog}
+              actions={
+                <>
+                  <Button
+                    variant="text"
+                    onClick={handleCloseDeleteDialog}
+                    color="primary"
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={!isDeleteConfirmNameMatching}
+                    onClick={handleConfirmDelete}
+                    startIcon={<DeleteOutlineIcon />}
+                  >
+                    {t("common.delete")}
+                  </Button>
+                </>
+              }
+            >
+              <Typography>
+                {t("layers.deleteLayerConfirmMessage", {
+                  name: selectedLayer?.name ?? "",
+                })}
+              </Typography>
+              <TextField
+                fullWidth
+                autoComplete="off"
+                margin="normal"
+                label={t("layers.deleteLayerTypeNameLabel")}
+                helperText={t("layers.deleteLayerTypeNameHelper", {
+                  name: selectedLayer?.name ?? "",
+                })}
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+              />
+            </DialogWrapper>
           </Grid>
         </Page>
       )}

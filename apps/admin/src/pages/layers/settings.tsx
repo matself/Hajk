@@ -61,6 +61,7 @@ import { HttpError } from "../../lib/http-error";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
 import LayerInfoClickModal from "./components/layer-infoclick-modal";
+import DialogWrapper from "../../components/flexible-dialog";
 
 const StyledTabButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "isActive",
@@ -118,9 +119,26 @@ export default function LayerSettings() {
         }
       : undefined;
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setDeleteConfirmName("");
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(layer?.name) && deleteConfirmName === layer?.name;
+
+  const handleConfirmDelete = () => {
+    if (!layer?.id || !isDeleteConfirmNameMatching) return;
+    handleCloseDeleteDialog();
   };
   const [activeTab, setActiveTab] = useState<
     "general" | "display" | "metadata" | "infoclick" | "layers" | "maps"
@@ -1928,6 +1946,49 @@ export default function LayerSettings() {
             : []
         }
       />
+      <DialogWrapper
+        fullWidth
+        open={isDeleteDialogOpen}
+        title={t("layers.deleteLayerConfirmTitle")}
+        onClose={handleCloseDeleteDialog}
+        actions={
+          <>
+            <Button
+              variant="text"
+              onClick={handleCloseDeleteDialog}
+              color="primary"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={!isDeleteConfirmNameMatching}
+              onClick={handleConfirmDelete}
+              startIcon={<DeleteOutlineIcon />}
+            >
+              {t("common.delete")}
+            </Button>
+          </>
+        }
+      >
+        <Typography>
+          {t("layers.deleteLayerConfirmMessage", {
+            name: layer?.name ?? "",
+          })}
+        </Typography>
+        <TextField
+          fullWidth
+          autoComplete="off"
+          margin="normal"
+          label={t("layers.deleteLayerTypeNameLabel")}
+          helperText={t("layers.deleteLayerTypeNameHelper", {
+            name: layer?.name ?? "",
+          })}
+          value={deleteConfirmName}
+          onChange={(e) => setDeleteConfirmName(e.target.value)}
+        />
+      </DialogWrapper>
     </Page>
   );
 }
