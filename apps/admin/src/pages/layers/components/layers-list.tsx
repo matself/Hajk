@@ -11,7 +11,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Menu,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -76,9 +79,25 @@ export default function LayersList({
   const [selectedCapabilityLayers, setSelectedCapabilityLayers] = useState<
     string[]
   >([]);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const actionsMenuOpen = Boolean(anchorEl);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    layerId: string,
+  ) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedLayerId(layerId);
+  };
+
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
   };
 
   const serviceUrlOptions = useMemo(() => {
@@ -538,6 +557,28 @@ export default function LayersList({
                       />
                     ),
                   },
+                  {
+                    field: "actions",
+                    headerName: "",
+                    width: 60,
+                    align: "center",
+                    sortable: false,
+                    filterable: false,
+                    disableColumnMenu: true,
+                    renderCell: (
+                      params: GridRenderCellParams<LayersGridRow>,
+                    ) => (
+                      <IconButton
+                        aria-label={t("common.actions")}
+                        size="small"
+                        onClick={(event) =>
+                          handleOpenActionsMenu(event, params.row.id)
+                        }
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  },
                 ] as GridColDef<LayersGridRow>[]
               }
               onRowClick={({ row }) => {
@@ -547,6 +588,19 @@ export default function LayersList({
                 }
               }}
             />
+            <Menu
+              anchorEl={anchorEl}
+              open={actionsMenuOpen}
+              onClose={handleCloseActionsMenu}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MenuItem
+                onClick={handleCloseActionsMenu}
+                data-layer-id={selectedLayerId ?? ""}
+              >
+                {t("common.delete")}
+              </MenuItem>
+            </Menu>
           </Grid>
         </Page>
       )}
