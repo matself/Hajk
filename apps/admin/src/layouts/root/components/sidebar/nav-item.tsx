@@ -11,7 +11,9 @@ interface Props {
   isSubItem: boolean;
 }
 
-const StyledButton = styled(Button)<{
+const StyledButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "isActive" && prop !== "isSubItem",
+})<{
   isActive: boolean;
   isSubItem: boolean;
   component?: React.ElementType;

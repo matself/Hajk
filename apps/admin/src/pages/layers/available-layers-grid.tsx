@@ -79,7 +79,7 @@ function AvailableLayersGrid({
       flex: 1,
       renderCell: (params: GridRenderCellParams) => (
         <Tooltip
-          title={params.value}
+          title={params.value as string}
           enterDelay={500}
           enterNextDelay={500}
           slotProps={tooltipSlotProps}
@@ -182,15 +182,16 @@ function AvailableLayersGrid({
               },
             }}
           />
-          {(selectedLayers.length !== 0 || preSelectedLayers.length !== 0) && (
-            <DataGridBadgeButton
-              selectedLayers={selectedLayers}
-              preSelectedLayers={preSelectedLayers}
-              removedSelectedLayers={removedSelectedLayers}
-              isDarkMode={isDarkMode}
-              onLayerClick={onLayerClick}
-            />
-          )}
+          {(selectedLayers.length !== 0 || preSelectedLayers.length !== 0) &&
+            !isLoading && (
+              <DataGridBadgeButton
+                selectedLayers={selectedLayers}
+                preSelectedLayers={preSelectedLayers}
+                removedSelectedLayers={removedSelectedLayers}
+                isDarkMode={isDarkMode}
+                onLayerClick={onLayerClick}
+              />
+            )}
           <DataGrid
             sx={{
               maxWidth: "100%",

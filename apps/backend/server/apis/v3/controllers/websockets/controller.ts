@@ -41,12 +41,20 @@ class WebsocketsController {
     };
 
     // Add networkUsage and diskUsage if available (Node.js 18.6.0+)
-    if (typeof (process as any).networkUsage === "function") {
-      healthData.networkUsage = (process as any).networkUsage();
+    type ProcessWithOptionalUsage = NodeJS.Process &
+      Partial<{
+        networkUsage: () => unknown;
+        diskUsage: () => unknown;
+      }>;
+
+    const proc = process as ProcessWithOptionalUsage;
+
+    if (typeof proc.networkUsage === "function") {
+      healthData.networkUsage = proc.networkUsage();
     }
 
-    if (typeof (process as any).diskUsage === "function") {
-      healthData.diskUsage = (process as any).diskUsage();
+    if (typeof proc.diskUsage === "function") {
+      healthData.diskUsage = proc.diskUsage();
     }
 
     res.status(HttpStatusCodes.OK).json(healthData);

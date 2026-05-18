@@ -35,6 +35,7 @@ interface LayerInfoClickModalProps {
   onClose: () => void;
   onSave: (data: {
     caption?: string;
+    legendUrl?: string;
     legendIcon?: string;
     style?: string;
     queryable?: boolean;
@@ -54,6 +55,7 @@ interface LayerInfoClickModalProps {
   }) => void;
   initialValues?: {
     caption?: string;
+    legendUrl?: string;
     legendIcon?: string;
     style?: string;
     queryable?: boolean;
@@ -83,7 +85,8 @@ export default function LayerInfoClickModal({
   availableStyles = [],
 }: LayerInfoClickModalProps) {
   const { t } = useTranslation();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const legendUrlFileInputRef = useRef<HTMLInputElement>(null);
+  const legendIconFileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"infobox" | "settings">("infobox");
   const markdownInputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -98,6 +101,7 @@ export default function LayerInfoClickModal({
   } = useForm({
     defaultValues: {
       caption: initialValues?.caption ?? "",
+      legendUrl: initialValues?.legendUrl ?? "",
       legendIcon: initialValues?.legendIcon ?? "",
       style: initialValues?.style ?? "",
       queryable: initialValues?.queryable ?? false,
@@ -121,6 +125,7 @@ export default function LayerInfoClickModal({
     if (open) {
       reset({
         caption: initialValues?.caption ?? "",
+        legendUrl: initialValues?.legendUrl ?? "",
         legendIcon: initialValues?.legendIcon ?? "",
         style: initialValues?.style ?? "",
         queryable: initialValues?.queryable ?? false,
@@ -141,13 +146,31 @@ export default function LayerInfoClickModal({
     }
   }, [open, initialValues, reset]);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLegendUrlFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // For now, just set the filename. In a real implementation,
       // you'd upload the file and get a URL back
       const fileName = file.name;
-      reset((prev) => ({ ...prev, legendIcon: fileName }));
+      setValue("legendUrl", fileName, { shouldDirty: true });
+      // Reset file input so same file can be selected again
+      if (event.target) {
+        event.target.value = "";
+      }
+    }
+  };
+
+  const handleLegendIconFileSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // For now, just set the filename. In a real implementation,
+      // you'd upload the file and get a URL back
+      const fileName = file.name;
+      setValue("legendIcon", fileName, { shouldDirty: true });
       // Reset file input so same file can be selected again
       if (event.target) {
         event.target.value = "";
@@ -157,6 +180,7 @@ export default function LayerInfoClickModal({
 
   const onSubmit = (data: {
     caption: string;
+    legendUrl: string;
     legendIcon: string;
     style: string;
     queryable: boolean;
@@ -176,6 +200,7 @@ export default function LayerInfoClickModal({
   }) => {
     onSave({
       caption: data.caption || undefined,
+      legendUrl: data.legendUrl || undefined,
       legendIcon: data.legendIcon || undefined,
       style: data.style || undefined,
       queryable: data.queryable,
@@ -373,29 +398,71 @@ export default function LayerInfoClickModal({
                 {/* General Settings */}
                 <Grid size={12}>
                   <TextField
+                    sx={{ mt: 1 }}
                     label={t("layers.displayName")}
                     fullWidth
                     {...register("caption")}
                   />
                 </Grid>
                 <Grid size={12}>
-                  <Box display="flex" gap={1} alignItems="flex-end">
+                  <Box
+                    display="flex"
+                    gap={1}
+                    alignItems="center"
+                    flexWrap="wrap"
+                  >
                     <TextField
-                      label={t("layers.legendIcon")}
+                      label={t("layers.legend")}
                       fullWidth
-                      {...register("legendIcon")}
+                      sx={{ flex: "1 1 200px", minWidth: 0 }}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                      }}
+                      {...register("legendUrl")}
                     />
                     <input
-                      ref={fileInputRef}
+                      ref={legendUrlFileInputRef}
                       type="file"
                       accept="image/*"
-                      onChange={handleFileSelect}
+                      onChange={handleLegendUrlFileSelect}
                       style={{ display: "none" }}
                     />
                     <Button
                       variant="outlined"
-                      onClick={() => fileInputRef.current?.click()}
-                      sx={{ whiteSpace: "nowrap" }}
+                      onClick={() => legendUrlFileInputRef.current?.click()}
+                      sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                    >
+                      {t("layers.uploadFile")}
+                    </Button>
+                  </Box>
+                </Grid>
+                <Grid size={12}>
+                  <Box
+                    display="flex"
+                    gap={1}
+                    alignItems="center"
+                    flexWrap="wrap"
+                  >
+                    <TextField
+                      label={t("layers.legendIcon")}
+                      fullWidth
+                      sx={{ flex: "1 1 200px", minWidth: 0 }}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                      }}
+                      {...register("legendIcon")}
+                    />
+                    <input
+                      ref={legendIconFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLegendIconFileSelect}
+                      style={{ display: "none" }}
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={() => legendIconFileInputRef.current?.click()}
+                      sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
                     >
                       {t("layers.uploadFile")}
                     </Button>

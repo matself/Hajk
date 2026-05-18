@@ -11,7 +11,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Menu,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -76,9 +80,50 @@ export default function LayersList({
   const [selectedCapabilityLayers, setSelectedCapabilityLayers] = useState<
     string[]
   >([]);
-
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const actionsMenuOpen = Boolean(anchorEl);
+  const selectedLayer = useMemo(
+    () => layers?.find((layer) => layer.id === selectedLayerId),
+    [layers, selectedLayerId],
+  );
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    layerId: string,
+  ) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedLayerId(layerId);
+  };
+
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedLayerId(null);
+    setDeleteConfirmName("");
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedLayer?.name) && deleteConfirmName === selectedLayer?.name;
+
+  const handleConfirmDelete = () => {
+    if (!selectedLayerId || !isDeleteConfirmNameMatching) return;
+    handleCloseDeleteDialog();
   };
 
   const serviceUrlOptions = useMemo(() => {
@@ -538,6 +583,28 @@ export default function LayersList({
                       />
                     ),
                   },
+                  {
+                    field: "actions",
+                    headerName: "",
+                    width: 60,
+                    align: "center",
+                    sortable: false,
+                    filterable: false,
+                    disableColumnMenu: true,
+                    renderCell: (
+                      params: GridRenderCellParams<LayersGridRow>,
+                    ) => (
+                      <IconButton
+                        aria-label={t("common.actions")}
+                        size="small"
+                        onClick={(event) =>
+                          handleOpenActionsMenu(event, params.row.id)
+                        }
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                  },
                 ] as GridColDef<LayersGridRow>[]
               }
               onRowClick={({ row }) => {
@@ -547,6 +614,62 @@ export default function LayersList({
                 }
               }}
             />
+            <Menu
+              anchorEl={anchorEl}
+              open={actionsMenuOpen}
+              onClose={handleCloseActionsMenu}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MenuItem
+                onClick={handleOpenDeleteDialog}
+                data-layer-id={selectedLayerId ?? ""}
+              >
+                {t("common.delete")}
+              </MenuItem>
+            </Menu>
+            <DialogWrapper
+              fullWidth
+              open={isDeleteDialogOpen}
+              title={t("layers.deleteLayerConfirmTitle")}
+              onClose={handleCloseDeleteDialog}
+              actions={
+                <>
+                  <Button
+                    variant="text"
+                    onClick={handleCloseDeleteDialog}
+                    color="primary"
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={!isDeleteConfirmNameMatching}
+                    onClick={handleConfirmDelete}
+                    startIcon={<DeleteOutlineIcon />}
+                  >
+                    {t("common.delete")}
+                  </Button>
+                </>
+              }
+            >
+              <Typography>
+                {t("layers.deleteLayerConfirmMessage", {
+                  name: selectedLayer?.name ?? "",
+                })}
+              </Typography>
+              <TextField
+                fullWidth
+                autoComplete="off"
+                margin="normal"
+                label={t("layers.deleteLayerTypeNameLabel")}
+                helperText={t("layers.deleteLayerTypeNameHelper", {
+                  name: selectedLayer?.name ?? "",
+                })}
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+              />
+            </DialogWrapper>
           </Grid>
         </Page>
       )}

@@ -259,7 +259,7 @@ model Layer {
   metadata                    Metadata?          @relation(fields: [metadataId], references: [id])
   infoClickSettings           InfoClickSettings? @relation(fields: [infoClickSettingsId], references: [id])
   searchSettings              SearchSettings?    @relation(fields: [searchSettingsId], references: [id])
-  opacity                     Int                @default(1)
+  opacity                     Float              @default(1)
   maxZoom                     Int                @default(-1)
   minZoom                     Int                @default(-1)
   minMaxZoomAlertOnToggleOnly Boolean            @default(false)
