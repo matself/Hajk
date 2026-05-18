@@ -878,9 +878,11 @@ export default function ServiceSettings() {
         }
       >
         <Typography>
-          {t("services.deleteServiceConfirmMessage", {
-            name: service?.name ?? "",
-          })}
+          <Trans
+            i18nKey="services.deleteServiceConfirmMessage"
+            values={{ name: service?.name ?? "" }}
+            components={{ strong: <strong /> }}
+          />
         </Typography>
         {count > 0 ? (
           <Alert severity="warning" sx={{ mt: 2 }}>
@@ -896,9 +898,13 @@ export default function ServiceSettings() {
           autoComplete="off"
           margin="normal"
           label={t("services.deleteServiceTypeNameLabel")}
-          helperText={t("services.deleteServiceTypeNameHelper", {
-            name: service?.name ?? "",
-          })}
+          helperText={
+            <Trans
+              i18nKey="services.deleteServiceTypeNameHelper"
+              values={{ name: service?.name ?? "" }}
+              components={{ strong: <strong /> }}
+            />
+          }
           value={deleteConfirmName}
           onChange={(e) => setDeleteConfirmName(e.target.value)}
           disabled={isDeletingService}

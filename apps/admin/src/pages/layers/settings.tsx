@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router";
 import Page from "../../layouts/root/components/page";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Grid2 as Grid,
@@ -1973,18 +1973,24 @@ export default function LayerSettings() {
         }
       >
         <Typography>
-          {t("layers.deleteLayerConfirmMessage", {
-            name: layer?.name ?? "",
-          })}
+          <Trans
+            i18nKey="layers.deleteLayerConfirmMessage"
+            values={{ name: layer?.name ?? "" }}
+            components={{ strong: <strong /> }}
+          />
         </Typography>
         <TextField
           fullWidth
           autoComplete="off"
           margin="normal"
           label={t("layers.deleteLayerTypeNameLabel")}
-          helperText={t("layers.deleteLayerTypeNameHelper", {
-            name: layer?.name ?? "",
-          })}
+          helperText={
+            <Trans
+              i18nKey="layers.deleteLayerTypeNameHelper"
+              values={{ name: layer?.name ?? "" }}
+              components={{ strong: <strong /> }}
+            />
+          }
           value={deleteConfirmName}
           onChange={(e) => setDeleteConfirmName(e.target.value)}
         />

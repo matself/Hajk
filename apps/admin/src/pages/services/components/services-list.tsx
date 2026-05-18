@@ -696,9 +696,11 @@ export default function ServicesList({
                 }
               >
                 <Typography>
-                  {t("services.deleteServiceConfirmMessage", {
-                    name: selectedService?.name ?? "",
-                  })}
+                  <Trans
+                    i18nKey="services.deleteServiceConfirmMessage"
+                    values={{ name: selectedService?.name ?? "" }}
+                    components={{ strong: <strong /> }}
+                  />
                 </Typography>
                 {selectedServiceLayerCount > 0 ? (
                   <Alert severity="warning" sx={{ mt: 2 }}>
@@ -714,9 +716,13 @@ export default function ServicesList({
                   autoComplete="off"
                   margin="normal"
                   label={t("services.deleteServiceTypeNameLabel")}
-                  helperText={t("services.deleteServiceTypeNameHelper", {
-                    name: selectedService?.name ?? "",
-                  })}
+                  helperText={
+                    <Trans
+                      i18nKey="services.deleteServiceTypeNameHelper"
+                      values={{ name: selectedService?.name ?? "" }}
+                      components={{ strong: <strong /> }}
+                    />
+                  }
                   value={deleteConfirmName}
                   onChange={(e) => setDeleteConfirmName(e.target.value)}
                   disabled={isDeletingService}

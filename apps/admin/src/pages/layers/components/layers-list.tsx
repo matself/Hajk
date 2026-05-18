@@ -17,7 +17,7 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import {
   Layer,
@@ -654,18 +654,24 @@ export default function LayersList({
               }
             >
               <Typography>
-                {t("layers.deleteLayerConfirmMessage", {
-                  name: selectedLayer?.name ?? "",
-                })}
+                <Trans
+                  i18nKey="layers.deleteLayerConfirmMessage"
+                  values={{ name: selectedLayer?.name ?? "" }}
+                  components={{ strong: <strong /> }}
+                />
               </Typography>
               <TextField
                 fullWidth
                 autoComplete="off"
                 margin="normal"
                 label={t("layers.deleteLayerTypeNameLabel")}
-                helperText={t("layers.deleteLayerTypeNameHelper", {
-                  name: selectedLayer?.name ?? "",
-                })}
+                helperText={
+                  <Trans
+                    i18nKey="layers.deleteLayerTypeNameHelper"
+                    values={{ name: selectedLayer?.name ?? "" }}
+                    components={{ strong: <strong /> }}
+                  />
+                }
                 value={deleteConfirmName}
                 onChange={(e) => setDeleteConfirmName(e.target.value)}
               />
