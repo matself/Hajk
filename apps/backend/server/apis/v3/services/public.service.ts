@@ -8,6 +8,7 @@ import prisma from "../../../common/prisma.ts";
 // import { getUserRoles } from "../../../common/auth/get-user-roles.ts";
 // import { isAuthActive } from "../../../common/auth/is-auth-active.ts";
 import getAnalyticsOptionsFromDotEnv from "../utils/get-analytics-options-from-dotenv.ts";
+import { buildLegacyLayersConfigForMap } from "../utils/build-legacy-layers-config.ts";
 
 const logger = log4js.getLogger("service.v3.public");
 
@@ -52,8 +53,8 @@ class PublicService {
     // - mapConfig (with its own sub-properties)
     // - userSpecificMaps
 
-    // ** layersConfig **
-    // TODO: Implement layersConfig response.
+    // ** layersConfig ** — flat buckets + service fields in Hajk client shape
+    const layersConfig = await buildLegacyLayersConfigForMap(mapName);
 
     // ** mapConfig.analytics **
     // Ensure that we provide Analytics configuration from .env, if none exists in
@@ -82,7 +83,7 @@ class PublicService {
 
     return this.#useLegacyConfig
       ? {
-          layersConfig: {},
+          layersConfig,
           mapConfig: {
             analytics,
             map: theMap,
