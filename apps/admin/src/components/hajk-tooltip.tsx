@@ -2,9 +2,9 @@ import Tooltip from "@mui/material/Tooltip";
 import { ReactElement, ReactNode } from "react";
 
 interface Props {
-  title?: ReactNode; // Allow both string and Elements
-  children?: ReactElement;
-  [key: string]: unknown; // To allow any additional props
+  title?: ReactNode;
+  children?: ReactNode;
+  [key: string]: unknown;
 }
 
 const HajkTooltip = ({ title, children, ...rest }: Props) => {

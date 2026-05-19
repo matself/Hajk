@@ -41,6 +41,27 @@ function getOptionsRecord(options: Prisma.JsonValue): Record<string, unknown> {
   return {};
 }
 
+/** WFST edit-tool fields stored on `layer.options` (legacy `wfstlayers` shape). */
+function getWfstEditingFields(
+  optionsRec: Record<string, unknown>,
+): Record<string, unknown> {
+  return {
+    editPoint: optionsRec.editPoint === true,
+    editMultiPoint: optionsRec.editMultiPoint === true,
+    editLine: optionsRec.editLine === true,
+    editMultiLine: optionsRec.editMultiLine === true,
+    editPolygon: optionsRec.editPolygon === true,
+    editMultiPolygon: optionsRec.editMultiPolygon === true,
+    allowMultipleGeometries: optionsRec.allowMultiGeometries === true,
+    editableFields: Array.isArray(optionsRec.editableFields)
+      ? optionsRec.editableFields
+      : [],
+    nonEditableFields: Array.isArray(optionsRec.nonEditableFields)
+      ? optionsRec.nonEditableFields
+      : [],
+  };
+}
+
 function searchOutputToClient(fmt: string | undefined | null): string {
   switch (fmt) {
     case "GML2":
@@ -428,6 +449,9 @@ export async function buildLegacyLayersConfigForMap(
             : layer.zIndex !== 0
               ? layer.zIndex
               : null,
+        ...(bucket === "wfstlayers"
+          ? getWfstEditingFields(optionsRec)
+          : {}),
       };
 
       appendToBucket(bucket, out, vecEntry);
