@@ -22,6 +22,7 @@ import {
   Typography,
   styled,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -98,7 +99,9 @@ export default function LayerSettings() {
   const { data: layer, isLoading, isError } = useLayerById(layerId ?? "");
   const { mutateAsync: updateLayer, status: updateStatus } = useUpdateLayer();
   const { mutateAsync: createRoleOnLayer } = useCreateAndUpdateRoleOnLayer();
-  const { mutateAsync: deleteLayer } = useDeleteLayer(fromService ?? "");
+  const { mutateAsync: removeLayer, isPending: isDeletingLayer } = useDeleteLayer(
+    layer?.serviceId ?? fromService ?? "",
+  );
   const queryClient = useQueryClient();
   const { palette } = useTheme();
   const { data: services } = useServices();
@@ -114,7 +117,7 @@ export default function LayerSettings() {
   const handleCancelNewLayer =
     fromService && layerId
       ? async () => {
-          await deleteLayer(layerId);
+          await removeLayer(layerId);
           void navigate(`/services/${fromService}?tab=layers`);
         }
       : undefined;
@@ -122,6 +125,7 @@ export default function LayerSettings() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isDeletingLayer) return;
     event.preventDefault();
     event.stopPropagation();
     setDeleteConfirmName("");
@@ -129,6 +133,7 @@ export default function LayerSettings() {
   };
 
   const handleCloseDeleteDialog = () => {
+    if (isDeletingLayer) return;
     setIsDeleteDialogOpen(false);
     setDeleteConfirmName("");
   };
@@ -136,9 +141,35 @@ export default function LayerSettings() {
   const isDeleteConfirmNameMatching =
     Boolean(layer?.name) && deleteConfirmName === layer?.name;
 
-  const handleConfirmDelete = () => {
-    if (!layer?.id || !isDeleteConfirmNameMatching) return;
-    handleCloseDeleteDialog();
+  const getLayersListPath = (type: SERVICE_TYPE | undefined) => {
+    if (type === SERVICE_TYPE.WFS) return "/search-layers";
+    if (type === SERVICE_TYPE.WFST) return "/editing-layers";
+    return "/display-layers";
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!layer?.id || !layer.name || !isDeleteConfirmNameMatching) return;
+    try {
+      await removeLayer(layer.id);
+      toast.success(t("layers.deleteLayerSuccess", { name: layer.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      handleCloseDeleteDialog();
+      if (fromService) {
+        void navigate(`/services/${fromService}?tab=layers`);
+      } else {
+        void navigate(getLayersListPath(service?.type));
+      }
+    } catch (error) {
+      console.error("Failed to delete layer:", error);
+      toast.error(t("layers.deleteLayerFailed", { name: layer.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
   };
   const [activeTab, setActiveTab] = useState<
     "general" | "display" | "metadata" | "infoclick" | "layers" | "maps"
@@ -793,30 +824,6 @@ export default function LayerSettings() {
       });
     }
   };
-  // TODO?: Add delete layer
-  /*
-  const handleDeleteLayer = async () => {
-    if (!isLoading && layer?.id) {
-      try {
-        await deleteLayer(layer.id ?? "");
-        toast.success(t("layers.deleteLayerSuccess", { name: layer?.name }), {
-          position: "bottom-left",
-          theme: palette.mode,
-          hideProgressBar: true,
-        });
-      } catch (error) {
-        console.log(error);
-        toast.error(t("layers.deleteLayerFailed", { name: layer?.name }), {
-          position: "bottom-left",
-          theme: palette.mode,
-          hideProgressBar: true,
-        });
-      }
-    } else {
-      console.log("Layer data is still loading or unavailable.");
-    }
-  };
-  */
   // removed createOnSubmitHandler; handled inline in FormContainer onSubmit
 
   if (isLoading) {
@@ -1957,15 +1964,24 @@ export default function LayerSettings() {
               variant="text"
               onClick={handleCloseDeleteDialog}
               color="primary"
+              disabled={isDeletingLayer}
             >
               {t("common.cancel")}
             </Button>
             <Button
               variant="contained"
               color="error"
-              disabled={!isDeleteConfirmNameMatching}
-              onClick={handleConfirmDelete}
-              startIcon={<DeleteOutlineIcon />}
+              disabled={isDeletingLayer || !isDeleteConfirmNameMatching}
+              onClick={() => {
+                void handleConfirmDelete();
+              }}
+              startIcon={
+                isDeletingLayer ? (
+                  <CircularProgress color="inherit" size={18} />
+                ) : (
+                  <DeleteOutlineIcon />
+                )
+              }
             >
               {t("common.delete")}
             </Button>
@@ -1993,6 +2009,7 @@ export default function LayerSettings() {
           }
           value={deleteConfirmName}
           onChange={(e) => setDeleteConfirmName(e.target.value)}
+          disabled={isDeletingLayer}
         />
       </DialogWrapper>
     </Page>

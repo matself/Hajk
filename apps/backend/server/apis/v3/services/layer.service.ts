@@ -4,6 +4,9 @@ import { ServiceType } from "@prisma/client";
 import log4js from "log4js";
 
 import prisma from "../../../common/prisma.ts";
+import { HajkError } from "../../../common/classes.ts";
+import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
+import HttpStatusCodes from "../../../common/http-status-codes.ts";
 
 const logger = log4js.getLogger("service.v3.layer");
 
@@ -145,36 +148,58 @@ class LayerService {
     transaction: Prisma.TransactionClient,
     id: string
   ) {
-    await transaction.layerInstance.deleteMany({ where: { layerId: id } });
-
-    const layer = await transaction.layer.findUnique({
-      where: { id },
+    const layer = await transaction.layer.findFirst({
+      where: { id, deletedAt: null },
       select: {
-        metadata: true,
-        searchSettings: true,
-        infoClickSettings: true,
+        id: true,
+        metadataId: true,
+        searchSettingsId: true,
+        infoClickSettingsId: true,
       },
     });
 
-    if (layer?.metadata) {
-      await transaction.metadata.delete({
-        where: { id: layer.metadata.id },
+    if (!layer) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `No layer with id: ${id} could be found.`,
+        HajkStatusCodes.UNKNOWN_LAYER_ID
+      );
+    }
+
+    await transaction.layerInstance.deleteMany({ where: { layerId: id } });
+
+    await transaction.roleOnLayer.deleteMany({ where: { layerId: id } });
+
+    const deletedAt = new Date();
+
+    await transaction.layer.updateMany({
+      where: { id, deletedAt: null },
+      data: {
+        deletedAt,
+        lastSavedDate: deletedAt,
+        metadataId: null,
+        searchSettingsId: null,
+        infoClickSettingsId: null,
+      },
+    });
+
+    if (layer.metadataId) {
+      await transaction.metadata.deleteMany({
+        where: { id: layer.metadataId },
       });
     }
 
-    if (layer?.searchSettings) {
-      await transaction.searchSettings.delete({
-        where: { id: layer.searchSettings.id },
+    if (layer.searchSettingsId) {
+      await transaction.searchSettings.deleteMany({
+        where: { id: layer.searchSettingsId },
       });
     }
 
-    if (layer?.infoClickSettings) {
-      await transaction.infoClickSettings.delete({
-        where: { id: layer.infoClickSettings.id },
+    if (layer.infoClickSettingsId) {
+      await transaction.infoClickSettings.deleteMany({
+        where: { id: layer.infoClickSettingsId },
       });
     }
-
-    await transaction.layer.delete({ where: { id } });
   }
 
   async getUsageByLayerId(id: string) {

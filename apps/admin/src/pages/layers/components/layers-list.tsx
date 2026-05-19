@@ -13,6 +13,7 @@ import {
   MenuItem,
   IconButton,
   Menu,
+  CircularProgress,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -24,6 +25,7 @@ import {
   useLayers,
   LayerCreateInput,
   useCreateLayer,
+  useDeleteLayer,
 } from "../../../api/layers";
 import {
   useServices,
@@ -89,6 +91,8 @@ export default function LayersList({
     () => layers?.find((layer) => layer.id === selectedLayerId),
     [layers, selectedLayerId],
   );
+  const { mutateAsync: removeLayer, isPending: isDeletingLayer } =
+    useDeleteLayer(selectedLayer?.serviceId ?? "");
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -113,6 +117,7 @@ export default function LayersList({
   };
 
   const handleCloseDeleteDialog = () => {
+    if (isDeletingLayer) return;
     setIsDeleteDialogOpen(false);
     setSelectedLayerId(null);
     setDeleteConfirmName("");
@@ -121,9 +126,32 @@ export default function LayersList({
   const isDeleteConfirmNameMatching =
     Boolean(selectedLayer?.name) && deleteConfirmName === selectedLayer?.name;
 
-  const handleConfirmDelete = () => {
-    if (!selectedLayerId || !isDeleteConfirmNameMatching) return;
-    handleCloseDeleteDialog();
+  const handleConfirmDelete = async () => {
+    if (!selectedLayerId || !selectedLayer || !isDeleteConfirmNameMatching) {
+      return;
+    }
+    try {
+      await removeLayer(selectedLayerId);
+      toast.success(
+        t("layers.deleteLayerSuccess", { name: selectedLayer.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete layer:", error);
+      toast.error(
+        t("layers.deleteLayerFailed", { name: selectedLayer.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+    }
   };
 
   const serviceUrlOptions = useMemo(() => {
@@ -623,6 +651,7 @@ export default function LayersList({
               <MenuItem
                 onClick={handleOpenDeleteDialog}
                 data-layer-id={selectedLayerId ?? ""}
+                disabled={isDeletingLayer}
               >
                 {t("common.delete")}
               </MenuItem>
@@ -638,15 +667,24 @@ export default function LayersList({
                     variant="text"
                     onClick={handleCloseDeleteDialog}
                     color="primary"
+                    disabled={isDeletingLayer}
                   >
                     {t("common.cancel")}
                   </Button>
                   <Button
                     variant="contained"
                     color="error"
-                    disabled={!isDeleteConfirmNameMatching}
-                    onClick={handleConfirmDelete}
-                    startIcon={<DeleteOutlineIcon />}
+                    disabled={isDeletingLayer || !isDeleteConfirmNameMatching}
+                    onClick={() => {
+                      void handleConfirmDelete();
+                    }}
+                    startIcon={
+                      isDeletingLayer ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : (
+                        <DeleteOutlineIcon />
+                      )
+                    }
                   >
                     {t("common.delete")}
                   </Button>
@@ -674,6 +712,7 @@ export default function LayersList({
                 }
                 value={deleteConfirmName}
                 onChange={(e) => setDeleteConfirmName(e.target.value)}
+                disabled={isDeletingLayer}
               />
             </DialogWrapper>
           </Grid>
