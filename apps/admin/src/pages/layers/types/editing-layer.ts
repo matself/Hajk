@@ -80,7 +80,9 @@ export function mergeDescribeWithSavedFields(
         alias: saved?.alias ?? p.name,
         description: saved?.description ?? "",
         dataType: saved?.dataType ?? p.localType,
-        textType: saved?.textType ?? defaultTextType(p.localType),
+        textType: normalizeTextType(
+          saved?.textType ?? defaultTextType(p.localType),
+        ),
         values: saved?.values ?? null,
         hidden: saved?.hidden ?? false,
         defaultValue: saved?.defaultValue ?? "",
@@ -89,12 +91,27 @@ export function mergeDescribeWithSavedFields(
     });
 }
 
-function defaultTextType(localType: string): string | null {
+const TEXT_TYPE_ALIASES: Record<string, string> = {
+  text: "fritext",
+  "Positiva heltal": "positive",
+  date: "datum",
+  "date-time": "datumtid",
+};
+
+/** Maps legacy/admin textType values to the canonical option values. */
+export function normalizeTextType(
+  textType: string | null | undefined,
+): string | null {
+  if (!textType) return textType ?? null;
+  return TEXT_TYPE_ALIASES[textType] ?? textType;
+}
+
+export function defaultTextType(localType: string): string | null {
   switch (localType) {
     case "date":
-      return "date";
+      return "datum";
     case "date-time":
-      return "date-time";
+      return "datumtid";
     case "int":
     case "integer":
       return "heltal";
@@ -104,7 +121,7 @@ function defaultTextType(localType: string): string | null {
     case "boolean":
       return "boolean";
     default:
-      return "text";
+      return "fritext";
   }
 }
 

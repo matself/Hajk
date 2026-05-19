@@ -50,42 +50,50 @@ interface EditingLayerSettingsProps {
   ) => void;
 }
 
+const STRING_INPUT_TYPES = [
+  { value: "fritext", labelKey: "layers.editing.textType.text" },
+  { value: "datum", labelKey: "layers.editing.textType.dateInput" },
+  { value: "lista", labelKey: "layers.editing.textType.list" },
+  { value: "flerval", labelKey: "layers.editing.textType.multiSelect" },
+  { value: "url", labelKey: "layers.editing.textType.url" },
+] as const;
+
+const INTEGER_INPUT_TYPES = [
+  { value: "heltal", labelKey: "layers.editing.textType.integer" },
+  { value: "positive", labelKey: "layers.editing.textType.positiveInteger" },
+  { value: "negative", labelKey: "layers.editing.textType.negativeInteger" },
+  { value: "boolean", labelKey: "layers.editing.textType.trueFalse" },
+] as const;
+
+const NUMBER_INPUT_TYPES = [
+  { value: "tal", labelKey: "layers.editing.textType.number" },
+  ...INTEGER_INPUT_TYPES,
+] as const;
+
 const TEXT_TYPE_OPTIONS: Record<string, { value: string; labelKey: string }[]> =
   {
-    string: [
-      { value: "text", labelKey: "layers.editing.textType.text" },
-      { value: "lista", labelKey: "layers.editing.textType.list" },
-    ],
-    int: [
-      { value: "heltal", labelKey: "layers.editing.textType.integer" },
-      {
-        value: "Positiva heltal",
-        labelKey: "layers.editing.textType.positiveInteger",
-      },
-    ],
-    integer: [
-      { value: "heltal", labelKey: "layers.editing.textType.integer" },
-      {
-        value: "Positiva heltal",
-        labelKey: "layers.editing.textType.positiveInteger",
-      },
-    ],
-    number: [
-      { value: "tal", labelKey: "layers.editing.textType.number" },
-      { value: "heltal", labelKey: "layers.editing.textType.integer" },
-    ],
-    decimal: [{ value: "tal", labelKey: "layers.editing.textType.number" }],
+    string: [...STRING_INPUT_TYPES],
+    int: [...INTEGER_INPUT_TYPES],
+    integer: [...INTEGER_INPUT_TYPES],
+    number: [...NUMBER_INPUT_TYPES],
+    decimal: [...NUMBER_INPUT_TYPES],
     boolean: [
       { value: "boolean", labelKey: "layers.editing.textType.boolean" },
     ],
-    date: [{ value: "date", labelKey: "layers.editing.textType.date" }],
+    date: [{ value: "datum", labelKey: "layers.editing.textType.date" }],
     "date-time": [
-      { value: "date-time", labelKey: "layers.editing.textType.dateTime" },
+      { value: "datumtid", labelKey: "layers.editing.textType.dateTime" },
+      { value: "datum", labelKey: "layers.editing.textType.date" },
     ],
   };
 
 function textTypeOptionsFor(localType: string) {
   return TEXT_TYPE_OPTIONS[localType] ?? TEXT_TYPE_OPTIONS.string;
+}
+
+function textTypeSelectValue(row: EditingFieldRow): string {
+  if (row.textType) return row.textType;
+  return textTypeOptionsFor(row.localType)[0]?.value ?? "fritext";
 }
 
 function splitRows(rows: EditingFieldRow[]) {
@@ -528,7 +536,7 @@ export default function EditingLayerSettings({
                         </InputLabel>
                         <Select
                           label={t("layers.editing.col.inputType")}
-                          value={row.textType ?? "text"}
+                          value={textTypeSelectValue(row)}
                           onChange={(e) =>
                             updateDraftFieldRow(rowIndex, {
                               textType: e.target.value,
