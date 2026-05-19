@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { createElement, useCallback } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { withFieldHelp } from "../../components/form-components/field-label-with-help";
+import { FieldLabelWithHelp } from "../../components/form-components/field-help-tooltip";
 
 export type LayerFieldLabelFn = (
   labelKey: string,
@@ -24,13 +24,19 @@ export function useLayerFieldLabels(): LayerFieldLabelsResult {
 
   const fieldLabel = useCallback<LayerFieldLabelFn>(
     (labelKey, helpKey) =>
-      withFieldHelp(translate(labelKey), translate(helpKey)),
+      createElement(FieldLabelWithHelp, {
+        label: translate(labelKey),
+        help: translate(helpKey),
+      }),
     [translate],
   );
 
   const selectLabel = useCallback(
     (labelKey: string, helpKey: string) => ({
-      label: withFieldHelp(translate(labelKey), translate(helpKey)),
+      label: createElement(FieldLabelWithHelp, {
+        label: translate(labelKey),
+        help: translate(helpKey),
+      }),
     }),
     [translate],
   );

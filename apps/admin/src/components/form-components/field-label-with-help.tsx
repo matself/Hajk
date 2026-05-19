@@ -1,44 +1,8 @@
 import type { ReactNode } from "react";
 import { useId } from "react";
 import { Box, TextField, type TextFieldProps } from "@mui/material";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useTranslation } from "react-i18next";
-import HajkTooltip from "../hajk-tooltip";
-
-export function FieldHelpTooltip({ title }: { title: string }) {
-  return (
-    <HajkTooltip title={title}>
-      <Box
-        component="span"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          verticalAlign: "middle",
-          ml: 0.5,
-          color: "text.secondary",
-          cursor: "help",
-        }}
-        aria-label={title}
-        onMouseDown={(e) => e.preventDefault()}
-      >
-        <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-      </Box>
-    </HajkTooltip>
-  );
-}
-
-/** Appends an info tooltip to a field label (checkbox labels, table headers). */
-export function withFieldHelp(label: ReactNode, help: string): ReactNode {
-  return (
-    <Box
-      component="span"
-      sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}
-    >
-      {label}
-      <FieldHelpTooltip title={help} />
-    </Box>
-  );
-}
+import { FieldHelpTooltip, FieldLabelWithHelp } from "./field-help-tooltip";
 
 /** Checkbox / table label with help (avoids floating MUI label issues). */
 export function InlineLabelWithHelp({
@@ -47,8 +11,8 @@ export function InlineLabelWithHelp({
 }: {
   label: string;
   help: string;
-}): ReactNode {
-  return withFieldHelp(label, help);
+}) {
+  return <FieldLabelWithHelp label={label} help={help} />;
 }
 
 /** Label row always shown above the input so the help icon is hoverable before focus. */
