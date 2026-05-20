@@ -711,8 +711,10 @@ class AppModel {
 
         if (layer.hasLabelStyle === true) {
           layerItem.layer.set("hasLabelStyle", true);
+          // Store the layername so we can access it before wms layer changes
+          // ex when switching labels
+          layerItem.layer.set("wmsLayerName", layer.layers?.[0] || layer.name); // ← Store it!
 
-          // Store initialStyles immediately when layer is created
           const source = layerItem.layer.getSource();
           if (source && source.getParams) {
             const params = source.getParams();
@@ -1376,32 +1378,6 @@ class AppModel {
           // Each layer has a listener that will take care of toggling
           // the checkbox in LayerSwitcher.
           olLayer.setVisible(true);
-
-          // Apply WMS params after React renders LayerItem
-          setTimeout(() => {
-            if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
-              const source = olLayer.getSource?.();
-
-              if (source && typeof source.updateParams === "function") {
-                // Get the layer config to find the WMS layer name
-                const layerConfig = this.layers?.find((l) => l.id === baseId);
-
-                if (layerConfig) {
-                  // Get the actual WMS layer name from config
-                  const layerName =
-                    layerConfig.layers?.[0] || layerConfig.name || baseId;
-
-                  const params = source.getParams?.() || {};
-
-                  source.updateParams({
-                    ...params,
-                    LAYERS: layerName,
-                    STYLES: `${layerName}_labels`,
-                  });
-                }
-              }
-            }
-          }, 100);
         }
       });
 

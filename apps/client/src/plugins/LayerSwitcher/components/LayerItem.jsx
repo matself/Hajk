@@ -136,7 +136,9 @@ function LayerItem({
     if (!source || typeof source.updateParams !== "function") return;
 
     const currentParams = source.getParams?.() || {};
-    const layerName = currentParams.LAYERS;
+
+    // Get stored layer name
+    const layerName = olLayer.get("wmsLayerName") || currentParams.LAYERS;
 
     if (!layerName) return;
 
@@ -145,6 +147,7 @@ function LayerItem({
 
     source.updateParams({
       ...currentParams,
+      LAYERS: layerName,
       STYLES: isActive ? `${layerName}_labels` : baseStyle,
     });
   }, [olLayer, layerId]);
