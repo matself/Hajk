@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   CircularProgress,
   FormControl,
   FormControlLabel,
@@ -12,6 +13,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +23,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { fetchDescribeFeatureType } from "../../../api/services/describe-feature-type";
@@ -34,6 +37,32 @@ import {
 } from "../types/editing-layer";
 import type { EditableFieldConfig } from "../types/editing-layer";
 import { useLayerFieldLabels } from "../use-layer-field-labels";
+
+const GEOMETRY_TYPE_ROW_CONFIG: {
+  field: keyof EditingGeometryTypes;
+  labelKey:
+    | "layers.editing.geometry.point"
+    | "layers.editing.geometry.multipoint"
+    | "layers.editing.geometry.line"
+    | "layers.editing.geometry.multiline"
+    | "layers.editing.geometry.polygon"
+    | "layers.editing.geometry.multipolygon"
+    | "layers.editing.allowMultiGeometries";
+}[] = [
+  { field: "editPoint", labelKey: "layers.editing.geometry.point" },
+  { field: "editMultiPoint", labelKey: "layers.editing.geometry.multipoint" },
+  { field: "editLine", labelKey: "layers.editing.geometry.line" },
+  { field: "editMultiLine", labelKey: "layers.editing.geometry.multiline" },
+  { field: "editPolygon", labelKey: "layers.editing.geometry.polygon" },
+  {
+    field: "editMultiPolygon",
+    labelKey: "layers.editing.geometry.multipolygon",
+  },
+  {
+    field: "allowMultiGeometries",
+    labelKey: "layers.editing.allowMultiGeometries",
+  },
+];
 
 interface EditingLayerSettingsProps {
   serviceUrl: string;
@@ -112,6 +141,80 @@ function splitRows(rows: EditingFieldRow[]) {
     editableFields: rows.filter((r) => r.editable).map(mapRow),
     nonEditableFields: rows.filter((r) => !r.editable).map(mapRow),
   };
+}
+
+function ListValuesCell({
+  row,
+  rowIndex,
+  onPatch,
+}: {
+  row: EditingFieldRow;
+  rowIndex: number;
+  onPatch: (index: number, patch: Partial<EditingFieldRow>) => void;
+}) {
+  const { t } = useTranslation();
+  const [input, setInput] = useState("");
+  const list = row.values ?? [];
+
+  const commitValue = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    if (list.includes(trimmed)) {
+      setInput("");
+      return;
+    }
+    onPatch(rowIndex, { values: [...list, trimmed] });
+    setInput("");
+  };
+
+  return (
+    <Box sx={{ minWidth: 160, maxWidth: 280 }}>
+      <Stack spacing={1}>
+        <TextField
+          size="small"
+          fullWidth
+          placeholder={String(
+            t("layers.editing.listValueAddPlaceholder" as never),
+          )}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitValue();
+            }
+          }}
+        />
+        {list.length > 0 ? (
+          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5}>
+            {list.map((v, valueIdx) => (
+              <Chip
+                key={`${rowIndex}-${valueIdx}`}
+                label={v}
+                size="small"
+                variant="outlined"
+                color="primary"
+                deleteIcon={
+                  <CloseRoundedIcon
+                    fontSize="small"
+                    aria-label={String(
+                      t("layers.editing.listValueRemoveAria" as never, {
+                        value: v,
+                      }),
+                    )}
+                  />
+                }
+                onDelete={() => {
+                  const next = list.filter((_, j) => j !== valueIdx);
+                  onPatch(rowIndex, { values: next.length > 0 ? next : null });
+                }}
+              />
+            ))}
+          </Stack>
+        ) : null}
+      </Stack>
+    </Box>
+  );
 }
 
 export default function EditingLayerSettings({
@@ -216,6 +319,29 @@ export default function EditingLayerSettings({
             <Typography variant="subtitle2" gutterBottom>
               {t("layers.editing.geometryTypes")}
             </Typography>
+            <Box sx={{ mb: 2 }}>
+              {GEOMETRY_TYPE_ROW_CONFIG.filter(
+                ({ field }) => geometryTypes[field],
+              ).length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  {t("layers.editing.geometryTypesNone")}
+                </Typography>
+              ) : (
+                <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+                  {GEOMETRY_TYPE_ROW_CONFIG.filter(
+                    ({ field }) => geometryTypes[field],
+                  ).map(({ field, labelKey }) => (
+                    <Chip
+                      key={field}
+                      size="small"
+                      label={String(t(labelKey as never))}
+                      variant="outlined"
+                      color="primary"
+                    />
+                  ))}
+                </Stack>
+              )}
+            </Box>
             <FormGroup>
               <FormControlLabel
                 control={
@@ -475,6 +601,12 @@ export default function EditingLayerSettings({
                   </TableCell>
                   <TableCell>
                     {fieldLabel(
+                      "layers.editing.col.listValues",
+                      "layers.help.editingColListValues",
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {fieldLabel(
                       "layers.editing.col.defaultValue",
                       "layers.help.editingColDefaultValue",
                     )}
@@ -553,7 +685,14 @@ export default function EditingLayerSettings({
                       </FormControl>
                     </TableCell>
                     <TableCell>{row.localType}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ verticalAlign: "top", py: 1 }}>
+                      <ListValuesCell
+                        row={row}
+                        rowIndex={rowIndex}
+                        onPatch={updateDraftFieldRow}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ verticalAlign: "top", py: 1 }}>
                       <TextField
                         size="small"
                         value={row.defaultValue ?? ""}

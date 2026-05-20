@@ -308,6 +308,7 @@ export default function LayerSettings() {
   // Reset form with layer data when it loads
   useEffect(() => {
     if (layer) {
+      const savedGeometry = geometryTypesFromOptions(layer.options);
       reset({
         name: layer.name ?? "",
         serviceId: layer.serviceId ?? "",
@@ -373,6 +374,13 @@ export default function LayerSettings() {
           geoWebCache: layer.options?.geoWebCache ?? false,
           showAttributeTableButton:
             layer.options?.showAttributeTableButton ?? false,
+          editPoint: savedGeometry.editPoint,
+          editMultiPoint: savedGeometry.editMultiPoint,
+          editLine: savedGeometry.editLine,
+          editMultiLine: savedGeometry.editMultiLine,
+          editPolygon: savedGeometry.editPolygon,
+          editMultiPolygon: savedGeometry.editMultiPolygon,
+          allowMultiGeometries: savedGeometry.allowMultiGeometries,
         },
       });
     }
@@ -922,6 +930,14 @@ export default function LayerSettings() {
               geoWebCache: layerData.options?.geoWebCache,
               showAttributeTableButton:
                 layerData.options?.showAttributeTableButton,
+              editPoint: editingGeometryTypes.editPoint,
+              editMultiPoint: editingGeometryTypes.editMultiPoint,
+              editLine: editingGeometryTypes.editLine,
+              editMultiLine: editingGeometryTypes.editMultiLine,
+              editPolygon: editingGeometryTypes.editPolygon,
+              editMultiPolygon: editingGeometryTypes.editMultiPolygon,
+              allowMultiGeometries:
+                editingGeometryTypes.allowMultiGeometries,
             },
           },
           {
@@ -2068,8 +2084,20 @@ export default function LayerSettings() {
                   geometryTypes={editingGeometryTypes}
                   onGeometryTypesChange={(types) => {
                     setEditingGeometryTypes(types);
-                    setValue("options.editPoint", types.editPoint, {
-                      shouldDirty: true,
+                    (
+                      [
+                        "editPoint",
+                        "editMultiPoint",
+                        "editLine",
+                        "editMultiLine",
+                        "editPolygon",
+                        "editMultiPolygon",
+                        "allowMultiGeometries",
+                      ] as const satisfies readonly (keyof EditingGeometryTypes)[]
+                    ).forEach((key) => {
+                      setValue(`options.${key}`, types[key], {
+                        shouldDirty: true,
+                      });
                     });
                   }}
                   savedEditableFields={editingEditableFields}
@@ -2078,6 +2106,9 @@ export default function LayerSettings() {
                     setEditingEditableFields(editable);
                     setEditingNonEditableFields(nonEditable);
                     setValue("options.editableFields", editable, {
+                      shouldDirty: true,
+                    });
+                    setValue("options.nonEditableFields", nonEditable, {
                       shouldDirty: true,
                     });
                   }}
