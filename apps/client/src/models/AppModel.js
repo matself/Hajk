@@ -711,6 +711,15 @@ class AppModel {
 
         if (layer.hasLabelStyle === true) {
           layerItem.layer.set("hasLabelStyle", true);
+          // Store the layername so we can access it before wms layer changes
+          // ex when switching labels
+          layerItem.layer.set("wmsLayerName", layer.layers?.[0] || layer.name); // ← Store it!
+
+          const source = layerItem.layer.getSource();
+          if (source && source.getParams) {
+            const params = source.getParams();
+            layerItem.layer.set("initialStyles", params.STYLES || "");
+          }
         }
 
         // Check if we should load the label layer for this layer
@@ -1359,15 +1368,16 @@ class AppModel {
           // That's it for group layer. The other layers, the "normal"
           // ones, are easier: just show them.
         } else {
-          // Each layer has a listener that will take care of toggling
-          // the checkbox in LayerSwitcher.
-          olLayer.setVisible(true);
-
+          // Set label state before making it visible
           if (hasLabelSuffix && olLayer.get("hasLabelStyle")) {
             olLayer.set("useLabelStyle", true);
           } else {
             olLayer.set("useLabelStyle", false);
           }
+
+          // Each layer has a listener that will take care of toggling
+          // the checkbox in LayerSwitcher.
+          olLayer.setVisible(true);
         }
       });
 
