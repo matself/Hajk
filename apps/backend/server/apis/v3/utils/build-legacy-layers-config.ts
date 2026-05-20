@@ -35,7 +35,11 @@ const emptyBuckets = (): HajkLegacyLayersConfigDocument => ({
 });
 
 function getOptionsRecord(options: Prisma.JsonValue): Record<string, unknown> {
-  if (options !== null && typeof options === "object" && !Array.isArray(options)) {
+  if (
+    options !== null &&
+    typeof options === "object" &&
+    !Array.isArray(options)
+  ) {
     return options as Record<string, unknown>;
   }
   return {};
@@ -43,7 +47,7 @@ function getOptionsRecord(options: Prisma.JsonValue): Record<string, unknown> {
 
 /** WFST edit-tool fields stored on `layer.options` (legacy `wfstlayers` shape). */
 function getWfstEditingFields(
-  optionsRec: Record<string, unknown>,
+  optionsRec: Record<string, unknown>
 ): Record<string, unknown> {
   return {
     editPoint: optionsRec.editPoint === true,
@@ -76,18 +80,16 @@ function searchOutputToClient(fmt: string | undefined | null): string {
 
 function buildLayersInfoArray(
   selectedLayers: string[],
-  options: Prisma.JsonValue,
-): Array<Record<string, unknown>> {
+  options: Prisma.JsonValue
+): Record<string, unknown>[] {
   const opts = getOptionsRecord(options);
   const raw = opts.layersInfo;
   if (Array.isArray(raw)) {
-    return raw as Array<Record<string, unknown>>;
+    return raw as Record<string, unknown>[];
   }
 
   const rec =
-    raw !== null &&
-    typeof raw === "object" &&
-    !Array.isArray(raw)
+    raw !== null && typeof raw === "object" && !Array.isArray(raw)
       ? (raw as Record<string, Record<string, unknown>>)
       : {};
 
@@ -106,8 +108,7 @@ function buildLayersInfoArray(
       legendIcon: typeof row.legendIcon === "string" ? row.legendIcon : "",
       infobox,
       style: typeof row.style === "string" ? row.style : "",
-      queryable:
-        typeof row.queryable === "boolean" ? row.queryable : false,
+      queryable: typeof row.queryable === "boolean" ? row.queryable : false,
       infoclickIcon:
         typeof row.infoclickIcon === "string" ? row.infoclickIcon : "",
       searchDisplayName: row.searchDisplayName,
@@ -150,7 +151,7 @@ function getWmtsOptions(options: Prisma.JsonValue): {
 }
 
 export async function buildLegacyLayersConfigForMap(
-  mapName: string,
+  mapName: string
 ): Promise<HajkLegacyLayersConfigDocument> {
   const instances = await prisma.layerInstance.findMany({
     where: {
@@ -201,7 +202,7 @@ export async function buildLegacyLayersConfigForMap(
     const bucket = toClientLayerBucket(service.type);
     if (!bucket) {
       logger.warn(
-        `Layer instance "${inst.id}": unknown service.type "${String(service.type)}" — skipped.`,
+        `Layer instance "${inst.id}": unknown service.type "${String(service.type)}" — skipped.`
       );
       continue;
     }
@@ -209,7 +210,7 @@ export async function buildLegacyLayersConfigForMap(
     const selected = layer.selectedLayers ?? [];
     if (selected.length === 0 && bucket !== "arcgislayers") {
       logger.warn(
-        `Layer instance "${inst.id}" (layer "${layer.name}") has empty selectedLayers — skipped.`,
+        `Layer instance "${inst.id}" (layer "${layer.name}") has empty selectedLayers — skipped.`
       );
       continue;
     }
@@ -219,7 +220,8 @@ export async function buildLegacyLayersConfigForMap(
     const infClick = layer.infoClickSettings;
 
     const optionsRec = getOptionsRecord(layer.options);
-    const wmtsExtras = bucket === "wmtslayers" ? getWmtsOptions(layer.options) : null;
+    const wmtsExtras =
+      bucket === "wmtslayers" ? getWmtsOptions(layer.options) : null;
 
     const baseId = inst.id;
 
@@ -252,9 +254,7 @@ export async function buildLegacyLayersConfigForMap(
         url: svc.url,
         customGetMapUrl: svc.customGetMapUrl ?? "",
         owner: metadata?.owner ?? "",
-        date: layer.lastSavedDate
-          ? String(layer.lastSavedDate.getTime())
-          : "",
+        date: layer.lastSavedDate ? String(layer.lastSavedDate.getTime()) : "",
         content: "",
         legend: "",
         legendIcon: layer.legendIconUrl ?? "",
@@ -296,8 +296,7 @@ export async function buildLegacyLayersConfigForMap(
         searchPropertyName: search?.searchFields?.join(",") ?? "",
         searchDisplayName: search?.primaryDisplayFields?.join(",") ?? "",
         searchShortDisplayName: search?.shortDisplayFields?.join(",") ?? "",
-        secondaryLabelFields:
-          search?.secondaryDisplayFields?.join(",") ?? "",
+        secondaryLabelFields: search?.secondaryDisplayFields?.join(",") ?? "",
         searchOutputFormat: search?.active
           ? searchOutputToClient(search.outputFormat)
           : "",
@@ -322,8 +321,10 @@ export async function buildLegacyLayersConfigForMap(
           typeof optionsRec.showAttributeTableButton === "boolean"
             ? optionsRec.showAttributeTableButton
             : false,
-        keyword: typeof optionsRec.keyword === "string" ? optionsRec.keyword : "",
-        category: typeof optionsRec.category === "string" ? optionsRec.category : "",
+        keyword:
+          typeof optionsRec.keyword === "string" ? optionsRec.keyword : "",
+        category:
+          typeof optionsRec.category === "string" ? optionsRec.category : "",
         layerDisplayDescription:
           typeof optionsRec.layerDisplayDescription === "string"
             ? optionsRec.layerDisplayDescription
@@ -403,12 +404,12 @@ export async function buildLegacyLayersConfigForMap(
             : dataFormat,
         searchFields:
           bucket === "wfslayers"
-            ? (search?.active ? (search.searchFields ?? []) : [])
+            ? search?.active
+              ? (search.searchFields ?? [])
+              : []
             : [],
         aliasDict:
-          typeof optionsRec.aliasDict === "string"
-            ? optionsRec.aliasDict
-            : "",
+          typeof optionsRec.aliasDict === "string" ? optionsRec.aliasDict : "",
         infobox:
           infClick?.definition ??
           (typeof optionsRec.infoboxSummary === "string"
@@ -426,7 +427,8 @@ export async function buildLegacyLayersConfigForMap(
         infoClickSortType: infClick?.sortMethod ?? "text",
         infoClickSortDesc: infClick?.sortDescending ?? false,
         infoClickSortProperty: infClick?.sortProperty ?? "",
-        content: typeof optionsRec.content === "string" ? optionsRec.content : "",
+        content:
+          typeof optionsRec.content === "string" ? optionsRec.content : "",
         extent: Array.isArray(optionsRec.extent) ? optionsRec.extent : [],
         legend: layer.legendUrl ?? "",
         legendIcon: layer.legendIconUrl ?? "",
@@ -449,9 +451,7 @@ export async function buildLegacyLayersConfigForMap(
             : layer.zIndex !== 0
               ? layer.zIndex
               : null,
-        ...(bucket === "wfstlayers"
-          ? getWfstEditingFields(optionsRec)
-          : {}),
+        ...(bucket === "wfstlayers" ? getWfstEditingFields(optionsRec) : {}),
       };
 
       appendToBucket(bucket, out, vecEntry);
@@ -481,7 +481,7 @@ export async function buildLegacyLayersConfigForMap(
 function appendToBucket(
   bucket: Exclude<ClientLayerBucket, "wmslayers" | "wmtslayers">,
   out: HajkLegacyLayersConfigDocument,
-  vecEntry: Record<string, unknown>,
+  vecEntry: Record<string, unknown>
 ) {
   switch (bucket) {
     case "wfslayers":
