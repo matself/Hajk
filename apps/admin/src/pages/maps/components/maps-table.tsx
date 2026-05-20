@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 import MoreIcon from "@mui/icons-material/More";
 
@@ -43,7 +43,7 @@ export default function MapsTable() {
       field: "more",
       headerName: "",
       flex: 0.2,
-      renderCell: (_params: GridRenderCellParams<Map, string>) => (
+      renderCell: () => (
         <Button
           color="info"
           size="small"
@@ -74,7 +74,7 @@ export default function MapsTable() {
                       typeof v === "string" &&
                       v
                         .toLowerCase()
-                        .includes(debouncedSearchString.toLowerCase())
+                        .includes(debouncedSearchString.toLowerCase()),
                   )) ||
                 // TODO: This filters on ALL properties inside the options object.
                 // Probably not what we want, so we need to fix this at some point
@@ -86,7 +86,7 @@ export default function MapsTable() {
                       typeof v === "string" &&
                       v
                         .toLowerCase()
-                        .includes(debouncedSearchString.toLowerCase())
+                        .includes(debouncedSearchString.toLowerCase()),
                   ))
               );
             })
@@ -104,12 +104,12 @@ export default function MapsTable() {
         storageKey="maps-table"
         customSx={{ height: "calc(100vh - 320px)" }}
         onRowClick={({ row }) => {
-          const id: string = (row).id;
+          const id: string = row.id;
           if (id) {
             void navigate(`/maps/${id}`);
           }
         }}
-        rows={filteredMaps}
+        rows={filteredMaps as Map[]}
         columns={columns}
         loading={mapsLoading}
       />

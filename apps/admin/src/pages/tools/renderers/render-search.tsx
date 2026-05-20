@@ -275,7 +275,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -293,7 +295,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -481,7 +485,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.autoShowAllResultsOnMap"
+                    "tools.search.resultDisplayOptions.autoShowAllResultsOnMap",
                   )}
                 />
               )}
@@ -495,7 +499,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.allowResultFiltering"
+                    "tools.search.resultDisplayOptions.allowResultFiltering",
                   )}
                 />
               )}
@@ -509,7 +513,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.allowResultSorting"
+                    "tools.search.resultDisplayOptions.allowResultSorting",
                   )}
                 />
               )}
@@ -523,7 +527,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.allowQuickClearSelection"
+                    "tools.search.resultDisplayOptions.allowQuickClearSelection",
                   )}
                 />
               )}
@@ -537,7 +541,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.allowDownloadResults"
+                    "tools.search.resultDisplayOptions.allowDownloadResults",
                   )}
                 />
               )}
@@ -551,7 +555,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.showPreviewOnHover"
+                    "tools.search.resultDisplayOptions.showPreviewOnHover",
                   )}
                 />
               )}
@@ -565,7 +569,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.collectSelectedResults"
+                    "tools.search.resultDisplayOptions.collectSelectedResults",
                   )}
                 />
               )}
@@ -579,7 +583,7 @@ export default function SearchRenderer({
                 <FormControlLabel
                   control={<Checkbox {...field} checked={!!field.value} />}
                   label={t(
-                    "tools.search.resultDisplayOptions.showPrevNextButtons"
+                    "tools.search.resultDisplayOptions.showPrevNextButtons",
                   )}
                 />
               )}
@@ -596,7 +600,7 @@ export default function SearchRenderer({
                   fullWidth
                   label={t(
                     "tools.search.resultDisplayOptions.maxZoomLevel",
-                    {}
+                    {},
                   )}
                 />
               )}
@@ -684,7 +688,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -702,7 +708,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -725,7 +733,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -743,7 +753,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -761,7 +773,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -779,7 +793,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -802,7 +818,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -820,7 +838,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -838,7 +858,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -856,7 +878,9 @@ export default function SearchRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="220px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}

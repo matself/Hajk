@@ -28,7 +28,7 @@ export default function FormFactoryPage() {
 
   const nestedContainer = new DynamicFormContainer<FieldValues>(
     "Panel test",
-    CONTAINER_TYPE.PANEL
+    CONTAINER_TYPE.PANEL,
   );
 
   nestedContainer.addInput({
@@ -68,7 +68,7 @@ export default function FormFactoryPage() {
   const nestedContainer2 = new DynamicFormContainer<FieldValues>(
     "Accordion test",
     CONTAINER_TYPE.ACCORDION,
-    { triggerExpanded: false }
+    { triggerExpanded: false },
   );
 
   nestedContainer2.addInput({
@@ -106,7 +106,7 @@ export default function FormFactoryPage() {
   const nestedContainer3 = new DynamicFormContainer<FieldValues>(
     "Information",
     CONTAINER_TYPE.ACCORDION,
-    { triggerExpanded: false }
+    { triggerExpanded: false },
   );
 
   nestedContainer3.addInput({
@@ -191,7 +191,7 @@ export default function FormFactoryPage() {
       Hello 1, this is simply a way to add anything you want, something other
       than a form input. Something not managed by form-factory.
     </div>,
-    6
+    6,
   );
 
   formContainer.addElement(
@@ -199,7 +199,7 @@ export default function FormFactoryPage() {
       Hello 2, this is simply a way to add anything you want, something other
       than a form input. Something not managed by form-factory.
     </Box>,
-    6
+    6,
   );
 
   formContainer.addStaticElement({
@@ -225,7 +225,7 @@ export default function FormFactoryPage() {
   const visibleFieldsPanel = new DynamicFormContainer<FieldValues>(
     "Visible Fields Panel",
     CONTAINER_TYPE.PANEL,
-    { visibleIf: { name: "showStuffBelow", value: true } }
+    { visibleIf: { name: "showStuffBelow", value: true } },
   );
 
   visibleFieldsPanel.addInput({
@@ -344,6 +344,7 @@ export default function FormFactoryPage() {
 
   useEffect(() => {
     setFormContainerData(formContainer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const defaultValues = formContainer.getDefaultValues();

@@ -1,17 +1,9 @@
-import { createContext } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import getTheme from "./theme/theme";
-import { PaletteMode } from "@mui/material";
 import useAppStateStore from "../store/use-app-state-store";
 import { GlobalStylesComponent } from "./theme/global-styles";
-
-export interface ThemeContextType {
-  mode: PaletteMode;
-  setMode: (mode: PaletteMode) => void;
-}
-
-export const ThemeContext = createContext<ThemeContextType | null>(null);
+import { ThemeContext } from "./theme-context";
 
 export default function ThemeRegistry(props: { children: React.ReactNode }) {
   const { children } = props;

@@ -99,7 +99,7 @@ export default function AnchorToolRenderer({
                   <InputLabel id={"target"}>{t("tools.placement")}</InputLabel>
                   <Select
                     {...field}
-                    value={field.value || ""}
+                    value={(field.value as string) ?? ""}
                     labelId={"target"}
                     label={t("tools.placement")}
                   >
@@ -164,7 +164,7 @@ export default function AnchorToolRenderer({
                   fullWidth
                   multiline
                   rows={3}
-                  value={field.value ? atob(field.value) : ""}
+                  value={field.value ? atob(field.value as string) : ""}
                   onChange={(e) => field.onChange(btoa(e.target.value))}
                 />
               )}
@@ -179,10 +179,10 @@ export default function AnchorToolRenderer({
                 <TextField
                   label={t("tools.visibleForGroups")}
                   fullWidth
-                  value={(field.value || []).join(",")}
+                  value={((field.value as string[]) ?? []).join(",")}
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value ? e.target.value.split(",") : []
+                      e.target.value ? e.target.value.split(",") : [],
                     )
                   }
                 />

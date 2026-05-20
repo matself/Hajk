@@ -10,16 +10,18 @@ import {
   MenuItem,
 } from "@mui/material";
 
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import FormPanel from "../../../components/form-components/form-panel";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import { useTranslation } from "react-i18next";
+import { Tool } from "../../../api/tools";
 
-export default function SketchRenderer({
-  tool,
-}: {
-  tool: Record<string, any>;
-}) {
+interface SketchRendererProps {
+  tool: Tool;
+  control?: Control<FieldValues>;
+}
+
+export default function SketchRenderer({ tool }: SketchRendererProps) {
   const { t } = useTranslation();
 
   const { control } = useForm<FieldValues>({
@@ -90,7 +92,11 @@ export default function SketchRenderer({
                   fullWidth
                   multiline
                   rows={4}
-                  value={field.value ? atob(field.value) : ""}
+                  value={
+                    typeof field.value === "string" && field.value
+                      ? atob(field.value)
+                      : ""
+                  }
                   onChange={(e) => field.onChange(btoa(e.target.value))}
                 />
               )}

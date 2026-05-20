@@ -14,14 +14,31 @@ import FormPanel from "../../../components/form-components/form-panel";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormContainer from "../../../components/form-components/form-container";
 import { useTranslation } from "react-i18next";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import { SketchPicker } from "react-color";
+import { Tool } from "../../../api/tools";
+
+function optionValueToFormString(value: unknown): string {
+  if (value == null) return "";
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "bigint"
+  ) {
+    return String(value);
+  }
+  return "";
+}
+
+interface InfoClickRendererProps {
+  tool: Tool;
+  control?: Control<FieldValues>;
+}
 
 export default function InfoClickRenderer({
   tool,
-}: {
-  tool: Record<string, any>;
-}) {
+}: InfoClickRendererProps) {
   const { t } = useTranslation();
   const { control } = useForm<FieldValues>({
     defaultValues: {
@@ -30,7 +47,7 @@ export default function InfoClickRenderer({
         ? Object.fromEntries(
             Object.entries(tool.options).map(([k, v]) => [
               `options.${k}`,
-              String(v ?? ""),
+              optionValueToFormString(v),
             ])
           )
         : {}),
@@ -47,7 +64,7 @@ export default function InfoClickRenderer({
             <Controller
               name="options.displayName"
               control={control}
-              defaultValue={tool?.options?.title ?? ""}
+              defaultValue={(tool?.options?.title as string) ?? ""}
               render={({ field }) => (
                 <TextField
                   label={t("tools.displayName")}
@@ -470,7 +487,9 @@ export default function InfoClickRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="300px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}
@@ -489,7 +508,9 @@ export default function InfoClickRenderer({
                 render={({ field }) => (
                   <SketchPicker
                     width="300px"
-                    color={field.value}
+                    color={
+                      typeof field.value === "string" ? field.value : "#000000"
+                    }
                     onChange={(color) => field.onChange(color.hex)}
                   />
                 )}

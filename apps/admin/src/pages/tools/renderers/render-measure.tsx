@@ -9,16 +9,18 @@ import {
   MenuItem,
 } from "@mui/material";
 
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormPanel from "../../../components/form-components/form-panel";
 import { useTranslation } from "react-i18next";
+import { Tool } from "../../../api/tools";
 
-export default function SketchRenderer({
-  tool,
-}: {
-  tool: Record<string, any>;
-}) {
+interface MeasureRendererProps {
+  tool: Tool;
+  control?: Control<FieldValues>;
+}
+
+export default function MeasureRenderer({ tool }: MeasureRendererProps) {
   const { t } = useTranslation();
 
   const { control } = useForm<FieldValues>({

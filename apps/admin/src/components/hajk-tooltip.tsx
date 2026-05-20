@@ -1,5 +1,5 @@
 import Tooltip from "@mui/material/Tooltip";
-import { ReactElement, ReactNode } from "react";
+import { ReactNode, isValidElement } from "react";
 
 interface Props {
   title?: ReactNode;
@@ -8,6 +8,8 @@ interface Props {
 }
 
 const HajkTooltip = ({ title, children, ...rest }: Props) => {
+  const tooltipChild = isValidElement(children) ? children : <span>{children}</span>;
+
   return (
     <Tooltip
       enterDelay={500}
@@ -16,7 +18,7 @@ const HajkTooltip = ({ title, children, ...rest }: Props) => {
       title={title}
       {...rest}
     >
-      {children ?? <></>}
+      {tooltipChild}
     </Tooltip>
   );
 };

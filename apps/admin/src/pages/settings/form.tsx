@@ -20,27 +20,27 @@ export default function SettingsForm() {
 
     const accordionContainer = new DynamicFormContainer<FieldValues>(
       t("settings.common.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
     const accordionContainer2 = new DynamicFormContainer<FieldValues>(
       t("settings.service.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
     const accordionContainer3 = new DynamicFormContainer<FieldValues>(
       t("settings.layer.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
     const accordionContainer4 = new DynamicFormContainer<FieldValues>(
       t("settings.map.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
     const accordionContainer5 = new DynamicFormContainer<FieldValues>(
       t("settings.tools.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
     const accordionContainer6 = new DynamicFormContainer<FieldValues>(
       t("settings.authorization.title"),
-      CONTAINER_TYPE.ACCORDION
+      CONTAINER_TYPE.ACCORDION,
     );
 
     accordionContainer.addInput({
@@ -81,6 +81,7 @@ export default function SettingsForm() {
 
   useEffect(() => {
     setSettingsContainerData(createTranslatedSettingsContainer());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i18n.language]);
 
   const defaultValues = settingsContainerData.getDefaultValues();

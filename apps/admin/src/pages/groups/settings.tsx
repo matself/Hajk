@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useParams } from "react-router";
 import {
   useTheme,
@@ -14,10 +14,6 @@ import { useTranslation } from "react-i18next";
 import Page from "../../layouts/root/components/page";
 import { GroupType, GroupUpdateInput } from "../../api/groups";
 import FormActionPanel from "../../components/form-action-panel";
-import {
-  LayerSwitcherDnD,
-  TreeItemData,
-} from "../../components/layerswitcher-dnd";
 import LayerSwitcherDnDComponent from "./components/layerswitcher-dnd";
 import { useGroupById } from "../../api/groups";
 import { SquareSpinnerComponent } from "../../components/progress/square-progress";
@@ -29,9 +25,6 @@ import {
 import { toast } from "react-toastify";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
-import { useLayers } from "../../api/layers";
-import { useGroups } from "../../api/groups";
-import { TreeItems } from "dnd-kit-sortable-tree";
 
 function GroupSettings() {
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -41,9 +34,6 @@ function GroupSettings() {
   //const { mutateAsync: deleteGroup, status: deleteStatus } = useDeleteGroup();
   const { data: group, isLoading, isError } = useGroupById(groupId ?? "");
   const { palette } = useTheme();
-  const { data: layers = [] } = useLayers();
-  const { data: groups = [] } = useGroups();
-  const [layersDZ, setLayersDZ] = useState<TreeItems<TreeItemData>>([]);
 
   const {
     register,
@@ -132,7 +122,13 @@ function GroupSettings() {
   if (isError) return <div>Error fetching group details.</div>;
 
   return (
-    <Page title={group?.name ? `${t("common.settings")} - ${group.name}` : t("common.settings")}>
+    <Page
+      title={
+        group?.name
+          ? `${t("common.settings")} - ${group.name}`
+          : t("common.settings")
+      }
+    >
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}

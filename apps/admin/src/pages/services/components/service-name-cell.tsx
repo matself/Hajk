@@ -13,7 +13,7 @@ export default function ServiceNameCell({
 }: ServiceNameCellProps) {
   return (
     <Tooltip
-      title={comment || ""}
+      title={comment ?? ""}
       disableHoverListener={!comment}
       enterDelay={800}
       enterNextDelay={800}

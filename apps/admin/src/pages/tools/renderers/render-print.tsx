@@ -13,15 +13,17 @@ import {
 import FormPanel from "../../../components/form-components/form-panel";
 import FormAccordion from "../../../components/form-components/form-accordion";
 
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import { SketchPicker } from "react-color";
 import { useTranslation } from "react-i18next";
+import { Tool } from "../../../api/tools";
 
-export default function PrintToolRenderer({
-  tool,
-}: {
-  tool: Record<string, any>;
-}) {
+interface PrintToolRendererProps {
+  tool: Tool;
+  control?: Control<FieldValues>;
+}
+
+export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
   const { t } = useTranslation();
 
   const { control } = useForm<FieldValues>({
@@ -29,7 +31,7 @@ export default function PrintToolRenderer({
       type: tool?.type ?? "print",
       ...(tool?.options
         ? Object.fromEntries(
-            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v])
+            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v]),
           )
         : {}),
     },
@@ -72,7 +74,11 @@ export default function PrintToolRenderer({
                   fullWidth
                   multiline
                   rows={4}
-                  value={field.value ? atob(field.value) : ""}
+                  value={
+                    typeof field.value === "string" && field.value
+                      ? atob(field.value)
+                      : ""
+                  }
                   onChange={(e) => field.onChange(btoa(e.target.value))}
                 />
               )}
@@ -321,9 +327,9 @@ export default function PrintToolRenderer({
               defaultValue={tool?.options?.mapTextColor ?? "#000000"}
               render={({ field }) => (
                 <SketchPicker
-                  label={t("tools.mapTextColor")}
-                  labelId="map-text-color-label"
-                  color={field.value}
+                  color={
+                    typeof field.value === "string" ? field.value : "#000000"
+                  }
                   onChangeComplete={(color) => field.onChange(color.hex)}
                 />
               )}

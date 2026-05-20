@@ -82,7 +82,10 @@ import {
   getLayerSettingsVisibility,
   LayerSettingsTab,
 } from "./layer-category";
-import { TextFieldWithHelp } from "../../components/form-components/field-label-with-help";
+import {
+  FieldLabelAbove,
+  TextFieldWithHelp,
+} from "../../components/form-components/field-label-with-help";
 import { useLayerFieldLabels } from "./use-layer-field-labels";
 
 const StyledTabButton = styled(Button, {
@@ -148,9 +151,8 @@ export default function LayerSettings() {
   const { data: layer, isLoading, isError } = useLayerById(layerId ?? "");
   const { mutateAsync: updateLayer, status: updateStatus } = useUpdateLayer();
   const { mutateAsync: createRoleOnLayer } = useCreateAndUpdateRoleOnLayer();
-  const { mutateAsync: removeLayer, isPending: isDeletingLayer } = useDeleteLayer(
-    layer?.serviceId ?? fromService ?? "",
-  );
+  const { mutateAsync: removeLayer, isPending: isDeletingLayer } =
+    useDeleteLayer(layer?.serviceId ?? fromService ?? "");
   const queryClient = useQueryClient();
   const { palette } = useTheme();
   const { data: services } = useServices();
@@ -1155,7 +1157,7 @@ export default function LayerSettings() {
         >
           <Box sx={{ display: activeTab === "general" ? "block" : "none" }}>
             <FormPanel title={t("common.information")}>
-              <Grid container rowSpacing={2}>
+              <Grid container rowSpacing={2} columnSpacing={2}>
                 <Grid size={12}>
                   <TextFieldWithHelp
                     labelKey="common.name"
@@ -1294,7 +1296,7 @@ export default function LayerSettings() {
           <Box sx={{ display: activeTab === "display" ? "block" : "none" }}>
             {settingsVisibility.showDisplayRequestOptions && (
               <FormPanel title={t("services.settings.request")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <Controller
@@ -1399,7 +1401,7 @@ export default function LayerSettings() {
 
             {settingsVisibility.showDisplayRequestOptions && (
               <FormPanel title={t("layers.customDpi")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <FormControlLabel
@@ -1427,7 +1429,7 @@ export default function LayerSettings() {
                     </FormGroup>
                   </Grid>
                   {useCustomDpiList && (
-                    <Grid container rowSpacing={2}>
+                    <Grid container rowSpacing={2} columnSpacing={2}>
                       {customDpiList.map((item, index) => (
                         <Grid size={12} key={index}>
                           <Box display="flex" alignItems="center" gap={2}>
@@ -1486,7 +1488,7 @@ export default function LayerSettings() {
             )}
 
             <FormPanel title={t("layers.settings")}>
-              <Grid container rowSpacing={2}>
+              <Grid container rowSpacing={2} columnSpacing={2}>
                 {settingsVisibility.showDisplayRequestOptions && (
                   <Grid size={12}>
                     <FormControl fullWidth>
@@ -1621,7 +1623,7 @@ export default function LayerSettings() {
 
             {settingsVisibility.showDisplayRequestOptions && (
               <FormPanel title={t("layers.timeSlider")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <Controller
@@ -1668,7 +1670,7 @@ export default function LayerSettings() {
 
             {settingsVisibility.showDisplayRequestOptions && (
               <FormPanel title={t("layers.layerSwitcher")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <Controller
@@ -1700,7 +1702,7 @@ export default function LayerSettings() {
 
           <Box sx={{ display: activeTab === "metadata" ? "block" : "none" }}>
             <FormPanel title={t("layers.metadataTab")}>
-              <Grid container rowSpacing={2}>
+              <Grid container rowSpacing={2} columnSpacing={2}>
                 <Grid size={12}>
                   <FormGroup>
                     <Controller
@@ -1763,7 +1765,7 @@ export default function LayerSettings() {
                     helpKey="layers.help.metadataDescription"
                     fullWidth
                     multiline
-                    rows={3}
+                    rows={6}
                     {...register("metadata.description")}
                   />
                 </Grid>
@@ -1800,7 +1802,7 @@ export default function LayerSettings() {
           <Box sx={{ display: activeTab === "infoclick" ? "block" : "none" }}>
             {settingsVisibility.showInfoClickSettingsPanel && (
               <FormPanel title={t("common.infoclick")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <Controller
@@ -1919,7 +1921,7 @@ export default function LayerSettings() {
 
             {settingsVisibility.showDisplayFieldsPanel && (
               <FormPanel title={t("layers.settings.displayFields")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <TextFieldWithHelp
                       labelKey="layers.primaryDisplayFields"
@@ -1950,7 +1952,7 @@ export default function LayerSettings() {
 
             {settingsVisibility.showSearchSettingsPanel && (
               <FormPanel title={t("layers.settings.searchSettings")}>
-                <Grid container rowSpacing={2}>
+                <Grid container rowSpacing={2} columnSpacing={2}>
                   <Grid size={12}>
                     <FormGroup>
                       <Controller
@@ -2005,35 +2007,37 @@ export default function LayerSettings() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="outputFormat-label" shrink>
-                        {fieldLabel(
-                          "layers.searchSettings.outputFormat",
-                          "layers.help.searchOutputFormat",
+                    <Box>
+                      <FieldLabelAbove
+                        htmlFor="searchSettings-outputFormat"
+                        label={t("layers.searchSettings.outputFormat")}
+                        help={String(
+                          t("layers.help.searchOutputFormat" as never),
                         )}
-                      </InputLabel>
+                      />
                       <Controller
                         name="searchSettings.outputFormat"
                         control={control}
                         render={({ field }) => (
-                          <Select
-                            labelId="outputFormat-label"
-                            {...selectLabel(
-                              "layers.searchSettings.outputFormat",
-                              "layers.help.searchOutputFormat",
-                            )}
-                            {...field}
+                          <TextField
+                            id="searchSettings-outputFormat"
+                            select
+                            fullWidth
                             value={(field.value as string) ?? ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            inputRef={field.ref}
                           >
                             {searchOutputFormat.map((format) => (
                               <MenuItem key={format} value={format}>
                                 {format}
                               </MenuItem>
                             ))}
-                          </Select>
+                          </TextField>
                         )}
                       />
-                    </FormControl>
+                    </Box>
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextFieldWithHelp

@@ -35,9 +35,12 @@ export default function ToolsList({
 
     // Then apply search filter
     const searchFilter = (tool: Tool) => {
-      const combinedText = `${tool.type} ${
-        tool.options?.title || ""
-      }`.toLowerCase();
+      const rawTitle = tool.options?.title;
+      const titleText =
+        typeof rawTitle === "string" || typeof rawTitle === "number"
+          ? String(rawTitle)
+          : "";
+      const combinedText = `${tool.type} ${titleText}`.toLowerCase();
       return combinedText.includes(searchTerm.toLowerCase());
     };
 
