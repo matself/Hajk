@@ -505,7 +505,7 @@ export default function EditingLayerSettings({
                       />
                     </TableCell>
                     <TableCell>{row.name}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ p: 0 }}>
                       <TextField
                         size="small"
                         value={row.alias ?? ""}
@@ -520,7 +520,8 @@ export default function EditingLayerSettings({
                       <TextField
                         size="small"
                         multiline
-                        minRows={2}
+                        fullWidth
+                        rows={4}
                         value={row.description ?? ""}
                         onChange={(e) =>
                           updateDraftFieldRow(rowIndex, {
