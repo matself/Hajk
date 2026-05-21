@@ -138,12 +138,12 @@ class GeosuiteExportModel {
     this.#localObserver.publish("window-closed");
   };
 
-  handleDrawStart = (e) => {
+  handleDrawStart = (_e) => {
     //When the user starts drawing a feature, remove any existing feature. We only want one shape.
     this.clearMapFeatures();
   };
 
-  handleDrawEnd = (e) => {
+  handleDrawEnd = (_e) => {
     this.#localObserver.publish("area-selection-complete");
   };
 
@@ -743,7 +743,7 @@ class GeosuiteExportModel {
         );
         this.#localObserver.publish("document-save-done");
       })
-      .catch((error) => {
+      .catch((_error) => {
         this.#localObserver.publish("document-save-failed");
       });
   };

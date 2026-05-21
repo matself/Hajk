@@ -36,7 +36,7 @@ const LoaderContainer = styled("div")(({ theme }) => ({
   },
 }));
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
+const StyledBadge = styled(Badge)(({ _theme }) => ({
   "& span": {
     left: "auto",
     right: "-31px",
@@ -44,7 +44,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const TypographyHeading = styled(Typography)(({ theme }) => ({
+const TypographyHeading = styled(Typography)(({ _theme }) => ({
   fontWeight: 500,
 }));
 

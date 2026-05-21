@@ -50,7 +50,7 @@ class AppModel {
    * @param object Config
    * @param Observer observer
    */
-  constructor(settings) {
+  constructor(_settings) {
     this.map = undefined;
     this.windows = [];
     this.plugins = {};
@@ -289,7 +289,7 @@ class AppModel {
           const toolOptions =
             toolConfig && toolConfig.options ? toolConfig.options : {};
 
-          const sortOrder = toolConfig.hasOwnProperty("index")
+          const sortOrder = Object.hasOwn(toolConfig, "index")
             ? Number(toolConfig.index)
             : 0;
 
@@ -327,31 +327,31 @@ class AppModel {
     // will fallback to defaults from OL. (The entire interactionsOptions object, as well as all its properties are optional
     // according to OL documentation, so there's no need to set stuff that won't be needed.)
     const interactionsOptions = {
-      ...(config.map.hasOwnProperty("altShiftDragRotate") && {
+      ...(Object.hasOwn(config.map, "altShiftDragRotate") && {
         altShiftDragRotate: config.map.altShiftDragRotate,
       }),
-      ...(config.map.hasOwnProperty("onFocusOnly") && {
+      ...(Object.hasOwn(config.map, "onFocusOnly") && {
         onFocusOnly: config.map.onFocusOnly,
       }),
-      ...(config.map.hasOwnProperty("doubleClickZoom") && {
+      ...(Object.hasOwn(config.map, "doubleClickZoom") && {
         doubleClickZoom: config.map.doubleClickZoom,
       }),
-      ...(config.map.hasOwnProperty("keyboard") && {
+      ...(Object.hasOwn(config.map, "keyboard") && {
         keyboard: config.map.keyboard,
       }),
-      ...(config.map.hasOwnProperty("mouseWheelZoom") && {
+      ...(Object.hasOwn(config.map, "mouseWheelZoom") && {
         mouseWheelZoom: config.map.mouseWheelZoom,
       }),
-      ...(config.map.hasOwnProperty("shiftDragZoom") && {
+      ...(Object.hasOwn(config.map, "shiftDragZoom") && {
         shiftDragZoom: config.map.shiftDragZoom,
       }),
-      ...(config.map.hasOwnProperty("dragPan") && {
+      ...(Object.hasOwn(config.map, "dragPan") && {
         dragPan: config.map.dragPan,
       }),
-      ...(config.map.hasOwnProperty("pinchRotate") && {
+      ...(Object.hasOwn(config.map, "pinchRotate") && {
         pinchRotate: config.map.pinchRotate,
       }),
-      ...(config.map.hasOwnProperty("pinchZoom") && {
+      ...(Object.hasOwn(config.map, "pinchZoom") && {
         pinchZoom: config.map.pinchZoom,
       }),
       ...(!Number.isNaN(Number.parseInt(config.map.zoomDelta)) && {
@@ -400,7 +400,7 @@ class AppModel {
     // Create throttled zoomEnd event
     let currentZoom = this.map.getView().getZoom();
 
-    this.map.on("moveend", (e) => {
+    this.map.on("moveend", (_e) => {
       // using moveend to create a throttled zoomEnd event
       // instead of using change:resolution to minimize events being fired.
       const newZoom = this.map.getView().getZoom();
@@ -979,7 +979,7 @@ class AppModel {
   mergeConfigWithValuesFromParams(mapConfig, paramsAsPlainObject) {
     // clean is used to strip the UI of all elements so we get a super clean viewport back, without any plugins
     const clean =
-      Boolean(paramsAsPlainObject.hasOwnProperty("clean")) &&
+      Boolean(Object.hasOwn(paramsAsPlainObject, "clean")) &&
       paramsAsPlainObject.clean !== "false" &&
       paramsAsPlainObject.clean !== "0";
 
@@ -995,7 +995,7 @@ class AppModel {
     if (typeof paramsAsPlainObject.gl === "string") {
       try {
         this.groupLayersFromParams = JSON.parse(paramsAsPlainObject.gl);
-      } catch (error) {
+      } catch (_error) {
         console.error(
           "Couldn't parse the group layers parameter. Attempted with this value:",
           paramsAsPlainObject.gl
@@ -1096,8 +1096,8 @@ class AppModel {
 
   translateConfig() {
     if (
-      this.config.mapConfig.hasOwnProperty("map") &&
-      this.config.mapConfig.map.hasOwnProperty("title")
+      Object.hasOwn(this.config.mapConfig, "map") &&
+      Object.hasOwn(this.config.mapConfig.map, "title")
     ) {
       document.title = this.config.mapConfig.map.title; // TODO: add opt-out in admin to cancel this override behaviour.
     }

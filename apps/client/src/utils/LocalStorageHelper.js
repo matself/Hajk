@@ -69,7 +69,7 @@ class LocalStorageHelper {
           key // …whatever exists in local storage for the specified key
         ],
       };
-    } catch (error) {
+    } catch (_error) {
       // If parsing failed, return defaults
       return defaults;
     }
@@ -91,7 +91,7 @@ class LocalStorageHelper {
 
       const mapSettings = JSON.parse(window.localStorage.getItem(mapName));
       return this.getValueFromPath(mapSettings, key) || defaults;
-    } catch (error) {
+    } catch (_error) {
       // If parsing failed, return defaults
       return defaults;
     }

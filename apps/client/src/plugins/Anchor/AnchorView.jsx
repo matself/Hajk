@@ -38,7 +38,7 @@ const StyledAlert = styled(Alert)(({ theme }) => ({
   },
 }));
 
-const StyledButton = styled(Button)(({ theme }) => ({
+const StyledButton = styled(Button)(({ _theme }) => ({
   minHeight: { xs: "48px", sm: "36px" },
   height: "auto",
   whiteSpace: { xs: "normal", sm: "nowrap" },
@@ -117,7 +117,7 @@ class AnchorView extends React.PureComponent {
     );
   };
 
-  handleClickOnCopyToClipboard = (e) => {
+  handleClickOnCopyToClipboard = (_e) => {
     const input = document.getElementById("anchorUrl");
     input.select();
     document.execCommand("copy") &&

@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Box, Button, List, Typography } from "@mui/material";
 
 import CallMadeIcon from "@mui/icons-material/CallMade";

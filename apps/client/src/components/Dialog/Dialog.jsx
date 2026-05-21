@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import gfm from "remark-gfm";
@@ -9,17 +9,12 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import BaseDialog from "./BaseDialog";
 import LegacyNonMarkdownRenderer from "./LegacyNonMarkdownRenderer";
 import { customComponentsForReactMarkdown } from "../../utils/customComponentsForReactMarkdown";
 
 export default function ResponsiveDialog(props) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("xs"));
-
   const {
     children,
     onAbort,

@@ -77,7 +77,7 @@ export default class FeaturePropsParsing {
                 const match = child.match(/{(\d+)}/);
                 if (
                   match &&
-                  this.resolvedPromisesWithComponents.hasOwnProperty(match[1])
+                  Object.hasOwn(this.resolvedPromisesWithComponents, match[1])
                 ) {
                   // If matched, replace the placeholder with the corresponding component.
                   externalComponent =
@@ -111,7 +111,7 @@ export default class FeaturePropsParsing {
     if (jsonLike) {
       try {
         result = JSON.parse(str);
-      } catch (ex) {
+      } catch (_ex) {
         result = false;
       }
     } else {
@@ -323,7 +323,7 @@ export default class FeaturePropsParsing {
       // Invoking new URL will escape any special characters and ensure
       // that we provide a well-formatted URL to the MarkDown.
       href = new URL(href);
-    } catch (error) {
+    } catch (_error) {
       // If the URL creation failed for some reason (e.g. if a.href was empty,
       // or if it was a relative path), fall back to using the provided
       // string as-is, but remember to remove the leading and closing parentheses

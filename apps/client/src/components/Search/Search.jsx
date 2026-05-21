@@ -374,7 +374,7 @@ class Search extends React.PureComponent {
     this.localObserver.publish("clearMapView");
   };
 
-  handleSearchInput = (event, value, reason) => {
+  handleSearchInput = (event, value, _reason) => {
     const searchString = (value?.autocompleteEntry || value || "")?.trim();
 
     if (searchString !== "") {

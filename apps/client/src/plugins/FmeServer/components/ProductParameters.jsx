@@ -1,4 +1,3 @@
-import React from "react";
 import { Grid, IconButton, TextField, Typography } from "@mui/material";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { Slider } from "@mui/material";

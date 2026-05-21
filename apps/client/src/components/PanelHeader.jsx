@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import propTypes from "prop-types";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";

@@ -157,7 +157,7 @@ class BufferModel {
 
             this.highlightSource.addFeatures(features); // Add them to the highlight source.
           }
-        } catch (error) {} // There might be errors in the fetch/JSON parse stage, keep them quiet.
+        } catch (_error) {} // There might be errors in the fetch/JSON parse stage, keep them quiet.
       });
   };
 

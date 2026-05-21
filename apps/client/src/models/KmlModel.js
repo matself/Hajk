@@ -599,7 +599,7 @@ class KmlModel {
         status: "SUCCESS",
         error: null,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         status: "FAILED",
         error: "Could not save the KML-file. File-saver Error.",
