@@ -312,8 +312,8 @@ async function readAndPopulateLayers() {
               selectedLayers,
               active: Boolean(
                 layer.searchUrl ||
-                  (Array.isArray(layer.searchFields) &&
-                    layer.searchFields.length > 0)
+                (Array.isArray(layer.searchFields) &&
+                  layer.searchFields.length > 0)
               ),
               url: layer.searchUrl,
               searchFields:
@@ -464,6 +464,80 @@ async function readAndPopulateLayers() {
   }
 }
 
+/** Map layer-switcher placement fields onto LayerInstance columns. */
+function layerInstancePlacementFromOptions(options = {}) {
+  const { drawOrder, visibleAtStart, ...rest } = options;
+  return {
+    zIndex: typeof drawOrder === "number" ? drawOrder : 0,
+    visibleAtStart: Boolean(visibleAtStart),
+    options: rest,
+  };
+}
+
+/**
+ * Search/editing layers from layers.json are global (not listed in map group trees).
+ * Create a LayerInstance per map so usage APIs and legacy export can resolve them via
+ * searchLayerId / editingLayerId like displayLayerId.
+ */
+async function populateSearchAndEditingLayerInstances() {
+  const maps = await prisma.map.findMany({ select: { id: true, name: true } });
+  if (maps.length === 0) {
+    console.log("No maps — skipping search/editing LayerInstance seeding");
+    return;
+  }
+
+  let searchInstanceCount = 0;
+  let editingInstanceCount = 0;
+
+  for (const searchLayerId of jsonToSearchLayerId.values()) {
+    const searchLayer = await prisma.searchLayer.findUnique({
+      where: { id: searchLayerId },
+      select: { zIndex: true },
+    });
+
+    for (const map of maps) {
+      const existing = await prisma.layerInstance.findFirst({
+        where: { searchLayerId, mapId: map.id },
+      });
+      if (existing) continue;
+
+      await prisma.layerInstance.create({
+        data: {
+          searchLayerId,
+          mapId: map.id,
+          infoClickActive: false,
+          zIndex: searchLayer?.zIndex ?? 0,
+        },
+      });
+      searchInstanceCount++;
+    }
+  }
+
+  for (const editingLayerId of jsonToEditingLayerId.values()) {
+    for (const map of maps) {
+      const existing = await prisma.layerInstance.findFirst({
+        where: { editingLayerId, mapId: map.id },
+      });
+      if (existing) continue;
+
+      await prisma.layerInstance.create({
+        data: {
+          editingLayerId,
+          mapId: map.id,
+          infoClickActive: false,
+        },
+      });
+      editingInstanceCount++;
+    }
+  }
+
+  if (searchInstanceCount > 0 || editingInstanceCount > 0) {
+    console.log(
+      `Created ${searchInstanceCount} search and ${editingInstanceCount} editing LayerInstances across ${maps.length} map(s)`
+    );
+  }
+}
+
 // Populates the database with the layer structure for the map corresponding to mapName
 async function populateMapLayerStructure(mapName) {
   const map = await prisma.map.findUnique({
@@ -570,7 +644,7 @@ async function populateMapLayerStructure(mapName) {
   // Now we have all arrays ready. One more thing left is to
   // check for consistency: our map config may refer to layerIds
   // that did not exist in layers.json (hence they won't exist in
-  // the Layer model now either). If we'd try to connect such a layer
+  // the display layer tables either). If we'd try to connect such a layer
   // to a map or group, we'd get a foreign key error. So let's wash the
   // layers so only valid entries remain.
   const displayLayersInDB = await prisma.displayLayer.findMany({
@@ -598,13 +672,16 @@ async function populateMapLayerStructure(mapName) {
   await prisma.groupsOnMaps.createMany({ data: groupsOnMap });
   // Connect valid layer instances (i.e. those layers that are used in maps (background) or groups (foreground))
   for await (const layer of validLayers) {
+    const placement = layerInstancePlacementFromOptions(layer.options);
     const layerInstance = await prisma.layerInstance.create({
       data: {
         displayLayerId: jsonToDisplayLayerId.get(layer.layerId),
         mapId: layer.mapId || undefined,
         groupId: layer.groupId || undefined,
         usage: layer.usage,
-        options: layer.options,
+        zIndex: placement.zIndex,
+        visibleAtStart: placement.visibleAtStart,
+        options: placement.options,
       },
     });
 
@@ -749,8 +826,10 @@ async function main() {
   for (const mapConfig of mapConfigs) {
     await readMapConfigAndPopulateMap(mapConfig);
   }
-  // Get all layers from layers.json and insert them into the layers table.
+  // Get all layers from layers.json and insert them into the layer tables.
   await readAndPopulateLayers();
+  // Search/editing layers are global in layers.json — attach them to every map via LayerInstance.
+  await populateSearchAndEditingLayerInstances();
   // Finally we extract the layer switcher config from all maps and add all groups etc. with their connections to the database.
   // We're gonna want to keep crucial information such as the map layer structure separated from specific plugins such as the layer switcher.
   await populateLayerStructure();

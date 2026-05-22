@@ -315,6 +315,9 @@ class ServicesService {
       }
 
       if (searchLayerIds.length > 0) {
+        await transaction.layerInstance.deleteMany({
+          where: { searchLayerId: { in: searchLayerIds } },
+        });
         await transaction.roleOnSearchLayer.deleteMany({
           where: { searchLayerId: { in: searchLayerIds } },
         });
@@ -325,6 +328,9 @@ class ServicesService {
       }
 
       if (editingLayerIds.length > 0) {
+        await transaction.layerInstance.deleteMany({
+          where: { editingLayerId: { in: editingLayerIds } },
+        });
         await transaction.roleOnEditingLayer.deleteMany({
           where: { editingLayerId: { in: editingLayerIds } },
         });

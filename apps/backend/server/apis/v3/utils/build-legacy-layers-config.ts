@@ -150,18 +150,145 @@ function getWmtsOptions(options: Prisma.JsonValue): {
   };
 }
 
+type SearchLayerWithRelations = Prisma.SearchLayerGetPayload<{
+  include: {
+    service: { include: { projection: true } };
+    metadata: true;
+  };
+}>;
+
+type EditingLayerWithRelations = Prisma.EditingLayerGetPayload<{
+  include: { service: { include: { projection: true } } };
+}>;
+
+const mapPlacementFilter = (
+  mapName: string
+): Prisma.LayerInstanceWhereInput => ({
+  OR: [{ map: { name: mapName } }, { group: { maps: { some: { mapName } } } }],
+});
+
+function appendSearchLayerToWfs(
+  out: HajkLegacyLayersConfigDocument,
+  searchLayer: SearchLayerWithRelations,
+  instance?: { id: string; zIndex: number; visibleAtStart: boolean }
+) {
+  const service = searchLayer.service;
+  const svc = toClientServiceFields({
+    url: service.url,
+    type: service.type,
+    serverType: service.serverType,
+    version: service.version,
+    imageFormat: service.imageFormat,
+    projection: service.projection
+      ? { code: service.projection.code }
+      : undefined,
+    workspace: service.workspace ?? undefined,
+    getMapUrl: service.getMapUrl ?? undefined,
+  });
+  const selected = searchLayer.selectedLayers ?? [];
+  const metadata = searchLayer.metadata;
+  const optionsRec = getOptionsRecord(searchLayer.options);
+
+  out.wfslayers.push({
+    id: instance?.id ?? searchLayer.id,
+    caption: searchLayer.name,
+    url: searchLayer.url ?? svc.url,
+    layers: selected,
+    searchFields: searchLayer.active ? searchLayer.searchFields : [],
+    infobox: searchLayer.infobox ?? "",
+    aliasDict: searchLayer.aliasDict ?? "",
+    displayFields: searchLayer.primaryDisplayFields,
+    geometryField: searchLayer.geometryField ?? "geom",
+    outputFormat: searchOutputToClient(searchLayer.outputFormat),
+    infoVisible: false,
+    infoTitle: metadata?.title ?? null,
+    infoText: searchLayer.description ?? null,
+    infoUrl: metadata?.url ?? null,
+    infoUrlText: metadata?.urlTitle ?? null,
+    infoOwner: metadata?.owner ?? null,
+    zIndex:
+      instance && instance.zIndex !== 0
+        ? instance.zIndex
+        : searchLayer.zIndex !== 0
+          ? searchLayer.zIndex
+          : null,
+    visibleAtStart: instance?.visibleAtStart,
+    secondaryLabelFields: searchLayer.secondaryDisplayFields,
+    shortDisplayFields: searchLayer.shortDisplayFields,
+    serverType: svc.serverType,
+    projection: svc.projection ?? "",
+    version: svc.version ?? "1.1.0",
+    layer: selected[0] ?? "",
+    dataFormat: searchOutputToClient(searchLayer.outputFormat),
+    ...optionsRec,
+  });
+}
+
+function appendEditingLayerToWfst(
+  out: HajkLegacyLayersConfigDocument,
+  editingLayer: EditingLayerWithRelations,
+  instance?: { id: string; zIndex: number }
+) {
+  const service = editingLayer.service;
+  const svc = toClientServiceFields({
+    url: service.url,
+    type: service.type,
+    serverType: service.serverType,
+    version: service.version,
+    imageFormat: service.imageFormat,
+    projection: service.projection
+      ? { code: service.projection.code }
+      : undefined,
+    workspace: service.workspace ?? undefined,
+    getMapUrl: service.getMapUrl ?? undefined,
+  });
+  const selected = editingLayer.selectedLayers ?? [];
+  const optionsRec = getOptionsRecord(editingLayer.options);
+
+  out.wfstlayers.push({
+    id: instance?.id ?? editingLayer.id,
+    caption: editingLayer.name,
+    url: svc.url,
+    serverType: svc.serverType,
+    projection: svc.projection ?? "",
+    version: svc.version ?? "1.1.0",
+    layers: selected,
+    layer: selected[0] ?? "",
+    geometryField: editingLayer.geometryField ?? "geom",
+    zIndex: instance && instance.zIndex !== 0 ? instance.zIndex : null,
+    ...getWfstEditingFields(optionsRec),
+  });
+}
+
 export async function buildLegacyLayersConfigForMap(
   mapName: string
 ): Promise<HajkLegacyLayersConfigDocument> {
   const instances = await prisma.layerInstance.findMany({
     where: {
-      displayLayer: {
-        deletedAt: null,
-        service: { deletedAt: null },
-      },
-      OR: [
-        { map: { name: mapName } },
-        { group: { maps: { some: { mapName } } } },
+      AND: [
+        mapPlacementFilter(mapName),
+        {
+          OR: [
+            {
+              displayLayer: {
+                deletedAt: null,
+                service: { deletedAt: null },
+              },
+            },
+            {
+              searchLayer: {
+                deletedAt: null,
+                service: { deletedAt: null },
+              },
+            },
+            {
+              editingLayer: {
+                deletedAt: null,
+                service: { deletedAt: null },
+              },
+            },
+          ],
+        },
       ],
     },
     orderBy: { zIndex: "asc" },
@@ -173,11 +300,34 @@ export async function buildLegacyLayersConfigForMap(
           infoClickSettings: true,
         },
       },
+      searchLayer: {
+        include: {
+          service: { include: { projection: true } },
+          metadata: true,
+        },
+      },
+      editingLayer: {
+        include: { service: { include: { projection: true } } },
+      },
     },
   });
 
+  const searchLayerIdsOnMap = instances
+    .map((inst) => inst.searchLayerId)
+    .filter((id): id is string => Boolean(id));
+
+  const editingLayerIdsOnMap = instances
+    .map((inst) => inst.editingLayerId)
+    .filter((id): id is string => Boolean(id));
+
   const searchLayers = await prisma.searchLayer.findMany({
-    where: { deletedAt: null, service: { deletedAt: null } },
+    where: {
+      deletedAt: null,
+      service: { deletedAt: null },
+      ...(searchLayerIdsOnMap.length > 0
+        ? { id: { notIn: searchLayerIdsOnMap } }
+        : {}),
+    },
     include: {
       service: { include: { projection: true } },
       metadata: true,
@@ -185,7 +335,13 @@ export async function buildLegacyLayersConfigForMap(
   });
 
   const editingLayers = await prisma.editingLayer.findMany({
-    where: { deletedAt: null, service: { deletedAt: null } },
+    where: {
+      deletedAt: null,
+      service: { deletedAt: null },
+      ...(editingLayerIdsOnMap.length > 0
+        ? { id: { notIn: editingLayerIdsOnMap } }
+        : {}),
+    },
     include: { service: { include: { projection: true } } },
   });
 
@@ -200,7 +356,21 @@ export async function buildLegacyLayersConfigForMap(
   const out = emptyBuckets();
 
   for (const inst of instances) {
+    if (inst.searchLayer) {
+      appendSearchLayerToWfs(out, inst.searchLayer, inst);
+      continue;
+    }
+
+    if (inst.editingLayer) {
+      appendEditingLayerToWfst(out, inst.editingLayer, inst);
+      continue;
+    }
+
     const layer = inst.displayLayer;
+    if (!layer) {
+      continue;
+    }
+
     const service = layer.service;
     const svc = toClientServiceFields({
       url: service.url,
@@ -464,81 +634,11 @@ export async function buildLegacyLayersConfigForMap(
   }
 
   for (const searchLayer of searchLayers) {
-    const service = searchLayer.service;
-    const svc = toClientServiceFields({
-      url: service.url,
-      type: service.type,
-      serverType: service.serverType,
-      version: service.version,
-      imageFormat: service.imageFormat,
-      projection: service.projection
-        ? { code: service.projection.code }
-        : undefined,
-      workspace: service.workspace ?? undefined,
-      getMapUrl: service.getMapUrl ?? undefined,
-    });
-    const selected = searchLayer.selectedLayers ?? [];
-    const metadata = searchLayer.metadata;
-    const optionsRec = getOptionsRecord(searchLayer.options);
-
-    out.wfslayers.push({
-      id: searchLayer.id,
-      caption: searchLayer.name,
-      url: searchLayer.url ?? svc.url,
-      layers: selected,
-      searchFields: searchLayer.active ? searchLayer.searchFields : [],
-      infobox: searchLayer.infobox ?? "",
-      aliasDict: searchLayer.aliasDict ?? "",
-      displayFields: searchLayer.primaryDisplayFields,
-      geometryField: searchLayer.geometryField ?? "geom",
-      outputFormat: searchOutputToClient(searchLayer.outputFormat),
-      infoVisible: false,
-      infoTitle: metadata?.title ?? null,
-      infoText: searchLayer.description ?? null,
-      infoUrl: metadata?.url ?? null,
-      infoUrlText: metadata?.urlTitle ?? null,
-      infoOwner: metadata?.owner ?? null,
-      zIndex: searchLayer.zIndex !== 0 ? searchLayer.zIndex : null,
-      secondaryLabelFields: searchLayer.secondaryDisplayFields,
-      shortDisplayFields: searchLayer.shortDisplayFields,
-      serverType: svc.serverType,
-      projection: svc.projection ?? "",
-      version: svc.version ?? "1.1.0",
-      layer: selected[0] ?? "",
-      dataFormat: searchOutputToClient(searchLayer.outputFormat),
-      ...optionsRec,
-    });
+    appendSearchLayerToWfs(out, searchLayer);
   }
 
   for (const editingLayer of editingLayers) {
-    const service = editingLayer.service;
-    const svc = toClientServiceFields({
-      url: service.url,
-      type: service.type,
-      serverType: service.serverType,
-      version: service.version,
-      imageFormat: service.imageFormat,
-      projection: service.projection
-        ? { code: service.projection.code }
-        : undefined,
-      workspace: service.workspace ?? undefined,
-      getMapUrl: service.getMapUrl ?? undefined,
-    });
-    const selected = editingLayer.selectedLayers ?? [];
-    const optionsRec = getOptionsRecord(editingLayer.options);
-
-    out.wfstlayers.push({
-      id: editingLayer.id,
-      caption: editingLayer.name,
-      url: svc.url,
-      serverType: svc.serverType,
-      projection: svc.projection ?? "",
-      version: svc.version ?? "1.1.0",
-      layers: selected,
-      layer: selected[0] ?? "",
-      geometryField: editingLayer.geometryField ?? "geom",
-      ...getWfstEditingFields(optionsRec),
-    });
+    appendEditingLayerToWfst(out, editingLayer);
   }
 
   return out;

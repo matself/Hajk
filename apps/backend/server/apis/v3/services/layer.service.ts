@@ -512,6 +512,9 @@ class LayerService {
           HajkStatusCodes.UNKNOWN_LAYER_ID
         );
       }
+      await transaction.layerInstance.deleteMany({
+        where: { searchLayerId: id },
+      });
       await transaction.roleOnSearchLayer.deleteMany({
         where: { searchLayerId: id },
       });
@@ -538,6 +541,9 @@ class LayerService {
         HajkStatusCodes.UNKNOWN_LAYER_ID
       );
     }
+    await transaction.layerInstance.deleteMany({
+      where: { editingLayerId: id },
+    });
     await transaction.roleOnEditingLayer.deleteMany({
       where: { editingLayerId: id },
     });
@@ -549,24 +555,39 @@ class LayerService {
 
   async getUsageByLayerId(id: string) {
     const kind = await resolveLayerKind(id);
-    if (kind !== "display") {
-      return [];
+    const usageSelect = {
+      id: true,
+      displayLayerId: true,
+      searchLayerId: true,
+      editingLayerId: true,
+      usage: true,
+      map: { select: { id: true, name: true } },
+      group: {
+        select: {
+          id: true,
+          name: true,
+          maps: { select: { mapName: true } },
+        },
+      },
+    } as const;
+
+    if (kind === "search") {
+      return await prisma.layerInstance.findMany({
+        where: { searchLayerId: id, searchLayer: { deletedAt: null } },
+        select: usageSelect,
+      });
+    }
+
+    if (kind === "editing") {
+      return await prisma.layerInstance.findMany({
+        where: { editingLayerId: id, editingLayer: { deletedAt: null } },
+        select: usageSelect,
+      });
     }
 
     return await prisma.layerInstance.findMany({
       where: { displayLayerId: id, displayLayer: { deletedAt: null } },
-      select: {
-        id: true,
-        usage: true,
-        map: { select: { id: true, name: true } },
-        group: {
-          select: {
-            id: true,
-            name: true,
-            maps: { select: { mapName: true } },
-          },
-        },
-      },
+      select: usageSelect,
     });
   }
 

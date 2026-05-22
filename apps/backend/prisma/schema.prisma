@@ -325,6 +325,7 @@ model SearchLayer {
   lastSavedDate          DateTime?           @db.Timestamptz(3)
   deletedAt              DateTime?           @db.Timestamptz(3)
   restrictedToRoles      RoleOnSearchLayer[]
+  instances              LayerInstance[]
   options                Json                @default("{}")
 
   @@index([serviceId])
@@ -347,6 +348,7 @@ model EditingLayer {
   lastSavedDate     DateTime?            @db.Timestamptz(3)
   deletedAt         DateTime?            @db.Timestamptz(3)
   restrictedToRoles RoleOnEditingLayer[]
+  instances         LayerInstance[]
   options           Json                 @default("{}")
 
   @@index([serviceId])
@@ -354,18 +356,26 @@ model EditingLayer {
 
 model LayerInstance {
   id                String                @id @default(cuid())
-  displayLayerId    String
+  displayLayerId    String?
+  searchLayerId     String?
+  editingLayerId    String?
   mapId             Int?
   groupId           String?
-  displayLayer      DisplayLayer          @relation(fields: [displayLayerId], references: [id])
+  displayLayer      DisplayLayer?         @relation(fields: [displayLayerId], references: [id])
+  searchLayer       SearchLayer?          @relation(fields: [searchLayerId], references: [id])
+  editingLayer      EditingLayer?         @relation(fields: [editingLayerId], references: [id])
   map               Map?                  @relation(fields: [mapId], references: [id])
   group             Group?                @relation(fields: [groupId], references: [id])
-  usage             UseType
+  usage             UseType?
   restrictedToRoles RoleOnLayerInstance[]
   infoClickActive   Boolean               @default(true)
   visibleAtStart    Boolean               @default(false)
   zIndex            Int                   @default(0)
   options           Json                  @default("{}")
+
+  @@index([displayLayerId])
+  @@index([searchLayerId])
+  @@index([editingLayerId])
 }
 
 model GroupsOnMaps {

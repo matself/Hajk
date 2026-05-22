@@ -93,17 +93,35 @@ export const LayerCreateSchema = z.object({
   searchSettings: SearchSettingsSchema.optional(),
 });
 
-export const LayerInstanceCreateSchema = z.object({
-  displayLayerId: z.string().min(1, "Display layer ID is required"),
-  layerId: z.string().min(1, "Display layer ID is required").optional(),
-  mapId: z.number().optional(),
-  groupId: z.string().optional(),
-  usage: UseTypeSchema,
-  infoClickActive: z.boolean().default(true),
-  visibleAtStart: z.boolean().default(false),
-  zIndex: z.number().default(0),
-  options: z.record(z.string(), z.unknown()).default({}),
-});
+export const LayerInstanceCreateSchema = z
+  .object({
+    displayLayerId: z.string().min(1).optional(),
+    searchLayerId: z.string().min(1).optional(),
+    editingLayerId: z.string().min(1).optional(),
+    layerId: z.string().min(1).optional(),
+    mapId: z.number().optional(),
+    groupId: z.string().optional(),
+    usage: UseTypeSchema.optional(),
+    infoClickActive: z.boolean().default(true),
+    visibleAtStart: z.boolean().default(false),
+    zIndex: z.number().default(0),
+    options: z.record(z.string(), z.unknown()).default({}),
+  })
+  .superRefine((data, ctx) => {
+    const refs = [
+      data.displayLayerId,
+      data.searchLayerId,
+      data.editingLayerId,
+      data.layerId,
+    ].filter(Boolean);
+    if (refs.length !== 1) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Provide exactly one of displayLayerId, searchLayerId, editingLayerId, or layerId",
+      });
+    }
+  });
 
 export const MetadataCreateSchema = z.object({
   title: z.string().optional(),
@@ -173,8 +191,10 @@ export const LayerUpdateSchema = z.object({
 });
 
 export const LayerInstanceUpdateSchema = z.object({
-  displayLayerId: z.string().min(1, "Display layer ID is required").optional(),
-  layerId: z.string().min(1, "Display layer ID is required").optional(),
+  displayLayerId: z.string().min(1).optional(),
+  searchLayerId: z.string().min(1).optional(),
+  editingLayerId: z.string().min(1).optional(),
+  layerId: z.string().min(1).optional(),
   mapId: z.number().optional(),
   groupId: z.string().optional(),
   usage: UseTypeSchema.optional(),
