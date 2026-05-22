@@ -369,7 +369,7 @@ export function handleClick(evt, map, callback) {
                       ...experimentalParseEsriWmsRawXml(response.value, text)
                     );
                   })
-                  .catch((err) => {
+                  .catch((_err) => {
                     console.error(
                       "GetFeatureInfo couldn't retrieve correct data for the clicked object. "
                     );
@@ -386,7 +386,7 @@ export function handleClick(evt, map, callback) {
                       ...getFeaturesFromXmlOrGml(response.value, text)
                     );
                   })
-                  .catch((err) => {
+                  .catch((_err) => {
                     console.error(
                       "GetFeatureInfo couldn't retrieve correct data for the clicked object. "
                     );

@@ -14,7 +14,7 @@ import {
 import { styled } from "@mui/material/styles";
 import HajkToolTip from "components/HajkToolTip";
 
-const ChipsWrapper = styled("div")(({ theme }) => ({
+const ChipsWrapper = styled("div")(({ _theme }) => ({
   display: "flex",
   flexWrap: "wrap",
 }));

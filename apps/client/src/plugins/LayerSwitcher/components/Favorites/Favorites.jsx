@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useSnackbar } from "notistack";
 import useCookieStatus from "hooks/useCookieStatus";

@@ -64,7 +64,7 @@ const normalizeLegend = (legend, fallbackDescription) => {
 };
 
 class WMTSLayer {
-  constructor(config, proxyUrl, map) {
+  constructor(config, proxyUrl, _map) {
     config = {
       ...wmtsLayerProperties,
       ...config,

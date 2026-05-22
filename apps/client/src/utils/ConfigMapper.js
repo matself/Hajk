@@ -35,7 +35,8 @@ export default class ConfigMapper {
            * See: https://docs.geoserver.org/latest/en/user/services/wms/get_legend_graphic/index.html#controlling-legend-appearance-with-legend-options
            */
           // Use custom legend options if specified by admin
-          geoserverLegendOptions = properties.mapConfig.map.hasOwnProperty(
+          geoserverLegendOptions = Object.hasOwn(
+            properties.mapConfig.map,
             "geoserverLegendOptions"
           )
             ? "&LEGEND_OPTIONS=" +

@@ -211,7 +211,7 @@ class Preset extends React.PureComponent {
     // If config for Control isn't found, or if the config doesn't contain any presets, quit.
     if (
       this.config === undefined ||
-      (this.config.hasOwnProperty("options") &&
+      (Object.hasOwn(this.config, "options") &&
         this.config.options.presetList.length < 1)
     ) {
       return null;

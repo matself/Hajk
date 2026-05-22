@@ -175,7 +175,7 @@ function wmsRasterParser(featureCollection) {
               !Number.isNaN(Number(attribute.textContent)) // Don't allow parsing resulting in NaN
                 ? Number(attribute.textContent) // Use parsed value if conditions above were met, else…
                 : attribute.textContent; // …just user the text value
-          } catch (error) {
+          } catch (_error) {
             attrValue = attribute.textContent; // If parsing resulted in an error, just use the text value.
           }
           feature.set(attribute.localName, attrValue);

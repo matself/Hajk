@@ -37,7 +37,7 @@ class TimeSliderSettings extends React.PureComponent {
               errorType = layer.layerError;
             });
           return (
-            <ListItem key={index} sx={(theme) => ({})} disabled={!visible}>
+            <ListItem key={index} sx={(_theme) => ({})} disabled={!visible}>
               {error && (
                 <HajkToolTip
                   key={`tt_${index}`}

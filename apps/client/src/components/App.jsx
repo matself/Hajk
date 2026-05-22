@@ -555,7 +555,7 @@ class App extends React.PureComponent {
     this.bindHandlers();
   }
 
-  componentDidCatch(error) {}
+  componentDidCatch(_error) {}
 
   bindHandlers() {
     // Extend the hajkPublicApi with a couple of things that are available now
@@ -916,7 +916,7 @@ class App extends React.PureComponent {
    *
    * @memberof App
    */
-  togglePermanent = (e) => {
+  togglePermanent = (_e) => {
     this.setState({ drawerPermanent: !this.state.drawerPermanent }, () => {
       // Viewport size has changed, hence we must tell OL
       // to refresh canvas size.
@@ -949,11 +949,11 @@ class App extends React.PureComponent {
     });
   };
 
-  handleMouseEnter = (e) => {
+  handleMouseEnter = (_e) => {
     this.setState({ drawerMouseOverLock: true });
   };
 
-  handleMouseLeave = (e) => {
+  handleMouseLeave = (_e) => {
     this.setState({ drawerMouseOverLock: false });
   };
 
@@ -982,7 +982,7 @@ class App extends React.PureComponent {
 
     return (
       c !== undefined &&
-      c.hasOwnProperty("options") && <Information options={c.options} />
+      Object.hasOwn(c, "options") && <Information options={c.options} />
     );
   }
 

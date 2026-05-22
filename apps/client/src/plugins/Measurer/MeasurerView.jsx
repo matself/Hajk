@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import HajkToolTip from "components/HajkToolTip";
 import SelectFeaturesDialog from "utils/SelectFeaturesDialog";
 
-const SvgImg = styled("img")(({ theme }) => ({
+const SvgImg = styled("img")(({ _theme }) => ({
   height: "24px",
   width: "24px",
 }));
