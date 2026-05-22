@@ -23,11 +23,12 @@ class GroupsService {
   }
 
   async getLayersByGroupId(id: string) {
-    const layers = await prisma.layer.findMany({
-      where: { groups: { some: { groupId: id } } },
+    const instances = await prisma.layerInstance.findMany({
+      where: { groupId: id, displayLayer: { deletedAt: null } },
+      include: { displayLayer: true },
     });
 
-    return layers;
+    return instances.map((instance) => instance.displayLayer);
   }
 
   async getMapsByGroupId(id: string) {

@@ -55,13 +55,15 @@ const SearchSettingsSchema = z.object({
   geometryField: z.string().optional(),
 });
 
+const LayerKindSchema = z.enum(["display", "search", "editing"]);
+
 export const LayerCreateSchema = z.object({
+  layerKind: LayerKindSchema.default("display"),
   name: z.string().min(1, "Layer name is required"),
   internalName: z.string().optional(),
   description: z.string().optional(),
   serviceId: z.string().min(1, "Service ID is required"),
   metadataId: z.string().optional(),
-  searchSettingsId: z.string().optional(),
   infoClickSettingsId: z.string().optional(),
   selectedLayers: z.array(z.string()).default([]),
   locked: z.boolean().default(false),
@@ -92,7 +94,8 @@ export const LayerCreateSchema = z.object({
 });
 
 export const LayerInstanceCreateSchema = z.object({
-  layerId: z.string().min(1, "Layer ID is required"),
+  displayLayerId: z.string().min(1, "Display layer ID is required"),
+  layerId: z.string().min(1, "Display layer ID is required").optional(),
   mapId: z.number().optional(),
   groupId: z.string().optional(),
   usage: UseTypeSchema,
@@ -134,12 +137,12 @@ export const SearchSettingsCreateSchema = z.object({
 });
 
 export const LayerUpdateSchema = z.object({
+  layerKind: LayerKindSchema.optional(),
   name: z.string().min(1, "Layer name is required").optional(),
   internalName: z.string().optional(),
   description: z.string().optional(),
   serviceId: z.string().min(1, "Service ID is required").optional(),
   metadataId: z.string().optional(),
-  searchSettingsId: z.string().optional(),
   infoClickSettingsId: z.string().optional(),
   selectedLayers: z.array(z.string()).optional(),
   locked: z.boolean().optional(),
@@ -170,7 +173,8 @@ export const LayerUpdateSchema = z.object({
 });
 
 export const LayerInstanceUpdateSchema = z.object({
-  layerId: z.string().min(1, "Layer ID is required").optional(),
+  displayLayerId: z.string().min(1, "Display layer ID is required").optional(),
+  layerId: z.string().min(1, "Display layer ID is required").optional(),
   mapId: z.number().optional(),
   groupId: z.string().optional(),
   usage: UseTypeSchema.optional(),

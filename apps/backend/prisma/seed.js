@@ -7,8 +7,9 @@ const prisma = new PrismaClient();
 
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
 
-const jsonToPrisma = new Map();
-const prismaToJson = new Map();
+const jsonToDisplayLayerId = new Map();
+const jsonToSearchLayerId = new Map();
+const jsonToEditingLayerId = new Map();
 
 const generateRandomName = () => {
   const adjectives = [
@@ -202,6 +203,22 @@ const extractServiceTypeFromKey = (key) => {
   }
 };
 
+const LAYER_KIND_BY_JSON_KEY = {
+  wmslayers: "display",
+  wmtslayers: "display",
+  vectorlayers: "display",
+  arcgislayers: "display",
+  wfslayers: "search",
+  wfstlayers: "editing",
+};
+
+function mapJsonLayerIdToPrisma(jsonLayerId, jsonKey) {
+  const kind = LAYER_KIND_BY_JSON_KEY[jsonKey];
+  if (kind === "search") return jsonToSearchLayerId.get(jsonLayerId);
+  if (kind === "editing") return jsonToEditingLayerId.get(jsonLayerId);
+  return jsonToDisplayLayerId.get(jsonLayerId);
+}
+
 async function readAndPopulateLayers() {
   try {
     const pathToFile = path.join(process.cwd(), "App_Data", `layers.json`);
@@ -266,111 +283,179 @@ async function readAndPopulateLayers() {
         .map((e) => e.id)
         .filter((e, i, a) => a.indexOf(e) !== i);
       // Abort if found (we can't continue because we
-      // enforce a unique constraint on the IDs in Layer model)
+      // enforce unique JSON ids within each bucket
       if (dupes.length !== 0) {
         throw new Error(
           `Found duplicate layer id(s): ${dupes.toString()}. Please remove the duplicate entry/ies from your layers.json and retry.`
         );
       }
 
-      // We'll need the layer's type, to select the correct service from the database
       const type = extractServiceTypeFromKey(key);
-
-      // Loop through layers, but do it asynchronously as we'll
-      // need to await for each layer's service to be inserted into the database
+      const layerKind = LAYER_KIND_BY_JSON_KEY[key];
 
       for (const layer of cleanedLayers) {
         const service = await prisma.service.findFirst({
           where: { url: layer.url, type },
         });
 
-        const options = {
-          useCustomDpiList: layer.useCustomDpiList,
-          customDpiList: layer.customDpiList,
-        };
+        const selectedLayers = Array.isArray(layer.layers)
+          ? layer.layers
+          : layer.layer
+            ? [layer.layer]
+            : [];
 
-        const createdLayer = await prisma.layer.create({
-          data: {
-            name: layer.caption,
-            internalName: !layer.internalLayerName
-              ? generateRandomName()
-              : layer.internalLayerName,
-            legendUrl: layer.legend,
-            legendIconUrl: layer.legendIcon,
-            opacity: layer.opacity,
-            minZoom: layer.minZoom,
-            maxZoom: layer.maxZoom,
-            minMaxZoomAlertOnToggleOnly: layer.minMaxZoomAlertOnToggleOnly,
-            customRatio: layer.customRatio,
-            timeSliderVisible: layer.timeSliderVisible,
-            timeSliderStart: layer.timeSliderStart,
-            timeSliderEnd: layer.timeSliderEnd,
-            singleTile: layer.singleTile,
-            tiled: layer.tiled,
-            hidpi: layer.hidpi,
-            service: { connect: { id: service.id } },
-            metadata: {
-              create: {
-                title: layer.infoTitle,
-                description: layer.infoText,
-                url: layer.infoUrl,
-                urlTitle: layer.infoUrlText,
-                created: new Date(),
+        if (layerKind === "search") {
+          const createdLayer = await prisma.searchLayer.create({
+            data: {
+              name: layer.caption,
+              internalName: layer.internalLayerName || generateRandomName(),
+              selectedLayers,
+              active: Boolean(
+                layer.searchUrl ||
+                  (Array.isArray(layer.searchFields) &&
+                    layer.searchFields.length > 0)
+              ),
+              url: layer.searchUrl,
+              searchFields:
+                layer.searchFields ||
+                (typeof layer.searchPropertyName === "string"
+                  ? layer.searchPropertyName.split(",")
+                  : layer.searchPropertyName || []),
+              primaryDisplayFields:
+                layer.displayFields ||
+                (typeof layer.searchDisplayName === "string"
+                  ? layer.searchDisplayName.split(",")
+                  : layer.searchDisplayName || []),
+              secondaryDisplayFields:
+                typeof layer.secondaryLabelFields === "string"
+                  ? layer.secondaryLabelFields.split(",")
+                  : layer.secondaryLabelFields || [],
+              shortDisplayFields:
+                typeof layer.searchShortDisplayName === "string"
+                  ? layer.searchShortDisplayName.split(",")
+                  : layer.searchShortDisplayName || [],
+              outputFormat: layer.outputFormat || undefined,
+              geometryField: layer.geometryField || layer.searchGeometryField,
+              infobox: layer.infobox,
+              aliasDict: layer.aliasDict,
+              zIndex: layer.zIndex ?? 0,
+              service: { connect: { id: service.id } },
+              metadata: {
+                create: {
+                  title: layer.infoTitle,
+                  description: layer.infoText,
+                  url: layer.infoUrl,
+                  urlTitle: layer.infoUrlText,
+                  owner: layer.infoOwner,
+                  created: new Date(),
+                },
+              },
+              options: {},
+            },
+          });
+          jsonToSearchLayerId.set(layer.id, createdLayer.id);
+        } else if (layerKind === "editing") {
+          const createdLayer = await prisma.editingLayer.create({
+            data: {
+              name: layer.caption,
+              internalName: layer.internalLayerName || generateRandomName(),
+              selectedLayers,
+              geometryField: layer.geometryField || layer.searchGeometryField,
+              service: { connect: { id: service.id } },
+              options: {
+                editPoint: layer.editPoint,
+                editMultiPoint: layer.editMultiPoint,
+                editLine: layer.editLine,
+                editMultiLine: layer.editMultiLine,
+                editPolygon: layer.editPolygon,
+                editMultiPolygon: layer.editMultiPolygon,
+                allowMultiGeometries: layer.allowMultipleGeometries,
+                editableFields: layer.editableFields,
+                nonEditableFields: layer.nonEditableFields,
               },
             },
-            infoClickSettings: {
-              create: {
-                format: layer.infoFormat,
-                sortProperty: layer.infoClickSortProperty,
-                sortMethod: layer.infoClickSortType,
-                sortDescending: layer.infoClickSortDesc,
-              },
-            },
-            searchSettings: {
-              create: {
-                active: Boolean(layer.searchUrl),
-                url: layer.searchUrl,
-                searchFields:
-                  typeof layer.searchPropertyName === "string"
-                    ? layer.searchPropertyName.split(",")
-                    : layer.searchPropertyName || [],
-                primaryDisplayFields:
-                  typeof layer.searchDisplayName === "string"
-                    ? layer.searchDisplayName.split(",")
-                    : layer.searchDisplayName || [],
-                secondaryDisplayFields:
-                  typeof layer.secondaryLabelFields === "string"
-                    ? layer.secondaryLabelFields.split(",")
-                    : layer.secondaryLabelFields || [],
-                shortDisplayFields:
-                  typeof layer.searchShortDisplayName === "string"
-                    ? layer.searchShortDisplayName.split(",")
-                    : layer.searchShortDisplayName || [],
-                outputFormat: layer.searchOutputFormat || undefined,
-                geometryField: layer.searchGeometryField,
-              },
-            },
-            options,
-          },
-        });
+          });
+          jsonToEditingLayerId.set(layer.id, createdLayer.id);
+        } else {
+          const options = {
+            useCustomDpiList: layer.useCustomDpiList,
+            customDpiList: layer.customDpiList,
+          };
 
-        // Store the mapping between layer ID and layer ID from DB to simplify seeding of layer groups etc.
-        jsonToPrisma.set(layer.id, createdLayer.id);
-        prismaToJson.set(createdLayer.id, layer.id);
+          const createdLayer = await prisma.displayLayer.create({
+            data: {
+              name: layer.caption,
+              internalName: layer.internalLayerName || generateRandomName(),
+              selectedLayers,
+              legendUrl: layer.legend,
+              legendIconUrl: layer.legendIcon,
+              opacity: layer.opacity,
+              minZoom: layer.minZoom,
+              maxZoom: layer.maxZoom,
+              minMaxZoomAlertOnToggleOnly: layer.minMaxZoomAlertOnToggleOnly,
+              customRatio: layer.customRatio,
+              timeSliderVisible: layer.timeSliderVisible,
+              timeSliderStart: layer.timeSliderStart,
+              timeSliderEnd: layer.timeSliderEnd,
+              singleTile: layer.singleTile,
+              tiled: layer.tiled,
+              hidpi: layer.hidpi,
+              style: layer.style,
+              hideExpandArrow: layer.hideExpandArrow,
+              zIndex: layer.zIndex ?? 0,
+              service: { connect: { id: service.id } },
+              metadata: {
+                create: {
+                  title: layer.infoTitle,
+                  description: layer.infoText,
+                  url: layer.infoUrl,
+                  urlTitle: layer.infoUrlText,
+                  owner: layer.infoOwner,
+                  created: new Date(),
+                },
+              },
+              infoClickSettings: {
+                create: {
+                  format: layer.infoFormat,
+                  sortProperty: layer.infoClickSortProperty,
+                  sortMethod: layer.infoClickSortType,
+                  sortDescending: layer.infoClickSortDesc,
+                },
+              },
+              options,
+            },
+          });
+          jsonToDisplayLayerId.set(layer.id, createdLayer.id);
+        }
       }
 
-      const layersInDB = await prisma.layer.findMany({
-        where: { service: { type } },
-      });
+      const countByKind = {
+        display: await prisma.displayLayer.count({
+          where: { service: { type } },
+        }),
+        search: await prisma.searchLayer.count({
+          where: { service: { type } },
+        }),
+        editing: await prisma.editingLayer.count({
+          where: { service: { type } },
+        }),
+      };
 
-      console.log(`Created ${layersInDB.length} ${type} layers`);
+      console.log(
+        `Created ${countByKind[layerKind] ?? 0} ${type} ${layerKind} layers`
+      );
 
-      // Add potential role restrictions on the layers
       for await (const layer of cleanedLayers) {
+        const prismaId = mapJsonLayerIdToPrisma(layer.id, key);
+        if (!prismaId) continue;
         await updateRolesFromVisibleForGroups(
           layer.visibleForGroups || [],
-          jsonToPrisma.get(layer.id),
-          "layer"
+          prismaId,
+          layerKind === "search"
+            ? "searchLayer"
+            : layerKind === "editing"
+              ? "editingLayer"
+              : "displayLayer"
         );
       }
     }
@@ -488,16 +573,15 @@ async function populateMapLayerStructure(mapName) {
   // the Layer model now either). If we'd try to connect such a layer
   // to a map or group, we'd get a foreign key error. So let's wash the
   // layers so only valid entries remain.
-  const layersInDB = await prisma.layer.findMany({
+  const displayLayersInDB = await prisma.displayLayer.findMany({
     select: { id: true },
   });
 
-  const layerIdsInDB = layersInDB.map((l) => l.id);
+  const displayLayerIdsInDB = displayLayersInDB.map((l) => l.id);
 
-  // Helper: used as a filter predicate to remove layers
-  // that did not exist in database.
   const removeUnknownLayers = (l) => {
-    return layerIdsInDB.indexOf(jsonToPrisma.get(l.layerId)) !== -1;
+    const prismaId = jsonToDisplayLayerId.get(l.layerId);
+    return prismaId && displayLayerIdsInDB.includes(prismaId);
   };
 
   const validLayersOnMaps = layersOnMaps.filter(removeUnknownLayers);
@@ -516,7 +600,7 @@ async function populateMapLayerStructure(mapName) {
   for await (const layer of validLayers) {
     const layerInstance = await prisma.layerInstance.create({
       data: {
-        layerId: jsonToPrisma.get(layer.layerId),
+        displayLayerId: jsonToDisplayLayerId.get(layer.layerId),
         mapId: layer.mapId || undefined,
         groupId: layer.groupId || undefined,
         usage: layer.usage,
@@ -611,10 +695,26 @@ async function updateRolesFromVisibleForGroups(
           },
         });
         break;
-      case "layer":
-        await prisma.roleOnLayer.create({
+      case "displayLayer":
+        await prisma.roleOnDisplayLayer.create({
           data: {
-            layer: { connect: { id: entityId } },
+            displayLayer: { connect: { id: entityId } },
+            role: { connect: { id: role.id } },
+          },
+        });
+        break;
+      case "searchLayer":
+        await prisma.roleOnSearchLayer.create({
+          data: {
+            searchLayer: { connect: { id: entityId } },
+            role: { connect: { id: role.id } },
+          },
+        });
+        break;
+      case "editingLayer":
+        await prisma.roleOnEditingLayer.create({
+          data: {
+            editingLayer: { connect: { id: entityId } },
             role: { connect: { id: role.id } },
           },
         });
@@ -664,11 +764,11 @@ async function main() {
   const existingInstances = await prisma.layerInstance.count();
   if (existingInstances === 0) {
     const firstMap = await prisma.map.findFirst();
-    const firstLayers = await prisma.layer.findMany({ take: 3 });
+    const firstLayers = await prisma.displayLayer.findMany({ take: 3 });
     if (firstMap && firstLayers.length > 0) {
       await prisma.layerInstance.createMany({
         data: firstLayers.map((layer) => ({
-          layerId: layer.id,
+          displayLayerId: layer.id,
           mapId: firstMap.id,
           usage: "FOREGROUND",
         })),

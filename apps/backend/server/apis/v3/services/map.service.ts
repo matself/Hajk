@@ -101,7 +101,7 @@ class MapService {
         projections: true,
         tools: { include: { tool: true } },
         layers: {
-          include: { layer: true },
+          include: { displayLayer: true },
         },
         groups: { include: { group: { include: { layers: true } } } },
       },
@@ -159,16 +159,18 @@ class MapService {
   }
 
   async getLayersForMap(mapName: string) {
-    const layers = await prisma.layer.findMany({
+    const instances = await prisma.layerInstance.findMany({
       where: {
+        displayLayer: { deletedAt: null },
         OR: [
-          { maps: { some: { mapName } } },
-          { groups: { some: { group: { maps: { some: { mapName } } } } } },
+          { map: { name: mapName } },
+          { group: { maps: { some: { mapName } } } },
         ],
       },
+      include: { displayLayer: true },
     });
 
-    return layers;
+    return instances.map((instance) => instance.displayLayer);
   }
 
   async getProjectionsForMap(mapName: string) {
