@@ -3,11 +3,7 @@ import SearchModel from "./SearchModel";
 import WindowZModel from "./WindowZModel";
 import { decorateConfig } from "./appModel/configTranslator";
 import { createMap } from "./appModel/mapFactory";
-import {
-  addLayers,
-  highlight,
-  clear,
-} from "./appModel/layerLoader";
+import { addLayers, highlight, clear } from "./appModel/layerLoader";
 import { setLayerVisibilityFromParams } from "./appModel/layerVisibility";
 import PluginManager from "./appModel/pluginManager";
 
@@ -38,7 +34,7 @@ class AppModel {
    * @param object Config
    * @param Observer observer
    */
-  constructor(settings) {
+  constructor(_settings) {
     this.map = undefined;
     this.activeTool = undefined;
     this.layersFromParams = [];
@@ -93,7 +89,6 @@ class AppModel {
   registerWindowPlugin(windowComponent) {
     this.pluginManager.registerWindowPlugin(windowComponent);
   }
-
 
   onWindowOpen(currentWindow) {
     this.pluginManager.onWindowOpen(currentWindow);
@@ -225,5 +220,4 @@ class AppModel {
   }
 }
 
-/* eslint import/no-anonymous-default-export: [2, {"allowNew": true}] */
 export default new AppModel();

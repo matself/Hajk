@@ -149,7 +149,10 @@ function applyUrlOverridesToLayer(
     // the sublayers that should be active for this given layer. A layer's key will
     // only exist in groupLayersFromParams if there is a subset of sublayers to be shown
     // at start (default behavior is to turn on all sublayers).
-    layer.visibleAtStartSubLayers = Object.hasOwn(groupLayersFromParams, layer.id)
+    layer.visibleAtStartSubLayers = Object.hasOwn(
+      groupLayersFromParams,
+      layer.id
+    )
       ? groupLayersFromParams[layer.id]?.split(",")
       : [];
   }
@@ -180,7 +183,10 @@ function applyBackgroundLayerVisibilityFromParams(
   }
 
   // Check if the layerParams contains -3 (osm-layer) and handle set it to visible on load
-  if (layersFromParams.includes("-3") && layerSwitcherConf?.options?.enableOSM) {
+  if (
+    layersFromParams.includes("-3") &&
+    layerSwitcherConf?.options?.enableOSM
+  ) {
     const osmLayer = map.getAllLayers().find((l) => l.get("name") === "-3");
     if (osmLayer === undefined) {
       console.warn(`Cannot find the OSM layer`);

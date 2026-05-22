@@ -132,9 +132,7 @@ function syncFullyToggledGroupLayers(map, wantedL, wantedGl) {
     const { baseId } = parseLayerId(layerId);
     const olLayer = map
       .getAllLayers()
-      .find(
-        (l) => l.get("name") === baseId && l.get("layerType") === "group"
-      );
+      .find((l) => l.get("name") === baseId && l.get("layerType") === "group");
 
     if (olLayer !== undefined) {
       // Determine how we should call the layerswitcher.showLayer event.
@@ -156,7 +154,11 @@ function syncFullyToggledGroupLayers(map, wantedL, wantedGl) {
  * @param {string} layers - Comma-separated list of layers to be shown
  * @param {string} groupLayers - A stringified JSON object specifying sublayer visibility.
  */
-export function setLayerVisibilityFromParams(appModel, layers = null, groupLayers = "{}") {
+export function setLayerVisibilityFromParams(
+  appModel,
+  layers = null,
+  groupLayers = "{}"
+) {
   // Grab the wanted values from params
   const l = layers;
   const gl = groupLayers ?? "{}"; // Default to a stringified empty object, as that's what we'll compare against
@@ -167,10 +169,7 @@ export function setLayerVisibilityFromParams(appModel, layers = null, groupLayer
     appModel.anchorModel.getPartlyToggledGroupLayers();
 
   // Compare these two — early-exit gate: do nothing if state hasn't changed
-  if (
-    l === visibleLayers &&
-    JSON.stringify(partlyToggledGroupLayers) === gl
-  ) {
+  if (l === visibleLayers && JSON.stringify(partlyToggledGroupLayers) === gl) {
     // console.log("No changes");
   } else {
     const wantedL = l.split(",");

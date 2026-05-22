@@ -88,56 +88,58 @@ function buildSearchSources(searchTool, layers) {
   // (that can be found in our layers.wmslayers array). In there, a properly
   // configured WMS layer that is to be searchable will have certain search-related
   // settings active (such as name of the geometry column or URL to the WFS service).
-  const wmslayers = searchTool.options.selectedSources?.flatMap((wmslayerId) => {
-    // Find the corresponding layer
-    const layer = layers.wmslayers.find((l) => l.id === wmslayerId);
+  const wmslayers = searchTool.options.selectedSources?.flatMap(
+    (wmslayerId) => {
+      // Find the corresponding layer
+      const layer = layers.wmslayers.find((l) => l.id === wmslayerId);
 
-    // Prevent crash if no layer was found, see #1206
-    if (layer === undefined) {
-      console.warn(
-        `WMS layer with ID "${wmslayerId}" does not exist and should be removed from config. Please contact the system administrator.`
-      );
-      return undefined;
+      // Prevent crash if no layer was found, see #1206
+      if (layer === undefined) {
+        console.warn(
+          `WMS layer with ID "${wmslayerId}" does not exist and should be removed from config. Please contact the system administrator.`
+        );
+        return undefined;
+      }
+
+      // Look into the layersInfo array - it will contain sublayers. We must
+      // expose each one of them as a WFS service.
+      return layer?.layersInfo.map((sl) => {
+        return {
+          id: sl.id,
+          pid: layer.id, // Relevant for group layers: will hold the actual OL layer name, not only current sublayer
+          caption: sl.caption,
+          url: sl.searchUrl || layer.url,
+          layers: [sl.id],
+          searchFields:
+            typeof sl.searchPropertyName === "string" &&
+            sl.searchPropertyName.length > 0
+              ? sl.searchPropertyName.split(",")
+              : [],
+          infobox: sl.infobox || "",
+          infoclickIcon: sl.infoclickIcon || "",
+          aliasDict: "",
+          displayFields:
+            typeof sl.searchDisplayName === "string" &&
+            sl.searchDisplayName.length > 0
+              ? sl.searchDisplayName.split(",")
+              : [],
+          secondaryLabelFields:
+            typeof sl.secondaryLabelFields === "string" &&
+            sl.secondaryLabelFields.length > 0
+              ? sl.secondaryLabelFields.split(",")
+              : [],
+          shortDisplayFields:
+            typeof sl.searchShortDisplayName === "string" &&
+            sl.searchShortDisplayName.length > 0
+              ? sl.searchShortDisplayName.split(",")
+              : [],
+          geometryField: sl.searchGeometryField || "geom",
+          outputFormat: sl.searchOutputFormat || "GML3",
+          serverType: layer.serverType || "geoserver",
+        };
+      });
     }
-
-    // Look into the layersInfo array - it will contain sublayers. We must
-    // expose each one of them as a WFS service.
-    return layer?.layersInfo.map((sl) => {
-      return {
-        id: sl.id,
-        pid: layer.id, // Relevant for group layers: will hold the actual OL layer name, not only current sublayer
-        caption: sl.caption,
-        url: sl.searchUrl || layer.url,
-        layers: [sl.id],
-        searchFields:
-          typeof sl.searchPropertyName === "string" &&
-          sl.searchPropertyName.length > 0
-            ? sl.searchPropertyName.split(",")
-            : [],
-        infobox: sl.infobox || "",
-        infoclickIcon: sl.infoclickIcon || "",
-        aliasDict: "",
-        displayFields:
-          typeof sl.searchDisplayName === "string" &&
-          sl.searchDisplayName.length > 0
-            ? sl.searchDisplayName.split(",")
-            : [],
-        secondaryLabelFields:
-          typeof sl.secondaryLabelFields === "string" &&
-          sl.secondaryLabelFields.length > 0
-            ? sl.secondaryLabelFields.split(",")
-            : [],
-        shortDisplayFields:
-          typeof sl.searchShortDisplayName === "string" &&
-          sl.searchShortDisplayName.length > 0
-            ? sl.searchShortDisplayName.split(",")
-            : [],
-        geometryField: sl.searchGeometryField || "geom",
-        outputFormat: sl.searchOutputFormat || "GML3",
-        serverType: layer.serverType || "geoserver",
-      };
-    });
-  });
+  );
 
   // Spread the WMS search layers onto the array with WFS search sources,
   // from now on they're equal to our code. Before spreading, let's filter
