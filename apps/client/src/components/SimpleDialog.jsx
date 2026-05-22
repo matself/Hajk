@@ -1,22 +1,17 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 
-import Dialog from "@mui/material/Dialog";
+import BaseDialog from "./Dialog/BaseDialog";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
-import Slide from "@mui/material/Slide";
 
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 SimpleDialog.propTypes = {
   globalObserver: PropTypes.object.isRequired,
 };
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 export default function SimpleDialog({ globalObserver }) {
   const [open, setOpen] = React.useState(false);
@@ -41,12 +36,7 @@ export default function SimpleDialog({ globalObserver }) {
   };
 
   return (
-    <Dialog
-      onClose={handleClose}
-      open={open}
-      fullScreen
-      TransitionComponent={Transition}
-    >
+    <BaseDialog onClose={handleClose} open={open} fullScreen>
       <AppBar sx={{ position: "relative" }}>
         <Toolbar>
           <IconButton
@@ -69,6 +59,6 @@ export default function SimpleDialog({ globalObserver }) {
           components={{ Toolbar: GridToolbar }}
         ></DataGrid>
       </div>
-    </Dialog>
+    </BaseDialog>
   );
 }

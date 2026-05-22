@@ -4,7 +4,9 @@ import { styled } from "@mui/material/styles";
 import withSnackbar from "components/WithSnackbar";
 import {
   Badge,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   InputLabel,
   MenuItem,
@@ -177,7 +179,9 @@ class AdvancedOptions extends React.PureComponent {
       logoPlacement,
       includeQrCode,
       qrCodePlacement,
+      includeLegendsInPdf,
       printOptionsOk,
+      saveAsType,
     } = this.props;
     return (
       <>
@@ -404,6 +408,24 @@ class AdvancedOptions extends React.PureComponent {
               </Grid>
             </FormControlContainer>
           )}
+          {this.props.options.allowLegendsInPdfOutput &&
+            saveAsType === "PDF" && (
+              <FormControlContainer container>
+                <Grid size={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        id="includeLegendsInPdf"
+                        name="includeLegendsInPdf"
+                        checked={includeLegendsInPdf}
+                        onChange={handleChange}
+                      />
+                    }
+                    label="Inkludera teckenförklaring i PDF"
+                  />
+                </Grid>
+              </FormControlContainer>
+            )}
           <Popover
             id="color-picker-menu"
             anchorEl={this.state.anchorEl}

@@ -242,7 +242,7 @@ export default class FeaturePropsParsing {
             // See #669
             case "=":
               // Using truthy equal below: we want 2 and "2" to be seen as equal.
-              // eslint-disable-next-line eqeqeq
+
               if (k == v) {
                 return matched.content;
               } else {
@@ -251,7 +251,7 @@ export default class FeaturePropsParsing {
             // See #1128
             case "!=":
               // Using truthy not equal below: we want '2 is not equal "2"' to evaluate to false.
-              // eslint-disable-next-line eqeqeq
+
               if (k != v) {
                 return matched.content;
               } else {
@@ -273,6 +273,27 @@ export default class FeaturePropsParsing {
       default:
         return args[0];
     }
+  };
+
+  // Converts [text](url){key=value ...} into <a href="url" key="value" ...>text</a>.
+  // Runs before placeholder replacement so the {attrs} block isn't consumed.
+  #linkAttributeReplacer = (match, text, href, attrsStr) => {
+    // Splits on whitespace but respects quoted values,
+    // e.g. key="value with spaces"
+    // Not pretty and readable, but it works.
+    const attrs = (
+      attrsStr.match(/[\w-]+=(?:"[^"]*"|'[^']*'|\S+)|[\w-]+/g) || []
+    )
+      .map((attr) => {
+        const eqIdx = attr.indexOf("=");
+        if (eqIdx === -1) return attr;
+        const key = attr.substring(0, eqIdx);
+        let value = attr.substring(eqIdx + 1);
+        value = value.replace(/^["']|["']$/g, "");
+        return `${key}="${value}"`;
+      })
+      .join(" ");
+    return `<a href="${href}" ${attrs}>${text}</a>`;
   };
 
   /**
@@ -368,6 +389,17 @@ export default class FeaturePropsParsing {
    */
   mergeFeaturePropsWithMarkdown = async () => {
     if (this.markdown && typeof this.markdown === "string") {
+      // Convert markdown links with inline attributes to HTML anchors before
+      // placeholder replacement, which would otherwise consume the {attrs} block.
+      // E.g. [text](url){link-check=true} -> <a href="url" link-check="true">text</a>
+      // Requires allowDangerousHtml (rehype-raw) to render the resulting HTML.
+      if (this.allowDangerousHtml) {
+        this.markdown = this.markdown.replace(
+          /\[([^\]]*)\]\(([^)]*)\)\{(?!\{)([^}]+)\}/g,
+          this.#linkAttributeReplacer
+        );
+      }
+
       // this.markdown is a string that contains placeholders and conditionals for our future values.
       // The placeholders are surrounded by single curly brackets ({ & }) while conditionals are
       // surrounded by double curly brackets, e.g. "{{if ...}}".
