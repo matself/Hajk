@@ -203,12 +203,7 @@ export default class DocumentHandlerModel {
       this.chapterInfo = [...this.chapterInfo, chapterInfo];
       level = level + 1;
       chapter.chapters.forEach((subChapter) => {
-        _subChapter = this.setChapterInfo(
-          subChapter,
-          level,
-          color,
-          documentFileName
-        );
+        this.setChapterInfo(subChapter, level, color, documentFileName);
       });
     } else {
       chapterInfo.hasSubChapters = false;
