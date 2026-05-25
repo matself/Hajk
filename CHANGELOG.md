@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
+- Client: PropertyChecker got a substantial overhaul, including changing the format requirements for the underlying WMS layer. See [#1761](https://github.com/hajkmap/Hajk/issues/1761) as well as the tool's updated [README.md](https://github.com/hajkmap/Hajk/blob/f1bdbb77aff736df0675dc1e65234ec8be9ed3aa/apps/client/src/plugins/PropertyChecker/readme.md).
+
 ### Added
 
 - Client + Admin: DocumentHandler - Added a "Direct Print" setting that prints the currently active document directly without showing the document selection dialog [#1773](https://github.com/hajkmap/Hajk/issues/1773)
@@ -24,8 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Client: AppModel refactored — split the 1444-line class into 8 focused modules under `appModel/` (urlParamsMerger, configTranslator, backgroundLayers, clickBindings, mapFactory, layerLoader, layerVisibility, pluginManager). No behavior change; all public methods preserved. [PR](https://github.com/hajkmap/Hajk/pull/1826)
 - Client: New Mobile UI etc, see [#1778](https://github.com/hajkmap/Hajk/issues/1778).
 - Client: New CQL filter UI, PR [#1756](https://github.com/hajkmap/Hajk/pull/1756).
+- Client: TypeScript is now supported, see [#1824.](https://github.com/hajkmap/Hajk/pull/1824)
 
 ### Fixed
 
@@ -34,8 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
 - Client: Display the filename of imported draw objects along with the time, see issue [#1782](https://github.com/hajkmap/Hajk/issues/1782).
 - Client: DocumentHandler - Mobile UI - Removed double padding and forced images to fit width instead of breaking the layout. [commit](https://github.com/hajkmap/Hajk/commit/458437ad98184d2ef049a3915c83ac75d8675fff)
-- Client: DocumentHandler - Mobile UI etc - Stop cutting text in accordion and keep expansion stable. [commit](7af45edb2b692853dfc71bff1c617aef01786d1a)
-- Client: Mobile UI - Reset the WindowSheet's scroll position when its content changes (opening the sheet, switching documents in DocumentHandler, navigating between feature collections/features in Infoclick) so new content always starts at the top. [commit](d6073ce901d117efd296a53f17654ab6e3b849d5)
+- Client: DocumentHandler - Mobile UI etc - Stop cutting text in accordion and keep expansion stable. [commit](https://github.com/hajkmap/Hajk/commit/7af45edb2b692853dfc71bff1c617aef01786d1a)
+- Client: Mobile UI - Reset the WindowSheet's scroll position when its content changes (opening the sheet, switching documents in DocumentHandler, navigating between feature collections/features in Infoclick) so new content always starts at the top. [commit](https://github.com/hajkmap/Hajk/commit/d6073ce901d117efd296a53f17654ab6e3b849d5)
+- Admin: Fixed a long-standing bug where the algorithm used to determine if a layer is used in a map was faulty. Also, added a slight hover effect to some buttons. [commit](https://github.com/hajkmap/Hajk/commit/b0bcc56369d749e731d05344f92d7d8808bedf27)
+- Backend: Removed unused dependencies (clf-date, ws, query-string and @babel/runtime).
 
 ## [4.3.0] 2026-04-20
 

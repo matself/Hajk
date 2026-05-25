@@ -65,7 +65,7 @@ class AdvancedOptions extends React.PureComponent {
     this.setState({ anchorEl: e.currentTarget });
   };
 
-  hideColorPicker = (e) => {
+  hideColorPicker = (_e) => {
     this.setState({ anchorEl: null });
   };
 
@@ -408,23 +408,24 @@ class AdvancedOptions extends React.PureComponent {
               </Grid>
             </FormControlContainer>
           )}
-          {this.props.options.allowLegendsInPdfOutput && saveAsType === "PDF" && (
-            <FormControlContainer container>
-              <Grid size={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      id="includeLegendsInPdf"
-                      name="includeLegendsInPdf"
-                      checked={includeLegendsInPdf}
-                      onChange={handleChange}
-                    />
-                  }
-                  label="Inkludera teckenförklaring i PDF"
-                />
-              </Grid>
-            </FormControlContainer>
-          )}
+          {this.props.options.allowLegendsInPdfOutput &&
+            saveAsType === "PDF" && (
+              <FormControlContainer container>
+                <Grid size={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        id="includeLegendsInPdf"
+                        name="includeLegendsInPdf"
+                        checked={includeLegendsInPdf}
+                        onChange={handleChange}
+                      />
+                    }
+                    label="Inkludera teckenförklaring i PDF"
+                  />
+                </Grid>
+              </FormControlContainer>
+            )}
           <Popover
             id="color-picker-menu"
             anchorEl={this.state.anchorEl}

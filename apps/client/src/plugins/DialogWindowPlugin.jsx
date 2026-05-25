@@ -93,7 +93,7 @@ class DialogWindowPlugin extends React.PureComponent {
     const eventName = `${this.uniqueIdentifier}.showWindow`;
     // Next, subscribe to that event, expect 'opts' array.
     // To find all places where this event is publish, search for 'globalObserver.publish("show'
-    this.props.app.globalObserver.subscribe(eventName, (opts = {}) => {
+    this.props.app.globalObserver.subscribe(eventName, (_opts = {}) => {
       this.setState({ dialogOpen: true });
     });
 
@@ -107,7 +107,7 @@ class DialogWindowPlugin extends React.PureComponent {
     return ["left", "right"].includes(target);
   };
 
-  #handleButtonClick = (e) => {
+  #handleButtonClick = (_e) => {
     this.setState({
       dialogOpen: true,
     });

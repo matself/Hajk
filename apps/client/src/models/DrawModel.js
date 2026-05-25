@@ -780,7 +780,7 @@ class DrawModel {
       case "MultiLineString":
         // Flatten all LineString coordinates into a single array.
         return geometry.getCoordinates().flat();
-      case "MultiPolygon":
+      case "MultiPolygon": {
         // We'll need to flatten the data from MultiPolygon. It's the coordinates we want.
         let coords = [];
         geometry.getCoordinates()[0].forEach((a) => {
@@ -789,6 +789,7 @@ class DrawModel {
           });
         });
         return coords;
+      }
       default:
         // The default catches Polygons, which are wrapped in an "extra" array, so let's
         // return the first element.
@@ -836,11 +837,12 @@ class DrawModel {
     }
     // Otherwise we'll handle the formatting according to the labelFormat set by the user
     switch (this.#getLabelFormatFromMeasurementType(type)) {
-      case "AUTO":
+      case "AUTO": {
         const formatted = this.#shouldFormatToKm(value, type)
           ? this.#getKilometerMeasurementString(value, type)
           : this.#getMeasurementString(value, type);
         return `${prefix} ${formatted}`;
+      }
       case "KM":
       case "KM2":
         // If the format is "KM2", we'll show the measurement in km²
@@ -2088,7 +2090,7 @@ class DrawModel {
 
   // Handler targeted when any feature property has changed. If any property change, we have
   // to make sure to refresh the draw-layer (since some properties affect the feature-styling!)
-  #handleFeaturePropertyChange = (e) => {
+  #handleFeaturePropertyChange = (_e) => {
     return this.refreshDrawLayer();
   };
 

@@ -74,16 +74,16 @@ const GridSettingsContainer = styled(Grid)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const GridFooterContainer = styled(Grid)(({ theme }) => ({
+const GridFooterContainer = styled(Grid)(({ _theme }) => ({
   flexBasis: "10%",
 }));
 
-const StyledGrid = styled(Grid)(({ theme }) => ({
+const StyledGrid = styled(Grid)(({ _theme }) => ({
   display: "flex",
   justifyContent: "flex-end",
 }));
 
-const StyledListItemButton = styled(ListItemButton)(({ theme, index }) => ({
+const StyledListItemButton = styled(ListItemButton)(({ _theme, index }) => ({
   display: "flex",
   justifyContent: "space-between",
   padding: "16px 10px 16px 10px",
@@ -91,7 +91,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme, index }) => ({
   borderLeft: index % 2 === 0 ? "4px solid lightGray" : "4px solid darkGray",
 }));
 
-const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
+const StyledDialogContent = styled(DialogContent)(({ _theme }) => ({
   overflowY: "clip",
   position: "relative",
   "&:before": {
@@ -103,7 +103,7 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   },
 }));
 
-const StyledIframe = styled("iframe")(({ theme }) => ({
+const StyledIframe = styled("iframe")(({ _theme }) => ({
   position: "absolute",
   width: "calc(100% - 40px)",
   height: "100%",
@@ -479,7 +479,6 @@ class PrintWindow extends React.PureComponent {
     }
   };
 
-
   // Creates a new window, appends all elements that should be printed, and invokes
   // window.print(), allowing the user to save the document as a PDF (or print it straight away).
   printContents = () => {
@@ -525,7 +524,7 @@ class PrintWindow extends React.PureComponent {
             for (const rule of sheet.cssRules) {
               try {
                 s.sheet.insertRule(rule.cssText);
-              } catch (error) {
+              } catch (_error) {
                 console.warn(`Could not insert rule: ${rule?.cssText}`);
               }
             }

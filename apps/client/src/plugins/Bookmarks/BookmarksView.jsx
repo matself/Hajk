@@ -131,7 +131,7 @@ const BookmarksView = (props) => {
     setBookmarks(props.model.bookmarks);
   }, [props.model.bookmarks]);
 
-  const addBookmark = (e) => {
+  const addBookmark = (_e) => {
     if (name.trim() === "") {
       return;
     }

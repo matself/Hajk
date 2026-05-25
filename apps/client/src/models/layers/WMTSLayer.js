@@ -64,7 +64,7 @@ const normalizeLegend = (legend, fallbackDescription) => {
 };
 
 class WMTSLayer {
-  constructor(config, proxyUrl, map) {
+  constructor(config, proxyUrl, _map) {
     config = {
       ...wmtsLayerProperties,
       ...config,
@@ -72,10 +72,8 @@ class WMTSLayer {
 
     this.proxyUrl = proxyUrl;
 
-
-
     const parsedOrigins = (config.origins || []).map((o) =>
-      o.map((v) => Number(v)),
+      o.map((v) => Number(v))
     );
 
     let resolutions = config.resolutions.map((r) => Number(r));
@@ -121,7 +119,6 @@ class WMTSLayer {
     }
 
     overrideLayerSourceParams(sourceConfig);
-
 
     const minZoom = config?.minZoom >= 0 ? config.minZoom : undefined;
     const maxZoom = config?.maxZoom >= 0 ? config.maxZoom : undefined;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useSnackbar } from "notistack";
 
 import { Box, Collapse, IconButton, Stack, Typography } from "@mui/material";

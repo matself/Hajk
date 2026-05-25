@@ -132,7 +132,7 @@ class FeatureInfoContainer extends React.PureComponent {
     );
   };
 
-  getFeaturesAsDefaultTable(data, caption) {
+  getFeaturesAsDefaultTable(data, _caption) {
     // We can't use "i" for coloring every second row, as some rows
     // will be removed (Objects are not printed), so there's a need
     // for a separate counter of rows that actually get printed.

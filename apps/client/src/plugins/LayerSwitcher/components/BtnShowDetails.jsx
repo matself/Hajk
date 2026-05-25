@@ -1,4 +1,3 @@
-import React from "react";
 import ShowDetailsIcon from "@mui/icons-material/MoreOutlined";
 import LsIconButton from "./LsIconButton";
 

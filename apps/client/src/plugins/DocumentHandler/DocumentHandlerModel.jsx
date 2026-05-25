@@ -160,7 +160,7 @@ export default class DocumentHandlerModel {
 
   getAllChapterInfo() {
     if (this.chapterInfo.length === 0) {
-      this.allDocuments.forEach((document, index) => {
+      this.allDocuments.forEach((document, _index) => {
         document.chapters.forEach((mainChapter) => {
           this.setChapterInfo(
             mainChapter,
@@ -203,12 +203,7 @@ export default class DocumentHandlerModel {
       this.chapterInfo = [...this.chapterInfo, chapterInfo];
       level = level + 1;
       chapter.chapters.forEach((subChapter) => {
-        subChapter = this.setChapterInfo(
-          subChapter,
-          level,
-          color,
-          documentFileName
-        );
+        this.setChapterInfo(subChapter, level, color, documentFileName);
       });
     } else {
       chapterInfo.hasSubChapters = false;
@@ -572,7 +567,7 @@ export default class DocumentHandlerModel {
   appendParsedComponentsToDocument = () => {
     const { activeDocument } = this.props;
     let content = { ...activeDocument };
-    content.chapters.forEach((chapter, index) => {
+    content.chapters.forEach((chapter, _index) => {
       this.appendComponentsToChapter(chapter);
     });
     this.setState({ activeContent: content });

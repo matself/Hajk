@@ -9,7 +9,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { styled } from "@mui/material/styles";
 import HajkToolTip from "components/HajkToolTip";
 
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
+const StyledIconButton = styled(IconButton)(({ _theme }) => ({
   justifyContent: "flex-end",
   padding: "8px",
   "& svg": {
@@ -120,7 +120,7 @@ class CoordinatesTransformRow extends React.PureComponent {
           variant: "info",
         });
       })
-      .catch((error) => {
+      .catch((_error) => {
         this.props.enqueueSnackbar("Kopiering misslyckades", {
           variant: "error",
         });

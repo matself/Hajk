@@ -115,7 +115,7 @@ class BaseWindowPlugin extends React.PureComponent {
     return target === "control";
   }
 
-  handleButtonClick = (e) => {
+  handleButtonClick = (_e) => {
     this.showWindow({
       hideOtherPluginWindows: true,
       runCallback: true,
@@ -202,7 +202,7 @@ class BaseWindowPlugin extends React.PureComponent {
    * @summary Render the plugin and its buttons according to settings in admin.
    * @description See comments in code to follow the rendering logic.
    * @param {*} custom
-   * @returns {object} React.Component
+   * @returns {object} React.Component
    * @memberof BaseWindowPlugin
    */
   renderWindow(custom) {

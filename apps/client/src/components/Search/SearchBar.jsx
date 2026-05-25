@@ -159,7 +159,7 @@ class SearchBar extends React.PureComponent {
   };
 
   //Can't use string.prototype.matchAll because of Edge (Polyfill not working atm)
-  getMatches = (string, regex, index) => {
+  getMatches = (string, regex, _index) => {
     const matches = [];
     var match = regex.exec(string);
 
@@ -454,7 +454,7 @@ class SearchBar extends React.PureComponent {
                   <>
                     <HajkToolTip title={expandMessage}>
                       <IconButton
-                        onClick={(e) => {
+                        onClick={(_e) => {
                           toggleCollapseSearchResults();
                         }}
                         size="small"
@@ -469,7 +469,7 @@ class SearchBar extends React.PureComponent {
                     </HajkToolTip>
                     <HajkToolTip title={toggleResultsLayerVisibilityMessage}>
                       <IconButton
-                        onClick={(e) => {
+                        onClick={(_e) => {
                           this.toggleResultsLayerVisibility();
                         }}
                         size="small"
