@@ -49,23 +49,40 @@ class DialogWindowPlugin extends React.PureComponent {
     let dialogOpen = this.opts.visibleAtStart;
     const clean = this.props.app.config.mapConfig.map.clean;
 
-    // No need to continue if we're in clean mode.
     if (clean === false && this.opts.visibleAtStart === true) {
-      // If clean mode is false and visibleAtStart is true, however,
-      // check if showOnlyOnce is true.
-      if (
-        this.opts.showOnlyOnce === true &&
-        LocalStorageHelper.get(this.uniqueIdentifier, { alreadyShown: false })
-          .alreadyShown === true
-      ) {
-        // If yes - don't show the dialog on load anymore.
-        dialogOpen = false;
-      } else {
-        // If not - check if showOnlyOnce is true and…
-        if (this.opts.showOnlyOnce === true) {
-          // if yes, store the setting in local storage (per-map, via LocalStorageHelper).
-          LocalStorageHelper.set(this.uniqueIdentifier, { alreadyShown: true });
+      // If clean mode is off and plugin is set to be visible at start,
+      // we check if it should actually be shown or not. There are now two ways
+      // to control this: either by content (if "lastModified" is provided) or
+      // by a simple show-once (if "showOnlyOnce" is true).
+      if (this.opts.lastModified) {
+        // Content-aware mode: show if content changed since user last saw it.
+        //
+        // We don't actually check the content though, as it'd be a lot to store
+        // in users's LocalStorage, but we rely on a lastModified timestamp, provided
+        // as an option and compare it with the timestamp of when user last saw the plugin.
+        const { lastRendered = new Date(0).toISOString() } =
+          LocalStorageHelper.get(this.uniqueIdentifier, {});
+        dialogOpen = new Date(lastRendered) < new Date(this.opts.lastModified);
+        if (dialogOpen) {
+          LocalStorageHelper.set(this.uniqueIdentifier, {
+            lastRendered: this.opts.lastModified,
+          });
         }
+      } else if (this.opts.showOnlyOnce === true) {
+        // Classic show-once: show on first load only.
+        // Note that if "lastModified" is provided, it will take precedence over "showOnlyOnce"
+        // and we'll never get this far.
+        const { alreadyShown = false } = LocalStorageHelper.get(
+          this.uniqueIdentifier,
+          {}
+        );
+        if (alreadyShown) {
+          dialogOpen = false;
+        } else {
+          LocalStorageHelper.set(this.uniqueIdentifier, { alreadyShown: true });
+          dialogOpen = true;
+        }
+      } else {
         dialogOpen = true;
       }
     } else {
