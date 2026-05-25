@@ -21,6 +21,24 @@ import { platformModifierKeyOnly } from "ol/events/condition";
 const MAX_SCHEMA_CACHE_SIZE = 50;
 const MAX_GRAVEYARD_SIZE = 1000;
 
+// OpenLayers feature style colors
+const OL_COLOR_VISIBLE = "#1976d2";
+const OL_COLOR_VISIBLE_OUTLINE = "#1024feff";
+const OL_COLOR_SELECTED = "#ff9800";
+const OL_COLOR_DELETE = "#e53935";
+const OL_COLOR_DRAFT = "#059669";
+const OL_COLOR_EDITED = "#e45c08ff";
+const OL_COLOR_EDITED_FILL = "#ffe992ff";
+const OL_COLOR_HOVER = "#FFD700";
+const OL_HIT_TOLERANCE = 3;
+
+// Tooltip overlay colors (OL DOM element, dark/light mode)
+const TOOLTIP_BG_DARK = "#1e293b";
+const TOOLTIP_TEXT_DARK = "#e5e7eb";
+const TOOLTIP_MUTED_DARK = "#9ca3af";
+const TOOLTIP_TEXT_LIGHT = "#111827";
+const TOOLTIP_MUTED_LIGHT = "#6b7280";
+
 /**
  * Manages Map cache with LRU-like eviction (removes oldest entries when limit reached)
  */
@@ -60,8 +78,7 @@ function buildTooltipContent(tooltipEl, displayId, displayProps, colors) {
   }
 
   const idDiv = document.createElement("div");
-  idDiv.style.cssText =
-    "font-weight: 600; color: #FFD700; margin-bottom: 6px; font-size: 14px;";
+  idDiv.style.cssText = `font-weight: 600; color: ${OL_COLOR_HOVER}; margin-bottom: 6px; font-size: 14px;`;
   idDiv.textContent = `ID: ${displayId}`;
   tooltipEl.appendChild(idDiv);
 
@@ -197,7 +214,7 @@ function AttributeEditor(props) {
   });
 
   const styles = React.useMemo(() => {
-    const baseStroke = new Stroke({ color: "#1976d2", width: 2 });
+    const baseStroke = new Stroke({ color: OL_COLOR_VISIBLE, width: 2 });
     const baseFill = new Fill({ color: "rgba(25, 118, 210, 0.73)" });
 
     return {
@@ -206,7 +223,7 @@ function AttributeEditor(props) {
         image: new CircleStyle({
           radius: 6,
           fill: baseFill,
-          stroke: new Stroke({ color: "#1024feff", width: 2 }),
+          stroke: new Stroke({ color: OL_COLOR_VISIBLE_OUTLINE, width: 2 }),
         }),
         stroke: baseStroke,
         fill: baseFill,
@@ -217,10 +234,10 @@ function AttributeEditor(props) {
       visibleSelected: new Style({
         image: new CircleStyle({
           radius: 7,
-          fill: new Fill({ color: "#ff9800" }),
+          fill: new Fill({ color: OL_COLOR_SELECTED }),
           stroke: new Stroke({ color: "#000000ff", width: 2 }),
         }),
-        stroke: new Stroke({ color: "#ff9800", width: 3 }),
+        stroke: new Stroke({ color: OL_COLOR_SELECTED, width: 3 }),
         fill: new Fill({ color: "rgba(255,152,0,0.12)" }),
         zIndex: 3,
       }),
@@ -229,10 +246,10 @@ function AttributeEditor(props) {
       selected: new Style({
         image: new CircleStyle({
           radius: 7,
-          fill: new Fill({ color: "#ff9800" }),
+          fill: new Fill({ color: OL_COLOR_SELECTED }),
           stroke: new Stroke({ color: "#000000ff", width: 2 }),
         }),
-        stroke: new Stroke({ color: "#ff9800", width: 3 }),
+        stroke: new Stroke({ color: OL_COLOR_SELECTED, width: 3 }),
         fill: new Fill({ color: "rgba(255,152,0,0.12)" }),
         zIndex: 3,
       }),
@@ -242,9 +259,17 @@ function AttributeEditor(props) {
         image: new CircleStyle({
           radius: 7,
           fill: new Fill({ color: "rgba(229, 56, 53, 0.5)" }),
-          stroke: new Stroke({ color: "#e53935", width: 3, lineDash: [5, 5] }),
+          stroke: new Stroke({
+            color: OL_COLOR_DELETE,
+            width: 3,
+            lineDash: [5, 5],
+          }),
         }),
-        stroke: new Stroke({ color: "#e53935", width: 3, lineDash: [5, 5] }),
+        stroke: new Stroke({
+          color: OL_COLOR_DELETE,
+          width: 3,
+          lineDash: [5, 5],
+        }),
         fill: new Fill({ color: "rgba(229, 56, 53, 0.5)" }),
         zIndex: 5,
       }),
@@ -253,14 +278,18 @@ function AttributeEditor(props) {
       toDeleteSelected: new Style({
         image: new CircleStyle({
           radius: 7,
-          fill: new Fill({ color: "#ff9800" }),
+          fill: new Fill({ color: OL_COLOR_SELECTED }),
           stroke: new Stroke({
             color: "#000000ff",
             width: 2,
             lineDash: [5, 5],
           }),
         }),
-        stroke: new Stroke({ color: "#ff9800", width: 3, lineDash: [5, 5] }),
+        stroke: new Stroke({
+          color: OL_COLOR_SELECTED,
+          width: 3,
+          lineDash: [5, 5],
+        }),
         fill: new Fill({ color: "rgba(255,152,0,0.12)" }),
         zIndex: 5,
       }),
@@ -270,9 +299,17 @@ function AttributeEditor(props) {
         image: new CircleStyle({
           radius: 6,
           fill: new Fill({ color: "rgba(99, 251, 173, 0.8)" }), // Light green
-          stroke: new Stroke({ color: "#059669", width: 2, lineDash: [5, 5] }),
+          stroke: new Stroke({
+            color: OL_COLOR_DRAFT,
+            width: 2,
+            lineDash: [5, 5],
+          }),
         }),
-        stroke: new Stroke({ color: "#059669", width: 3, lineDash: [5, 5] }),
+        stroke: new Stroke({
+          color: OL_COLOR_DRAFT,
+          width: 3,
+          lineDash: [5, 5],
+        }),
         fill: new Fill({ color: "rgba(144, 253, 197, 0.71)" }),
         zIndex: 4,
       }),
@@ -281,14 +318,18 @@ function AttributeEditor(props) {
       draftSelected: new Style({
         image: new CircleStyle({
           radius: 7,
-          fill: new Fill({ color: "#ff9800" }),
+          fill: new Fill({ color: OL_COLOR_SELECTED }),
           stroke: new Stroke({
             color: "#000000ff",
             width: 2,
             lineDash: [5, 5],
           }),
         }),
-        stroke: new Stroke({ color: "#ff9800", width: 3, lineDash: [5, 5] }),
+        stroke: new Stroke({
+          color: OL_COLOR_SELECTED,
+          width: 3,
+          lineDash: [5, 5],
+        }),
         fill: new Fill({ color: "rgba(255,152,0,0.12)" }),
         zIndex: 5,
       }),
@@ -297,15 +338,19 @@ function AttributeEditor(props) {
       edited: new Style({
         image: new CircleStyle({
           radius: 6,
-          fill: new Fill({ color: "#ffe992ff" }), // Light yellow
+          fill: new Fill({ color: OL_COLOR_EDITED_FILL }), // Light yellow
           stroke: new Stroke({
-            color: "#e45c08ff",
+            color: OL_COLOR_EDITED,
             width: 2,
             lineDash: [5, 5],
           }),
         }),
-        stroke: new Stroke({ color: "#e45c08ff", width: 3, lineDash: [5, 5] }),
-        fill: new Fill({ color: "#ffe992ff" }),
+        stroke: new Stroke({
+          color: OL_COLOR_EDITED,
+          width: 3,
+          lineDash: [5, 5],
+        }),
+        fill: new Fill({ color: OL_COLOR_EDITED_FILL }),
         zIndex: 4,
       }),
 
@@ -313,14 +358,18 @@ function AttributeEditor(props) {
       editedSelected: new Style({
         image: new CircleStyle({
           radius: 7,
-          fill: new Fill({ color: "#ff9800" }),
+          fill: new Fill({ color: OL_COLOR_SELECTED }),
           stroke: new Stroke({
             color: "#000000ff",
             width: 2,
             lineDash: [5, 5],
           }),
         }),
-        stroke: new Stroke({ color: "#ff9800", width: 3, lineDash: [5, 5] }),
+        stroke: new Stroke({
+          color: OL_COLOR_SELECTED,
+          width: 3,
+          lineDash: [5, 5],
+        }),
         fill: new Fill({ color: "rgba(255,152,0,0.12)" }),
         zIndex: 5,
       }),
@@ -342,13 +391,13 @@ function AttributeEditor(props) {
           radius: 8,
           fill: new Fill({ color: "rgba(255, 215, 0, 0.6)" }), // Gold
           stroke: new Stroke({
-            color: "#FFD700",
+            color: OL_COLOR_HOVER,
             width: 3,
             lineDash: [8, 4],
           }),
         }),
         stroke: new Stroke({
-          color: "#FFD700",
+          color: OL_COLOR_HOVER,
           width: 4,
           lineDash: [8, 4],
         }),
@@ -458,9 +507,11 @@ function AttributeEditor(props) {
             });
 
             const isDark = muiTheme.palette.mode === "dark";
-            const bgColor = isDark ? "#1e293b" : "white";
-            const textColor = isDark ? "#e5e7eb" : "#111827";
-            const mutedColor = isDark ? "#9ca3af" : "#6b7280";
+            const bgColor = isDark ? TOOLTIP_BG_DARK : "white";
+            const textColor = isDark ? TOOLTIP_TEXT_DARK : TOOLTIP_TEXT_LIGHT;
+            const mutedColor = isDark
+              ? TOOLTIP_MUTED_DARK
+              : TOOLTIP_MUTED_LIGHT;
 
             buildTooltipContent(tooltipEl, props.id || id, displayProps, {
               mutedColor,
@@ -840,10 +891,10 @@ function AttributeEditor(props) {
           style: new Style({
             image: new CircleStyle({
               radius: 6,
-              fill: new Fill({ color: "#1976d2" }),
+              fill: new Fill({ color: OL_COLOR_VISIBLE }),
               stroke: new Stroke({ color: "#fff", width: 2 }),
             }),
-            stroke: new Stroke({ color: "#1976d2", width: 2 }),
+            stroke: new Stroke({ color: OL_COLOR_VISIBLE, width: 2 }),
             fill: new Fill({ color: "rgba(25,118,210,0.1)" }),
           }),
         });
@@ -927,7 +978,7 @@ function AttributeEditor(props) {
     tooltipEl.style.cssText = `
     position: absolute;
     background: white;
-    border: 2px solid #FFD700;
+    border: 2px solid ${OL_COLOR_HOVER};
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 13px;
@@ -1366,7 +1417,7 @@ function AttributeEditor(props) {
             hits.push(f);
           }
         },
-        { layerFilter: (lyr) => lyr === layer, hitTolerance: 3 }
+        { layerFilter: (lyr) => lyr === layer, hitTolerance: OL_HIT_TOLERANCE }
       );
 
       if (hits.length === 0) {
