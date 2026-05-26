@@ -36,7 +36,7 @@ export default function FormAccordion({
       onChange={handleAccordionChange}
       sx={{
         width: "100%",
-        ml: 2,
+        //ml: 2,
         marginBottom: "24px !important",
         backgroundColor: "none",
       }}
@@ -61,7 +61,7 @@ export default function FormAccordion({
           </Typography>
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ pl: 0, pb: 0, pt: "1.5rem" }}>
+      <AccordionDetails sx={{ pl: 2, pb: 0, pt: "1.5rem" }}>
         {children}
       </AccordionDetails>
     </Accordion>

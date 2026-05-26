@@ -59,7 +59,7 @@ const Page = (props: Props) => {
         paddingBottom: theme.spacing(6),
         paddingLeft: theme.spacing(4),
         paddingRight: theme.spacing(4),
-        maxWidth: "2048px",
+        maxWidth: "1440px",
         width: "100%",
       }}
     >

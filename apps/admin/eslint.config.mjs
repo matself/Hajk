@@ -7,7 +7,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import checkFile from "eslint-plugin-check-file";
 
 export default tseslint.config(
-  { ignores: ["dist", "build"] },
+  { ignores: ["dist"] },
 
   {
     settings: { react: { version: "18.3" } },
@@ -57,5 +57,5 @@ export default tseslint.config(
         },
       ],
     },
-  },
+  }
 );

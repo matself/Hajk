@@ -72,17 +72,13 @@ export default function FormComponentsExamplePage() {
     <Page title="Examples">
       <FormActionPanel
         updateStatus="idle"
-        deleteStatus="idle"
         onUpdate={() => {
           void handleSubmit(onSubmit)();
-        }}
-        onDelete={() => {
-          /* no-op */
         }}
         lastSavedBy=""
         lastSavedDate=""
         saveButtonText={t("common.dialog.saveBtn")}
-        deleteButtonText={t("common.dialog.deleteBtn")}
+        isDirty
       >
         <FormContainer
           onSubmit={(e) => {
@@ -91,7 +87,7 @@ export default function FormComponentsExamplePage() {
           noValidate={false}
         >
           <FormPanel title="Example Panel">
-            <Grid container>
+            <Grid container spacing={2}>
               <Grid size={12}>
                 <Typography sx={{ mb: 1 }}>A nice piece of content</Typography>
               </Grid>
@@ -154,7 +150,7 @@ export default function FormComponentsExamplePage() {
           </FormPanel>
 
           <FormAccordion title="Example Accordion">
-            <Grid container>
+            <Grid container spacing={2}>
               <Grid size={12}>
                 <Typography sx={{ mb: 1 }}>
                   This is an example accordion content.
@@ -196,7 +192,7 @@ export default function FormComponentsExamplePage() {
           </FormAccordion>
 
           <FormPanel title="Example Selects">
-            <Grid container>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel id="example-select-1-label" shrink>
@@ -247,7 +243,7 @@ export default function FormComponentsExamplePage() {
           </FormPanel>
 
           <FormPanel title="Example Sliders">
-            <Grid container>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <Controller
@@ -288,7 +284,7 @@ export default function FormComponentsExamplePage() {
           </FormPanel>
 
           <FormPanel title="Switches, Checkboxes & Radios">
-            <Grid container>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormGroup>
                   <Controller
