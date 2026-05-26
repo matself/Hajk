@@ -39,6 +39,8 @@ import {
 } from "../../api/services";
 import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
 import Grid from "@mui/material/Grid2";
+import { TextFieldWithHelp } from "../../components/form-components/field-label-with-help";
+import { FieldLabelWithHelp } from "../../components/form-components/field-help-tooltip";
 
 const StyledTabButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "isActive",
@@ -151,6 +153,16 @@ export default function ServiceSettings() {
   });
 
   const allValues = watch();
+
+  const fieldLabel = (labelKey: string, helpKey: string) => (
+    <FieldLabelWithHelp
+      label={String(t(labelKey as never))}
+      help={String(t(helpKey as never))}
+    />
+  );
+  const selectLabel = (labelKey: string, helpKey: string) => ({
+    label: fieldLabel(labelKey, helpKey),
+  });
 
   // Reset form with service data when it loads
   useEffect(() => {
@@ -489,8 +501,9 @@ export default function ServiceSettings() {
               <FormPanel title={t("common.information")}>
                 <Grid container>
                   <Grid size={12}>
-                    <TextField
-                      label={t("common.name")}
+                    <TextFieldWithHelp
+                      labelKey="common.name"
+                      helpKey="services.help.name"
                       fullWidth
                       {...register("name", {
                         required: `${t("common.required")}`,
@@ -503,16 +516,18 @@ export default function ServiceSettings() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 10 }}>
-                    <TextField
-                      label={t("common.serviceType")}
+                    <TextFieldWithHelp
+                      labelKey="common.serviceType"
+                      helpKey="services.help.type"
                       fullWidth
                       slotProps={{ input: { readOnly: true } }}
                       {...register("type")}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 10 }}>
-                    <TextField
-                      label={t("services.description")}
+                    <TextFieldWithHelp
+                      labelKey="services.description"
+                      helpKey="services.help.comment"
                       fullWidth
                       multiline
                       rows={3}
@@ -543,8 +558,11 @@ export default function ServiceSettings() {
                 <Grid container rowSpacing={2}>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <FormControl fullWidth error={!!errors.serverType}>
-                      <InputLabel id="serverType-label">
-                        {t("common.serverType")}
+                      <InputLabel id="serverType-label" shrink>
+                        {fieldLabel(
+                          "common.serverType",
+                          "services.help.serverType",
+                        )}
                       </InputLabel>
                       <Controller
                         name="serverType"
@@ -553,7 +571,10 @@ export default function ServiceSettings() {
                         render={({ field }) => (
                           <Select
                             labelId="serverType-label"
-                            label={t("common.serverType")}
+                            {...selectLabel(
+                              "common.serverType",
+                              "services.help.serverType",
+                            )}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -568,8 +589,9 @@ export default function ServiceSettings() {
                     </FormControl>
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label="Url"
+                    <TextFieldWithHelp
+                      labelKey="services.url"
+                      helpKey="services.help.url"
                       fullWidth
                       disabled
                       {...register("url")}
@@ -593,8 +615,11 @@ export default function ServiceSettings() {
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <FormControl fullWidth>
-                      <InputLabel id="workspace-label">
-                        {t("services.workspace")}
+                      <InputLabel id="workspace-label" shrink>
+                        {fieldLabel(
+                          "services.workspace",
+                          "services.help.workspace",
+                        )}
                       </InputLabel>
                       <Controller
                         name="workspace"
@@ -602,7 +627,10 @@ export default function ServiceSettings() {
                         render={({ field }) => (
                           <Select
                             labelId="workspace-label"
-                            label={t("services.workspace")}
+                            {...selectLabel(
+                              "services.workspace",
+                              "services.help.workspace",
+                            )}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -645,15 +673,21 @@ export default function ServiceSettings() {
               <FormPanel title={t("services.settings.request")}>
                 <Grid container rowSpacing={2}>
                   <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label="GetMap-url"
+                    <TextFieldWithHelp
+                      labelKey="services.getMapUrl"
+                      helpKey="services.help.getMapUrl"
                       fullWidth
                       {...register("getMapUrl")}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <FormControl fullWidth error={!!errors.version}>
-                      <InputLabel id="version-label">Version</InputLabel>
+                      <InputLabel id="version-label" shrink>
+                        {fieldLabel(
+                          "services.version",
+                          "services.help.version",
+                        )}
+                      </InputLabel>
                       <Controller
                         name="version"
                         control={control}
@@ -661,7 +695,10 @@ export default function ServiceSettings() {
                         render={({ field }) => (
                           <Select
                             labelId="version-label"
-                            label="Version"
+                            {...selectLabel(
+                              "services.version",
+                              "services.help.version",
+                            )}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -677,8 +714,11 @@ export default function ServiceSettings() {
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <FormControl fullWidth>
-                      <InputLabel id="imageFormat-label">
-                        {t("services.imageFormats")}
+                      <InputLabel id="imageFormat-label" shrink>
+                        {fieldLabel(
+                          "services.imageFormats",
+                          "services.help.imageFormat",
+                        )}
                       </InputLabel>
                       <Controller
                         name="imageFormat"
@@ -686,7 +726,10 @@ export default function ServiceSettings() {
                         render={({ field }) => (
                           <Select
                             labelId="imageFormat-label"
-                            label={t("services.imageFormats")}
+                            {...selectLabel(
+                              "services.imageFormats",
+                              "services.help.imageFormat",
+                            )}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -702,8 +745,11 @@ export default function ServiceSettings() {
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <FormControl fullWidth>
-                      <InputLabel id="projection-label">
-                        {t("services.coordinateSystem")}
+                      <InputLabel id="projection-label" shrink>
+                        {fieldLabel(
+                          "services.coordinateSystem",
+                          "services.help.projection",
+                        )}
                       </InputLabel>
                       <Controller
                         name="projection.code"
@@ -711,7 +757,10 @@ export default function ServiceSettings() {
                         render={({ field }) => (
                           <Select
                             labelId="projection-label"
-                            label={t("services.coordinateSystem")}
+                            {...selectLabel(
+                              "services.coordinateSystem",
+                              "services.help.projection",
+                            )}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -754,15 +803,17 @@ export default function ServiceSettings() {
               <FormPanel title={t("common.infobutton")}>
                 <Grid container rowSpacing={2}>
                   <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label={t("services.owner")}
+                    <TextFieldWithHelp
+                      labelKey="services.owner"
+                      helpKey="services.help.metadataOwner"
                       fullWidth
                       {...register("metadata.owner")}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label={t("services.layerDescription")}
+                    <TextFieldWithHelp
+                      labelKey="services.layerDescription"
+                      helpKey="services.help.metadataDescription"
                       fullWidth
                       multiline
                       rows={3}

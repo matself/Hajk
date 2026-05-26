@@ -28,6 +28,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import ImageIcon from "@mui/icons-material/Image";
+import { TextFieldWithHelp } from "../../../components/form-components/field-label-with-help";
+import { useLayerFieldLabels } from "../use-layer-field-labels";
 
 interface LayerInfoClickModalProps {
   open: boolean;
@@ -85,6 +87,7 @@ export default function LayerInfoClickModal({
   availableStyles = [],
 }: LayerInfoClickModalProps) {
   const { t } = useTranslation();
+  const { fieldLabel, selectLabel } = useLayerFieldLabels();
   const legendUrlFileInputRef = useRef<HTMLInputElement>(null);
   const legendIconFileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"infobox" | "settings">("infobox");
@@ -300,7 +303,7 @@ export default function LayerInfoClickModal({
                 <Grid size={12}>
                   <Box>
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      {t("layers.infobox")}
+                      {fieldLabel("layers.infobox", "layers.help.infobox")}
                     </Typography>
                     <IconButton onClick={handleInsertImage}>
                       <ImageIcon />
@@ -397,9 +400,10 @@ export default function LayerInfoClickModal({
               <Grid container spacing={2}>
                 {/* General Settings */}
                 <Grid size={12}>
-                  <TextField
+                  <TextFieldWithHelp
                     sx={{ mt: 1 }}
-                    label={t("layers.displayName")}
+                    labelKey="layers.displayName"
+                    helpKey="layers.help.displayName"
                     fullWidth
                     {...register("caption")}
                   />
@@ -411,15 +415,17 @@ export default function LayerInfoClickModal({
                     alignItems="center"
                     flexWrap="wrap"
                   >
-                    <TextField
-                      label={t("layers.legend")}
-                      fullWidth
-                      sx={{ flex: "1 1 200px", minWidth: 0 }}
-                      slotProps={{
-                        inputLabel: { shrink: true },
-                      }}
-                      {...register("legendUrl")}
-                    />
+                    <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.legend"
+                        helpKey="layers.help.legend"
+                        fullWidth
+                        slotProps={{
+                          inputLabel: { shrink: true },
+                        }}
+                        {...register("legendUrl")}
+                      />
+                    </Box>
                     <input
                       ref={legendUrlFileInputRef}
                       type="file"
@@ -443,15 +449,17 @@ export default function LayerInfoClickModal({
                     alignItems="center"
                     flexWrap="wrap"
                   >
-                    <TextField
-                      label={t("layers.legendIcon")}
-                      fullWidth
-                      sx={{ flex: "1 1 200px", minWidth: 0 }}
-                      slotProps={{
-                        inputLabel: { shrink: true },
-                      }}
-                      {...register("legendIcon")}
-                    />
+                    <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.legendIcon"
+                        helpKey="layers.help.legendIcon"
+                        fullWidth
+                        slotProps={{
+                          inputLabel: { shrink: true },
+                        }}
+                        {...register("legendIcon")}
+                      />
+                    </Box>
                     <input
                       ref={legendIconFileInputRef}
                       type="file"
@@ -470,8 +478,8 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={12}>
                   <FormControl fullWidth>
-                    <InputLabel id="style-label">
-                      {t("layers.style")}
+                    <InputLabel id="style-label" shrink>
+                      {fieldLabel("layers.style", "layers.help.style")}
                     </InputLabel>
                     <Controller
                       name="style"
@@ -479,9 +487,13 @@ export default function LayerInfoClickModal({
                       render={({ field }) => (
                         <Select
                           labelId="style-label"
-                          label={t("layers.style")}
+                          {...selectLabel("layers.style", "layers.help.style")}
                           {...field}
+                          displayEmpty
                           value={field.value ?? ""}
+                          renderValue={(value) =>
+                            value === "" ? "<default>" : value
+                          }
                         >
                           <MenuItem value="">{"<default>"}</MenuItem>
                           {availableStyles.map((s) => (
@@ -516,15 +528,19 @@ export default function LayerInfoClickModal({
                               onChange={(e) => field.onChange(e.target.checked)}
                             />
                           }
-                          label={t("common.infoclick")}
+                          label={fieldLabel(
+                            "common.infoclick",
+                            "layers.help.infoClickActive",
+                          )}
                         />
                       )}
                     />
                   </FormGroup>
                 </Grid>
                 <Grid size={12}>
-                  <TextField
-                    label={`${t("layers.infoClickIcon")} ${t("layers.listLink")} (?)`}
+                  <TextFieldWithHelp
+                    labelKey="layers.infoClickIcon"
+                    helpKey="layers.help.infoClickIcon"
                     fullWidth
                     {...register("infoclickIcon")}
                     helperText={t("layers.infoClickIconHelp")}
@@ -540,16 +556,18 @@ export default function LayerInfoClickModal({
                   </Divider>
                 </Grid>
                 <Grid size={12}>
-                  <TextField
-                    label={`${t("layers.displayFieldInResultList")} (?)`}
+                  <TextFieldWithHelp
+                    labelKey="layers.displayFieldInResultList"
+                    helpKey="layers.help.primaryDisplayFields"
                     fullWidth
                     {...register("searchDisplayName")}
                     helperText={t("layers.displayFieldInResultListHelp")}
                   />
                 </Grid>
                 <Grid size={12}>
-                  <TextField
-                    label={`${t("layers.secondaryDisplayFieldInResultList")} (?)`}
+                  <TextFieldWithHelp
+                    labelKey="layers.secondaryDisplayFieldInResultList"
+                    helpKey="layers.help.secondaryDisplayFields"
                     fullWidth
                     {...register("secondaryLabelFields")}
                     helperText={t(
@@ -558,8 +576,9 @@ export default function LayerInfoClickModal({
                   />
                 </Grid>
                 <Grid size={12}>
-                  <TextField
-                    label={`${t("layers.shortDisplayField")} (?)`}
+                  <TextFieldWithHelp
+                    labelKey="layers.shortDisplayField"
+                    helpKey="layers.help.shortDisplayFields"
                     fullWidth
                     {...register("searchShortDisplayName")}
                     helperText={t("layers.shortDisplayFieldHelp")}
@@ -575,26 +594,34 @@ export default function LayerInfoClickModal({
                   </Divider>
                 </Grid>
                 <Grid size={12}>
-                  <TextField label="Url" fullWidth {...register("searchUrl")} />
+                  <TextFieldWithHelp
+                    labelKey="layers.searchSettings.url"
+                    helpKey="layers.help.searchUrl"
+                    fullWidth
+                    {...register("searchUrl")}
+                  />
                 </Grid>
                 <Grid size={12}>
-                  <TextField
-                    label={`${t("layers.searchFields")} (?)`}
+                  <TextFieldWithHelp
+                    labelKey="layers.searchFields"
+                    helpKey="layers.help.searchFields"
                     fullWidth
                     {...register("searchPropertyName")}
                     helperText={t("layers.searchFieldsHelp")}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label={t("layers.searchSettings.outputFormat")}
+                  <TextFieldWithHelp
+                    labelKey="layers.searchSettings.outputFormat"
+                    helpKey="layers.help.searchOutputFormat"
                     fullWidth
                     {...register("searchOutputFormat")}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label={t("layers.searchSettings.geometryField")}
+                  <TextFieldWithHelp
+                    labelKey="layers.searchSettings.geometryField"
+                    helpKey="layers.help.geometryField"
                     fullWidth
                     {...register("searchGeometryField")}
                   />
@@ -602,16 +629,20 @@ export default function LayerInfoClickModal({
 
                 {/* Infoklick Sort Settings */}
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label={t("layers.sortByAttribute")}
+                  <TextFieldWithHelp
+                    labelKey="layers.sortByAttribute"
+                    helpKey="layers.help.sortByAttribute"
                     fullWidth
                     {...register("sortProperty")}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
-                    <InputLabel id="format-label">
-                      {t("layers.infoClickFormat")}
+                    <InputLabel id="format-label" shrink>
+                      {fieldLabel(
+                        "layers.infoClickFormat",
+                        "layers.help.infoClickFormat",
+                      )}
                     </InputLabel>
                     <Controller
                       name="format"
@@ -619,7 +650,10 @@ export default function LayerInfoClickModal({
                       render={({ field }) => (
                         <Select
                           labelId="format-label"
-                          label={t("layers.infoClickFormat")}
+                          {...selectLabel(
+                            "layers.infoClickFormat",
+                            "layers.help.infoClickFormat",
+                          )}
                           {...field}
                           value={field.value ?? ""}
                         >
@@ -635,8 +669,11 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
-                    <InputLabel id="sortMethod-label">
-                      {t("layers.infoClickSortMethod")}
+                    <InputLabel id="sortMethod-label" shrink>
+                      {fieldLabel(
+                        "layers.infoClickSortMethod",
+                        "layers.help.infoClickSortMethod",
+                      )}
                     </InputLabel>
                     <Controller
                       name="sortMethod"
@@ -644,7 +681,10 @@ export default function LayerInfoClickModal({
                       render={({ field }) => (
                         <Select
                           labelId="sortMethod-label"
-                          label={t("layers.infoClickSortMethod")}
+                          {...selectLabel(
+                            "layers.infoClickSortMethod",
+                            "layers.help.infoClickSortMethod",
+                          )}
                           {...field}
                           value={field.value ?? ""}
                         >
@@ -671,7 +711,10 @@ export default function LayerInfoClickModal({
                               onChange={(e) => field.onChange(e.target.checked)}
                             />
                           }
-                          label={t("layers.sortDescending")}
+                          label={fieldLabel(
+                            "layers.sortDescending",
+                            "layers.help.sortDescending",
+                          )}
                         />
                       )}
                     />
