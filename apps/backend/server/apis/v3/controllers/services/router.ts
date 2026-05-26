@@ -12,6 +12,7 @@ export default express
   .get("/projections", controller.getAllProjections)
   .get("/:id", controller.getServiceById)
   .get("/:id/layers", controller.getLayersByServiceId)
+  .get("/:id/capabilities", controller.getRemoteCapabilityLayers)
   .get("/:id/maps", controller.getMapsByServiceId)
   .get("/:id/groups", controller.getGroupsByServiceId)
   .post("/", validatePayload(ServiceCreateSchema), controller.createService)

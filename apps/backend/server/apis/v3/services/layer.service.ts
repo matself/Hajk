@@ -10,10 +10,19 @@ import {
   pickLayerUpdateData,
   type LayerKind,
 } from "../utils/layer-payload.ts";
+import {
+  capabilityModeForServiceType,
+  fetchRemoteCapabilityLayerNames,
+} from "../utils/remote-service-capabilities.ts";
 
 const logger = log4js.getLogger("service.v3.layer");
 
 export type { LayerKind };
+
+function coerceStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
 
 export interface UnifiedLayer {
   layerKind: LayerKind;
@@ -139,6 +148,34 @@ async function resolveLayerKind(id: string): Promise<LayerKind | null> {
 class LayerService {
   constructor() {
     logger.debug("Initiating Layer Service");
+  }
+
+  private async ensureSelectedLayersMatchCapabilities(
+    service: { url: string; type: ServiceType },
+    selectedLayers: string[]
+  ): Promise<void> {
+    if (selectedLayers.length === 0) return;
+
+    const mode = capabilityModeForServiceType(service.type);
+    if (!mode) return;
+
+    const result = await fetchRemoteCapabilityLayerNames(service.url, mode);
+    if (!result.ok) {
+      logger.warn(
+        `Capabilities validation skipped for ${service.url}: ${result.message}`
+      );
+      return;
+    }
+
+    const allowed = new Set(result.layers);
+    const missing = selectedLayers.filter((name) => !allowed.has(name));
+    if (missing.length > 0) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        `Unknown layer(s) for this service (not listed in GetCapabilities): ${missing.join(", ")}`,
+        HajkStatusCodes.INVALID_SELECTED_LAYERS
+      );
+    }
   }
 
   async getLayers(): Promise<UnifiedLayer[]> {
@@ -271,6 +308,22 @@ class LayerService {
     delete picked.metadata;
     delete picked.infoClickSettings;
 
+    const service = await prisma.service.findFirst({
+      where: { id: serviceId, deletedAt: null },
+    });
+    if (!service) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `No service with id: ${serviceId} could be found.`,
+        HajkStatusCodes.UNKNOWN_SERVICE_ID
+      );
+    }
+
+    await this.ensureSelectedLayersMatchCapabilities(
+      service,
+      coerceStringArray(picked.selectedLayers)
+    );
+
     if (layerKind === "search") {
       const created = await prisma.searchLayer.create({
         data: {
@@ -342,6 +395,53 @@ class LayerService {
     const { scalars, options, metadata, infoClickSettings } =
       pickLayerUpdateData(kind, data);
 
+    if (data.selectedLayers !== undefined) {
+      let existingServiceId: string | null = null;
+      if (kind === "display") {
+        const existing = await prisma.displayLayer.findUnique({
+          where: { id },
+          select: { serviceId: true },
+        });
+        existingServiceId = existing?.serviceId ?? null;
+      } else if (kind === "search") {
+        const existing = await prisma.searchLayer.findUnique({
+          where: { id },
+          select: { serviceId: true },
+        });
+        existingServiceId = existing?.serviceId ?? null;
+      } else {
+        const existing = await prisma.editingLayer.findUnique({
+          where: { id },
+          select: { serviceId: true },
+        });
+        existingServiceId = existing?.serviceId ?? null;
+      }
+
+      const effectiveServiceId = serviceId ?? existingServiceId;
+      if (!effectiveServiceId) {
+        throw new HajkError(
+          HttpStatusCodes.BAD_REQUEST,
+          "Missing serviceId for layer update.",
+          HajkStatusCodes.INVALID_REQUEST_BODY
+        );
+      }
+
+      const svcRow = await prisma.service.findFirst({
+        where: { id: effectiveServiceId, deletedAt: null },
+      });
+      if (!svcRow) {
+        throw new HajkError(
+          HttpStatusCodes.NOT_FOUND,
+          `No service with id: ${effectiveServiceId} could be found.`,
+          HajkStatusCodes.UNKNOWN_SERVICE_ID
+        );
+      }
+      await this.ensureSelectedLayersMatchCapabilities(
+        svcRow,
+        coerceStringArray(data.selectedLayers)
+      );
+    }
+
     if (kind === "search") {
       const updated = await prisma.searchLayer.update({
         where: { id },
@@ -393,7 +493,7 @@ class LayerService {
 
     const existingLayer = await prisma.displayLayer.findUnique({
       where: { id },
-      select: { options: true },
+      select: { options: true, serviceId: true },
     });
     const existingOptions = (existingLayer?.options as object) || {};
     const updatedOptions = {

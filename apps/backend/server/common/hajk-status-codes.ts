@@ -50,6 +50,16 @@ enum HajkStatusCodes {
   SEARCH_SERVICE_NOT_AVAILABLE = "CF002",
 
   /**
+   * Selected layer names must exist on the remote service's GetCapabilities response.
+   */
+  INVALID_SELECTED_LAYERS = "CF003",
+
+  /**
+   * Remote GetCapabilities request failed or returned unusable data.
+   */
+  UPSTREAM_CAPABILITIES_FAILED = "CF004",
+
+  /**
    * The request body is invalid, e.g. lacks some required fields.
    */
   INVALID_REQUEST_BODY = "RQ001",
@@ -60,10 +70,9 @@ enum HajkStatusCodes {
   USER_NOT_AUTHENTICATED = "RQ002",
 
   /**
-   * The user is not authenticated.
+   * The user is not authorized for this resource.
    */
   USER_NOT_AUTHORIZED = "RQ003",
-
 }
 
 export default HajkStatusCodes;

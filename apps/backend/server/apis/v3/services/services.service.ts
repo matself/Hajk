@@ -5,6 +5,10 @@ import prisma from "../../../common/prisma.ts";
 import { HajkError } from "../../../common/classes.ts";
 import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import HttpStatusCodes from "../../../common/http-status-codes.ts";
+import {
+  capabilityModeForServiceType,
+  fetchRemoteCapabilityLayerNames,
+} from "../utils/remote-service-capabilities.ts";
 
 const logger = log4js.getLogger("service.v3.layer");
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
@@ -67,6 +71,43 @@ class ServicesService {
       ...searchLayers.map((layer) => ({ ...layer, layerKind: "search" })),
       ...editingLayers.map((layer) => ({ ...layer, layerKind: "editing" })),
     ];
+  }
+
+  /**
+   * Layer / feature type names from the remote OGC GetCapabilities document.
+   * Used by Admin when picking layers and for documenting the validation contract.
+   */
+  async getRemoteCapabilityLayerNames(serviceId: string) {
+    const service = await prisma.service.findFirst({
+      where: { id: serviceId, deletedAt: null },
+    });
+    if (!service) {
+      return null;
+    }
+
+    const mode = capabilityModeForServiceType(service.type);
+    if (!mode) {
+      return {
+        serviceType: service.type,
+        capabilityService: null as null,
+        layers: [] as string[],
+      };
+    }
+
+    const result = await fetchRemoteCapabilityLayerNames(service.url, mode);
+    if (!result.ok) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_GATEWAY,
+        `GetCapabilities failed: ${result.message}`,
+        HajkStatusCodes.UPSTREAM_CAPABILITIES_FAILED,
+      );
+    }
+
+    return {
+      serviceType: service.type,
+      capabilityService: mode,
+      layers: result.layers,
+    };
   }
 
   // Get all maps that use a layer or a group that uses a layer

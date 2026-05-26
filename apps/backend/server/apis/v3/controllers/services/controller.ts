@@ -34,6 +34,25 @@ class ServicesController {
     res.status(HttpStatusCodes.OK).json({ count: layers.length, layers });
   });
 
+  getRemoteCapabilityLayers = asyncHandler(
+    async (req: Request, res: Response) => {
+      const payload = await ServicesService.getRemoteCapabilityLayerNames(
+        req.params.id,
+      );
+      if (payload === null) {
+        throw new HajkError(
+          HttpStatusCodes.NOT_FOUND,
+          `No service with id: ${req.params.id} could be found.`,
+          HajkStatusCodes.UNKNOWN_SERVICE_ID,
+        );
+      }
+      res.status(HttpStatusCodes.OK).json({
+        count: payload.layers.length,
+        ...payload,
+      });
+    },
+  );
+
   getMapsByServiceId = asyncHandler(async (req: Request, res: Response) => {
     const maps = await ServicesService.getMapsByServiceId(req.params.id);
     res.status(HttpStatusCodes.OK).json({ count: maps.length, maps });
