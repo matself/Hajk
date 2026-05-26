@@ -9,6 +9,7 @@ export interface ApiValidationDetail {
 
 export type InternalApiError = AxiosError<{
   errorId: string;
+  hajkCode?: string;
   error?: string;
   details?: string | ApiValidationDetail[];
   stderr?: string;

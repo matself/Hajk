@@ -3,6 +3,7 @@ import {
   LayersApiResponse,
   LayerTypesApiResponse,
   LayerCreateInput,
+  LayerCreationError,
   LayerUpdateInput,
   RoleOnLayerCreateAndUpdateInput,
   RoleOnLayer,
@@ -192,6 +193,7 @@ export const createLayer = async (
     ...merged,
     layerKind,
     serviceId: payload.serviceId,
+    ...(payload.force === true ? { force: true } : {}),
   } as Record<string, unknown>;
   try {
     const response = await internalApiClient.post<Layer>("/layers", layerData);
@@ -203,12 +205,23 @@ export const createLayer = async (
     const axiosError = error as InternalApiError;
 
     if (axiosError.response) {
-      throw new Error(
-        `Failed to create layer. ErrorId: ${axiosError.response.data.errorId}.`,
-      );
-    } else {
-      throw new Error(`Failed to create layer`);
+      const {
+        errorId,
+        hajkCode,
+        error: errorText,
+        details,
+      } = axiosError.response.data;
+      const message =
+        errorText ??
+        `Failed to create layer. ErrorId: ${errorId ?? "unknown"}.`;
+      throw new LayerCreationError(message, {
+        status: axiosError.response.status,
+        hajkCode,
+        errorId,
+        details,
+      });
     }
+    throw new LayerCreationError(`Failed to create layer`);
   }
 };
 

@@ -60,6 +60,12 @@ enum HajkStatusCodes {
   UPSTREAM_CAPABILITIES_FAILED = "CF004",
 
   /**
+   * A Hajk layer for the same service + selectedLayers + layerKind already
+   * exists. The client can override by retrying with `force: true`.
+   */
+  LAYER_ALREADY_PUBLISHED = "CF005",
+
+  /**
    * The request body is invalid, e.g. lacks some required fields.
    */
   INVALID_REQUEST_BODY = "RQ001",

@@ -178,6 +178,44 @@ class LayerService {
     }
   }
 
+  /**
+   * Look for an existing non-deleted Hajk layer of the given `layerKind`
+   * that targets the same `serviceId` and the exact same set of
+   * `selectedLayers` (order-independent set equality).
+   *
+   * Returns the first match (`id`, `name`) or `null` when no conflict.
+   * Empty `selectedLayers` is treated as "cannot compare" → returns `null`.
+   */
+  private async findDuplicatePublication(
+    serviceId: string,
+    layerKind: LayerKind,
+    selectedLayers: string[]
+  ): Promise<{ id: string; name: string } | null> {
+    if (selectedLayers.length === 0) return null;
+
+    const target = [...selectedLayers].sort();
+    const where = {
+      serviceId,
+      deletedAt: null,
+      // Narrow with hasEvery (uses pg array index); we still need to
+      // verify length to enforce set equality.
+      selectedLayers: { hasEvery: target },
+    } as const;
+    const select = { id: true, name: true, selectedLayers: true } as const;
+
+    const candidates =
+      layerKind === "search"
+        ? await prisma.searchLayer.findMany({ where, select })
+        : layerKind === "editing"
+          ? await prisma.editingLayer.findMany({ where, select })
+          : await prisma.displayLayer.findMany({ where, select });
+
+    const match = candidates.find(
+      (row) => row.selectedLayers.length === target.length
+    );
+    return match ? { id: match.id, name: match.name } : null;
+  }
+
   async getLayers(): Promise<UnifiedLayer[]> {
     const [displayLayers, searchLayers, editingLayers] = await Promise.all([
       prisma.displayLayer.findMany({
@@ -319,10 +357,26 @@ class LayerService {
       );
     }
 
+    const selectedLayersList = coerceStringArray(picked.selectedLayers);
     await this.ensureSelectedLayersMatchCapabilities(
       service,
-      coerceStringArray(picked.selectedLayers)
+      selectedLayersList
     );
+
+    if (data.force !== true) {
+      const duplicate = await this.findDuplicatePublication(
+        serviceId,
+        layerKind,
+        selectedLayersList
+      );
+      if (duplicate) {
+        throw new HajkError(
+          HttpStatusCodes.CONFLICT,
+          `A Hajk layer of kind "${layerKind}" already publishes the same source layer(s) for this service: id=${duplicate.id}, name="${duplicate.name}". Retry with force=true to create another publication.`,
+          HajkStatusCodes.LAYER_ALREADY_PUBLISHED
+        );
+      }
+    }
 
     if (layerKind === "search") {
       const created = await prisma.searchLayer.create({

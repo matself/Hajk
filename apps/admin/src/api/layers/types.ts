@@ -88,6 +88,49 @@ export interface LayerTypesApiResponse {
   errorId: string;
 }
 
+/**
+ * Hajk status code (`hajkCode`) returned by the backend when an attempted
+ * layer publication conflicts with an existing same-kind publication that
+ * targets the same `serviceId` + `selectedLayers`. The client may retry the
+ * same call with `force: true` to override.
+ */
+export const LAYER_ALREADY_PUBLISHED_HAJK_CODE = "CF005";
+
+/**
+ * Typed error thrown by `createLayer` so callers can react to specific
+ * backend conditions (e.g. duplicate-publication conflict on HTTP 409).
+ */
+export class LayerCreationError extends Error {
+  status?: number;
+  hajkCode?: string;
+  errorId?: string;
+  details?: unknown;
+
+  constructor(
+    message: string,
+    init: {
+      status?: number;
+      hajkCode?: string;
+      errorId?: string;
+      details?: unknown;
+    } = {},
+  ) {
+    super(message);
+    this.name = "LayerCreationError";
+    this.status = init.status;
+    this.hajkCode = init.hajkCode;
+    this.errorId = init.errorId;
+    this.details = init.details;
+  }
+
+  /** True when the backend rejected the create as a duplicate publication. */
+  get isDuplicatePublication(): boolean {
+    return (
+      this.status === 409 && this.hajkCode === LAYER_ALREADY_PUBLISHED_HAJK_CODE
+    );
+  }
+}
+
 export interface LayerCreateInput {
   layerKind?: LayerKind;
   id?: string;
@@ -96,6 +139,13 @@ export interface LayerCreateInput {
   selectedLayers?: string[];
   locked?: boolean;
   options?: Record<string, string>;
+  /**
+   * When `true`, the backend skips the duplicate-publication guard
+   * (HTTP 409, status code `LAYER_ALREADY_PUBLISHED`) and creates the layer
+   * even if another Hajk layer of the same kind already publishes the same
+   * source layer(s) for this service. Set after explicit user confirmation.
+   */
+  force?: boolean;
 }
 
 export interface LayerUpdateInput {

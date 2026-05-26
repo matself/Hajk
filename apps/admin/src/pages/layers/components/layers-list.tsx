@@ -27,6 +27,8 @@ import {
   useCreateLayer,
   useDeleteLayer,
 } from "../../../api/layers";
+import { LayerCreationError } from "../../../api/layers/types";
+import { LAYER_CATEGORY_I18N_KEYS } from "../layer-category";
 import {
   useServices,
   SERVICE_TYPE,
@@ -225,7 +227,10 @@ export default function LayersList({
     reValidateMode: "onChange",
   });
   const watchServiceId = watch("serviceId");
-  const { mutateAsync: createLayer } = useCreateLayer(watchServiceId);
+  const { mutateAsync: createLayer, isPending: isCreatingLayer } =
+    useCreateLayer(watchServiceId);
+  const [duplicateConfirm, setDuplicateConfirm] =
+    useState<LayerCreateInput | null>(null);
 
   const selectedService = useMemo(
     () => services?.find((s) => s.id === watchServiceId),
@@ -283,13 +288,17 @@ export default function LayersList({
     );
   };
 
-  const handleLayerSubmit = async (layerData: LayerCreateInput) => {
+  const handleLayerSubmit = async (
+    layerData: LayerCreateInput,
+    options: { force?: boolean } = {},
+  ) => {
     try {
-      const payload = {
+      const payload: LayerCreateInput = {
         layerKind,
         name: layerData.name,
         serviceId: layerData.serviceId,
         selectedLayers: layerData.selectedLayers,
+        ...(options.force ? { force: true } : {}),
       };
       const response = await createLayer(payload);
       toast.success(t("layers.createLayerSuccess", { name: response?.name }), {
@@ -301,6 +310,12 @@ export default function LayersList({
       reset();
       handleClose();
     } catch (error) {
+      if (error instanceof LayerCreationError && error.isDuplicatePublication) {
+        // Stash the original payload so the confirmation dialog can retry
+        // with `force: true` if the admin chooses to proceed.
+        setDuplicateConfirm(layerData);
+        return;
+      }
       console.error("Failed to submit service:", error);
       toast.error(t("layers.createLayerFailed"), {
         position: "bottom-left",
@@ -308,6 +323,13 @@ export default function LayersList({
         hideProgressBar: true,
       });
     }
+  };
+
+  const handleConfirmDuplicate = () => {
+    if (!duplicateConfirm) return;
+    const payload = duplicateConfirm;
+    setDuplicateConfirm(null);
+    void handleLayerSubmit(payload, { force: true });
   };
 
   const handleNext = () => {
@@ -709,6 +731,55 @@ export default function LayersList({
                 onChange={(e) => setDeleteConfirmName(e.target.value)}
                 disabled={isDeletingLayer}
               />
+            </DialogWrapper>
+
+            <DialogWrapper
+              fullWidth
+              maxWidth="sm"
+              open={duplicateConfirm !== null}
+              title={t("layers.confirmDuplicate.title")}
+              onClose={() => setDuplicateConfirm(null)}
+              actions={
+                <>
+                  <Button
+                    variant="text"
+                    onClick={() => setDuplicateConfirm(null)}
+                    color="primary"
+                    disabled={isCreatingLayer}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    onClick={handleConfirmDuplicate}
+                    disabled={isCreatingLayer}
+                    startIcon={
+                      isCreatingLayer ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : null
+                    }
+                  >
+                    {t("layers.confirmDuplicate.confirm")}
+                  </Button>
+                </>
+              }
+            >
+              {duplicateConfirm && (
+                <Typography component="div">
+                  <Trans
+                    i18nKey="layers.confirmDuplicate.body"
+                    values={{
+                      layerName: duplicateConfirm.name ?? "",
+                      layerKind: t(LAYER_CATEGORY_I18N_KEYS[layerKind]),
+                      selectedLayers: (
+                        duplicateConfirm.selectedLayers ?? []
+                      ).join(", "),
+                    }}
+                    components={{ strong: <strong /> }}
+                  />
+                </Typography>
+              )}
             </DialogWrapper>
           </Grid>
         </Page>

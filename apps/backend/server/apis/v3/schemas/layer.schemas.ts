@@ -91,6 +91,14 @@ export const LayerCreateSchema = z.object({
   metadata: MetadataSchema.optional(),
   infoClickSettings: InfoClickSettingsSchema.optional(),
   searchSettings: SearchSettingsSchema.optional(),
+  /**
+   * When `true`, the backend skips the duplicate-publication guard
+   * (CF005 / LAYER_ALREADY_PUBLISHED) and creates the layer even if an
+   * existing Hajk layer of the same `layerKind` already references the same
+   * `serviceId` + `selectedLayers`. Use only after the user has confirmed
+   * the duplication in the UI.
+   */
+  force: z.boolean().optional(),
 });
 
 export const LayerInstanceCreateSchema = z
