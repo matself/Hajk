@@ -149,8 +149,7 @@ class FirService {
 
     await writeXlsxFile([headers, ...rows], {
       columns: headers,
-      filePath: fileInf.fullPath,
-    });
+    }).toFile(fileInf.fullPath);
 
     if (!fs.existsSync(fileInf.fullPath)) {
       // For some reason writeXlsxFile doesn't output errors..
