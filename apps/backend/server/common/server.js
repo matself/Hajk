@@ -345,8 +345,8 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     // Prepare a logger
     const l = log4js.getLogger("hajk.proxy");
     try {
-      // Suffixes used for per-proxy credentials — these are NOT proxy targets.
-      const credentialSuffixes = ["_USER", "_PASSWORD"];
+      // Suffixes used for per-proxy settings — these are NOT proxy targets.
+      const credentialSuffixes = ["_USER", "_PASSWORD", "_STRIP_AUTH"];
 
       // Convert the settings from DOTENV to a nice Array of Objects.
       // Skip entries that are credential keys (e.g. PROXY_GEOSERVER_USER).
@@ -362,9 +362,11 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
           return {
             context: rawName.toLowerCase(),
             target: v,
-            // Look up optional Basic auth credentials using same naming convention
+            // Look up optional per-proxy settings using same naming convention
             user: process.env[`PROXY_${rawName}_USER`] || "",
             password: process.env[`PROXY_${rawName}_PASSWORD`] || "",
+            stripAuth:
+              process.env[`PROXY_${rawName}_STRIP_AUTH`] === "true",
           };
         });
 
@@ -415,6 +417,15 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
                 const hGroups = req.get(groupHeader);
                 if (hUser) proxyReq.setHeader(userHeader, hUser);
                 if (hGroups) proxyReq.setHeader(groupHeader, hGroups);
+              },
+            };
+          } else if (v.stripAuth) {
+            // Strip any incoming Authorization header (e.g. Kerberos/Negotiate tokens
+            // from Windows Auth) so the upstream service doesn't reject the request.
+            l.trace(`Proxy ${context}: stripping Authorization header`);
+            proxyOptions.on = {
+              proxyReq: (proxyReq) => {
+                proxyReq.removeHeader("Authorization");
               },
             };
           }
