@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
@@ -42,6 +43,7 @@ interface CreateLayerGrid {
   onToggleCapabilityLayer: (layerName: string) => void;
 
   isLoading: boolean;
+  isFetching: boolean;
   isError: boolean;
   onRetry: () => void;
 
@@ -59,6 +61,7 @@ export function CreateLayerGrid({
   selectedCapabilityLayers,
   onToggleCapabilityLayer,
   isLoading,
+  isFetching,
   isError,
   onRetry,
   rows,
@@ -252,10 +255,19 @@ export function CreateLayerGrid({
 
       {isError ? (
         <Box sx={{ textAlign: "center", py: 2 }}>
-          <Typography color="error" sx={{ mb: 2 }}>
-            {t("layers.errorLoadingCapabilities")}
-          </Typography>
-          <Button variant="outlined" onClick={onRetry}>
+          {!isFetching && (
+            <Typography color="error" sx={{ mb: 2 }}>
+              {t("layers.errorLoadingCapabilities")}
+            </Typography>
+          )}
+          <Button
+            variant="outlined"
+            onClick={onRetry}
+            disabled={isFetching}
+            startIcon={
+              isFetching ? <CircularProgress color="inherit" size={18} /> : null
+            }
+          >
             {t("common.retry")}
           </Button>
         </Box>

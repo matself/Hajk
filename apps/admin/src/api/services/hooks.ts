@@ -174,7 +174,7 @@ export const useServiceCapabilities = ({
   baseUrl,
   type,
 }: UseServiceCapabilitiesProps) => {
-  const { data, isError, isLoading, refetch } = useQuery({
+  const { data, isError, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["serviceCapabilities", baseUrl, type],
     queryFn: () => fetchCapabilities(baseUrl, type),
     enabled: Boolean(baseUrl && type),
@@ -186,6 +186,7 @@ export const useServiceCapabilities = ({
     styles: data?.styles ?? {},
     isError,
     isLoading,
+    isFetching,
     refetch,
   };
 };

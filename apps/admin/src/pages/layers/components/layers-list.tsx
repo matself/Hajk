@@ -254,6 +254,7 @@ export default function LayersList({
     workspaces,
     isError: capabilitiesError,
     isLoading: capabilitiesLoading,
+    isFetching: capabilitiesFetching,
     refetch: refetchCapabilities,
   } = useServiceCapabilities({
     baseUrl: selectedService?.url ?? "",
@@ -464,7 +465,14 @@ export default function LayersList({
                     color="primary"
                     variant="contained"
                     onClick={handleFinalSave}
-                    disabled={selectedCapabilityLayers.length === 0}
+                    disabled={
+                      selectedCapabilityLayers.length === 0 || isCreatingLayer
+                    }
+                    startIcon={
+                      isCreatingLayer ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : null
+                    }
                   >
                     {t("common.dialog.saveBtn")}
                   </Button>
@@ -534,6 +542,7 @@ export default function LayersList({
                 selectedCapabilityLayers={selectedCapabilityLayers}
                 onToggleCapabilityLayer={handleToggleCapabilityLayer}
                 isLoading={capabilitiesLoading}
+                isFetching={capabilitiesFetching}
                 isError={capabilitiesError}
                 onRetry={() => void refetchCapabilities()}
                 rows={filteredCapabilityLayers}
