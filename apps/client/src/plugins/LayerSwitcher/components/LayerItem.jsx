@@ -407,6 +407,7 @@ function LayerItem({
             />
             <ListItemText
               primary={layerCaption}
+              sx={{ alignSelf: "center" }}
               slotProps={{
                 primary: {
                   pr: 5,
