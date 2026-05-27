@@ -1,16 +1,10 @@
 import React from "react";
-
-// Resolves dot-notation paths like "projection.code" or "metadata.owner"
-function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split(".").reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object") {
-      return (acc as Record<string, unknown>)[key];
-    }
-    return undefined;
-  }, obj);
-}
+import { matchesSettingsSearch } from "./settings-search-match";
+import { PanelSearchScopeProvider } from "./searchable-field";
 
 interface SearchablePanelProps {
+  /** Panel heading label(s); matching the full title shows every field in the panel. */
+  panelTitleKeywords?: string[];
   keywords: string[];
   fields?: string[];
   allValues?: Record<string, unknown>;
@@ -18,12 +12,10 @@ interface SearchablePanelProps {
   children: React.ReactNode;
 }
 
-// Wraps a form panel and hides it when searchTerm doesn't match.
-// Matches against:
-//   - keywords: panel/field labels (e.g. "url", "servertyp")
-//   - fields + allValues: actual form values (e.g. the real URL string)
-// When searchTerm is empty, always renders children (no filtering).
+// Hides the whole panel when searchTerm does not match. When visible, optionally
+// filters child SettingsSearchField rows to matching fields only.
 export default function SearchablePanel({
+  panelTitleKeywords = [],
   keywords,
   fields = [],
   allValues = {},
@@ -32,14 +24,17 @@ export default function SearchablePanel({
 }: SearchablePanelProps) {
   if (!searchTerm.trim()) return <>{children}</>;
 
-  const term = searchTerm.toLowerCase().trim();
+  const panelKeywords = [...panelTitleKeywords, ...keywords];
+  if (!matchesSettingsSearch(searchTerm, panelKeywords, fields, allValues)) {
+    return null;
+  }
 
-  const matchesKeyword = keywords.some((k) => k.toLowerCase().includes(term));
-  const matchesValue = fields.some((f) => {
-    const val = getNestedValue(allValues, f);
-    return typeof val === "string" && val.toLowerCase().includes(term);
-  });
-
-  if (!matchesKeyword && !matchesValue) return null;
-  return <>{children}</>;
+  return (
+    <PanelSearchScopeProvider
+      panelTitleKeywords={panelTitleKeywords}
+      searchTerm={searchTerm}
+    >
+      {children}
+    </PanelSearchScopeProvider>
+  );
 }

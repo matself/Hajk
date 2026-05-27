@@ -155,7 +155,8 @@ export type LayerSettingsTab =
   | "infoclick"
   | "editing"
   | "layers"
-  | "maps";
+  | "maps"
+  | "search";
 
 export interface LayerSettingsVisibility {
   tabs: LayerSettingsTab[];
@@ -185,7 +186,15 @@ export function getLayerSettingsVisibility(
   switch (category) {
     case "display":
       return {
-        tabs: ["general", "display", "metadata", "infoclick", "layers", "maps"],
+        tabs: [
+          "general",
+          "display",
+          "metadata",
+          "infoclick",
+          "layers",
+          "maps",
+          "search",
+        ],
         showSearchSettingsPanel: false,
         showDisplayFieldsPanel: false,
         showDisplayRequestOptions: true,
@@ -194,7 +203,7 @@ export function getLayerSettingsVisibility(
       };
     case "search":
       return {
-        tabs: ["general", "infoclick", "layers", "maps"],
+        tabs: ["general", "infoclick", "layers", "maps", "search"],
         showSearchSettingsPanel: true,
         showDisplayFieldsPanel: true,
         showDisplayRequestOptions: false,
@@ -203,7 +212,7 @@ export function getLayerSettingsVisibility(
       };
     case "editing":
       return {
-        tabs: ["general", "editing", "layers", "maps"],
+        tabs: ["general", "editing", "layers", "maps", "search"],
         showSearchSettingsPanel: false,
         showDisplayFieldsPanel: false,
         showDisplayRequestOptions: false,
