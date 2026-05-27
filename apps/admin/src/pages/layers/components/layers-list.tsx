@@ -537,7 +537,7 @@ export default function LayersList({
                 selectedCapabilityLayers={selectedCapabilityLayers}
                 onToggleCapabilityLayer={handleToggleCapabilityLayer}
                 isLoading={capabilitiesLoading}
-                isFetching={capabilitiesFetching}
+                isFetching={Boolean(capabilitiesFetching)}
                 isError={capabilitiesError}
                 onRetry={() => void refetchCapabilities()}
                 rows={filteredCapabilityLayers}

@@ -262,11 +262,10 @@ export default function LayerSettings() {
     [settingsVisibility.tabs],
   );
 
-  const activeTab = (
+  const activeTab =
     tabFromUrl && settingsVisibility.tabs.includes(tabFromUrl)
       ? tabFromUrl
-      : settingsVisibility.tabs[0]
-  ) as LayerSettingsTab;
+      : settingsVisibility.tabs[0];
   const setActiveTab = (tab: LayerSettingsTab) => {
     setSearchParams({ tab }, { replace: true });
   };
@@ -1160,9 +1159,7 @@ export default function LayerSettings() {
               slotProps={{
                 input: {
                   startAdornment: (
-                    <ManageSearchIcon
-                      sx={{ mr: 1, color: "text.secondary" }}
-                    />
+                    <ManageSearchIcon sx={{ mr: 1, color: "text.secondary" }} />
                   ),
                 },
               }}
@@ -1202,161 +1199,161 @@ export default function LayerSettings() {
               allValues={formValues}
               searchTerm={settingsSearchTerm}
             >
-            <FormPanel title={t("common.information")}>
-              <FormFieldGrid>
-                <SettingsSearchField
-                  labelKeys={["common.name"]}
-                  fields={["name"]}
-                  synonyms={["namn", "name"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="common.name"
-                      helpKey="layers.help.name"
-                      fullWidth
-                      {...register("name", {
-                        required: `${t("common.required")}`,
-                      })}
-                      error={!!errors.name}
-                      helperText={
-                        (errors.name as unknown as { message?: string })
-                          ?.message
-                      }
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.common.service"]}
-                  fields={["serviceId"]}
-                  synonyms={["tjänst", "service"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <Controller
-                      name="serviceId"
-                      control={control}
-                      render={({ field }) => (
-                        <SelectWithHelp
-                          labelKey="layers.common.service"
-                          helpKey="layers.help.service"
-                          {...field}
-                          value={(field.value as string) ?? ""}
-                        >
-                          {(services ?? []).map((service) => (
-                            <MenuItem key={service.id} value={service.id}>
-                              {service.name}({service.type})
-                            </MenuItem>
-                          ))}
-                        </SelectWithHelp>
-                      )}
-                    />
-                  </Grid>
-                  {service && (
+              <FormPanel title={t("common.information")}>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["common.name"]}
+                    fields={["name"]}
+                    synonyms={["namn", "name"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
                     <Grid size={12}>
-                      <Alert
-                        severity="info"
-                        variant="outlined"
-                        sx={{ py: 0.5, my: 0 }}
-                      >
-                        <Typography variant="body2" component="span">
-                          {t("layers.serviceConnectionSummary", {
-                            type: service.type,
-                            url: service.url,
-                            version: service.version,
-                            imageFormat: service.imageFormat,
-                            projection: service.projection?.code ?? "—",
-                          })}
-                        </Typography>
-                      </Alert>
+                      <TextFieldWithHelp
+                        labelKey="common.name"
+                        helpKey="layers.help.name"
+                        fullWidth
+                        {...register("name", {
+                          required: `${t("common.required")}`,
+                        })}
+                        error={!!errors.name}
+                        helperText={
+                          (errors.name as unknown as { message?: string })
+                            ?.message
+                        }
+                      />
                     </Grid>
-                  )}
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.internalName"]}
-                  fields={["internalName"]}
-                  synonyms={["intern", "internal"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.internalName"
-                      helpKey="layers.help.internalName"
-                      fullWidth
-                      {...register("internalName")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.copyRight"]}
-                  fields={["metadata.attribution"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.copyRight"
-                      helpKey="layers.help.attribution"
-                      fullWidth
-                      {...register("metadata.attribution")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["map.description"]}
-                  fields={["description"]}
-                  synonyms={["beskrivning", "description"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="map.description"
-                      helpKey="layers.help.description"
-                      fullWidth
-                      multiline
-                      rows={3}
-                      {...register("description")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.keyword"]}
-                  fields={["options.keyword"]}
-                  synonyms={["nyckelord", "keyword"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.keyword"
-                      helpKey="layers.help.keyword"
-                      fullWidth
-                      {...register("options.keyword")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.category"]}
-                  fields={["options.category"]}
-                  synonyms={["kategori", "category"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.category"
-                      helpKey="layers.help.category"
-                      fullWidth
-                      {...register("options.category")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-              </FormFieldGrid>
-            </FormPanel>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.common.service"]}
+                    fields={["serviceId"]}
+                    synonyms={["tjänst", "service"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <Controller
+                        name="serviceId"
+                        control={control}
+                        render={({ field }) => (
+                          <SelectWithHelp
+                            labelKey="layers.common.service"
+                            helpKey="layers.help.service"
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {(services ?? []).map((service) => (
+                              <MenuItem key={service.id} value={service.id}>
+                                {service.name}({service.type})
+                              </MenuItem>
+                            ))}
+                          </SelectWithHelp>
+                        )}
+                      />
+                    </Grid>
+                    {service && (
+                      <Grid size={12}>
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          sx={{ py: 0.5, my: 0 }}
+                        >
+                          <Typography variant="body2" component="span">
+                            {t("layers.serviceConnectionSummary", {
+                              type: service.type,
+                              url: service.url,
+                              version: service.version,
+                              imageFormat: service.imageFormat,
+                              projection: service.projection?.code ?? "—",
+                            })}
+                          </Typography>
+                        </Alert>
+                      </Grid>
+                    )}
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.internalName"]}
+                    fields={["internalName"]}
+                    synonyms={["intern", "internal"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.internalName"
+                        helpKey="layers.help.internalName"
+                        fullWidth
+                        {...register("internalName")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.copyRight"]}
+                    fields={["metadata.attribution"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.copyRight"
+                        helpKey="layers.help.attribution"
+                        fullWidth
+                        {...register("metadata.attribution")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["map.description"]}
+                    fields={["description"]}
+                    synonyms={["beskrivning", "description"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="map.description"
+                        helpKey="layers.help.description"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("description")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.keyword"]}
+                    fields={["options.keyword"]}
+                    synonyms={["nyckelord", "keyword"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.keyword"
+                        helpKey="layers.help.keyword"
+                        fullWidth
+                        {...register("options.keyword")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.category"]}
+                    fields={["options.category"]}
+                    synonyms={["kategori", "category"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.category"
+                        helpKey="layers.help.category"
+                        fullWidth
+                        {...register("options.category")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
+              </FormPanel>
             </SearchablePanel>
 
             <SearchablePanel
@@ -1372,38 +1369,38 @@ export default function LayerSettings() {
               allValues={formValues}
               searchTerm={settingsSearchTerm}
             >
-            <FormPanel title={t("layers.permissions")}>
-              <FormFieldGrid>
-                <SettingsSearchField
-                  labelKeys={["layers.permission"]}
-                  fields={["roleId"]}
-                  synonyms={["behörighet", "roll", "role"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <Controller
-                      name="roleId"
-                      control={control}
-                      render={({ field }) => (
-                        <SelectWithHelp
-                          labelKey="layers.permission"
-                          helpKey="layers.help.permission"
-                          {...field}
-                          value={(field.value as string) ?? ""}
-                        >
-                          {(roles ?? []).map((role) => (
-                            <MenuItem key={role.id} value={role.id}>
-                              {role.title}
-                            </MenuItem>
-                          ))}
-                        </SelectWithHelp>
-                      )}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-              </FormFieldGrid>
-            </FormPanel>
+              <FormPanel title={t("layers.permissions")}>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["layers.permission"]}
+                    fields={["roleId"]}
+                    synonyms={["behörighet", "roll", "role"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <Controller
+                        name="roleId"
+                        control={control}
+                        render={({ field }) => (
+                          <SelectWithHelp
+                            labelKey="layers.permission"
+                            helpKey="layers.help.permission"
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {(roles ?? []).map((role) => (
+                              <MenuItem key={role.id} value={role.id}>
+                                {role.title}
+                              </MenuItem>
+                            ))}
+                          </SelectWithHelp>
+                        )}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
+              </FormPanel>
             </SearchablePanel>
           </Box>
 
@@ -1436,133 +1433,133 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("services.settings.request")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={[
-                      "layers.hidpi",
-                      "layers.tiled",
-                      "layers.singleTile",
-                      "layers.geoWebCache",
-                    ]}
-                    fields={[
-                      "hidpi",
-                      "tiled",
-                      "singleTile",
-                      "options.geoWebCache",
-                    ]}
-                    synonyms={["hidpi", "tiled", "geoWebCache", "gwc"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
-                        <Controller
-                          name="hidpi"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.hidpi",
-                                "layers.help.hidpi",
-                              )}
-                            />
-                          )}
-                        />
-                        <Controller
-                          name="tiled"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.tiled",
-                                "layers.help.tiled",
-                              )}
-                            />
-                          )}
-                        />
-                        <Controller
-                          name="singleTile"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.singleTile",
-                                "layers.help.singleTile",
-                              )}
-                            />
-                          )}
-                        />
-                        <Controller
-                          name="options.geoWebCache"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.geoWebCache",
-                                "layers.help.geoWebCache",
-                              )}
-                            />
-                          )}
-                        />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                  {watchSingleTile ? (
+                <FormPanel title={t("services.settings.request")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
                     <SettingsSearchField
-                      labelKeys={["layers.customRatio"]}
-                      fields={["customRatio"]}
+                      labelKeys={[
+                        "layers.hidpi",
+                        "layers.tiled",
+                        "layers.singleTile",
+                        "layers.geoWebCache",
+                      ]}
+                      fields={[
+                        "hidpi",
+                        "tiled",
+                        "singleTile",
+                        "options.geoWebCache",
+                      ]}
+                      synonyms={["hidpi", "tiled", "geoWebCache", "gwc"]}
                       searchTerm={settingsSearchTerm}
                       allValues={formValues}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
-                        <TextFieldWithHelp
-                          labelKey="layers.customRatio"
-                          helpKey="layers.help.customRatio"
-                          fullWidth
-                          type="number"
-                          slotProps={{
-                            htmlInput: { step: 1 },
-                          }}
-                          {...register("customRatio")}
-                        />
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="hidpi"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.hidpi",
+                                  "layers.help.hidpi",
+                                )}
+                              />
+                            )}
+                          />
+                          <Controller
+                            name="tiled"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.tiled",
+                                  "layers.help.tiled",
+                                )}
+                              />
+                            )}
+                          />
+                          <Controller
+                            name="singleTile"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.singleTile",
+                                  "layers.help.singleTile",
+                                )}
+                              />
+                            )}
+                          />
+                          <Controller
+                            name="options.geoWebCache"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.geoWebCache",
+                                  "layers.help.geoWebCache",
+                                )}
+                              />
+                            )}
+                          />
+                        </FormGroup>
                       </Grid>
                     </SettingsSearchField>
-                  ) : null}
-                </Grid>
-              </FormPanel>
+                    {watchSingleTile ? (
+                      <SettingsSearchField
+                        labelKeys={["layers.customRatio"]}
+                        fields={["customRatio"]}
+                        searchTerm={settingsSearchTerm}
+                        allValues={formValues}
+                      >
+                        <Grid size={{ xs: 12, md: 10 }}>
+                          <TextFieldWithHelp
+                            labelKey="layers.customRatio"
+                            helpKey="layers.help.customRatio"
+                            fullWidth
+                            type="number"
+                            slotProps={{
+                              htmlInput: { step: 1 },
+                            }}
+                            {...register("customRatio")}
+                          />
+                        </Grid>
+                      </SettingsSearchField>
+                    ) : null}
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
 
@@ -1583,110 +1580,115 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("layers.customDpi")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["layers.useCustomDpiList"]}
-                    fields={["useCustomDpiList"]}
-                    synonyms={["dpi list", "dpi-lista"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
-                        <FormControlLabel
-                          control={
-                            <Controller
-                              name="useCustomDpiList"
-                              control={control}
-                              render={({ field }) => (
-                                <Checkbox
-                                  {...field}
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) => {
-                                    field.onChange(e.target.checked);
-                                    setUseCustomDpiList(e.target.checked);
-                                  }}
-                                />
-                              )}
-                            />
-                          }
-                          label={fieldLabel(
-                            "layers.useCustomDpiList",
-                            "layers.help.useCustomDpiList",
-                          )}
-                        />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                  {useCustomDpiList && (
+                <FormPanel title={t("layers.customDpi")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
                     <SettingsSearchField
-                      labelKeys={[
-                        "layers.pxRatio",
-                        "layers.dpi",
-                        "layers.addDpiRow",
-                      ]}
-                      synonyms={["dpi", "px ratio", "pixel ratio", "pixelratio"]}
+                      labelKeys={["layers.useCustomDpiList"]}
+                      fields={["useCustomDpiList"]}
+                      synonyms={["dpi list", "dpi-lista"]}
                       searchTerm={settingsSearchTerm}
                       allValues={formValues}
                     >
-                      <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                        {customDpiList.map((item, index) => (
-                          <Grid size={12} key={index}>
-                            <Box display="flex" alignItems="center" gap={2}>
-                              <TextFieldWithHelp
-                                labelKey="layers.pxRatio"
-                                helpKey="layers.help.pxRatio"
-                                type="number"
-                                value={item.pxRatio}
-                                onChange={(e) =>
-                                  handleUpdateDpiList(
-                                    index,
-                                    "pxRatio",
-                                    e.target.value,
-                                  )
-                                }
-                                sx={{ width: 150 }}
+                      <Grid size={12}>
+                        <FormGroup>
+                          <FormControlLabel
+                            control={
+                              <Controller
+                                name="useCustomDpiList"
+                                control={control}
+                                render={({ field }) => (
+                                  <Checkbox
+                                    {...field}
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.checked);
+                                      setUseCustomDpiList(e.target.checked);
+                                    }}
+                                  />
+                                )}
                               />
-                              <TextFieldWithHelp
-                                labelKey="layers.dpi"
-                                helpKey="layers.help.dpi"
-                                type="number"
-                                value={item.dpi}
-                                onChange={(e) =>
-                                  handleUpdateDpiList(
-                                    index,
-                                    "dpi",
-                                    e.target.value,
-                                  )
-                                }
-                                sx={{ width: 150 }}
-                              />
-                              <IconButton
-                                onClick={() => handleRemoveDpiListRow(index)}
-                                disabled={customDpiList.length <= 1}
-                                color="error"
-                                aria-label={t("common.delete")}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Box>
-                          </Grid>
-                        ))}
-                        <Grid size={12}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddDpiListRow}
-                          >
-                            {t("layers.addDpiRow")}
-                          </Button>
-                        </Grid>
+                            }
+                            label={fieldLabel(
+                              "layers.useCustomDpiList",
+                              "layers.help.useCustomDpiList",
+                            )}
+                          />
+                        </FormGroup>
                       </Grid>
                     </SettingsSearchField>
-                  )}
-                </Grid>
-              </FormPanel>
+                    {useCustomDpiList && (
+                      <SettingsSearchField
+                        labelKeys={[
+                          "layers.pxRatio",
+                          "layers.dpi",
+                          "layers.addDpiRow",
+                        ]}
+                        synonyms={[
+                          "dpi",
+                          "px ratio",
+                          "pixel ratio",
+                          "pixelratio",
+                        ]}
+                        searchTerm={settingsSearchTerm}
+                        allValues={formValues}
+                      >
+                        <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                          {customDpiList.map((item, index) => (
+                            <Grid size={12} key={index}>
+                              <Box display="flex" alignItems="center" gap={2}>
+                                <TextFieldWithHelp
+                                  labelKey="layers.pxRatio"
+                                  helpKey="layers.help.pxRatio"
+                                  type="number"
+                                  value={item.pxRatio}
+                                  onChange={(e) =>
+                                    handleUpdateDpiList(
+                                      index,
+                                      "pxRatio",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ width: 150 }}
+                                />
+                                <TextFieldWithHelp
+                                  labelKey="layers.dpi"
+                                  helpKey="layers.help.dpi"
+                                  type="number"
+                                  value={item.dpi}
+                                  onChange={(e) =>
+                                    handleUpdateDpiList(
+                                      index,
+                                      "dpi",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ width: 150 }}
+                                />
+                                <IconButton
+                                  onClick={() => handleRemoveDpiListRow(index)}
+                                  disabled={customDpiList.length <= 1}
+                                  color="error"
+                                  aria-label={t("common.delete")}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Box>
+                            </Grid>
+                          ))}
+                          <Grid size={12}>
+                            <Button
+                              variant="outlined"
+                              startIcon={<AddIcon />}
+                              onClick={handleAddDpiListRow}
+                            >
+                              {t("layers.addDpiRow")}
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </SettingsSearchField>
+                    )}
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
 
@@ -1717,189 +1719,189 @@ export default function LayerSettings() {
               allValues={formValues}
               searchTerm={settingsSearchTerm}
             >
-            <FormPanel title={t("layers.settings")}>
-              <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                {settingsVisibility.showDisplayRequestOptions && (
+              <FormPanel title={t("layers.settings")}>
+                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  {settingsVisibility.showDisplayRequestOptions && (
+                    <SettingsSearchField
+                      labelKeys={["layers.style"]}
+                      fields={["style"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Controller
+                          name="style"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectWithHelp
+                              labelKey="layers.style"
+                              helpKey="layers.help.style"
+                              {...field}
+                              displayEmpty
+                              value={(field.value as string) ?? ""}
+                              renderValue={(value: unknown) =>
+                                value === "" ? "<default>" : String(value)
+                              }
+                            >
+                              <MenuItem value="">{"<default>"}</MenuItem>
+                              {(styles ?? []).map((s) => (
+                                <MenuItem key={s.name} value={s.name}>
+                                  {s.name}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
+                          )}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  )}
                   <SettingsSearchField
-                    labelKeys={["layers.style"]}
-                    fields={["style"]}
+                    labelKeys={["layers.opacity"]}
+                    fields={["opacity"]}
+                    synonyms={["opacitet", "opacity"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid
+                      size={{
+                        xs: 12,
+                        md: settingsVisibility.showDisplayRequestOptions
+                          ? 10
+                          : 12,
+                      }}
+                    >
+                      <TextFieldWithHelp
+                        labelKey="layers.opacity"
+                        helpKey="layers.help.opacity"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: {
+                            min: 0,
+                            max: 1,
+                            step: 0.01,
+                          },
+                        }}
+                        {...register("opacity", {
+                          valueAsNumber: true,
+                          min: { value: 0, message: t("layers.opacityRange") },
+                          max: { value: 1, message: t("layers.opacityRange") },
+                        })}
+                        error={!!errors.opacity}
+                        helperText={
+                          (errors.opacity as unknown as { message?: string })
+                            ?.message
+                        }
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.minZoom"]}
+                    fields={["minZoom"]}
                     searchTerm={settingsSearchTerm}
                     allValues={formValues}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
-                      <Controller
-                        name="style"
-                        control={control}
-                        render={({ field }) => (
-                          <SelectWithHelp
-                            labelKey="layers.style"
-                            helpKey="layers.help.style"
-                            {...field}
-                            displayEmpty
-                            value={(field.value as string) ?? ""}
-                            renderValue={(value: unknown) =>
-                              value === "" ? "<default>" : String(value)
-                            }
-                          >
-                            <MenuItem value="">{"<default>"}</MenuItem>
-                            {(styles ?? []).map((s) => (
-                              <MenuItem key={s.name} value={s.name}>
-                                {s.name}
-                              </MenuItem>
-                            ))}
-                          </SelectWithHelp>
-                        )}
+                      <TextFieldWithHelp
+                        labelKey="layers.minZoom"
+                        helpKey="layers.help.minZoom"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: { step: 1 },
+                        }}
+                        helperText={t("layers.zoomNegativeOneHint")}
+                        {...register("minZoom")}
                       />
                     </Grid>
                   </SettingsSearchField>
-                )}
-                <SettingsSearchField
-                  labelKeys={["layers.opacity"]}
-                  fields={["opacity"]}
-                  synonyms={["opacitet", "opacity"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid
-                    size={{
-                      xs: 12,
-                      md: settingsVisibility.showDisplayRequestOptions
-                        ? 10
-                        : 12,
-                    }}
+                  <SettingsSearchField
+                    labelKeys={["layers.maxZoom"]}
+                    fields={["maxZoom"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
                   >
-                    <TextFieldWithHelp
-                      labelKey="layers.opacity"
-                      helpKey="layers.help.opacity"
-                      fullWidth
-                      type="number"
-                      slotProps={{
-                        htmlInput: {
-                          min: 0,
-                          max: 1,
-                          step: 0.01,
-                        },
-                      }}
-                      {...register("opacity", {
-                        valueAsNumber: true,
-                        min: { value: 0, message: t("layers.opacityRange") },
-                        max: { value: 1, message: t("layers.opacityRange") },
-                      })}
-                      error={!!errors.opacity}
-                      helperText={
-                        (errors.opacity as unknown as { message?: string })
-                          ?.message
-                      }
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.minZoom"]}
-                  fields={["minZoom"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.minZoom"
-                      helpKey="layers.help.minZoom"
-                      fullWidth
-                      type="number"
-                      slotProps={{
-                        htmlInput: { step: 1 },
-                      }}
-                      helperText={t("layers.zoomNegativeOneHint")}
-                      {...register("minZoom")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.maxZoom"]}
-                  fields={["maxZoom"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.maxZoom"
-                      helpKey="layers.help.maxZoom"
-                      fullWidth
-                      type="number"
-                      slotProps={{
-                        htmlInput: { step: 1 },
-                      }}
-                      helperText={t("layers.zoomNegativeOneHint")}
-                      {...register("maxZoom")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.zIndex"]}
-                  fields={["zIndex"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.zIndex"
-                      helpKey="layers.help.zIndex"
-                      fullWidth
-                      type="number"
-                      slotProps={{
-                        htmlInput: { step: 1 },
-                      }}
-                      {...register("zIndex")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.legendOptions"]}
-                  fields={["legendOptions"]}
-                  synonyms={["teckenförklaring", "legend"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.legendOptions"
-                      helpKey="layers.help.legendOptions"
-                      fullWidth
-                      {...register("legendOptions")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.minMaxZoomAlertOnToggleOnly"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="minMaxZoomAlertOnToggleOnly"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
-                                }
-                              />
-                            }
-                            label={fieldLabel(
-                              "layers.minMaxZoomAlertOnToggleOnly",
-                              "layers.help.minMaxZoomAlertOnToggleOnly",
-                            )}
-                          />
-                        )}
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.maxZoom"
+                        helpKey="layers.help.maxZoom"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: { step: 1 },
+                        }}
+                        helperText={t("layers.zoomNegativeOneHint")}
+                        {...register("maxZoom")}
                       />
-                    </FormGroup>
-                  </Grid>
-                </SettingsSearchField>
-              </Grid>
-            </FormPanel>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.zIndex"]}
+                    fields={["zIndex"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.zIndex"
+                        helpKey="layers.help.zIndex"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: { step: 1 },
+                        }}
+                        {...register("zIndex")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.legendOptions"]}
+                    fields={["legendOptions"]}
+                    synonyms={["teckenförklaring", "legend"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.legendOptions"
+                        helpKey="layers.help.legendOptions"
+                        fullWidth
+                        {...register("legendOptions")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.minMaxZoomAlertOnToggleOnly"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={12}>
+                      <FormGroup>
+                        <Controller
+                          name="minMaxZoomAlertOnToggleOnly"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.minMaxZoomAlertOnToggleOnly",
+                                "layers.help.minMaxZoomAlertOnToggleOnly",
+                              )}
+                            />
+                          )}
+                        />
+                      </FormGroup>
+                    </Grid>
+                  </SettingsSearchField>
+                </Grid>
+              </FormPanel>
             </SearchablePanel>
 
             {settingsVisibility.showDisplayRequestOptions && (
@@ -1923,78 +1925,80 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("layers.timeSlider")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["layers.timeSliderVisible"]}
-                    fields={["timeSliderVisible"]}
-                    synonyms={["tidsreglage synlig", "visible"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
-                        <Controller
-                          name="timeSliderVisible"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.timeSliderVisible",
-                                "layers.help.timeSliderVisible",
-                              )}
-                            />
-                          )}
+                <FormPanel title={t("layers.timeSlider")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderVisible"]}
+                      fields={["timeSliderVisible"]}
+                      synonyms={["tidsreglage synlig", "visible"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="timeSliderVisible"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.timeSliderVisible",
+                                  "layers.help.timeSliderVisible",
+                                )}
+                              />
+                            )}
+                          />
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderStart"]}
+                      fields={["timeSliderStart"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.timeSliderStart"
+                          helpKey="layers.help.timeSliderStart"
+                          fullWidth
+                          {...register("timeSliderStart")}
                         />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.timeSliderStart"]}
-                    fields={["timeSliderStart"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.timeSliderStart"
-                        helpKey="layers.help.timeSliderStart"
-                        fullWidth
-                        {...register("timeSliderStart")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.timeSliderEnd"]}
-                    fields={["timeSliderEnd"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.timeSliderEnd"
-                        helpKey="layers.help.timeSliderEnd"
-                        fullWidth
-                        {...register("timeSliderEnd")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                </Grid>
-              </FormPanel>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderEnd"]}
+                      fields={["timeSliderEnd"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.timeSliderEnd"
+                          helpKey="layers.help.timeSliderEnd"
+                          fullWidth
+                          {...register("timeSliderEnd")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
 
             {settingsVisibility.showDisplayRequestOptions && (
               <SearchablePanel
-                panelTitleKeywords={settingsSearchLabels("layers.layerSwitcher")}
+                panelTitleKeywords={settingsSearchLabels(
+                  "layers.layerSwitcher",
+                )}
                 keywords={[
                   ...settingsSearchLabels(
                     "layers.layerSwitcher",
@@ -2006,42 +2010,42 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("layers.layerSwitcher")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["layers.hideExpandArrow"]}
-                    fields={["hideExpandArrow"]}
-                    synonyms={["expand", "pil", "arrow"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
-                        <Controller
-                          name="hideExpandArrow"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.hideExpandArrow",
-                                "layers.help.hideExpandArrow",
-                              )}
-                            />
-                          )}
-                        />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                </Grid>
-              </FormPanel>
+                <FormPanel title={t("layers.layerSwitcher")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.hideExpandArrow"]}
+                      fields={["hideExpandArrow"]}
+                      synonyms={["expand", "pil", "arrow"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="hideExpandArrow"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.hideExpandArrow",
+                                  "layers.help.hideExpandArrow",
+                                )}
+                              />
+                            )}
+                          />
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
           </Box>
@@ -2084,158 +2088,162 @@ export default function LayerSettings() {
               allValues={formValues}
               searchTerm={settingsSearchTerm}
             >
-            <FormPanel title={t("layers.metadataTab")}>
-              <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                <SettingsSearchField
-                  labelKeys={[
-                    "layers.showMetadata",
-                    "layers.showAttributeTableButton",
-                  ]}
-                  fields={[
-                    "showMetadata",
-                    "options.showAttributeTableButton",
-                  ]}
-                  synonyms={["attributtabell", "attribute table"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="showMetadata"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) => field.onChange(e.target.checked)}
-                              />
-                            }
-                            label={fieldLabel(
-                              "layers.showMetadata",
-                              "layers.help.showMetadata",
-                            )}
-                          />
-                        )}
+              <FormPanel title={t("layers.metadataTab")}>
+                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <SettingsSearchField
+                    labelKeys={[
+                      "layers.showMetadata",
+                      "layers.showAttributeTableButton",
+                    ]}
+                    fields={[
+                      "showMetadata",
+                      "options.showAttributeTableButton",
+                    ]}
+                    synonyms={["attributtabell", "attribute table"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={12}>
+                      <FormGroup>
+                        <Controller
+                          name="showMetadata"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.showMetadata",
+                                "layers.help.showMetadata",
+                              )}
+                            />
+                          )}
+                        />
+                        <Controller
+                          name="options.showAttributeTableButton"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.showAttributeTableButton",
+                                "layers.help.showAttributeTableButton",
+                              )}
+                            />
+                          )}
+                        />
+                      </FormGroup>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.title"]}
+                    fields={["metadata.title"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.title"
+                        helpKey="layers.help.metadataTitle"
+                        fullWidth
+                        {...register("metadata.title")}
                       />
-                      <Controller
-                        name="options.showAttributeTableButton"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) => field.onChange(e.target.checked)}
-                              />
-                            }
-                            label={fieldLabel(
-                              "layers.showAttributeTableButton",
-                              "layers.help.showAttributeTableButton",
-                            )}
-                          />
-                        )}
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.owner"]}
+                    fields={["metadata.owner"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.owner"
+                        helpKey="layers.help.metadataOwner"
+                        fullWidth
+                        {...register("metadata.owner")}
                       />
-                    </FormGroup>
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.metadata.title"]}
-                  fields={["metadata.title"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.metadata.title"
-                      helpKey="layers.help.metadataTitle"
-                      fullWidth
-                      {...register("metadata.title")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.metadata.owner"]}
-                  fields={["metadata.owner"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.metadata.owner"
-                      helpKey="layers.help.metadataOwner"
-                      fullWidth
-                      {...register("metadata.owner")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.metadata.description"]}
-                  fields={["metadata.description"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.metadata.description"
-                      helpKey="layers.help.metadataDescription"
-                      fullWidth
-                      multiline
-                      rows={6}
-                      {...register("metadata.description")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.metadata.urlTitle"]}
-                  fields={["metadata.urlTitle"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.metadata.urlTitle"
-                      helpKey="layers.help.metadataUrlTitle"
-                      fullWidth
-                      {...register("metadata.urlTitle")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.metadata.url"]}
-                  fields={["metadata.url"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.metadata.url"
-                      helpKey="layers.help.metadataUrl"
-                      fullWidth
-                      {...register("metadata.url")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-                <SettingsSearchField
-                  labelKeys={["layers.layerDisplayDescription"]}
-                  fields={["options.layerDisplayDescription"]}
-                  searchTerm={settingsSearchTerm}
-                  allValues={formValues}
-                >
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.layerDisplayDescription"
-                      helpKey="layers.help.layerDisplayDescription"
-                      fullWidth
-                      multiline
-                      rows={3}
-                      {...register("options.layerDisplayDescription")}
-                    />
-                  </Grid>
-                </SettingsSearchField>
-              </Grid>
-            </FormPanel>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.description"]}
+                    fields={["metadata.description"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.description"
+                        helpKey="layers.help.metadataDescription"
+                        fullWidth
+                        multiline
+                        rows={6}
+                        {...register("metadata.description")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.urlTitle"]}
+                    fields={["metadata.urlTitle"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.urlTitle"
+                        helpKey="layers.help.metadataUrlTitle"
+                        fullWidth
+                        {...register("metadata.urlTitle")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.url"]}
+                    fields={["metadata.url"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.url"
+                        helpKey="layers.help.metadataUrl"
+                        fullWidth
+                        {...register("metadata.url")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.layerDisplayDescription"]}
+                    fields={["options.layerDisplayDescription"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={formValues}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.layerDisplayDescription"
+                        helpKey="layers.help.layerDisplayDescription"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("options.layerDisplayDescription")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </Grid>
+              </FormPanel>
             </SearchablePanel>
           </Box>
 
@@ -2272,145 +2280,148 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("common.infoclick")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["common.infoclick"]}
-                    fields={["infoClickActive"]}
-                    synonyms={["infoklick", "active"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
+                <FormPanel title={t("common.infoclick")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["common.infoclick"]}
+                      fields={["infoClickActive"]}
+                      synonyms={["infoklick", "active"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="infoClickActive"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "common.infoclick",
+                                  "layers.help.infoClickActive",
+                                )}
+                              />
+                            )}
+                          />
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infobox"]}
+                      fields={["infoClickSettings.definition"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.infobox"
+                          helpKey="layers.help.infobox"
+                          fullWidth
+                          multiline
+                          rows={3}
+                          {...register("infoClickSettings.definition")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickIcon"]}
+                      fields={["infoClickSettings.icon"]}
+                      synonyms={["ikon", "icon"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.infoClickIcon"
+                          helpKey="layers.help.infoClickIcon"
+                          fullWidth
+                          {...register("infoClickSettings.icon")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.sortByAttribute"]}
+                      fields={["infoClickSettings.sortProperty"]}
+                      synonyms={["sortering", "sort"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.sortByAttribute"
+                          helpKey="layers.help.sortByAttribute"
+                          fullWidth
+                          {...register("infoClickSettings.sortProperty")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickFormat"]}
+                      fields={["infoClickSettings.format"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
                         <Controller
-                          name="infoClickActive"
+                          name="infoClickSettings.format"
                           control={control}
                           render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "common.infoclick",
-                                "layers.help.infoClickActive",
-                              )}
-                            />
+                            <SelectWithHelp
+                              labelKey="layers.infoClickFormat"
+                              helpKey="layers.help.infoClickFormat"
+                              {...field}
+                              value={(field.value as string) ?? ""}
+                            >
+                              {infoClickFormat.map((format) => (
+                                <MenuItem
+                                  key={format.value}
+                                  value={format.value}
+                                >
+                                  {format.title}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
                           )}
                         />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.infobox"]}
-                    fields={["infoClickSettings.definition"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.infobox"
-                        helpKey="layers.help.infobox"
-                        fullWidth
-                        multiline
-                        rows={3}
-                        {...register("infoClickSettings.definition")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.infoClickIcon"]}
-                    fields={["infoClickSettings.icon"]}
-                    synonyms={["ikon", "icon"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.infoClickIcon"
-                        helpKey="layers.help.infoClickIcon"
-                        fullWidth
-                        {...register("infoClickSettings.icon")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.sortByAttribute"]}
-                    fields={["infoClickSettings.sortProperty"]}
-                    synonyms={["sortering", "sort"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.sortByAttribute"
-                        helpKey="layers.help.sortByAttribute"
-                        fullWidth
-                        {...register("infoClickSettings.sortProperty")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.infoClickFormat"]}
-                    fields={["infoClickSettings.format"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <Controller
-                        name="infoClickSettings.format"
-                        control={control}
-                        render={({ field }) => (
-                          <SelectWithHelp
-                            labelKey="layers.infoClickFormat"
-                            helpKey="layers.help.infoClickFormat"
-                            {...field}
-                            value={(field.value as string) ?? ""}
-                          >
-                            {infoClickFormat.map((format) => (
-                              <MenuItem key={format.value} value={format.value}>
-                                {format.title}
-                              </MenuItem>
-                            ))}
-                          </SelectWithHelp>
-                        )}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.infoClickSortMethod"]}
-                    fields={["infoClickSettings.sortMethod"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <Controller
-                        name="infoClickSettings.sortMethod"
-                        control={control}
-                        render={({ field }) => (
-                          <SelectWithHelp
-                            labelKey="layers.infoClickSortMethod"
-                            helpKey="layers.help.infoClickSortMethod"
-                            {...field}
-                            value={(field.value as string) ?? ""}
-                          >
-                            {sortType.map((type) => (
-                              <MenuItem key={type.value} value={type.value}>
-                                {type.title}
-                              </MenuItem>
-                            ))}
-                          </SelectWithHelp>
-                        )}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                </Grid>
-              </FormPanel>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickSortMethod"]}
+                      fields={["infoClickSettings.sortMethod"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Controller
+                          name="infoClickSettings.sortMethod"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectWithHelp
+                              labelKey="layers.infoClickSortMethod"
+                              helpKey="layers.help.infoClickSortMethod"
+                              {...field}
+                              value={(field.value as string) ?? ""}
+                            >
+                              {sortType.map((type) => (
+                                <MenuItem key={type.value} value={type.value}>
+                                  {type.title}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
+                          )}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
 
@@ -2437,55 +2448,55 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("layers.settings.displayFields")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["layers.primaryDisplayFields"]}
-                    fields={["searchSettings.primaryDisplayFields"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <TextFieldWithHelp
-                        labelKey="layers.primaryDisplayFields"
-                        helpKey="layers.help.primaryDisplayFields"
-                        fullWidth
-                        {...register("searchSettings.primaryDisplayFields")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.secondaryDisplayFields"]}
-                    fields={["searchSettings.secondaryDisplayFields"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.secondaryDisplayFields"
-                        helpKey="layers.help.secondaryDisplayFields"
-                        fullWidth
-                        {...register("searchSettings.secondaryDisplayFields")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.shortDisplayFields"]}
-                    fields={["searchSettings.shortDisplayFields"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.shortDisplayFields"
-                        helpKey="layers.help.shortDisplayFields"
-                        fullWidth
-                        {...register("searchSettings.shortDisplayFields")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                </Grid>
-              </FormPanel>
+                <FormPanel title={t("layers.settings.displayFields")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.primaryDisplayFields"]}
+                      fields={["searchSettings.primaryDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={12}>
+                        <TextFieldWithHelp
+                          labelKey="layers.primaryDisplayFields"
+                          helpKey="layers.help.primaryDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.primaryDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.secondaryDisplayFields"]}
+                      fields={["searchSettings.secondaryDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.secondaryDisplayFields"
+                          helpKey="layers.help.secondaryDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.secondaryDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.shortDisplayFields"]}
+                      fields={["searchSettings.shortDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.shortDisplayFields"
+                          helpKey="layers.help.shortDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.shortDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
 
@@ -2522,139 +2533,139 @@ export default function LayerSettings() {
                 allValues={formValues}
                 searchTerm={settingsSearchTerm}
               >
-              <FormPanel title={t("layers.settings.searchSettings")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
-                  <SettingsSearchField
-                    labelKeys={["layers.searchSettings.active"]}
-                    fields={["searchSettings.active"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={12}>
-                      <FormGroup>
-                        <Controller
-                          name="searchSettings.active"
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={Boolean(field.value as boolean)}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.checked)
-                                  }
-                                />
-                              }
-                              label={fieldLabel(
-                                "layers.searchSettings.active",
-                                "layers.help.searchActive",
-                              )}
-                            />
-                          )}
+                <FormPanel title={t("layers.settings.searchSettings")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.active"]}
+                      fields={["searchSettings.active"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="searchSettings.active"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.searchSettings.active",
+                                  "layers.help.searchActive",
+                                )}
+                              />
+                            )}
+                          />
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.url"]}
+                      fields={["searchSettings.url"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.url"
+                          helpKey="layers.help.searchUrl"
+                          fullWidth
+                          helperText={
+                            service &&
+                            [
+                              SERVICE_TYPE.WFS,
+                              SERVICE_TYPE.WFST,
+                              SERVICE_TYPE.VECTOR,
+                            ].includes(service.type)
+                              ? t("layers.searchSettings.urlServiceHint", {
+                                  url: service.url,
+                                })
+                              : undefined
+                          }
+                          {...register("searchSettings.url")}
                         />
-                      </FormGroup>
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.searchSettings.url"]}
-                    fields={["searchSettings.url"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.searchSettings.url"
-                        helpKey="layers.help.searchUrl"
-                        fullWidth
-                        helperText={
-                          service &&
-                          [
-                            SERVICE_TYPE.WFS,
-                            SERVICE_TYPE.WFST,
-                            SERVICE_TYPE.VECTOR,
-                          ].includes(service.type)
-                            ? t("layers.searchSettings.urlServiceHint", {
-                                url: service.url,
-                              })
-                            : undefined
-                        }
-                        {...register("searchSettings.url")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.searchSettings.searchFields"]}
-                    fields={["searchSettings.searchFields"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.searchSettings.searchFields"
-                        helpKey="layers.help.searchFields"
-                        fullWidth
-                        helperText={t("layers.searchFieldsHelp")}
-                        {...register("searchSettings.searchFields")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.searchSettings.outputFormat"]}
-                    fields={["searchSettings.outputFormat"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <Box>
-                        <FieldLabelAbove
-                          htmlFor="searchSettings-outputFormat"
-                          label={t("layers.searchSettings.outputFormat")}
-                          help={String(
-                            t("layers.help.searchOutputFormat" as never),
-                          )}
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.searchFields"]}
+                      fields={["searchSettings.searchFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.searchFields"
+                          helpKey="layers.help.searchFields"
+                          fullWidth
+                          helperText={t("layers.searchFieldsHelp")}
+                          {...register("searchSettings.searchFields")}
                         />
-                        <Controller
-                          name="searchSettings.outputFormat"
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              id="searchSettings-outputFormat"
-                              select
-                              fullWidth
-                              value={(field.value as string) ?? ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}
-                              inputRef={field.ref}
-                            >
-                              {searchOutputFormat.map((format) => (
-                                <MenuItem key={format} value={format}>
-                                  {format}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          )}
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.outputFormat"]}
+                      fields={["searchSettings.outputFormat"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Box>
+                          <FieldLabelAbove
+                            htmlFor="searchSettings-outputFormat"
+                            label={t("layers.searchSettings.outputFormat")}
+                            help={String(
+                              t("layers.help.searchOutputFormat" as never),
+                            )}
+                          />
+                          <Controller
+                            name="searchSettings.outputFormat"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                id="searchSettings-outputFormat"
+                                select
+                                fullWidth
+                                value={(field.value as string) ?? ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                inputRef={field.ref}
+                              >
+                                {searchOutputFormat.map((format) => (
+                                  <MenuItem key={format} value={format}>
+                                    {format}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.geometryField"]}
+                      fields={["searchSettings.geometryField"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={formValues}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.geometryField"
+                          helpKey="layers.help.geometryField"
+                          fullWidth
+                          {...register("searchSettings.geometryField")}
                         />
-                      </Box>
-                    </Grid>
-                  </SettingsSearchField>
-                  <SettingsSearchField
-                    labelKeys={["layers.searchSettings.geometryField"]}
-                    fields={["searchSettings.geometryField"]}
-                    searchTerm={settingsSearchTerm}
-                    allValues={formValues}
-                  >
-                    <Grid size={{ xs: 12, md: 10 }}>
-                      <TextFieldWithHelp
-                        labelKey="layers.searchSettings.geometryField"
-                        helpKey="layers.help.geometryField"
-                        fullWidth
-                        {...register("searchSettings.geometryField")}
-                      />
-                    </Grid>
-                  </SettingsSearchField>
-                </Grid>
-              </FormPanel>
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
               </SearchablePanel>
             )}
           </Box>
