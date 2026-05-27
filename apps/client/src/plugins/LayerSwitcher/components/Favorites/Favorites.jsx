@@ -146,7 +146,7 @@ function Favorites({
           // Set visibility
           layer.set("visible", l.visible);
         } else {
-          layer.set("visible", l.visible);
+          layerSwitcherDispatch.setLayerVisibility(l.id, l.visible);
         }
       } else if (l.id < 0) {
         // A fake maplayer is in the package
