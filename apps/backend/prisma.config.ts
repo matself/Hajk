@@ -1,10 +1,13 @@
-import path from "path";
 import "dotenv/config";
-import type { PrismaConfig } from "prisma/config";
-
+import type { PrismaConfig } from "prisma";
+import { env } from "prisma/config";
 export default {
-  schema: path.join("prisma", "schema.prisma"),
+  schema: "prisma/schema.prisma",
   migrations: {
+    path: "prisma/migrations",
     seed: "node --env-file=.env prisma/seed.js",
+  },
+  datasource: {
+    url: env("PG_CONNECTION_STRING"),
   },
 } satisfies PrismaConfig;

@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 import log4js from "log4js";
 
 import { HajkError } from "../../../common/classes.ts";
 import HttpStatusCodes from "../../../common/http-status-codes.ts";
 import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
+import { createPrismaClient } from "../../../common/prisma.ts";
 
 interface SearchSource {
   table: string;
@@ -22,7 +23,7 @@ interface JsonBody {
 const logger = log4js.getLogger("service.search.v3");
 
 class SearchService {
-  gisdataPrisma: PrismaClient;
+  gisdataPrisma: PrismaClient | null = null;
 
   constructor() {
     logger.trace("Initiating SearchService");
@@ -31,6 +32,7 @@ class SearchService {
       logger.warn(
         "PG_GISDATA_CONNECTION_STRING not set. All endpoints that use the SearchService will not work."
       );
+      return;
     }
 
     // Please note that this services uses a custom Prisma Client connection
@@ -38,12 +40,9 @@ class SearchService {
     // Hajk config. The reason is that we will probably keep Hajk config and
     // additional GIS data (such as tables holding addresses, properties, etc.)
     // separate from each other.
-    this.gisdataPrisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.PG_GISDATA_CONNECTION_STRING || "",
-        },
-      },
+    this.gisdataPrisma = createPrismaClient({
+      connectionString: process.env.PG_GISDATA_CONNECTION_STRING,
+      envName: "PG_GISDATA_CONNECTION_STRING",
     });
   }
 
@@ -98,7 +97,7 @@ class SearchService {
   }
 
   async autocomplete(json: JsonBody) {
-    if (process.env.PG_GISDATA_CONNECTION_STRING === undefined) {
+    if (this.gisdataPrisma === null) {
       throw new HajkError(
         HttpStatusCodes.SERVICE_UNAVAILABLE,
         "Search service is not available.",

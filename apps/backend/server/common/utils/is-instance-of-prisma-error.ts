@@ -4,7 +4,7 @@ import {
   PrismaClientInitializationError,
   PrismaClientRustPanicError,
   PrismaClientValidationError,
-} from "@prisma/client/runtime/library";
+} from "@prisma/client/runtime/client";
 
 /**
  * Does best effort at determining if the given error is a Prisma error.

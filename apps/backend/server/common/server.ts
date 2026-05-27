@@ -26,7 +26,6 @@ import * as OpenApiValidator from "express-openapi-validator";
 
 import expressSession from "express-session";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
-import { PrismaClient } from "@prisma/client";
 
 import { getCLFDate } from "./utils/get-clf-date.ts";
 import log4js from "./utils/hajk-logger.ts";
@@ -41,6 +40,7 @@ import { isInstanceOfPrismaError } from "./utils/is-instance-of-prisma-error.ts"
 
 import { isAuthActive } from "./auth/is-auth-active.ts";
 import { setupPassport } from "./auth/passport.middleware.ts";
+import prisma from "./prisma.ts";
 
 import extractUserContext from "./middlewares/extract-user-context.ts";
 
@@ -348,7 +348,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
       expressSession({
         secret: sessionSecret,
         name: process.env.EXPRESS_SESSION_NAME || "hajk.sid",
-        store: new PrismaSessionStore(new PrismaClient(), {
+        store: new PrismaSessionStore(prisma, {
           checkPeriod: 2 * 60 * 1000, //ms
           dbRecordIdIsSessionId: true,
           dbRecordIdFunction: undefined,

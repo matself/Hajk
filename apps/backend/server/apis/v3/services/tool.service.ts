@@ -1,9 +1,9 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import log4js from "log4js";
+import prisma from "../../../common/prisma.ts";
 
 const logger = log4js.getLogger("service.v3.tool");
-const prisma = new PrismaClient();
 
 class ToolService {
   constructor() {

@@ -1,9 +1,29 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 
-const prisma = new PrismaClient();
+if (!process.env.PG_CONNECTION_STRING) {
+  throw new Error("PG_CONNECTION_STRING must be set before seeding.");
+}
+
+const getSchemaFromConnectionString = (connectionString) => {
+  try {
+    return new URL(connectionString).searchParams.get("schema") ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(
+    {
+      connectionString: process.env.PG_CONNECTION_STRING,
+    },
+    { schema: getSchemaFromConnectionString(process.env.PG_CONNECTION_STRING) }
+  ),
+});
 
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
 
