@@ -39,9 +39,9 @@ export default function StreetViewRenderer({ tool }: StreetViewRendererProps) {
           BASIC SETTINGS
       ───────────────────────────────────────────── */}
       <FormPanel title={t("common.information")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Aktiverad */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Controller
               name="options.active"
               control={control}
@@ -66,7 +66,7 @@ export default function StreetViewRenderer({ tool }: StreetViewRendererProps) {
           WINDOW SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.windowSettings")} defaultExpanded>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Sorteringsordning */}
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
@@ -161,7 +161,7 @@ export default function StreetViewRenderer({ tool }: StreetViewRendererProps) {
           OTHER SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.generalSettings")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Synlig vid start */}
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller

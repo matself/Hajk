@@ -56,8 +56,8 @@ export default function AnchorToolRenderer({
     <>
       {/* BASIC INFO */}
       <FormPanel title={t("common.information")}>
-        <Grid container>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <Grid container rowSpacing={1.5}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Controller
               name="active"
               control={control}
@@ -117,7 +117,7 @@ export default function AnchorToolRenderer({
 
       {/* SETTINGS */}
       <FormAccordion title={t("tools.settings")} defaultExpanded>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="options.visibleAtStart"

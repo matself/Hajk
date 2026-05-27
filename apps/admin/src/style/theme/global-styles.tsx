@@ -75,9 +75,6 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
             // Fix for nested grids which is generated when helpText is added.
             width: "100%",
           },
-        ".form-container [class*='MuiGrid2-grid']": {
-          paddingBottom: "16px",
-        },
         ".form-container .MuiSwitch-root": {
           marginLeft: 6,
         },

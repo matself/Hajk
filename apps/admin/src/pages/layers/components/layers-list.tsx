@@ -6,7 +6,6 @@ import {
   TextField,
   ListItemText,
   Typography,
-  Box,
   FormControl,
   InputLabel,
   Select,
@@ -38,6 +37,7 @@ import {
 import { useNavigate } from "react-router";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import DialogWrapper from "../../../components/flexible-dialog";
+import CreateButton from "../../../components/create-button";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import LayerKindBadge from "./layer-kind-badge";
@@ -410,15 +410,10 @@ export default function LayersList({
           title={t(pageTitleKey)}
           actionButtons={
             showCreateButton ? (
-              <>
-                <Button
-                  onClick={handleClickOpen}
-                  color="primary"
-                  variant="contained"
-                >
-                  {t("layers.dialog.addBtn")}
-                </Button>
-              </>
+              <CreateButton
+                onClick={handleClickOpen}
+                label={t("layers.dialog.addBtn")}
+              />
             ) : undefined
           }
         >
@@ -551,8 +546,8 @@ export default function LayersList({
             )}
           </DialogWrapper>
 
-          <Grid size={12} container sx={{ mb: 2 }}>
-            <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
+          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 fullWidth
                 label={t("layers.searchTitle")}
@@ -560,7 +555,9 @@ export default function LayersList({
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
-              <FormControl sx={{ minWidth: 400 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <FormControl fullWidth variant="outlined">
                 <InputLabel id="service-url-filter-label">
                   {t("common.service")}
                 </InputLabel>
@@ -580,7 +577,7 @@ export default function LayersList({
                   ))}
                 </Select>
               </FormControl>
-            </Box>
+            </Grid>
           </Grid>
 
           <Grid size={12}>

@@ -19,7 +19,7 @@ import {
   Menu,
   MenuItem as MuiMenuItem,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import CreateButton from "../../../components/create-button";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
@@ -331,30 +331,10 @@ export default function ServicesList({
             title={t(pageTitleKey)}
             actionButtons={
               showCreateButton ? (
-                <>
-                  <Button
-                    onClick={handleClickOpen}
-                    color="primary"
-                    variant="contained"
-                    aria-label={t("services.dialog.addBtn")}
-                    startIcon={<AddIcon />}
-                    sx={{
-                      minHeight: 44,
-                      px: 2,
-                      fontSize: "0.94rem",
-                      fontWeight: 600,
-                      "& .MuiButton-startIcon": {
-                        display: "flex",
-                        alignItems: "center",
-                        "& .MuiSvgIcon-root": {
-                          fontSize: 21,
-                        },
-                      },
-                    }}
-                  >
-                    <Box component="span">{t("services.dialog.addBtn")}</Box>
-                  </Button>
-                </>
+                <CreateButton
+                  onClick={handleClickOpen}
+                  label={t("services.dialog.addBtn")}
+                />
               ) : undefined
             }
           >

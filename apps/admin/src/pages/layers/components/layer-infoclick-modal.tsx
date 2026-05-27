@@ -593,7 +593,7 @@ export default function LayerInfoClickModal({
                     </Typography>
                   </Divider>
                 </Grid>
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.url"
                     helpKey="layers.help.searchUrl"
@@ -601,7 +601,7 @@ export default function LayerInfoClickModal({
                     {...register("searchUrl")}
                   />
                 </Grid>
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchFields"
                     helpKey="layers.help.searchFields"
@@ -610,7 +610,7 @@ export default function LayerInfoClickModal({
                     helperText={t("layers.searchFieldsHelp")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.outputFormat"
                     helpKey="layers.help.searchOutputFormat"
@@ -618,7 +618,7 @@ export default function LayerInfoClickModal({
                     {...register("searchOutputFormat")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.geometryField"
                     helpKey="layers.help.geometryField"
@@ -628,7 +628,7 @@ export default function LayerInfoClickModal({
                 </Grid>
 
                 {/* Infoklick Sort Settings */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.sortByAttribute"
                     helpKey="layers.help.sortByAttribute"
@@ -636,7 +636,7 @@ export default function LayerInfoClickModal({
                     {...register("sortProperty")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="format-label" shrink>
                       {fieldLabel(
@@ -667,7 +667,7 @@ export default function LayerInfoClickModal({
                     />
                   </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="sortMethod-label" shrink>
                       {fieldLabel(

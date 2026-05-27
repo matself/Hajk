@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
 import { useId } from "react";
-import { Box, TextField, type TextFieldProps } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  Select,
+  TextField,
+  type SelectProps,
+  type TextFieldProps,
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { FieldHelpTooltip, FieldLabelWithHelp } from "./field-help-tooltip";
 
@@ -33,7 +40,7 @@ export function FieldLabelAbove({
         display: "flex",
         alignItems: "center",
         gap: 0.25,
-        mb: 0.75,
+        mb: 0.5,
         typography: "body2",
         color: "text.secondary",
       }}
@@ -67,7 +74,48 @@ export function TextFieldWithHelp({
         label={String(t(labelKey as never))}
         help={String(t(helpKey as never))}
       />
-      <TextField id={id} {...textFieldProps} />
+      <TextField id={id} variant="outlined" {...textFieldProps} />
+    </Box>
+  );
+}
+
+type SelectWithHelpProps = Omit<SelectProps, "label" | "labelId"> & {
+  labelKey: string;
+  helpKey: string;
+  children: ReactNode;
+};
+
+/** Select with the same label-above layout as TextFieldWithHelp. */
+export function SelectWithHelp({
+  labelKey,
+  helpKey,
+  id: idProp,
+  error,
+  children,
+  fullWidth = true,
+  ...selectProps
+}: SelectWithHelpProps) {
+  const { t } = useTranslation();
+  const generatedId = useId();
+  const id = idProp ?? generatedId;
+
+  return (
+    <Box>
+      <FieldLabelAbove
+        htmlFor={id}
+        label={String(t(labelKey as never))}
+        help={String(t(helpKey as never))}
+      />
+      <FormControl
+        fullWidth={fullWidth}
+        error={error}
+        variant="outlined"
+        size="small"
+      >
+        <Select id={id} {...selectProps}>
+          {children}
+        </Select>
+      </FormControl>
     </Box>
   );
 }

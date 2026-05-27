@@ -43,8 +43,8 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          BASIC INFORMATION
       ───────────────────────────────────────────── */}
       <FormPanel title={t("common.information")}>
-        <Grid container>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <Grid container rowSpacing={1.5}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Controller
               name="options.active"
               control={control}
@@ -110,7 +110,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          WINDOW SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.windowSettings")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="options.index"
@@ -180,7 +180,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          IMAGE PROCESSING SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.imageProcessing")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: 10 }}>
             <FormControlLabel
               control={
@@ -222,7 +222,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          PRINT METADATA
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printMetadata")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {[
             ["copyright", "tools.copyright"],
             ["disclaimer", "tools.disclaimer"],
@@ -252,7 +252,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          PRINT TOGGLES
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printToggles")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {[
             ["includeLogo", "tools.includeLogo"],
             ["includeNorthArrow", "tools.includeNorthArrow"],
@@ -311,14 +311,14 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
             </Grid>
           ))}
         </Grid>
-        <Grid container></Grid>
+        <Grid container rowSpacing={1.5}></Grid>
       </FormAccordion>
 
       {/* ─────────────────────────────────────────────
          PRINT COLORS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printColors")} defaultExpanded>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12 }}>
             <InputLabel>{t("tools.mapBackgroundColor")}</InputLabel>
             <Controller

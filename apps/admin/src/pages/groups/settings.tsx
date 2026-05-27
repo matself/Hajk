@@ -1,13 +1,6 @@
 import { useRef } from "react";
 import { useParams } from "react-router";
-import {
-  useTheme,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { useTheme, TextField, MenuItem } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -25,6 +18,8 @@ import {
 import { toast } from "react-toastify";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
+import FormFieldGrid from "../../components/form-components/form-field-grid";
+import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
 
 function GroupSettings() {
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -140,11 +135,12 @@ function GroupSettings() {
       >
         <FormContainer onSubmit={onSubmit} formRef={formRef} noValidate={false}>
           <FormPanel title={t("common.information")}>
-            <Grid container>
+            <FormFieldGrid>
               <Grid size={12}>
                 <TextField
                   label={t("common.name")}
                   fullWidth
+                  variant="outlined"
                   defaultValue={group?.name}
                   {...register("name", {
                     required: `${t("common.required")}`,
@@ -155,44 +151,42 @@ function GroupSettings() {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 10 }}>
                 <TextField
                   label={t("groups.internalName")}
                   fullWidth
+                  variant="outlined"
                   defaultValue={group?.internalName}
                   {...register("internalName")}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel id="group-type-label">
-                    {t("groups.type")}
-                  </InputLabel>
-                  <Controller
-                    name="type"
-                    control={control}
-                    defaultValue={group?.type}
-                    render={({ field }) => (
-                      <Select
-                        labelId="group-type-label"
-                        label={t("groups.type")}
-                        {...field}
-                      >
-                        {Object.keys(GroupType).map((key) => {
-                          const value =
-                            GroupType[key as keyof typeof GroupType];
-                          return (
-                            <MenuItem key={key} value={value}>
-                              {t(`groupType.${key}`)}
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
+              <Grid size={{ xs: 12, md: 10 }}>
+                <Controller
+                  name="type"
+                  control={control}
+                  defaultValue={group?.type}
+                  rules={{ required: `${t("common.required")}` }}
+                  render={({ field }) => (
+                    <SelectWithHelp
+                      labelKey="groups.type"
+                      helpKey="groups.type"
+                      {...field}
+                      value={(field.value as string) ?? ""}
+                    >
+                      {Object.keys(GroupType).map((key) => {
+                        const value =
+                          GroupType[key as keyof typeof GroupType];
+                        return (
+                          <MenuItem key={key} value={value}>
+                            {t(`groupType.${key}`)}
+                          </MenuItem>
+                        );
+                      })}
+                    </SelectWithHelp>
+                  )}
+                />
               </Grid>
-            </Grid>
+            </FormFieldGrid>
           </FormPanel>
         </FormContainer>
         <LayerSwitcherDnDComponent />

@@ -394,8 +394,8 @@ export default function MapSettings() {
             noValidate={false}
           >
             <FormPanel title={t("map.baseSettings")}>
-              <Grid container>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 12 }}>
                   <TextField
                     label={t("map.projection")}
                     fullWidth
@@ -482,8 +482,8 @@ export default function MapSettings() {
             </FormPanel>
 
             <FormAccordion title={t("map.extraSettings")}>
-              <Grid container>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -613,8 +613,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.extraMapControls")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -712,8 +712,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.interactions")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -872,7 +872,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.colors")}>
-              <Grid container>
+              <Grid container rowSpacing={1.5}>
                 <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="preferredColorScheme-label">
@@ -924,7 +924,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.sidepanel")}>
-              <Grid container>
+              <Grid container rowSpacing={1.5}>
                 <FormGroup>
                   <Grid size={12}>
                     <FormControlLabel
@@ -1047,8 +1047,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.cookies")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -1125,7 +1125,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.introGuide")}>
-              <Grid container spacing={2}>
+              <Grid container rowSpacing={1.5}>
                 <Grid size={6}>
                   <FormGroup>
                     <FormControlLabel

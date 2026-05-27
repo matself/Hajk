@@ -4,7 +4,6 @@ import Grid from "@mui/material/Grid2";
 import {
   Button,
   TextField,
-  Typography,
   useTheme,
   FormControl,
   InputLabel,
@@ -21,6 +20,8 @@ import {
   GroupType,
 } from "../../../api/groups";
 import DialogWrapper from "../../../components/flexible-dialog";
+import CreateButton from "../../../components/create-button";
+import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
@@ -128,15 +129,10 @@ export default function GroupsList({
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <>
-            <Button
-              onClick={handleClickOpen}
-              color="primary"
-              variant="contained"
-            >
-              {t("groups.create")}
-            </Button>
-          </>
+          <CreateButton
+            onClick={handleClickOpen}
+            label={t("groups.create")}
+          />
         ) : undefined
       }
     >
@@ -208,17 +204,19 @@ export default function GroupsList({
         </Grid>
       </DialogWrapper>
       {isLoading ? (
-        <Typography variant="h6">{t("common.loading")}</Typography>
+        <SquareSpinnerComponent />
       ) : (
         <>
-          <Grid size={12} container sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label={t("groups.search")}
-              variant="outlined"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
+          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextField
+                fullWidth
+                label={t("groups.search")}
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </Grid>
           </Grid>
 
           <Grid size={12}>
