@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Button,
   TextField,
@@ -46,7 +46,7 @@ import ServiceStatusIndicator from "../components/service-status-indicator";
 import ServiceTypeBadge from "../components/service-type-badge";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { ApiValidationDetail } from "../../../lib/internal-api-client";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 
 interface ServiceCreateErrorBody {
   errorId?: string;
@@ -509,13 +509,13 @@ export default function ServicesList({
                     }
                   >
                     <MenuItem value="">{t("common.all")}</MenuItem>
-                    {(
-                      Object.values(SERVICE_TYPE) as SERVICE_TYPE[]
-                    ).map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
+                    {(Object.values(SERVICE_TYPE) as SERVICE_TYPE[]).map(
+                      (type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ),
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -594,7 +594,12 @@ export default function ServicesList({
                     renderCell: (params: { row: { id: string } }) => {
                       const row = params.row as Service;
                       const status = row?.status ?? SERVICE_STATUS.UNKNOWN;
-                      return <ServiceStatusIndicator status={status} lastChecked={row?.lastChecked} />;
+                      return (
+                        <ServiceStatusIndicator
+                          status={status}
+                          lastChecked={row?.lastChecked}
+                        />
+                      );
                     },
                   },
                   {
@@ -658,7 +663,9 @@ export default function ServicesList({
                     <Button
                       variant="contained"
                       color="error"
-                      disabled={isDeletingService || !isDeleteConfirmNameMatching}
+                      disabled={
+                        isDeletingService || !isDeleteConfirmNameMatching
+                      }
                       onClick={() => {
                         void handleConfirmDelete();
                       }}

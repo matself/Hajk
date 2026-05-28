@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { Box, Radio, Typography, Paper } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -22,7 +22,7 @@ export default function ThemeSwitcher() {
       <Typography variant="h6" gutterBottom>
         {t("common.theme")}
       </Typography>
-      <Grid container justifyContent="center" alignContent="center">
+      <Grid container sx={{ justifyContent: "center", alignItems: "center" }}>
         <Box
           sx={{
             display: "flex",

@@ -13,7 +13,7 @@ import {
   TextField,
   List,
   ListItem,
-  Grid2 as Grid,
+  Grid,
   Paper,
   Box,
   IconButton,
@@ -199,12 +199,12 @@ const TreeItemComponent = React.forwardRef<
               ? "rgba(66, 165, 245, 0.2)"
               : "rgba(25, 118, 210, 0.12)"
             : isReorderTarget
-            ? isDarkMode
-              ? "rgba(66, 165, 245, 0.1)"
-              : "rgba(25, 118, 210, 0.06)"
-            : isDarkMode
-            ? "#1a1a1a"
-            : "#fff",
+              ? isDarkMode
+                ? "rgba(66, 165, 245, 0.1)"
+                : "rgba(25, 118, 210, 0.06)"
+              : isDarkMode
+                ? "#1a1a1a"
+                : "#fff",
           border:
             isTargetGroup || isReorderTarget
               ? `2px solid ${isDarkMode ? "#42a5f5" : "#1976d2"}`
@@ -244,9 +244,9 @@ const TreeItemComponent = React.forwardRef<
         <Box sx={{ flex: 1 }}>
           <Typography
             variant="body2"
-            fontWeight={isGroup ? 600 : 400}
             sx={{
               color: isGroup ? "primary.main" : "text.primary",
+              fontWeight: isGroup ? 600 : 400,
             }}
           >
             {item.name ?? ""}
@@ -382,7 +382,7 @@ const TreeItemComponent = React.forwardRef<
 TreeItemComponent.displayName = "TreeItemComponent";
 
 const enforceLayerRules = (
-  treeItems: TreeItems<TreeItemData>
+  treeItems: TreeItems<TreeItemData>,
 ): TreeItems<TreeItemData> => {
   return treeItems.map((item) => {
     const updatedItem: TreeItem<TreeItemData> = {
@@ -393,8 +393,8 @@ const enforceLayerRules = (
         item.type === "layer"
           ? undefined
           : item.children
-          ? enforceLayerRules(item.children)
-          : item.children,
+            ? enforceLayerRules(item.children)
+            : item.children,
     };
     return updatedItem;
   });
@@ -423,9 +423,11 @@ const GroupDropDialog: React.FC<{
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+      slotProps={{
+        paper: {
+          sx: {
+            backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+          },
         },
       }}
     >
@@ -451,7 +453,7 @@ const GroupDropDialog: React.FC<{
                 alignItems: "flex-start",
               }}
             >
-              <Typography variant="body1" fontWeight={600}>
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {t("common.reorder")}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -472,7 +474,7 @@ const GroupDropDialog: React.FC<{
                 alignItems: "flex-start",
               }}
             >
-              <Typography variant="body1" fontWeight={600}>
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {t("common.insertAsChild")}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -516,10 +518,10 @@ const AddItemsDialog: React.FC<{
         .filter(
           (layer) =>
             !addedItemIds.has(`layer-${layer.id}`) &&
-            layer.name.toLowerCase().includes(search.toLowerCase())
+            layer.name.toLowerCase().includes(search.toLowerCase()),
         )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [layers, addedItemIds, search]
+    [layers, addedItemIds, search],
   );
 
   const availableGroups = useMemo(
@@ -528,10 +530,10 @@ const AddItemsDialog: React.FC<{
         .filter(
           (group) =>
             !addedItemIds.has(`group-${group.id}`) &&
-            group.name.toLowerCase().includes(search.toLowerCase())
+            group.name.toLowerCase().includes(search.toLowerCase()),
         )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [groups, addedItemIds, search]
+    [groups, addedItemIds, search],
   );
 
   const handleLayerToggle = (layerId: string) => {
@@ -579,9 +581,11 @@ const AddItemsDialog: React.FC<{
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+      slotProps={{
+        paper: {
+          sx: {
+            backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+          },
         },
       }}
     >
@@ -718,8 +722,8 @@ const DraggableRitordningItem: React.FC<{
             ? "rgba(66, 165, 245, 0.2)"
             : "rgba(25, 118, 210, 0.12)"
           : isDarkMode
-          ? "#1a1a1a"
-          : "#fff",
+            ? "#1a1a1a"
+            : "#fff",
         cursor: "grab",
         border: isOver
           ? `2px solid ${isDarkMode ? "#42a5f5" : "#1976d2"}`
@@ -806,8 +810,8 @@ const TreeDropZone: React.FC<{
             ? "#1e293b"
             : "#e3f2fd"
           : isDarkMode
-          ? "#121212"
-          : "#fafafa",
+            ? "#121212"
+            : "#fafafa",
         border: isOver ? "2px dashed" : "1px solid",
         borderColor: isOver ? "primary.main" : "#ddd",
         borderRadius: 2,
@@ -844,8 +848,8 @@ const RitordningDropZone: React.FC<{
             ? "#1e293b"
             : "#e3f2fd"
           : isDarkMode
-          ? "#121212"
-          : "#fafafa",
+            ? "#121212"
+            : "#fafafa",
         border: isOver ? "2px dashed" : "1px solid",
         borderColor: isOver ? "primary.main" : "#ddd",
         borderRadius: 2,
@@ -912,7 +916,7 @@ export default function LayerSwitcherDnD() {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   // Separate added item IDs for Lagerordning and Ritordning
@@ -941,10 +945,10 @@ export default function LayerSwitcherDnD() {
         .filter(
           (layer) =>
             layer.name.toLowerCase().includes(search.toLowerCase()) &&
-            !addedItemIdsLagerordning.has(`layer-${layer.id}`)
+            !addedItemIdsLagerordning.has(`layer-${layer.id}`),
         )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [layers, search, addedItemIdsLagerordning]
+    [layers, search, addedItemIdsLagerordning],
   );
 
   // Filtered layers for Ritordning (excludes items already in Ritordning list)
@@ -954,10 +958,10 @@ export default function LayerSwitcherDnD() {
         .filter(
           (layer) =>
             layer.name.toLowerCase().includes(search.toLowerCase()) &&
-            !addedItemIdsRitordning.has(`layer-${layer.id}`)
+            !addedItemIdsRitordning.has(`layer-${layer.id}`),
         )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [layers, search, addedItemIdsRitordning]
+    [layers, search, addedItemIdsRitordning],
   );
 
   const filteredGroups = useMemo(
@@ -966,10 +970,10 @@ export default function LayerSwitcherDnD() {
         .filter(
           (group) =>
             group.name.toLowerCase().includes(search.toLowerCase()) &&
-            !addedItemIdsLagerordning.has(`group-${group.id}`)
+            !addedItemIdsLagerordning.has(`group-${group.id}`),
         )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [groups, search, addedItemIdsLagerordning]
+    [groups, search, addedItemIdsLagerordning],
   );
 
   const rootNumberByAnyItemId = useMemo(() => {
@@ -1061,7 +1065,7 @@ export default function LayerSwitcherDnD() {
         } else {
           // Dragging from source - use mouse position to determine
           const overElement = document.getElementById(
-            `ritordning-${targetLayerId}`
+            `ritordning-${targetLayerId}`,
           );
           if (overElement) {
             const rect = overElement.getBoundingClientRect();
@@ -1218,7 +1222,7 @@ export default function LayerSwitcherDnD() {
   const handleMoveUp = (itemId: string) => {
     setItems((prevItems) => {
       const moveItemUp = (
-        treeItems: TreeItems<TreeItemData>
+        treeItems: TreeItems<TreeItemData>,
       ): TreeItems<TreeItemData> => {
         for (let i = 1; i < treeItems.length; i++) {
           if (treeItems[i].id.toString() === itemId) {
@@ -1244,7 +1248,7 @@ export default function LayerSwitcherDnD() {
   const handleMoveDown = (itemId: string) => {
     setItems((prevItems) => {
       const moveItemDown = (
-        treeItems: TreeItems<TreeItemData>
+        treeItems: TreeItems<TreeItemData>,
       ): TreeItems<TreeItemData> => {
         for (let i = 0; i < treeItems.length - 1; i++) {
           if (treeItems[i].id.toString() === itemId) {
@@ -1269,7 +1273,7 @@ export default function LayerSwitcherDnD() {
 
   const canMoveUp = (itemId: string): boolean => {
     const findPosition = (
-      treeItems: TreeItems<TreeItemData>
+      treeItems: TreeItems<TreeItemData>,
     ): number | null => {
       for (let i = 0; i < treeItems.length; i++) {
         if (treeItems[i].id.toString() === itemId) {
@@ -1290,7 +1294,7 @@ export default function LayerSwitcherDnD() {
 
   const canMoveDown = (itemId: string): boolean => {
     const findPosition = (
-      treeItems: TreeItems<TreeItemData>
+      treeItems: TreeItems<TreeItemData>,
     ): { index: number; total: number } | null => {
       for (let i = 0; i < treeItems.length; i++) {
         if (treeItems[i].id.toString() === itemId) {
@@ -1311,7 +1315,7 @@ export default function LayerSwitcherDnD() {
 
   const findItemInTree = (
     treeItems: TreeItems<TreeItemData>,
-    itemId: string
+    itemId: string,
   ): TreeItem<TreeItemData> | null => {
     for (const item of treeItems) {
       if (item.id.toString() === itemId) {
@@ -1327,7 +1331,7 @@ export default function LayerSwitcherDnD() {
 
   const findItemParent = (
     treeItems: TreeItems<TreeItemData>,
-    itemId: string
+    itemId: string,
   ): { parent: TreeItem<TreeItemData> | null; index: number } | null => {
     for (let i = 0; i < treeItems.length; i++) {
       if (treeItems[i].id.toString() === itemId) {
@@ -1336,7 +1340,7 @@ export default function LayerSwitcherDnD() {
       const children = treeItems[i].children;
       if (children) {
         const childIndex = children.findIndex(
-          (child) => child.id.toString() === itemId
+          (child) => child.id.toString() === itemId,
         );
         if (childIndex !== -1) {
           return { parent: treeItems[i], index: childIndex };
@@ -1351,7 +1355,7 @@ export default function LayerSwitcherDnD() {
   const detectGroupOnGroupDrop = (
     oldItems: TreeItems<TreeItemData>,
     newItems: TreeItems<TreeItemData>,
-    draggedItemId: string
+    draggedItemId: string,
   ): { targetGroupId: string; targetGroupName: string } | null => {
     // Find the dragged item to check its type
     const draggedItem = findItemInTree(oldItems, draggedItemId);
@@ -1386,14 +1390,14 @@ export default function LayerSwitcherDnD() {
 
   const handleConfirmAddItems = (
     selectedLayerIds: string[],
-    selectedGroupIds: string[]
+    selectedGroupIds: string[],
   ) => {
     if (!targetGroupId) return;
 
     setItems((prevItems) => {
       const addToGroup = (
         treeItems: TreeItems<TreeItemData>,
-        groupId: string
+        groupId: string,
       ): TreeItems<TreeItemData> => {
         return treeItems.map((item) => {
           if (item.id.toString() === groupId && item.type === "group") {
@@ -1474,7 +1478,7 @@ export default function LayerSwitcherDnD() {
         setItems((prevItems) => {
           const addToGroup = (
             treeItems: TreeItems<TreeItemData>,
-            groupId: string
+            groupId: string,
           ): TreeItems<TreeItemData> => {
             return treeItems.map((item) => {
               if (item.id.toString() === groupId && item.type === "group") {
@@ -1493,7 +1497,7 @@ export default function LayerSwitcherDnD() {
             });
           };
           const updated = enforceLayerRules(
-            addToGroup(prevItems, targetGroupId)
+            addToGroup(prevItems, targetGroupId),
           );
           // Update the ref immediately to prevent false detection on next interaction
           itemsBeforeChangeRef.current = updated;
@@ -1504,7 +1508,7 @@ export default function LayerSwitcherDnD() {
         setItems((prevItems) => {
           const findAndRemoveItem = (
             treeItems: TreeItems<TreeItemData>,
-            itemId: string
+            itemId: string,
           ): {
             item: TreeItem<TreeItemData> | null;
             updatedItems: TreeItems<TreeItemData>;
@@ -1513,7 +1517,7 @@ export default function LayerSwitcherDnD() {
               if (treeItems[i].id.toString() === itemId) {
                 const item = treeItems[i];
                 const updatedItems = treeItems.filter(
-                  (_, index) => index !== i
+                  (_, index) => index !== i,
                 );
                 return { item, updatedItems };
               }
@@ -1542,7 +1546,7 @@ export default function LayerSwitcherDnD() {
           const addToGroup = (
             treeItems: TreeItems<TreeItemData>,
             groupId: string,
-            itemToAdd: TreeItem<TreeItemData>
+            itemToAdd: TreeItem<TreeItemData>,
           ): TreeItems<TreeItemData> => {
             return treeItems.map((item) => {
               if (item.id.toString() === groupId && item.type === "group") {
@@ -1563,7 +1567,7 @@ export default function LayerSwitcherDnD() {
 
           const { item, updatedItems } = findAndRemoveItem(
             prevItems,
-            draggedItemId
+            draggedItemId,
           );
           if (item && item.type === "group") {
             const groupToAdd: TreeItem<TreeItemData> = {
@@ -1572,7 +1576,7 @@ export default function LayerSwitcherDnD() {
               canHaveChildren: true,
             };
             const updated = enforceLayerRules(
-              addToGroup(updatedItems, targetGroupId, groupToAdd)
+              addToGroup(updatedItems, targetGroupId, groupToAdd),
             );
             // Update the ref immediately to prevent false detection on next interaction
             itemsBeforeChangeRef.current = updated;
@@ -1587,7 +1591,7 @@ export default function LayerSwitcherDnD() {
       // Reorder at same level as target group
       const findAndRemoveItem = (
         treeItems: TreeItems<TreeItemData>,
-        itemId: string
+        itemId: string,
       ): {
         item: TreeItem<TreeItemData> | null;
         updatedItems: TreeItems<TreeItemData>;
@@ -1659,7 +1663,7 @@ export default function LayerSwitcherDnD() {
 
         const targetPosAfter = findItemParent(
           updatedItemsAfterRemove,
-          targetGroupId
+          targetGroupId,
         );
         if (!targetPosAfter) {
           return prevItems;
@@ -1687,7 +1691,7 @@ export default function LayerSwitcherDnD() {
           const parentId = targetPosAfter.parent.id.toString();
 
           const updateChildren = (
-            treeItems: TreeItems<TreeItemData>
+            treeItems: TreeItems<TreeItemData>,
           ): TreeItems<TreeItemData> => {
             return treeItems.map((item) => {
               if (item.id.toString() === parentId) {
@@ -1868,7 +1872,7 @@ export default function LayerSwitcherDnD() {
         setItems((prevItems) => {
           const addToGroup = (
             treeItems: TreeItems<TreeItemData>,
-            groupId: string
+            groupId: string,
           ): TreeItems<TreeItemData> => {
             return treeItems.map((item) => {
               if (item.id.toString() === groupId && item.type === "group") {
@@ -1920,7 +1924,7 @@ export default function LayerSwitcherDnD() {
         setItems((prevItems) => {
           const findAndRemoveItem = (
             treeItems: TreeItems<TreeItemData>,
-            itemId: string
+            itemId: string,
           ): {
             item: TreeItem<TreeItemData> | null;
             updatedItems: TreeItems<TreeItemData>;
@@ -1929,7 +1933,7 @@ export default function LayerSwitcherDnD() {
               if (treeItems[i].id.toString() === itemId) {
                 const item = treeItems[i];
                 const updatedItems = treeItems.filter(
-                  (_, index) => index !== i
+                  (_, index) => index !== i,
                 );
                 return { item, updatedItems };
               }
@@ -1957,12 +1961,13 @@ export default function LayerSwitcherDnD() {
 
           const { item, updatedItems } = findAndRemoveItem(
             prevItems,
-            draggedItemId
+            draggedItemId,
           );
           if (item) {
             const rootItem: TreeItem<TreeItemData> = {
               ...item,
-              children: item.type === "group" ? item.children ?? [] : undefined,
+              children:
+                item.type === "group" ? (item.children ?? []) : undefined,
               canHaveChildren: item.type === "group",
             };
             return enforceLayerRules([...updatedItems, rootItem]);
@@ -2360,13 +2365,13 @@ export default function LayerSwitcherDnD() {
                                 const dropInfo = detectGroupOnGroupDrop(
                                   oldItems, // State before change (from ref)
                                   newItems, // New state after change
-                                  draggedItemInfo.itemId
+                                  draggedItemInfo.itemId,
                                 );
 
                                 if (dropInfo) {
                                   const draggedItem = findItemInTree(
                                     oldItems,
-                                    draggedItemInfo.itemId
+                                    draggedItemInfo.itemId,
                                   );
                                   if (draggedItem) {
                                     detectedDrop = {
@@ -2382,7 +2387,7 @@ export default function LayerSwitcherDnD() {
                                 // Compare all items to find what changed
                                 const findNewChildGroups = (
                                   oldTree: TreeItems<TreeItemData>,
-                                  newTree: TreeItems<TreeItemData>
+                                  newTree: TreeItems<TreeItemData>,
                                 ): typeof detectedDrop => {
                                   // Find groups in new tree that have children they didn't have before
                                   for (const newItem of newTree) {
@@ -2395,20 +2400,20 @@ export default function LayerSwitcherDnD() {
                                           // Check if this child wasn't here before
                                           const oldItem = findItemInTree(
                                             oldTree,
-                                            newItem.id.toString()
+                                            newItem.id.toString(),
                                           );
                                           const wasChildBefore =
                                             oldItem?.children?.some(
                                               (c) =>
                                                 c.id.toString() ===
-                                                child.id.toString()
+                                                child.id.toString(),
                                             );
 
                                           if (!wasChildBefore) {
                                             // This group became a child - check if it was moved from elsewhere
                                             const oldParent = findItemParent(
                                               oldTree,
-                                              child.id.toString()
+                                              child.id.toString(),
                                             );
                                             if (
                                               !oldParent?.parent ||
@@ -2431,13 +2436,13 @@ export default function LayerSwitcherDnD() {
                                     if (newItem.children) {
                                       const oldItem = findItemInTree(
                                         oldTree,
-                                        newItem.id.toString()
+                                        newItem.id.toString(),
                                       );
                                       const oldChildren =
                                         oldItem?.children ?? [];
                                       const result = findNewChildGroups(
                                         oldChildren,
-                                        newItem.children
+                                        newItem.children,
                                       );
                                       if (result) return result;
                                     }
@@ -2447,7 +2452,7 @@ export default function LayerSwitcherDnD() {
 
                                 detectedDrop = findNewChildGroups(
                                   oldItems,
-                                  newItems
+                                  newItems,
                                 );
                               }
 
@@ -2580,7 +2585,7 @@ export default function LayerSwitcherDnD() {
                                 index={index}
                                 onRemove={() => {
                                   setRitordningItems((prev) =>
-                                    prev.filter((id) => id !== layerId)
+                                    prev.filter((id) => id !== layerId),
                                   );
                                 }}
                                 dragOver={ritordningDragOver}

@@ -1,4 +1,4 @@
-import { Grid2 as Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import {
   TextField,
   FormGroup,
@@ -36,9 +36,7 @@ interface InfoClickRendererProps {
   control?: Control<FieldValues>;
 }
 
-export default function InfoClickRenderer({
-  tool,
-}: InfoClickRendererProps) {
+export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
   const { t } = useTranslation();
   const { control } = useForm<FieldValues>({
     defaultValues: {
@@ -48,7 +46,7 @@ export default function InfoClickRenderer({
             Object.entries(tool.options).map(([k, v]) => [
               `options.${k}`,
               optionValueToFormString(v),
-            ])
+            ]),
           )
         : {}),
     },

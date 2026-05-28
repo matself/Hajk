@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Button,
   TextField,
@@ -129,10 +129,7 @@ export default function GroupsList({
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <CreateButton
-            onClick={handleClickOpen}
-            label={t("groups.create")}
-          />
+          <CreateButton onClick={handleClickOpen} label={t("groups.create")} />
         ) : undefined
       }
     >

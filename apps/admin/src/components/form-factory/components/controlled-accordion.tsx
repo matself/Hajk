@@ -137,10 +137,14 @@ function ControlledAccordion({
           })}
         >
           <Box
-            sx={{ width: "calc(100% - 20px)", maxWidth: "calc(100% - 20px)" }}
-            display="flex"
-            alignItems="center"
-            overflow="hidden"
+            component="div"
+            sx={{
+              width: "calc(100% - 20px)",
+              maxWidth: "calc(100% - 20px)",
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden",
+            }}
           >
             <Typography variant="h6" sx={{ flexShrink: 0, paddingRight: 2 }}>
               {title}

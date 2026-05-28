@@ -37,7 +37,6 @@ const renderTextFieldArray: RenderFunction<FieldValues> = ({
         fullWidth
         label={title}
         disabled={disabled ?? false}
-        inputRef={field?.ref}
         error={!!errorMessage}
         helperText={errorMessage}
         value={
@@ -50,6 +49,9 @@ const renderTextFieldArray: RenderFunction<FieldValues> = ({
         onChange={handleChange}
         onBlur={handleBlur}
         slotProps={{
+          htmlInput: {
+            ref: field?.ref,
+          },
           inputLabel: {
             style: labelStyle,
           },

@@ -13,7 +13,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Grid2 as Grid,
+  Grid,
   Box,
   Divider,
   Typography,
@@ -410,10 +410,12 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={12}>
                   <Box
-                    display="flex"
-                    gap={1}
-                    alignItems="center"
-                    flexWrap="wrap"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
                   >
                     <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
                       <TextFieldWithHelp
@@ -444,10 +446,12 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={12}>
                   <Box
-                    display="flex"
-                    gap={1}
-                    alignItems="center"
-                    flexWrap="wrap"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
                   >
                     <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
                       <TextFieldWithHelp

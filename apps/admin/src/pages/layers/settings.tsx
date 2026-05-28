@@ -9,7 +9,7 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Grid2 as Grid,
+  Grid,
   TextField,
   useTheme,
   MenuItem,
@@ -27,7 +27,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -37,7 +37,15 @@ import MapIcon from "@mui/icons-material/Map";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
+import { GridRowId } from "@mui/x-data-grid";
+import type { GridRowSelectionModel } from "@mui/x-data-grid";
+
+interface RowSelectionModel {
+  type: "include" | "exclude";
+  // In MUI X v9 this is a Set<GridRowId>, but older TS lib configs may not include `Set`.
+  // We only rely on iteration + `.has()`.
+  ids: Iterable<GridRowId> & { has: (id: GridRowId) => boolean };
+}
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
@@ -284,7 +292,7 @@ export default function LayerSettings() {
   const showEditingTab = activeTab === "editing" || showSettingsSearchUi;
   const settingsSearchTerm = showSettingsSearchUi ? settingsSearchQuery : "";
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectGridId, setSelectGridId] = useState<GridRowSelectionModel>();
+  const [selectGridId, setSelectGridId] = useState<RowSelectionModel>();
   const [useCustomDpiList, setUseCustomDpiList] = useState<boolean>(false);
   const [customDpiList, setCustomDpiList] = useState<
     { pxRatio: number; dpi: number }[]
@@ -386,7 +394,12 @@ export default function LayerSettings() {
 
     const searchAndSelectedFilteredLayers = getCapLayers
       .map((layer, index) => {
-        const isSelected = selectGridId?.includes(index);
+        const isSelected =
+          selectGridId?.type === "include"
+            ? selectGridId.ids.has(index)
+            : selectGridId
+              ? !selectGridId.ids.has(index)
+              : false;
         return {
           id: index,
           layer,
@@ -397,7 +410,6 @@ export default function LayerSettings() {
       })
       .filter(
         (layer) =>
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           layer?.selected || // Disable lint here since ?? is messing with the data-grid search logic
           layer.layer.toLowerCase().includes(searchTerm.toLowerCase()),
       )
@@ -417,8 +429,20 @@ export default function LayerSettings() {
   }, [getCapLayers, searchTerm, selectGridId]);
 
   const selectedRowsData = useMemo(
-    () =>
-      selectGridId?.map((id) => filteredLayers.find((row) => row.id === id)),
+    () => {
+      if (!selectGridId) return undefined;
+
+      const selectedIds: GridRowId[] =
+        selectGridId.type === "include"
+          ? Array.from(selectGridId.ids)
+          : filteredLayers
+              .map((row) => row.id)
+              .filter((id) => !selectGridId.ids.has(id));
+
+      return selectedIds.map((id) =>
+        filteredLayers.find((row) => row.id === id),
+      );
+    },
     [selectGridId, filteredLayers],
   );
 
@@ -1635,7 +1659,7 @@ export default function LayerSettings() {
                         <Grid container rowSpacing={1.5} columnSpacing={1.5}>
                           {customDpiList.map((item, index) => (
                             <Grid size={12} key={index}>
-                              <Box display="flex" alignItems="center" gap={2}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                                 <TextFieldWithHelp
                                   labelKey="layers.pxRatio"
                                   helpKey="layers.help.pxRatio"
@@ -2809,9 +2833,13 @@ export default function LayerSettings() {
                 selectedLayers={layer?.selectedLayers ?? []}
                 filteredLayers={filteredLayers}
                 setSearchTerm={setSearchTerm}
-                setSelectGridId={setSelectGridId}
+                setSelectGridId={
+                  setSelectGridId as unknown as React.Dispatch<
+                    React.SetStateAction<GridRowSelectionModel | undefined>
+                  >
+                }
                 searchTerm={searchTerm}
-                selectGridId={selectGridId}
+                selectGridId={selectGridId as unknown as GridRowSelectionModel}
                 selectedRowObjects={selectedRowObjects}
                 onLayerClick={handleLayerClick}
               />

@@ -1,4 +1,4 @@
-import { Grid2 as Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import {
   TextField,
   FormControlLabel,
@@ -29,7 +29,7 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
       type: tool?.type ?? "sketch",
       ...(tool?.options
         ? Object.fromEntries(
-            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v])
+            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v]),
           )
         : {}),
     },

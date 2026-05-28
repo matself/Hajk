@@ -9,13 +9,7 @@ import STATIC_TYPE from "../../components/form-factory/types/static-type";
 import CONTAINER_TYPE from "../../components/form-factory/types/container-types";
 import { DefaultUseForm } from "../../components/form-factory/default-use-form";
 import { RenderProps } from "../../components/form-factory/types/render";
-import {
-  Box,
-  Button,
-  Grid2 as Grid,
-  InputAdornment,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Grid, InputAdornment, TextField } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import { createOnSubmitHandler } from "../../components/form-factory/form-utils";
 

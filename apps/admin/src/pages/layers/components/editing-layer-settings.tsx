@@ -9,7 +9,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  Grid2 as Grid,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -186,7 +186,11 @@ function ListValuesCell({
           }}
         />
         {list.length > 0 ? (
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5}>
+          <Stack
+            sx={{ direction: "row", flexWrap: "wrap" }}
+            useFlexGap
+            spacing={0.5}
+          >
             {list.map((v, valueIdx) => (
               <Chip
                 key={`${rowIndex}-${valueIdx}`}
@@ -327,7 +331,11 @@ export default function EditingLayerSettings({
                   {t("layers.editing.geometryTypesNone")}
                 </Typography>
               ) : (
-                <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+                <Stack
+                  sx={{ direction: "row", flexWrap: "wrap" }}
+                  useFlexGap
+                  spacing={1}
+                >
                   {GEOMETRY_TYPE_ROW_CONFIG.filter(
                     ({ field }) => geometryTypes[field],
                   ).map(({ field, labelKey }) => (
@@ -477,7 +485,7 @@ export default function EditingLayerSettings({
         {!typeName ? (
           <Alert severity="info">{t("layers.editing.selectLayerFirst")}</Alert>
         ) : isLoading ? (
-          <Box display="flex" justifyContent="center" py={3}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
             <CircularProgress size={32} />
           </Box>
         ) : isError ? (
@@ -500,7 +508,7 @@ export default function EditingLayerSettings({
             {t("layers.editing.noFieldsFromCapabilities")}
           </Alert>
         ) : (
-          <Box display="flex" flexDirection="column" gap={2}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="body2" color="text.secondary">
               {t("layers.editing.fieldsSummary", {
                 editable: editableCount,
@@ -537,7 +545,7 @@ export default function EditingLayerSettings({
         }
       >
         {isLoading ? (
-          <Box display="flex" justifyContent="center" py={4}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress size={32} />
           </Box>
         ) : isError ? (

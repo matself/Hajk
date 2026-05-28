@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { TextField, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";

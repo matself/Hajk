@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  AddCircleOutline,
+  AddCircleOutlined,
   BlockOutlined,
   CancelOutlined,
 } from "@mui/icons-material";
@@ -169,7 +169,7 @@ export function CreateLayerGrid({
                   ) : isSelected ? (
                     <CancelOutlined sx={{ color: "error.main" }} />
                   ) : (
-                    <AddCircleOutline />
+                    <AddCircleOutlined />
                   )}
                 </IconButton>
               </span>
@@ -228,11 +228,9 @@ export function CreateLayerGrid({
 
       {selectedCapabilityLayers.length > 0 && (
         <Stack
-          direction="row"
           spacing={1}
           useFlexGap
-          flexWrap="wrap"
-          sx={{ mb: 1.5 }}
+          sx={{ mb: 1.5, direction: "row", flexWrap: "wrap" }}
         >
           {selectedCapabilityLayers.map((layer) => (
             <Chip

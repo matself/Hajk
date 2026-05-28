@@ -17,7 +17,6 @@ const renderNumberField: RenderFunction<FieldValues> = ({
       label={title}
       disabled={disabled ?? false}
       type="number"
-      inputRef={field?.ref}
       error={!!errorMessage}
       helperText={errorMessage}
       value={(field?.value as string) ?? ""}
@@ -28,6 +27,7 @@ const renderNumberField: RenderFunction<FieldValues> = ({
       slotProps={{
         htmlInput: {
           ...inputProps,
+          ref: field?.ref,
         },
       }}
     />

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Button,
   useTheme,
@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { Trans, useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";

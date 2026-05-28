@@ -6,7 +6,7 @@ import {
   Typography,
   TextField,
   List,
-  Grid2 as Grid,
+  Grid,
   Paper,
 } from "@mui/material";
 import { DragIndicator } from "@mui/icons-material";
@@ -75,7 +75,7 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 5 },
     }),
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
   // Collect all added item IDs from all drop zones
@@ -87,12 +87,12 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
 
   const filterBySearch = <T extends { id: string; name: string }>(
     data: T[],
-    type: ItemType
+    type: ItemType,
   ) =>
     data.filter(
       (i) =>
         i.name.toLowerCase().includes(search.toLowerCase()) &&
-        !addedItemIds.has(`${type}${ID_DELIMITER}${i.id}`)
+        !addedItemIds.has(`${type}${ID_DELIMITER}${i.id}`),
     );
 
   const filteredLayers = filterBySearch(layers, "layer");
@@ -147,8 +147,8 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
         itemType === "layer"
           ? layers.find((l) => l.id === id)
           : itemType === "group"
-          ? groups.find((g) => g.id === id)
-          : tools.find((t) => t.id === id);
+            ? groups.find((g) => g.id === id)
+            : tools.find((t) => t.id === id);
     }
 
     if (!source) return;
@@ -175,7 +175,7 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
       const targetGroup = findGroupInTree(zone.items, targetId);
       if (targetGroup) {
         zone.onItemsChange(
-          enforceItemRules(insertIntoGroup(zone.items, targetId, newItem))
+          enforceItemRules(insertIntoGroup(zone.items, targetId, newItem)),
         );
         return;
       }

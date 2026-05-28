@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, Paper, Typography } from "@mui/material";
 import {
   FieldValues,
   UseFormRegister,
@@ -43,7 +43,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
   showSearch = false,
 }: FormRenderProps<TFieldValues>) => {
   const [elements, setElements] = React.useState<FormElement<TFieldValues>[]>(
-    formControls.getElements()
+    formControls.getElements(),
   );
 
   // Add a state variable to be able to force re-renders
@@ -105,7 +105,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
 
   const renderFormElement = (
     item: FormElement<TFieldValues>,
-    index: number
+    index: number,
   ) => {
     if (isFormElementContainer(item)) {
       return renderContainer(item as DynamicFormContainer<TFieldValues>, index);
@@ -120,7 +120,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
 
   const renderDynamicInputComponent = (
     item: FormElement<TFieldValues>,
-    index: number
+    index: number,
   ) => {
     const castedSettings = item as DynamicInputSettings<TFieldValues>;
 
@@ -183,7 +183,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
 
   const renderContainerAccordion = (
     container: DynamicFormContainer<TFieldValues>,
-    index: number
+    index: number,
   ) => {
     const key = getKey(index);
     const shouldExpand =
@@ -209,7 +209,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
 
   const renderContainerPanel = (
     container: DynamicFormContainer<TFieldValues>,
-    index: number
+    index: number,
   ) => {
     // Check if the container should be visible
     const shouldBeVisible = checkVisibility(container.visibleIf);
@@ -239,8 +239,8 @@ const FormRenderer = <TFieldValues extends FieldValues>({
                 item,
                 _index,
                 { sx: { pb: 0, pl: 0 } },
-                () => renderFormElement(item, _index) ?? <div />
-              )
+                () => renderFormElement(item, _index) ?? <div />,
+              ),
             )}
         </Grid>
       </Paper>
@@ -249,7 +249,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
 
   const renderContainer = (
     container: DynamicFormContainer<TFieldValues>,
-    index: number
+    index: number,
   ) => {
     const type = container.containerType;
     if (type === CONTAINER_TYPE.PANEL) {
@@ -284,8 +284,8 @@ const FormRenderer = <TFieldValues extends FieldValues>({
     propsToSpread: object = {},
     renderFn: (
       item: FormElement<TFieldValues>,
-      index: number
-    ) => React.ReactNode
+      index: number,
+    ) => React.ReactNode,
   ) => {
     return (
       <Grid
@@ -306,7 +306,7 @@ const FormRenderer = <TFieldValues extends FieldValues>({
   return (
     <Grid container className="form-factory" sx={{ ml: -2 }}>
       {showSearch && (
-        <Grid container size={{ xs: 12 }} justifyContent="flex-end">
+        <Grid container size={{ xs: 12 }} sx={{ justifyContent: "flex-end" }}>
           {/* TODO: Here we might want to add Expand/Collapse all button. */}
           <Grid size={{ xs: 12, md: 4 }} sx={{ pb: 2, pl: 2 }}>
             <FormSearch

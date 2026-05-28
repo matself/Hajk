@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useParams } from "react-router";
 import { useTheme, TextField, MenuItem } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import Page from "../../layouts/root/components/page";
@@ -174,8 +174,7 @@ function GroupSettings() {
                       value={(field.value as string) ?? ""}
                     >
                       {Object.keys(GroupType).map((key) => {
-                        const value =
-                          GroupType[key as keyof typeof GroupType];
+                        const value = GroupType[key as keyof typeof GroupType];
                         return (
                           <MenuItem key={key} value={value}>
                             {t(`groupType.${key}`)}

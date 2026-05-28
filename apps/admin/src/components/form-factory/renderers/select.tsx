@@ -27,7 +27,6 @@ const renderSelect: RenderFunction<FieldValues> = ({
         {...inputProps}
         {...inputSlotProps}
         label={title}
-        inputRef={field?.ref}
         value={(field?.value as string) || ""}
         onChange={(e) => {
           field?.onChange(e.target.value);
@@ -37,6 +36,14 @@ const renderSelect: RenderFunction<FieldValues> = ({
           forceUpdate?.();
         }}
         displayEmpty
+        slotProps={{
+          ...slotProps,
+          // Avoid leaking `inputRef` to the DOM; put the ref on the underlying input instead.
+          htmlInput: {
+            ...(slotProps?.htmlInput ?? {}),
+            ref: field?.ref,
+          },
+        }}
       >
         {optionList?.map((option, index) => (
           <MenuItem key={index} value={String(option.value)}>

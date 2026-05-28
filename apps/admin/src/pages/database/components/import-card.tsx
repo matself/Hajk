@@ -85,7 +85,7 @@ export default function DatabaseImportCard() {
             onError: () => {
               // Error will be displayed inline below using importMutation.error
             },
-          }
+          },
         );
       })
       .catch(() => {
@@ -109,7 +109,7 @@ export default function DatabaseImportCard() {
 
   const handleOptionChange = (
     key: keyof ImportOptions,
-    value: boolean | string
+    value: boolean | string,
   ) => {
     setOptions((prev) => ({
       ...prev,
@@ -128,7 +128,7 @@ export default function DatabaseImportCard() {
             justifyContent: "center",
           }}
         >
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <CircularProgress size={24} />
             <Typography>{t("common.loading")}</Typography>
           </Box>
@@ -140,16 +140,16 @@ export default function DatabaseImportCard() {
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <UploadIcon color="primary" />
           <Typography variant="h6">{t("database.import.title")}</Typography>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" mb={3}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           {t("database.import.description")}
         </Typography>
 
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <Box>
             <input
               ref={fileInputRef}
@@ -221,14 +221,14 @@ export default function DatabaseImportCard() {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.import.cleanDescription")}
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.import.clean.desc")}
             </Typography>
@@ -252,7 +252,7 @@ export default function DatabaseImportCard() {
             <Typography variant="body2">
               {t("database.import.success")}
             </Typography>
-            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+            <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
               {t("database.import.reloadMessage")}
             </Typography>
           </Alert>

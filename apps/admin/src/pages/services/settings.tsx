@@ -23,7 +23,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LayersIcon from "@mui/icons-material/Layers";
 import TuneIcon from "@mui/icons-material/Tune";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import SearchablePanel from "../../components/form-components/searchable-panel";
 import { SettingsSearchField } from "../../components/form-components/searchable-field";
 import { useSettingsSearchLabels } from "../../hooks/use-settings-search-labels";
@@ -41,7 +41,7 @@ import {
   useServiceCapabilities,
 } from "../../api/services";
 import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   SelectWithHelp,
   TextFieldWithHelp,

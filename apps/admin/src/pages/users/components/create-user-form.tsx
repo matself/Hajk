@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Box,
   Button,
@@ -27,7 +27,7 @@ export default function CreateUserForm() {
   const getToastifyOptions = useToastifyOptions();
   const toastifyOptions = getToastifyOptions(
     "user.createUserFailed",
-    "user.createUserSuccess"
+    "user.createUserSuccess",
   );
 
   const createUserMutation = useCreateLocalUser();
@@ -54,7 +54,7 @@ export default function CreateUserForm() {
           toastifyOptions.onSuccess();
           reset();
         },
-      }
+      },
     );
   };
 
@@ -109,7 +109,7 @@ export default function CreateUserForm() {
             />
           )}
         />
-        <Grid container justifyContent="center" sx={{ mt: 1, mb: 1 }}>
+        <Grid container sx={{ justifyContent: "center", mt: 1, mb: 1 }}>
           <Divider sx={{ width: "30%" }} />
         </Grid>
         <Controller
@@ -156,7 +156,7 @@ export default function CreateUserForm() {
             />
           )}
         />
-        <Grid container justifyContent="center">
+        <Grid container sx={{ justifyContent: "center" }}>
           <Button
             type="submit"
             variant="contained"

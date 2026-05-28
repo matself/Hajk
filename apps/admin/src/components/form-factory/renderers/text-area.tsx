@@ -20,13 +20,13 @@ const renderTextArea: RenderFunction<FieldValues> = ({
       label={title}
       multiline
       rows={rows as number}
-      inputRef={field?.ref}
       error={!!errorMessage}
       helperText={errorMessage}
       value={(field?.value as string) ?? ""}
       slotProps={{
         htmlInput: {
           ...inputProps,
+          ref: field?.ref,
         },
       }}
     />
