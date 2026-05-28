@@ -206,7 +206,7 @@ function Favorites({
       .filter((l) => l.get("visible") === true)
       .forEach((l) => {
         if (l.get("layerType") === "group") {
-          globalObserver.publish("layerswitcher.hideLayer", l);
+          layerSwitcherDispatch.setLayerVisibility(l.get("name"), false);
         } else if (l.get("layerType") !== "system") {
           l.set("visible", false);
         }
