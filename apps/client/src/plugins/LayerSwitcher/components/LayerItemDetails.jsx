@@ -85,6 +85,10 @@ function LayerItemDetails({
 
   // Setup listeners when component is mounted
   useEffect(() => {
+    // Reset legend visibility to the configured default each time a new layer is shown
+    setLegendIsActive(
+      layerSwitcherConfig?.options?.showLegendByDefault ?? false
+    );
     if (layerItemDetails?.layer) {
       // Register a listener: when layer's opacity changes make sure
       // to update opacity state. Not applicable for fakeMapLayers
