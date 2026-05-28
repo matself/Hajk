@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Mobile UI - Reset the WindowSheet's scroll position when its content changes (opening the sheet, switching documents in DocumentHandler, navigating between feature collections/features in Infoclick) so new content always starts at the top. [commit](https://github.com/hajkmap/Hajk/commit/d6073ce901d117efd296a53f17654ab6e3b849d5)
 - Admin: Fixed a long-standing bug where the algorithm used to determine if a layer is used in a map was faulty. Also, added a slight hover effect to some buttons. [commit](https://github.com/hajkmap/Hajk/commit/b0bcc56369d749e731d05344f92d7d8808bedf27)
 - Backend: Removed unused dependencies (clf-date, ws, query-string and @babel/runtime).
+- Client: LayerSwitcher - Fix an issue where loading a saved favorite in some cases caused the layer to show a warning icon.
+- Client: LayerSwitcher - Fix an issue where loading saved favorites and presets did not hide previously visible group layers.
 
 ## [4.3.0] 2026-04-20
 
