@@ -384,7 +384,7 @@ export default function MapSettings() {
                     ),
                     introductionSteps:
                       (data["options.introductionSteps"] as string) ?? "[]",
-                  } as Record<string, string>,
+                  },
                 };
 
                 void handleUpdateMap(normalized);

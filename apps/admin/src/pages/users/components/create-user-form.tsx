@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm, useWatch } from "react-hook-form";
 
 import { useCreateLocalUser } from "../../../api/users/hooks";
 import { useToastifyOptions } from "../../../lib/toastify-helper";
@@ -36,7 +36,6 @@ export default function CreateUserForm() {
     handleSubmit,
     control,
     reset,
-    watch,
     formState: { errors },
   } = useForm<CreateUserInput>();
 
@@ -58,7 +57,7 @@ export default function CreateUserForm() {
     );
   };
 
-  const password = watch("password");
+  const password = useWatch({ control, name: "password" });
 
   return (
     <Paper sx={{ p: 2, maxWidth: 500 }} elevation={4}>

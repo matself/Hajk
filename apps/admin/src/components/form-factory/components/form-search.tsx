@@ -12,7 +12,7 @@ const minimumSearchLength = 3;
 
 const searchFormElements = <TFieldValues extends FieldValues>(
   elements: FormElement<TFieldValues>[],
-  searchTerm: string
+  searchTerm: string,
 ): number => {
   let hitCount = 0;
 
@@ -24,7 +24,7 @@ const searchFormElements = <TFieldValues extends FieldValues>(
         (item as DynamicFormContainer<TFieldValues>).highlight = false;
         searchFormElements(
           (item as DynamicFormContainer<TFieldValues>).getElements(),
-          searchTerm
+          searchTerm,
         );
       }
     });
@@ -36,7 +36,7 @@ const searchFormElements = <TFieldValues extends FieldValues>(
       const container = item as DynamicFormContainer<TFieldValues>;
       const hitsInContainer = searchFormElements(
         container.getElements(),
-        searchTerm
+        searchTerm,
       );
 
       container.highlight = hitsInContainer > 0;
@@ -73,8 +73,8 @@ const FormSearch = <TFieldValues extends FieldValues>({
   const [hitCount, setHitCount] = React.useState(0);
   const prevSearchTermRef = React.useRef("");
 
-  const handleInput = (event: React.FormEvent<HTMLInputElement>) => {
-    setSearchTerm((event.target as HTMLInputElement).value);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
   };
 
   const handleClearSearch = () => {
@@ -107,7 +107,7 @@ const FormSearch = <TFieldValues extends FieldValues>({
       })}
       variant="outlined"
       value={searchTerm}
-      onInput={handleInput}
+      onChange={handleChange}
       slotProps={{
         input: {
           endAdornment: (

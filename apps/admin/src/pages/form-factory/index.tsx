@@ -1,6 +1,5 @@
 import Page from "../../layouts/root/components/page";
 import { FieldValues } from "react-hook-form";
-import { useEffect } from "react";
 import INPUT_TYPE from "../../components/form-factory/types/input-type";
 import React from "react";
 import DynamicFormContainer from "../../components/form-factory/dynamic-form-container";
@@ -13,11 +12,7 @@ import { Box, Button, Grid, InputAdornment, TextField } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import { createOnSubmitHandler } from "../../components/form-factory/form-utils";
 
-export default function FormFactoryPage() {
-  const [formContainerData, setFormContainerData] = React.useState<
-    DynamicFormContainer<FieldValues>
-  >(new DynamicFormContainer<FieldValues>());
-
+function buildDemoFormContainer(): DynamicFormContainer<FieldValues> {
   const formContainer = new DynamicFormContainer<FieldValues>();
 
   const nestedContainer = new DynamicFormContainer<FieldValues>(
@@ -336,12 +331,13 @@ export default function FormFactoryPage() {
     },
   });
 
-  useEffect(() => {
-    setFormContainerData(formContainer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  return formContainer;
+}
 
-  const defaultValues = formContainer.getDefaultValues();
+export default function FormFactoryPage() {
+  const [formContainerData] = React.useState(buildDemoFormContainer);
+
+  const defaultValues = formContainerData.getDefaultValues();
 
   const {
     register,

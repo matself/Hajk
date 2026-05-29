@@ -43,7 +43,7 @@ import {
   isGridRowSelected,
   normalizeRowSelectionModel,
 } from "./row-selection-model";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Controller, FieldValues, useForm, useWatch } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
   useLayerById,
@@ -181,7 +181,6 @@ export default function LayerSettings() {
   const { data: roleOnLayer } = useGetRoleOnLayerByLayerId(layerId ?? "");
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [formBaseline, setFormBaseline] = useState<FieldValues | null>(null);
   const { data: service, isLoading: serviceLoading } = useServiceByLayerId(
     layer?.id ?? "",
     !!layer?.id,
@@ -336,55 +335,76 @@ export default function LayerSettings() {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FieldValues>({
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
+  const layerFormBaseline = useMemo(
+    () =>
+      layer ? buildLayerSettingsFormValues(layer, roleOnLayer?.roleId) : null,
+    [layer, roleOnLayer?.roleId],
+  );
 
-  // Reset form with layer data when it loads
-  useEffect(() => {
-    if (layer) {
-      const baseline = buildLayerSettingsFormValues(layer, roleOnLayer?.roleId);
-      setFormBaseline(baseline);
-      reset(baseline);
-    }
-  }, [layer, roleOnLayer, reset]);
-
-  useEffect(() => {
-    if (!layer) return;
+  const layerEditingDefaults = useMemo(() => {
+    if (!layer) return null;
     const opts =
       layer.options &&
       typeof layer.options === "object" &&
       !Array.isArray(layer.options)
         ? layer.options
         : {};
-    setEditingGeometryTypes(geometryTypesFromOptions(opts));
-    setEditingEditableFields(
-      Array.isArray(opts.editableFields)
+    return {
+      geometryTypes: geometryTypesFromOptions(opts),
+      editableFields: Array.isArray(opts.editableFields)
         ? (opts.editableFields as EditableFieldConfig[])
         : [],
-    );
-    setEditingNonEditableFields(
-      Array.isArray(opts.nonEditableFields)
+      nonEditableFields: Array.isArray(opts.nonEditableFields)
         ? (opts.nonEditableFields as EditableFieldConfig[])
         : [],
-    );
+    };
   }, [layer]);
 
-  const formValues = watch();
-  const watchRoleIdInput = watch("roleId") as string | undefined;
-  const watchGeometryField = watch("searchSettings.geometryField") as
+  const layerFormSyncKey = layer
+    ? `${layer.id}:${roleOnLayer?.roleId ?? ""}`
+    : null;
+
+  const [committedFormBaseline, setCommittedFormBaseline] =
+    useState<FieldValues | null>(null);
+  const [syncedLayerFormKey, setSyncedLayerFormKey] = useState<string | null>(
+    null,
+  );
+
+  if (layerFormSyncKey !== syncedLayerFormKey) {
+    setSyncedLayerFormKey(layerFormSyncKey);
+    setCommittedFormBaseline(null);
+    if (layerEditingDefaults) {
+      setEditingGeometryTypes(layerEditingDefaults.geometryTypes);
+      setEditingEditableFields(layerEditingDefaults.editableFields);
+      setEditingNonEditableFields(layerEditingDefaults.nonEditableFields);
+    }
+  }
+
+  const formBaseline = committedFormBaseline ?? layerFormBaseline;
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<FieldValues>({
+    mode: "onChange",
+    reValidateMode: "onChange",
+    values: formBaseline ?? undefined,
+  });
+
+  const formValues = useWatch({ control });
+  const watchRoleIdInput = useWatch({ control, name: "roleId" }) as
     | string
     | undefined;
-  const watchSingleTile = watch("singleTile") as boolean | undefined;
+  const watchGeometryField = useWatch({
+    control,
+    name: "searchSettings.geometryField",
+  }) as string | undefined;
+  const watchSingleTile = useWatch({ control, name: "singleTile" }) as
+    | boolean
+    | undefined;
 
   const normalizedSelection = useMemo(
     () => normalizeRowSelectionModel(selectGridId),
@@ -937,8 +957,7 @@ export default function LayerSettings() {
             nonEditableFields: editingNonEditableFields,
           },
         };
-        setFormBaseline(savedBaseline);
-        reset(savedBaseline);
+        setCommittedFormBaseline(savedBaseline);
       }
     } catch (error) {
       console.error("Failed to update layer:", error);

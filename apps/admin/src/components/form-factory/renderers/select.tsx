@@ -13,6 +13,7 @@ const renderSelect: RenderFunction<FieldValues> = ({
   forceUpdate,
 }) => {
   const inputSlotProps = slotProps?.input ?? {};
+  const { ref, ...fieldProps } = field ?? {};
 
   return (
     <FormControl fullWidth error={!!errorMessage}>
@@ -23,9 +24,9 @@ const renderSelect: RenderFunction<FieldValues> = ({
       )}{" "}
       <Select
         labelId={name}
-        {...field}
+        {...fieldProps}
         {...inputProps}
-        {...inputSlotProps}
+        inputRef={ref}
         label={title}
         value={(field?.value as string) || ""}
         onChange={(e) => {
@@ -37,12 +38,7 @@ const renderSelect: RenderFunction<FieldValues> = ({
         }}
         displayEmpty
         slotProps={{
-          ...slotProps,
-          // Avoid leaking `inputRef` to the DOM; put the ref on the underlying input instead.
-          htmlInput: {
-            ...(slotProps?.htmlInput ?? {}),
-            ref: field?.ref,
-          },
+          input: inputSlotProps,
         }}
       >
         {optionList?.map((option, index) => (

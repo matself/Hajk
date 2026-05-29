@@ -17,13 +17,13 @@ const Page = (props: Props) => {
 
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    scrollToTop("instant");
-  }, [pathname]);
-
   const scrollToTop = (behavior: ScrollBehavior) => {
     window.scrollTo({ top: 0, behavior: behavior });
   };
+
+  useEffect(() => {
+    scrollToTop("instant");
+  }, [pathname]);
 
   const onScroll = () => {
     setHasVerticalScroll(window.scrollY > 0);

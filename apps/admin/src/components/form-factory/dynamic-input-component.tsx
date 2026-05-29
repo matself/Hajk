@@ -2,8 +2,6 @@ import {
   Control,
   Controller,
   FieldValues,
-  Path,
-  PathValue,
   UseFormRegister,
 } from "react-hook-form";
 import DynamicInputSettings from "./types/dynamic-input-settings";
@@ -40,11 +38,7 @@ export const DynamicInputComponent = <TFieldValues extends FieldValues>({
     <Controller
       name={settings.name}
       control={control}
-      defaultValue={
-        settings.defaultValue as
-          | PathValue<TFieldValues, Path<TFieldValues>>
-          | undefined
-      }
+      defaultValue={settings.defaultValue}
       rules={settings.registerOptions}
       render={({ field }) => {
         return (

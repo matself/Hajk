@@ -30,7 +30,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { LayersGridProps, useLayersByServiceId } from "../../api/services";
 import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import useAppStateStore from "../../store/use-app-state-store";
-import { useCreateLayer } from "../../api/layers";
+import { useCreateLayer, type LayersApiResponse } from "../../api/layers";
 import { LayerCreationError } from "../../api/layers/types";
 import LayerKindBadge from "../layers/components/layer-kind-badge";
 import LayerKindSelect from "../layers/components/layer-kind-select";
@@ -62,6 +62,27 @@ const EMPTY_PUBLICATIONS: PublicationsByKind = {
   search: [],
   editing: [],
 };
+
+function buildPublicationsByLayerName(
+  layersByService: LayersApiResponse | undefined,
+): Map<string, PublicationsByKind> {
+  const map = new Map<string, PublicationsByKind>();
+  const existing = layersByService?.layers ?? [];
+  for (const layer of existing) {
+    const kind = normalizeLayerCategory(layer.layerKind);
+    const sel = layer.selectedLayers ?? [];
+    for (const name of sel) {
+      const bucket = map.get(name) ?? {
+        display: [],
+        search: [],
+        editing: [],
+      };
+      bucket[kind].push({ id: layer.id, name: layer.name, layerKind: kind });
+      map.set(name, bucket);
+    }
+  }
+  return map;
+}
 
 function LayersGrid({
   layers,
@@ -297,26 +318,7 @@ function LayersGrid({
   // Build lookup: source layer name -> already-published Hajk layers grouped by layerKind.
   // Used both to render the publications column and to gate creation behind a
   // confirmation dialog when a same-kind publication already exists.
-  const publicationsByLayerName = useMemo<
-    Map<string, PublicationsByKind>
-  >(() => {
-    const map = new Map<string, PublicationsByKind>();
-    const existing = layersByService?.layers ?? [];
-    for (const layer of existing) {
-      const kind = normalizeLayerCategory(layer.layerKind);
-      const sel = layer.selectedLayers ?? [];
-      for (const name of sel) {
-        const bucket = map.get(name) ?? {
-          display: [],
-          search: [],
-          editing: [],
-        };
-        bucket[kind].push({ id: layer.id, name: layer.name, layerKind: kind });
-        map.set(name, bucket);
-      }
-    }
-    return map;
-  }, [layersByService?.layers]);
+  const publicationsByLayerName = buildPublicationsByLayerName(layersByService);
 
   // Capabilities layers filtered by dialog search and workspace
   const filteredCapabilityLayers = useMemo<CapabilityRow[]>(() => {
@@ -350,7 +352,7 @@ function LayersGrid({
         name: layer.name,
         layerKind: normalizeLayerCategory(layer.layerKind),
       }));
-  }, [layersByService?.layers, serviceLayerSearch]);
+  }, [layersByService, serviceLayerSearch]);
 
   const hasExistingLayers = (layersByService?.layers?.length ?? 0) > 0;
 

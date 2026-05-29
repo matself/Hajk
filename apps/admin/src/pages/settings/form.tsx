@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import DynamicFormContainer from "../../components/form-factory/dynamic-form-container";
 import { FieldValues } from "react-hook-form";
 import CONTAINER_TYPE from "../../components/form-factory/types/container-types";
@@ -8,14 +8,9 @@ import FormRenderer from "../../components/form-factory/form-renderer";
 import { createOnSubmitHandler } from "../../components/form-factory/form-utils";
 import { useTranslation } from "react-i18next";
 
-export default function SettingsForm() {
-  const { t, i18n } = useTranslation();
-
-  const [settingsContainerData, setSettingsContainerData] = useState<
-    DynamicFormContainer<FieldValues>
-  >(new DynamicFormContainer<FieldValues>());
-
-  const createTranslatedSettingsContainer = () => {
+function createTranslatedSettingsContainer(
+  t: (key: string) => string,
+): DynamicFormContainer<FieldValues> {
     const settingsContainer = new DynamicFormContainer<FieldValues>();
 
     const accordionContainer = new DynamicFormContainer<FieldValues>(
@@ -76,13 +71,16 @@ export default function SettingsForm() {
     settingsContainer.addContainer(accordionContainer5);
     settingsContainer.addContainer(accordionContainer6);
 
-    return settingsContainer;
-  };
+  return settingsContainer;
+}
 
-  useEffect(() => {
-    setSettingsContainerData(createTranslatedSettingsContainer());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [i18n.language]);
+export default function SettingsForm() {
+  const { t } = useTranslation();
+
+  const settingsContainerData = useMemo(
+    () => createTranslatedSettingsContainer(t),
+    [t],
+  );
 
   const defaultValues = settingsContainerData.getDefaultValues();
 

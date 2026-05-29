@@ -30,7 +30,7 @@ export default function LayerKindSelect({
   const { t } = useTranslation();
 
   const handleChange = (event: SelectChangeEvent<LayerCategory>) => {
-    onChange(event.target.value as LayerCategory);
+    onChange(event.target.value);
   };
 
   return (

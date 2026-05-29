@@ -62,7 +62,7 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
             <Controller
               name="options.displayName"
               control={control}
-              defaultValue={(tool?.options?.title as string) ?? ""}
+              defaultValue={tool?.options?.title ?? ""}
               render={({ field }) => (
                 <TextField
                   label={t("tools.displayName")}

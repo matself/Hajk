@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -39,16 +39,21 @@ function ControlledAccordion({
   // This allows external components to trigger changes to the accordion's expansion state.
 
   const [expanded, setExpanded] = useState(triggerExpanded);
-  const [keyValues, setKeyValues] = useState<
-    { key: string; value: string; title: string }[]
-  >([]);
+  const [prevTriggerExpanded, setPrevTriggerExpanded] =
+    useState(triggerExpanded);
 
-  const refreshKeyValues = useCallback(() => {
+  if (triggerExpanded !== prevTriggerExpanded) {
+    setPrevTriggerExpanded(triggerExpanded);
+    setExpanded(triggerExpanded);
+  }
+
+  const keyValues = useMemo(() => {
+    if (expanded) return [];
+
     const kv = formGetValues();
-
     const newKv: { key: string; value: string; title: string }[] = [];
 
-    formInputs.map((input) => {
+    formInputs.forEach((input) => {
       if (isFormElementInput(input)) {
         const castedInput = input as
           | DynamicInputSettings<TFieldValues>
@@ -66,18 +71,8 @@ function ControlledAccordion({
       }
     });
 
-    setKeyValues(newKv);
-  }, [formGetValues, formInputs, setKeyValues]);
-
-  useEffect(() => {
-    setExpanded(triggerExpanded);
-  }, [triggerExpanded]);
-
-  useEffect(() => {
-    if (!expanded) {
-      refreshKeyValues();
-    }
-  }, [expanded, refreshKeyValues]);
+    return newKv;
+  }, [expanded, formGetValues, formInputs]);
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,

@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import Page from "../../layouts/root/components/page";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { Controller, FieldValues, useForm, useWatch } from "react-hook-form";
 import {
   useTheme,
   Button,
@@ -156,14 +156,13 @@ export default function ServiceSettings() {
     setValue,
     getValues,
     reset,
-    watch,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
   });
 
-  const allValues = watch();
+  const allValues = useWatch({ control });
 
   // Reset form with service data when it loads
   useEffect(() => {

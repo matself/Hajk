@@ -1359,7 +1359,7 @@ export default function LayerSwitcherDnD() {
   ): { targetGroupId: string; targetGroupName: string } | null => {
     // Find the dragged item to check its type
     const draggedItem = findItemInTree(oldItems, draggedItemId);
-    if (!draggedItem || draggedItem.type !== "group") {
+    if (!draggedItem || draggedItem?.type !== "group") {
       return null;
     }
 
@@ -1367,7 +1367,7 @@ export default function LayerSwitcherDnD() {
     const newParent = findItemParent(newItems, draggedItemId);
 
     // If the item moved to be a child of a group (wasn't before, or different parent)
-    if (newParent && newParent.parent && newParent.parent.type === "group") {
+    if (newParent?.parent && newParent?.parent?.type === "group") {
       // Check if it's a new parent (wasn't a child before, or parent changed)
       const oldParentId = oldParent?.parent?.id.toString() ?? null;
       const newParentId = newParent.parent.id.toString();
@@ -1569,7 +1569,7 @@ export default function LayerSwitcherDnD() {
             prevItems,
             draggedItemId,
           );
-          if (item && item.type === "group") {
+          if (item && item?.type === "group") {
             const groupToAdd: TreeItem<TreeItemData> = {
               ...item,
               children: item.children ?? [],
@@ -2360,7 +2360,7 @@ export default function LayerSwitcherDnD() {
                               // First, try using draggedItemInfo if available
                               if (
                                 draggedItemInfo &&
-                                draggedItemInfo.itemType === "group"
+                                draggedItemInfo?.itemType === "group"
                               ) {
                                 const dropInfo = detectGroupOnGroupDrop(
                                   oldItems, // State before change (from ref)
@@ -2417,7 +2417,7 @@ export default function LayerSwitcherDnD() {
                                             );
                                             if (
                                               !oldParent?.parent ||
-                                              oldParent.parent.id.toString() !==
+                                              oldParent?.parent?.id.toString() !==
                                                 newItem.id.toString()
                                             ) {
                                               return {

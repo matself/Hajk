@@ -37,7 +37,7 @@ import {
 } from "../../../api/services";
 import { getDeleteServiceErrorMessage } from "../../../api/services/error-messages";
 import DialogWrapper from "../../../components/flexible-dialog";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
 import { GridRenderCellParams } from "@mui/x-data-grid";
@@ -231,7 +231,6 @@ export default function ServicesList({
     register,
     handleSubmit,
     control,
-    watch,
     formState: { errors },
     reset,
   } = useForm<ServiceCreateInput>({
@@ -250,7 +249,7 @@ export default function ServicesList({
     setOpen(false);
   };
 
-  const watchedUrl = watch("url");
+  const watchedUrl = useWatch({ control, name: "url" });
 
   const showUrlUsedElsewhereWarning = useMemo(() => {
     const norm = normalizeUrlForDuplicateCheck(watchedUrl ?? "");
@@ -504,9 +503,7 @@ export default function ServicesList({
                     labelId="type-filter-label"
                     label={t("services.filterByType")}
                     value={typeFilter}
-                    onChange={(e) =>
-                      setTypeFilter(e.target.value as SERVICE_TYPE | "")
-                    }
+                    onChange={(e) => setTypeFilter(e.target.value)}
                   >
                     <MenuItem value="">{t("common.all")}</MenuItem>
                     {(Object.values(SERVICE_TYPE) as SERVICE_TYPE[]).map(
@@ -528,9 +525,7 @@ export default function ServicesList({
                     labelId="status-filter-label"
                     label={t("services.filterByStatus")}
                     value={statusFilter}
-                    onChange={(e) =>
-                      setStatusFilter(e.target.value as SERVICE_STATUS | "")
-                    }
+                    onChange={(e) => setStatusFilter(e.target.value)}
                   >
                     <MenuItem value="">{t("common.all")}</MenuItem>
                     <MenuItem value={SERVICE_STATUS.HEALTHY}>

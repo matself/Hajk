@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -174,7 +174,7 @@ function ListValuesCell({
           size="small"
           fullWidth
           placeholder={String(
-            t("layers.editing.listValueAddPlaceholder" as never),
+            t("layers.editing.listValueAddPlaceholder"),
           )}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -202,7 +202,7 @@ function ListValuesCell({
                   <CloseRoundedIcon
                     fontSize="small"
                     aria-label={String(
-                      t("layers.editing.listValueRemoveAria" as never, {
+                      t("layers.editing.listValueRemoveAria", {
                         value: v,
                       }),
                     )}
@@ -234,7 +234,6 @@ export default function EditingLayerSettings({
 }: EditingLayerSettingsProps) {
   const { t } = useTranslation();
   const { fieldLabel } = useLayerFieldLabels();
-  const [fieldRows, setFieldRows] = useState<EditingFieldRow[]>([]);
   const [fieldsDialogOpen, setFieldsDialogOpen] = useState(false);
   const [draftFieldRows, setDraftFieldRows] = useState<EditingFieldRow[]>([]);
 
@@ -249,21 +248,14 @@ export default function EditingLayerSettings({
     enabled: Boolean(serviceUrl && typeName),
   });
 
-  useEffect(() => {
-    if (!describeProperties) return;
-    setFieldRows(
-      mergeDescribeWithSavedFields(
-        describeProperties,
-        savedEditableFields,
-        savedNonEditableFields,
-      ),
+  const fieldRows = useMemo(() => {
+    if (!describeProperties) return [];
+    return mergeDescribeWithSavedFields(
+      describeProperties,
+      savedEditableFields,
+      savedNonEditableFields,
     );
-  }, [
-    describeProperties,
-    typeName,
-    savedEditableFields,
-    savedNonEditableFields,
-  ]);
+  }, [describeProperties, savedEditableFields, savedNonEditableFields]);
 
   const updateDraftFieldRow = (
     index: number,
@@ -284,7 +276,6 @@ export default function EditingLayerSettings({
   };
 
   const handleApplyFieldsDialog = () => {
-    setFieldRows(draftFieldRows);
     const { editableFields, nonEditableFields } = splitRows(draftFieldRows);
     onFieldsChange(editableFields, nonEditableFields);
     setFieldsDialogOpen(false);
