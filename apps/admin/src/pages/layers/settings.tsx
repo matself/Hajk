@@ -39,13 +39,10 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import { GridRowId } from "@mui/x-data-grid";
 import type { GridRowSelectionModel } from "@mui/x-data-grid";
-
-interface RowSelectionModel {
-  type: "include" | "exclude";
-  // In MUI X v9 this is a Set<GridRowId>, but older TS lib configs may not include `Set`.
-  // We only rely on iteration + `.has()`.
-  ids: Iterable<GridRowId> & { has: (id: GridRowId) => boolean };
-}
+import {
+  isGridRowSelected,
+  normalizeRowSelectionModel,
+} from "./row-selection-model";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
@@ -292,7 +289,7 @@ export default function LayerSettings() {
   const showEditingTab = activeTab === "editing" || showSettingsSearchUi;
   const settingsSearchTerm = showSettingsSearchUi ? settingsSearchQuery : "";
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectGridId, setSelectGridId] = useState<RowSelectionModel>();
+  const [selectGridId, setSelectGridId] = useState<GridRowSelectionModel>();
   const [useCustomDpiList, setUseCustomDpiList] = useState<boolean>(false);
   const [customDpiList, setCustomDpiList] = useState<
     { pxRatio: number; dpi: number }[]
@@ -389,17 +386,17 @@ export default function LayerSettings() {
     | undefined;
   const watchSingleTile = watch("singleTile") as boolean | undefined;
 
+  const normalizedSelection = useMemo(
+    () => normalizeRowSelectionModel(selectGridId),
+    [selectGridId],
+  );
+
   const filteredLayers = useMemo(() => {
     if (!getCapLayers) return [];
 
     const searchAndSelectedFilteredLayers = getCapLayers
       .map((layer, index) => {
-        const isSelected =
-          selectGridId?.type === "include"
-            ? selectGridId.ids.has(index)
-            : selectGridId
-              ? !selectGridId.ids.has(index)
-              : false;
+        const isSelected = isGridRowSelected(index, normalizedSelection);
         return {
           id: index,
           layer,
@@ -426,25 +423,20 @@ export default function LayerSettings() {
         return 0;
       });
     return searchAndSelectedFilteredLayers;
-  }, [getCapLayers, searchTerm, selectGridId]);
+  }, [getCapLayers, searchTerm, normalizedSelection]);
 
-  const selectedRowsData = useMemo(
-    () => {
-      if (!selectGridId) return undefined;
+  const selectedRowsData = useMemo(() => {
+    if (!normalizedSelection) return undefined;
 
-      const selectedIds: GridRowId[] =
-        selectGridId.type === "include"
-          ? Array.from(selectGridId.ids)
-          : filteredLayers
-              .map((row) => row.id)
-              .filter((id) => !selectGridId.ids.has(id));
+    const selectedIds: GridRowId[] =
+      normalizedSelection.type === "include"
+        ? Array.from(normalizedSelection.ids)
+        : filteredLayers
+            .map((row) => row.id)
+            .filter((id) => !normalizedSelection.ids.has(id));
 
-      return selectedIds.map((id) =>
-        filteredLayers.find((row) => row.id === id),
-      );
-    },
-    [selectGridId, filteredLayers],
-  );
+    return selectedIds.map((id) => filteredLayers.find((row) => row.id === id));
+  }, [normalizedSelection, filteredLayers]);
 
   const selectedRowObjects = useMemo(
     () => selectedRowsData?.map((row) => row?.layer ?? ""),
@@ -596,15 +588,12 @@ export default function LayerSettings() {
     const mergedOptions: Record<string, unknown> = {
       ...existingOptions,
       layersInfo: updatedLayersInfo,
-      keyword: (existingOptions.keyword as string | undefined) ?? "",
-      category: (existingOptions.category as string | undefined) ?? "",
-      layerDisplayDescription:
-        (existingOptions.layerDisplayDescription as string | undefined) ?? "",
-      geoWebCache:
-        (existingOptions.geoWebCache as boolean | undefined) ?? false,
+      keyword: existingOptions.keyword ?? "",
+      category: existingOptions.category ?? "",
+      layerDisplayDescription: existingOptions.layerDisplayDescription ?? "",
+      geoWebCache: existingOptions.geoWebCache ?? false,
       showAttributeTableButton:
-        (existingOptions.showAttributeTableButton as boolean | undefined) ??
-        false,
+        existingOptions.showAttributeTableButton ?? false,
     };
 
     const currentValues = {
@@ -765,21 +754,15 @@ export default function LayerSettings() {
         // Use the appropriate layersInfo (new takes precedence)
         ...(layersInfoToUse && { layersInfo: layersInfoToUse }),
         // Override with new values if provided
-        keyword:
-          (newOptions.keyword as string | undefined) ??
-          (existingOptions.keyword as string | undefined),
-        category:
-          (newOptions.category as string | undefined) ??
-          (existingOptions.category as string | undefined),
-        geoWebCache:
-          (newOptions.geoWebCache as boolean | undefined) ??
-          (existingOptions.geoWebCache as boolean | undefined),
+        keyword: newOptions.keyword ?? existingOptions.keyword,
+        category: newOptions.category ?? existingOptions.category,
+        geoWebCache: newOptions.geoWebCache ?? existingOptions.geoWebCache,
         showAttributeTableButton:
-          (newOptions.showAttributeTableButton as boolean | undefined) ??
-          (existingOptions.showAttributeTableButton as boolean | undefined),
+          newOptions.showAttributeTableButton ??
+          existingOptions.showAttributeTableButton,
         layerDisplayDescription:
-          (newOptions.layerDisplayDescription as string | undefined) ??
-          (existingOptions.layerDisplayDescription as string | undefined),
+          newOptions.layerDisplayDescription ??
+          existingOptions.layerDisplayDescription,
         ...(settingsVisibility.showEditingSettingsPanel && {
           editPoint: editingGeometryTypes.editPoint,
           editMultiPoint: editingGeometryTypes.editMultiPoint,
@@ -851,11 +834,11 @@ export default function LayerSettings() {
           format: layerData?.infoClickSettings?.format,
           sortMethod: layerData?.infoClickSettings?.sortMethod,
         },
-      } as Record<string, unknown>);
+      });
 
       await updateLayer({
         layerId: layer?.id ?? "",
-        data: payload as Partial<LayerUpdateInput>,
+        data: payload,
       });
       toast.success(t("layers.updateLayerSuccess", { name: layerData.name }), {
         position: "bottom-left",
@@ -1073,10 +1056,7 @@ export default function LayerSettings() {
                         .filter((s) => s.length > 0)
                     : undefined;
 
-              if (
-                selectedRowObjects !== undefined &&
-                selectedRowObjects.length === 0
-              ) {
+              if (selectedRowObjects?.length === 0) {
                 toast.warning(t("layers.noLayersSelected"), {
                   position: "bottom-left",
                   theme: palette.mode,
@@ -1165,9 +1145,9 @@ export default function LayerSettings() {
                   }),
                 },
                 selectedLayers: selectedRowObjects,
-              } as Record<string, unknown>);
+              });
 
-              void handleUpdateLayer(normalized as LayerUpdateInput);
+              void handleUpdateLayer(normalized);
             })(e);
           }}
           formRef={formRef}
@@ -1659,7 +1639,13 @@ export default function LayerSettings() {
                         <Grid container rowSpacing={1.5} columnSpacing={1.5}>
                           {customDpiList.map((item, index) => (
                             <Grid size={12} key={index}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 2,
+                                }}
+                              >
                                 <TextFieldWithHelp
                                   labelKey="layers.pxRatio"
                                   helpKey="layers.help.pxRatio"
@@ -2644,9 +2630,7 @@ export default function LayerSettings() {
                           <FieldLabelAbove
                             htmlFor="searchSettings-outputFormat"
                             label={t("layers.searchSettings.outputFormat")}
-                            help={String(
-                              t("layers.help.searchOutputFormat" as never),
-                            )}
+                            help={String(t("layers.help.searchOutputFormat"))}
                           />
                           <Controller
                             name="searchSettings.outputFormat"
@@ -2833,13 +2817,9 @@ export default function LayerSettings() {
                 selectedLayers={layer?.selectedLayers ?? []}
                 filteredLayers={filteredLayers}
                 setSearchTerm={setSearchTerm}
-                setSelectGridId={
-                  setSelectGridId as unknown as React.Dispatch<
-                    React.SetStateAction<GridRowSelectionModel | undefined>
-                  >
-                }
+                setSelectGridId={setSelectGridId}
                 searchTerm={searchTerm}
-                selectGridId={selectGridId as unknown as GridRowSelectionModel}
+                selectGridId={selectGridId}
                 selectedRowObjects={selectedRowObjects}
                 onLayerClick={handleLayerClick}
               />
