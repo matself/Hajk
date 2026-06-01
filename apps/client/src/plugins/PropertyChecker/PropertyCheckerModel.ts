@@ -303,6 +303,9 @@ export default class PropertyCheckerModel {
 
     if (!geometry) {
       console.warn(`PropertyChecker: q_pc="${qPc}" returned no results.`);
+      // Inform the user (via the view) that the deep-link value could not be
+      // resolved, so they can fall back to picking a property in the map.
+      this.#localObserver.publish("qPcLookupFailed", { query: qPc });
       return;
     }
 

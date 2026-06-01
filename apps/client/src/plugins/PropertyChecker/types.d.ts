@@ -139,6 +139,11 @@ export interface NoFeaturesPayload {
   amountOfDigitalPlans: number;
 }
 
+/** Published when a q_pc deep-link value could not be resolved to a property/address. */
+export interface QPcLookupFailedPayload {
+  query: string;
+}
+
 // ---- Shared helper types ----
 
 /** Describes a single column descriptor used to build digital plan item descriptions */
