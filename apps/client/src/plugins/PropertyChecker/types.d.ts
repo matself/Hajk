@@ -56,6 +56,10 @@ export interface PropertyCheckerOptions {
   digitalPlansLayerSecondLevelOrder: string[];
   /** Show a button to toggle all hit layers on/off at once (default: false) */
   showToggleAllCheckLayers?: boolean;
+  /** Id of an existing WFS search source (Search tool) used to resolve a property name to geometry for the q_pc URL param */
+  propertyNameLookupWfsLayerId?: string;
+  /** Id of an existing WFS search source used to resolve a free-text address when property-name lookup returns no results */
+  addressLookupWfsLayerId?: string;
   [key: string]: unknown;
 }
 
