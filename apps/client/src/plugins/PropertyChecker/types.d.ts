@@ -54,6 +54,8 @@ export interface PropertyCheckerOptions {
   digitalPlanDescriptionAttribute: string;
   /** Ordered list of second-level use-types for digital plan reports */
   digitalPlansLayerSecondLevelOrder: string[];
+  /** Show a button to toggle all hit layers on/off at once (default: false) */
+  showToggleAllCheckLayers?: boolean;
   [key: string]: unknown;
 }
 

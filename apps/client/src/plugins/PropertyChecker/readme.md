@@ -133,6 +133,9 @@ Anyway, the featured returned from the layer is required to have at least these 
         "enableCheckLayerReport": true, // Allow generating reports for the "Check Layer" tab?
         "enableDigitalPlansReport": true, // Allow generating reports for the "Digital Plans" tab?
 
+        /* Check Layer tab extras */
+        "showToggleAllCheckLayers": false, // Show a "Show/hide all matched layers" button that toggles all hit layers' visibility at once. Default: false.
+
         /* Generic Hajk plugin settings */
         "visibleAtStart": true,
         "target": "right",
