@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import Page from "../../layouts/root/components/page";
-import { Controller, FieldValues, useForm, useWatch } from "react-hook-form";
+import { Controller, FieldValues, useForm } from "react-hook-form";
 import {
   useTheme,
   Button,
@@ -158,11 +158,9 @@ export default function ServiceSettings() {
     reset,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
-    mode: "onChange",
-    reValidateMode: "onChange",
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
-
-  const allValues = useWatch({ control });
 
   // Reset form with service data when it loads
   useEffect(() => {
@@ -502,7 +500,7 @@ export default function ServiceSettings() {
                 "kommentar",
               ]}
               fields={["name", "type", "comment"]}
-              allValues={allValues}
+              allValues={showSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.information")}>
@@ -512,7 +510,7 @@ export default function ServiceSettings() {
                     fields={["name"]}
                     synonyms={["namn", "name"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 12 }}>
                       <TextFieldWithHelp
@@ -535,7 +533,7 @@ export default function ServiceSettings() {
                     fields={["type"]}
                     synonyms={["tjänsttyp", "service type"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -552,7 +550,7 @@ export default function ServiceSettings() {
                     fields={["comment"]}
                     synonyms={["beskrivning", "kommentar", "comment"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -585,7 +583,7 @@ export default function ServiceSettings() {
                 "workspace",
               ]}
               fields={["url", "serverType", "workspace"]}
-              allValues={allValues}
+              allValues={showSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.connection")}>
@@ -595,7 +593,7 @@ export default function ServiceSettings() {
                     fields={["serverType"]}
                     synonyms={["servertyp", "server type"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -624,7 +622,7 @@ export default function ServiceSettings() {
                     labelKeys={["services.url"]}
                     fields={["url"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -657,7 +655,7 @@ export default function ServiceSettings() {
                     fields={["workspace"]}
                     synonyms={["arbetsområde", "workspace"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -711,7 +709,7 @@ export default function ServiceSettings() {
                 "imageFormat",
                 "projection.code",
               ]}
-              allValues={allValues}
+              allValues={showSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("services.settings.request")}>
@@ -721,7 +719,7 @@ export default function ServiceSettings() {
                     fields={["getMapUrl"]}
                     synonyms={["getmap", "url"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 12 }}>
                       <TextFieldWithHelp
@@ -736,7 +734,7 @@ export default function ServiceSettings() {
                     labelKeys={["services.version"]}
                     fields={["version"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -766,7 +764,7 @@ export default function ServiceSettings() {
                     fields={["imageFormat"]}
                     synonyms={["bildformat", "image format"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -794,7 +792,7 @@ export default function ServiceSettings() {
                     fields={["projection.code"]}
                     synonyms={["koordinatsystem", "projektion", "projection"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -843,7 +841,7 @@ export default function ServiceSettings() {
                 "metadata",
               ]}
               fields={["metadata.owner", "metadata.description"]}
-              allValues={allValues}
+              allValues={showSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.infobutton")}>
@@ -853,7 +851,7 @@ export default function ServiceSettings() {
                     fields={["metadata.owner"]}
                     synonyms={["ägare", "owner"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -869,7 +867,7 @@ export default function ServiceSettings() {
                     fields={["metadata.description"]}
                     synonyms={["beskrivning", "description"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={allValues}
+                    allValues={showSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp

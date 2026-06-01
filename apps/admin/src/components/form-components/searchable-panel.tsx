@@ -18,7 +18,7 @@ export default function SearchablePanel({
   panelTitleKeywords = [],
   keywords,
   fields = [],
-  allValues = {},
+  allValues,
   searchTerm,
   children,
 }: SearchablePanelProps) {

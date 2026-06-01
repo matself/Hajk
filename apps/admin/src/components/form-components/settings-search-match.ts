@@ -71,7 +71,7 @@ export function matchesSettingsSearch(
   term: string,
   keywords: string[],
   fields: string[],
-  allValues: Record<string, unknown>,
+  allValues?: Record<string, unknown>,
 ): boolean {
   const normalized = term.toLowerCase().trim();
   if (!normalized) return true;
@@ -87,13 +87,15 @@ export function matchesSettingsSearch(
       keywords.some((keyword) => keywordMatchesWord(keyword, word)),
     );
 
-  const matchesValue = fields.some((field) => {
-    const text = valueAsSearchText(getNestedValue(allValues, field));
-    if (!text) return false;
-    const lower = text.toLowerCase();
-    if (lower.includes(normalized)) return true;
-    return words.every((word) => lower.includes(word));
-  });
+  const matchesValue =
+    allValues != null &&
+    fields.some((field) => {
+      const text = valueAsSearchText(getNestedValue(allValues, field));
+      if (!text) return false;
+      const lower = text.toLowerCase();
+      if (lower.includes(normalized)) return true;
+      return words.every((word) => lower.includes(word));
+    });
 
-  return matchesKeyword || matchesValue;
+  return matchesKeyword || Boolean(matchesValue);
 }
