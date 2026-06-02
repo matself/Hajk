@@ -3,24 +3,33 @@ import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid2";
 import {
   Autocomplete,
+  Alert,
   Button,
+  CircularProgress,
   TextField,
   useTheme,
   FormControl,
   FormHelperText,
+  IconButton,
   InputLabel,
+  Menu,
   Select,
   MenuItem,
   Chip,
+  Typography,
 } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { Trans, useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { isAxiosError } from "axios";
+import type { GridRenderCellParams } from "@mui/x-data-grid";
 import Page from "../../../layouts/root/components/page";
 import {
   useGroups,
   Group,
   useCreateGroup,
+  useDeleteGroup,
   GroupCreateInput,
   GroupType,
 } from "../../../api/groups";
@@ -90,10 +99,21 @@ export default function GroupsList({
   const { data: layers = [] } = useLayers();
   const { mutateAsync: createGroup, isPending: isCreatingGroup } =
     useCreateGroup();
+  const { mutateAsync: removeGroup, isPending: isDeletingGroup } =
+    useDeleteGroup();
   const { palette } = useTheme();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const actionsMenuOpen = Boolean(anchorEl);
+  const selectedGroup = useMemo(
+    () => groups?.find((group) => group.id === selectedGroupId),
+    [groups, selectedGroupId],
+  );
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -104,6 +124,62 @@ export default function GroupsList({
   };
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    groupId: string,
+  ) => {
+    if (isDeletingGroup) return;
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedGroupId(groupId);
+  };
+
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (isDeletingGroup) return;
+    setIsDeleteDialogOpen(false);
+    setSelectedGroupId(null);
+    setDeleteConfirmName("");
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedGroup?.name) && deleteConfirmName === selectedGroup?.name;
+
+  const handleConfirmDelete = async () => {
+    if (!selectedGroupId || !selectedGroup || !isDeleteConfirmNameMatching) {
+      return;
+    }
+
+    try {
+      await removeGroup(selectedGroupId);
+      toast.success(
+        t("groups.deleteGroupSuccess", { name: selectedGroup.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete group:", error);
+      toast.error(t("groups.deleteGroupFailed", { name: selectedGroup.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
   };
 
   const filteredGroups = useMemo(() => {
@@ -376,8 +452,105 @@ export default function GroupsList({
                   valueFormatter: (value: string) =>
                     value ? new Date(value).toLocaleDateString("sv-SE") : "–",
                 },
+                {
+                  field: "actions",
+                  headerName: "",
+                  width: 60,
+                  align: "center",
+                  sortable: false,
+                  filterable: false,
+                  disableColumnMenu: true,
+                  renderCell: (params: GridRenderCellParams<Group>) => (
+                    <IconButton
+                      aria-label={t("common.actions")}
+                      size="small"
+                      disabled={isDeletingGroup}
+                      onClick={(event) =>
+                        handleOpenActionsMenu(event, params.row.id)
+                      }
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  ),
+                },
               ]}
             />
+            <Menu
+              anchorEl={anchorEl}
+              open={actionsMenuOpen}
+              onClose={handleCloseActionsMenu}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MenuItem
+                onClick={handleOpenDeleteDialog}
+                data-group-id={selectedGroupId ?? ""}
+                disabled={isDeletingGroup}
+              >
+                {t("common.delete")}
+              </MenuItem>
+            </Menu>
+            <DialogWrapper
+              fullWidth
+              open={isDeleteDialogOpen}
+              title={t("groups.deleteGroupConfirmTitle")}
+              onClose={handleCloseDeleteDialog}
+              actions={
+                <>
+                  <Button
+                    variant="text"
+                    onClick={handleCloseDeleteDialog}
+                    color="primary"
+                    disabled={isDeletingGroup}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={isDeletingGroup || !isDeleteConfirmNameMatching}
+                    onClick={() => {
+                      void handleConfirmDelete();
+                    }}
+                    startIcon={
+                      isDeletingGroup ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : (
+                        <DeleteOutlineIcon />
+                      )
+                    }
+                  >
+                    {t("common.delete")}
+                  </Button>
+                </>
+              }
+            >
+              <Typography>
+                <Trans
+                  i18nKey="groups.deleteGroupConfirmMessage"
+                  values={{ name: selectedGroup?.name ?? "" }}
+                  components={{ strong: <strong /> }}
+                />
+              </Typography>
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                {t("groups.deleteGroupWarning")}
+              </Alert>
+              <TextField
+                fullWidth
+                autoComplete="off"
+                margin="normal"
+                label={t("groups.deleteGroupTypeNameLabel")}
+                helperText={
+                  <Trans
+                    i18nKey="groups.deleteGroupTypeNameHelper"
+                    values={{ name: selectedGroup?.name ?? "" }}
+                    components={{ strong: <strong /> }}
+                  />
+                }
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                disabled={isDeletingGroup}
+              />
+            </DialogWrapper>
           </Grid>
         </>
       )}
