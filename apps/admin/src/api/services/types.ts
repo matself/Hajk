@@ -112,6 +112,7 @@ export interface LayersGridProps {
   layers: string[];
   workspaces?: string[];
   serviceId: string;
+  serviceType?: string;
   isError: boolean;
   isLoading: boolean;
   onRetry?: () => void;
