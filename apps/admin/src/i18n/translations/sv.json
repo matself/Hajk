@@ -564,6 +564,8 @@
     "availableLayers.legend.removal": "Märkt för borttagning",
     "groups.internalName": "Internt namn",
     "groups.type": "Typ av grupp",
+    "groups.layers": "Lager",
+    "groups.layersHelp": "Välj lager som ska läggas till i gruppen direkt. Listan filtreras utifrån grupptyp.",
     "groups.search": "Sök bland grupper...",
     "groupType": {
       "LAYER": "Lager",

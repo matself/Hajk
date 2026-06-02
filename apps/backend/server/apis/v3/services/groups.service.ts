@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { GroupType, Prisma, UseType } from "@prisma/client";
 
 import log4js from "log4js";
 import prisma from "../../../common/prisma.ts";
@@ -8,6 +8,20 @@ import {
 } from "../utils/layer-instance.ts";
 
 const logger = log4js.getLogger("service.v3.layer");
+
+interface GroupLayerCreateInput {
+  layerId: string;
+  usage?: UseType;
+  infoClickActive?: boolean;
+  visibleAtStart?: boolean;
+  zIndex?: number;
+  options?: Prisma.InputJsonValue;
+}
+
+interface GroupCreateData extends Omit<Prisma.GroupCreateInput, "layers"> {
+  layers?: GroupLayerCreateInput[];
+  type?: GroupType;
+}
 
 class GroupsService {
   constructor() {
@@ -61,14 +75,30 @@ class GroupsService {
 
     return maps;
   }
-  async createGroup(data: Prisma.GroupCreateInput, userId?: string) {
+  async createGroup(data: GroupCreateData, userId?: string) {
+    const { layers = [], ...groupData } = data;
+    const groupType = groupData.type ?? GroupType.Layer;
+    const layerInstances = layers.map((layer) => ({
+      usage: layer.usage ?? UseType.FOREGROUND,
+      infoClickActive: layer.infoClickActive ?? true,
+      visibleAtStart: layer.visibleAtStart ?? false,
+      zIndex: layer.zIndex ?? 0,
+      options: layer.options ?? {},
+      ...(groupType === GroupType.Search
+        ? { searchLayerId: layer.layerId }
+        : { displayLayerId: layer.layerId }),
+    }));
+
     return await prisma.group.create({
       data: {
-        ...data,
+        ...groupData,
         createdBy: userId,
         createdDate: new Date(),
         lastSavedBy: userId,
         lastSavedDate: new Date(),
+        ...(layerInstances.length > 0 && {
+          layers: { create: layerInstances },
+        }),
       },
     });
   }

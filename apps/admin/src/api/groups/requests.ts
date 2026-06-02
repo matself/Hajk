@@ -112,18 +112,13 @@ export const getMapsByGroupId = async (groupId: string): Promise<Map[]> => {
   }
 };
 
-export const createGroup = async (
-  newGroup: GroupCreateInput
-): Promise<GroupCreateInput> => {
+export const createGroup = async (newGroup: GroupCreateInput): Promise<Group> => {
   const internalApiClient = getApiClient();
   if (!newGroup.name) {
     newGroup.name = generateRandomName();
   }
   try {
-    const response = await internalApiClient.post<GroupCreateInput>(
-      "/groups",
-      newGroup
-    );
+    const response = await internalApiClient.post<Group>("/groups", newGroup);
     if (!response.data) {
       throw new Error("No group data found");
     }
@@ -131,9 +126,7 @@ export const createGroup = async (
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to create group. ErrorId: ${axiosError.response.data.errorId}.`
-      );
+      throw axiosError;
     } else {
       throw new Error("Failed to create group");
     }

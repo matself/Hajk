@@ -565,6 +565,8 @@
     "availableLayers.legend.removal": "Marked for Removal",
     "groups.internalName": "Internal name",
     "groups.type": "Type of group",
+    "groups.layers": "Layers",
+    "groups.layersHelp": "Select layers to add to the group directly. The list is filtered by group type.",
     "groups.search": "Search groups...",
     "groupType": {
       "LAYER": "Layer",

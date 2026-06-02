@@ -21,13 +21,19 @@ export interface GroupCreateInput {
   id?: string;
   name: string;
   internalName?: string;
-  type: string;
+  type: GroupType;
+  layers?: GroupLayerCreateInput[];
 }
 
 export interface GroupUpdateInput {
   name?: string;
   internalName?: string;
   type?: string;
+}
+
+export interface GroupLayerCreateInput {
+  layerId: string;
+  usage: "BACKGROUND" | "FOREGROUND";
 }
 
 export enum GroupType {
