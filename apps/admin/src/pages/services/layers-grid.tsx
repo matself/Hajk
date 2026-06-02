@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Box,
@@ -36,6 +36,7 @@ import LayerKindBadge from "../layers/components/layer-kind-badge";
 import LayerKindSelect from "../layers/components/layer-kind-select";
 import {
   getLayerSettingsPath,
+  getSelectableLayerCategories,
   LAYER_CATEGORIES,
   LAYER_CATEGORY_I18N_KEYS,
   LayerCategory,
@@ -67,6 +68,7 @@ function LayersGrid({
   layers,
   workspaces,
   serviceId,
+  serviceType,
   isError,
   isLoading,
   onRetry,
@@ -102,6 +104,31 @@ function LayersGrid({
       return { page: 0, pageSize };
     });
   const navigate = useNavigate();
+
+  // `serviceType` comes from legacy admin data models where some values are not
+  // strongly typed. We only need the string enum value here to control which
+  // layer kinds can be selected.
+  const serviceTypeValue = serviceType as unknown as string | undefined;
+
+  const selectableLayerCategories = useMemo(
+    () => getSelectableLayerCategories(serviceTypeValue),
+    [serviceTypeValue],
+  );
+
+  useEffect(() => {
+    if (!selectableLayerCategories.includes(publishLayerKind)) {
+      setPublishLayerKind(selectableLayerCategories[0]);
+    }
+  }, [selectableLayerCategories, publishLayerKind]);
+
+  const handleOpenPublishDialog = () => {
+    setPublishLayerKind((current) =>
+      selectableLayerCategories.includes(current)
+        ? current
+        : selectableLayerCategories[0],
+    );
+    setOpen(true);
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -373,7 +400,7 @@ function LayersGrid({
         }}
       >
         <Typography variant="h6">{t("services.publishedLayers")}</Typography>
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button variant="contained" onClick={handleOpenPublishDialog}>
           {hasExistingLayers
             ? t("services.publishLayerAction")
             : t("services.publishLayer")}
@@ -488,6 +515,7 @@ function LayersGrid({
                 value={publishLayerKind}
                 onChange={setPublishLayerKind}
                 labelKey="layers.publishAs"
+                serviceType={serviceTypeValue}
               />
               <TextField
                 sx={{

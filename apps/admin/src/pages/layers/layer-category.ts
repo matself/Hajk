@@ -116,6 +116,23 @@ export const LAYER_CATEGORIES: LayerCategory[] = [
   "editing",
 ];
 
+/** Layer kinds that can be published for a given OGC / vector service type. */
+export function getSelectableLayerCategories(
+  serviceType?: string,
+): LayerCategory[] {
+  switch (serviceType) {
+    case "WFST":
+      return ["editing"];
+    case "WMS":
+    case "WMTS":
+    case "VECTOR":
+    case "WFS":
+      return ["display", "search"];
+    default:
+      return LAYER_CATEGORIES;
+  }
+}
+
 const CATEGORY_ROUTE: Record<LayerCategory, string> = {
   display: "/display-layers",
   search: "/search-layers",

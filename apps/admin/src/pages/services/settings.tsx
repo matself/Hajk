@@ -894,6 +894,7 @@ export default function ServiceSettings() {
                 layers={getCapLayers}
                 workspaces={getCapWorkspaces}
                 serviceId={service.id}
+                serviceType={service.type}
                 isError={layersError}
                 isLoading={layersLoading}
                 onRetry={() => void refetchLayers()}
