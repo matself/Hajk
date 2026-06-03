@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Client: DocumentHandler - Fixed maplink and link not being triggered when opening a document via search results. [#1833](https://github.com/hajkmap/Hajk/issues/1833)
 - Backend: Prevent path traversal in v2 map config loading by validating map names before reading files (`js/path-injection`, [code scanning alert #53](https://github.com/hajkmap/Hajk/security/code-scanning/53)).
 - Client: LayerSwitcher - Fixed vertical alignment of list items when using icons in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client: LayerSwitcher - Removed redundant (i) icon next to the "Info" label in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
