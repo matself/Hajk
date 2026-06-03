@@ -158,8 +158,8 @@ export default function ServiceSettings() {
     reset,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
-    mode: "onBlur",
-    reValidateMode: "onBlur",
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   // Reset form with service data when it loads

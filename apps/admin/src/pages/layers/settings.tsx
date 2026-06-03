@@ -389,8 +389,8 @@ export default function LayerSettings() {
     getValues,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
-    mode: "onBlur",
-    reValidateMode: "onBlur",
+    mode: "onChange",
+    reValidateMode: "onChange",
     values: formBaseline ?? undefined,
   });
 
