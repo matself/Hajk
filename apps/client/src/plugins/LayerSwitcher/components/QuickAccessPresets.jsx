@@ -488,13 +488,18 @@ function QuickAccessPresets({
             }),
           })}
         >
-          <Stack direction="row" alignItems="center">
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: "center",
+            }}
+          >
             <HajkToolTip
               open={tooltipOpen}
               onClose={handleClose}
               onOpen={handleOpen}
               title="Tillbaka"
-              TransitionProps={{ timeout: 0 }}
+              slotProps={{ transition: { timeout: 0 } }}
             >
               <LsIconButton
                 id="quick-access-back-button"
@@ -592,13 +597,17 @@ function QuickAccessPresets({
                       secondary={l.author}
                       slotProps={{
                         primary: {
-                          pr: 5,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          sx: {
+                            pr: 5,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
                         },
                         secondary: {
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          sx: {
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
                         },
                       }}
                     />

@@ -98,13 +98,18 @@ function FavoritesViewHeader({
       })}
       onClick={(e) => e.stopPropagation()}
     >
-      <Stack direction="row" alignItems="center">
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: "center",
+        }}
+      >
         <HajkToolTip
           open={tooltipOpen}
           onClose={handleClose}
           onOpen={handleOpen}
           title="Tillbaka"
-          TransitionProps={{ timeout: 0 }}
+          slotProps={{ transition: { timeout: 0 } }}
         >
           <IconButton
             id="favorites-list-back-button"
