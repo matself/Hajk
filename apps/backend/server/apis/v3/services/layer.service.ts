@@ -14,6 +14,7 @@ import {
   capabilityModeForServiceType,
   fetchRemoteCapabilityLayerNames,
 } from "../utils/remote-service-capabilities.ts";
+import { activeLayerInstanceWhere } from "../utils/layer-instance.ts";
 
 const logger = log4js.getLogger("service.v3.layer");
 
@@ -705,6 +706,61 @@ class LayerService {
       where: { id, deletedAt: null },
       data: { deletedAt, lastSavedDate: deletedAt },
     });
+  }
+
+  async getUsageSummary(): Promise<
+    Record<string, { mapCount: number; mapNames: string[] }>
+  > {
+    const instances = await prisma.layerInstance.findMany({
+      where: activeLayerInstanceWhere,
+      select: {
+        displayLayerId: true,
+        searchLayerId: true,
+        editingLayerId: true,
+        map: { select: { name: true } },
+        group: {
+          select: {
+            maps: { select: { mapName: true } },
+          },
+        },
+      },
+    });
+
+    const mapNamesByLayerId = new Map<string, Set<string>>();
+
+    for (const instance of instances) {
+      const layerId =
+        instance.displayLayerId ??
+        instance.searchLayerId ??
+        instance.editingLayerId;
+      if (!layerId) continue;
+
+      const mapNames = mapNamesByLayerId.get(layerId) ?? new Set<string>();
+
+      if (instance.map?.name) {
+        mapNames.add(instance.map.name);
+      }
+
+      for (const groupMap of instance.group?.maps ?? []) {
+        if (groupMap.mapName) {
+          mapNames.add(groupMap.mapName);
+        }
+      }
+
+      mapNamesByLayerId.set(layerId, mapNames);
+    }
+
+    const summary: Record<string, { mapCount: number; mapNames: string[] }> =
+      {};
+    for (const [layerId, mapNames] of mapNamesByLayerId) {
+      const sortedNames = [...mapNames].sort((a, b) => a.localeCompare(b));
+      summary[layerId] = {
+        mapCount: sortedNames.length,
+        mapNames: sortedNames,
+      };
+    }
+
+    return summary;
   }
 
   async getUsageByLayerId(id: string) {

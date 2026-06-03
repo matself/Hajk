@@ -12,6 +12,7 @@ import {
   LayerUpdateInput,
   RoleOnLayer,
   LayerUsage,
+  LayerUsageSummaryEntry,
 } from "./types";
 import {
   getLayers,
@@ -25,6 +26,7 @@ import {
   createAndUpdateRoleOnLayer,
   getRoleOnLayerByLayerId,
   getLayerUsage,
+  getLayersUsageSummary,
 } from "./requests";
 import { Service, useServiceCapabilities, SERVICE_TYPE } from "../services";
 
@@ -87,6 +89,7 @@ export const useCreateLayer = (serviceId: string) => {
     mutationFn: createLayer,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["layers"] });
+      void queryClient.invalidateQueries({ queryKey: ["layersUsageSummary"] });
       void queryClient.invalidateQueries({
         queryKey: ["services", "layers", serviceId],
       });
@@ -112,6 +115,7 @@ export const useUpdateLayer = () => {
     onSuccess: (data, { layerId }) => {
       queryClient.setQueryData(["layers", layerId], data);
       void queryClient.invalidateQueries({ queryKey: ["layers"] });
+      void queryClient.invalidateQueries({ queryKey: ["layersUsageSummary"] });
       void queryClient.invalidateQueries({ queryKey: ["services", "layers"] });
     },
     onError: (error) => {
@@ -128,6 +132,7 @@ export const useDeleteLayer = (serviceId: string) => {
     mutationFn: (layerId: string) => deleteLayer(layerId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["layers"] });
+      void queryClient.invalidateQueries({ queryKey: ["layersUsageSummary"] });
       void queryClient.invalidateQueries({
         queryKey: ["services", "layers", serviceId],
       });
@@ -143,6 +148,15 @@ export const useLayerUsage = (layerId: string): UseQueryResult<LayerUsage[]> => 
     queryKey: ["layerUsage", layerId],
     queryFn: () => getLayerUsage(layerId),
     enabled: Boolean(layerId),
+  });
+};
+
+export const useLayersUsageSummary = (): UseQueryResult<
+  Record<string, LayerUsageSummaryEntry>
+> => {
+  return useQuery({
+    queryKey: ["layersUsageSummary"],
+    queryFn: getLayersUsageSummary,
   });
 };
 

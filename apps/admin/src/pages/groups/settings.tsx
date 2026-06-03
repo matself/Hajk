@@ -11,7 +11,6 @@ import {
   FormControlLabel,
   List,
   ListItem,
-  ListItemText,
   MenuItem,
   TextField,
   Typography,
@@ -53,6 +52,7 @@ import { toast } from "react-toastify";
 import DialogWrapper from "../../components/flexible-dialog";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
+import UsedInMapsPanel from "../../components/used-in-maps-panel";
 import FormFieldGrid from "../../components/form-components/form-field-grid";
 import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
 
@@ -520,23 +520,11 @@ function GroupSettings() {
                 </Grid>
               </FormFieldGrid>
             </FormPanel>
-            <FormPanel title={t("common.usedInMaps")}>
-              {isLoadingMaps ? (
-                <Typography>{t("common.loading")}</Typography>
-              ) : maps.length > 0 ? (
-                <List dense>
-                  {maps.map((map) => (
-                    <ListItem key={map.id}>
-                      <ListItemText primary={map.name} />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography color="text.secondary">
-                  {t("groups.usedInMapsNone")}
-                </Typography>
-              )}
-            </FormPanel>
+            <UsedInMapsPanel
+              rows={maps.map((map) => ({ id: map.id, map: map.name }))}
+              isLoading={isLoadingMaps}
+              emptyMessage={t("groups.usedInMapsNone")}
+            />
           </FormContainer>
         </Box>
 

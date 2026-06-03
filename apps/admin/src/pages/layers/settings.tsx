@@ -33,7 +33,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import TuneIcon from "@mui/icons-material/Tune";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import LayersIcon from "@mui/icons-material/Layers";
-import MapIcon from "@mui/icons-material/Map";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
@@ -147,7 +146,6 @@ const ALL_SETTINGS_TABS: {
     labelKey: "layers.availableLayers",
     icon: <LayersIcon />,
   },
-  { key: "maps", labelKey: "common.usedInMaps", icon: <MapIcon /> },
   {
     key: "search",
     labelKey: "common.searchSettings",
@@ -1402,6 +1400,8 @@ export default function LayerSettings() {
                 </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
+
+            {layerId && <UsedInMapsGrid layerId={layerId} />}
           </Box>
 
           <Box sx={{ display: showDisplayTab ? "block" : "none" }}>
@@ -2818,11 +2818,6 @@ export default function LayerSettings() {
             </Box>
           )}
 
-          {activeTab === "maps" && (
-            <Box>
-              <UsedInMapsGrid layerId={layerId ?? ""} />
-            </Box>
-          )}
         </FormContainer>
       </FormActionPanel>
       <LayerInfoClickModal
