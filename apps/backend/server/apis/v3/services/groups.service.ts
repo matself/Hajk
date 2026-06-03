@@ -9,7 +9,23 @@ import {
 
 const logger = log4js.getLogger("service.v3.layer");
 
-interface GroupLayerCreateInput {
+export type LayerSwitcherTreeNode =
+  | { type: "layer"; id: string }
+  | { type: "group"; id: string; name: string; children: LayerSwitcherTreeNode[] };
+
+const LAYER_SWITCHER_TREE_OPTIONS_KEY = "layerSwitcherTree";
+
+function omitLayerSwitcherTree(
+  options: Record<string, unknown>
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(options).filter(
+      ([key]) => key !== LAYER_SWITCHER_TREE_OPTIONS_KEY
+    )
+  );
+}
+
+interface GroupLayerInput {
   layerId: string;
   usage?: UseType;
   infoClickActive?: boolean;
@@ -18,10 +34,74 @@ interface GroupLayerCreateInput {
   options?: Prisma.InputJsonValue;
 }
 
-interface GroupCreateData extends Omit<Prisma.GroupCreateInput, "layers"> {
-  layers?: GroupLayerCreateInput[];
+interface RoleOnGroupInput {
+  roleId: string;
+}
+
+interface GroupWriteData
+  extends Omit<Prisma.GroupCreateInput, "layers" | "restrictedToRoles"> {
+  layers?: GroupLayerInput[];
+  layerSwitcherTree?: LayerSwitcherTreeNode[];
+  restrictedToRoles?: RoleOnGroupInput[];
   type?: GroupType;
 }
+
+function extractLayerSwitcherTree(
+  options: Prisma.JsonValue | null | undefined
+): LayerSwitcherTreeNode[] | undefined {
+  if (!options || typeof options !== "object" || Array.isArray(options)) {
+    return undefined;
+  }
+  const tree = (options as Record<string, unknown>)[
+    LAYER_SWITCHER_TREE_OPTIONS_KEY
+  ];
+  return Array.isArray(tree) ? (tree as LayerSwitcherTreeNode[]) : undefined;
+}
+
+function buildLayerInstanceOptions(
+  layer: GroupLayerInput,
+  index: number,
+  layerSwitcherTree?: LayerSwitcherTreeNode[]
+): Prisma.InputJsonValue {
+  const base =
+    layer.options && typeof layer.options === "object" && !Array.isArray(layer.options)
+      ? { ...(layer.options as Record<string, unknown>) }
+      : {};
+
+  if (index === 0 && layerSwitcherTree?.length) {
+    return {
+      ...base,
+      [LAYER_SWITCHER_TREE_OPTIONS_KEY]: layerSwitcherTree,
+    };
+  }
+
+  if (LAYER_SWITCHER_TREE_OPTIONS_KEY in base) {
+    return omitLayerSwitcherTree(base);
+  }
+
+  return base;
+}
+
+const buildLayerInstances = (
+  layers: GroupLayerInput[],
+  groupType: GroupType,
+  layerSwitcherTree?: LayerSwitcherTreeNode[]
+) =>
+  layers.map((layer, index) => ({
+    usage: layer.usage ?? UseType.FOREGROUND,
+    infoClickActive: layer.infoClickActive ?? true,
+    visibleAtStart: layer.visibleAtStart ?? false,
+    zIndex: layer.zIndex ?? index,
+    options: buildLayerInstanceOptions(layer, index, layerSwitcherTree),
+    ...(groupType === GroupType.Search
+      ? { searchLayerId: layer.layerId }
+      : { displayLayerId: layer.layerId }),
+  }));
+
+const buildRoleConnections = (roles: RoleOnGroupInput[]) =>
+  roles.map((role) => ({
+    role: { connect: { id: role.roleId } },
+  }));
 
 class GroupsService {
   constructor() {
@@ -35,6 +115,11 @@ class GroupsService {
   async getGroupById(id: string) {
     const group = await prisma.group.findUnique({
       where: { id },
+      include: {
+        restrictedToRoles: {
+          include: { role: true },
+        },
+      },
     });
 
     return group;
@@ -46,22 +131,51 @@ class GroupsService {
         AND: [{ groupId: id }, activeLayerInstanceWhere],
       },
       include: layerInstanceIncludeAll,
+      orderBy: { zIndex: "asc" },
     });
 
-    return instances
+    let layerSwitcherTree: LayerSwitcherTreeNode[] | undefined;
+
+    for (const instance of instances) {
+      const tree = extractLayerSwitcherTree(instance.options);
+      if (tree?.length) {
+        layerSwitcherTree = tree;
+        break;
+      }
+    }
+
+    const layers = instances
       .map((instance) => {
-        if (instance.displayLayer) {
-          return { ...instance.displayLayer, layerKind: "display" as const };
-        }
-        if (instance.searchLayer) {
-          return { ...instance.searchLayer, layerKind: "search" as const };
-        }
-        if (instance.editingLayer) {
-          return { ...instance.editingLayer, layerKind: "editing" as const };
-        }
-        return null;
+
+        const placementOptions =
+          instance.options &&
+          typeof instance.options === "object" &&
+          !Array.isArray(instance.options)
+            ? { ...(instance.options as Record<string, unknown>) }
+            : {};
+
+        const cleanedPlacementOptions = omitLayerSwitcherTree(placementOptions);
+
+        const baseLayer = instance.displayLayer
+          ? { ...instance.displayLayer, layerKind: "display" as const }
+          : instance.searchLayer
+            ? { ...instance.searchLayer, layerKind: "search" as const }
+            : instance.editingLayer
+              ? { ...instance.editingLayer, layerKind: "editing" as const }
+              : null;
+
+        if (!baseLayer) return null;
+
+        return {
+          ...baseLayer,
+          drawOrder: instance.zIndex,
+          visibleAtStart: instance.visibleAtStart,
+          placementOptions: cleanedPlacementOptions,
+        };
       })
       .filter((layer): layer is NonNullable<typeof layer> => layer !== null);
+
+    return { layers, layerSwitcherTree };
   }
 
   async getMapsByGroupId(id: string) {
@@ -75,19 +189,20 @@ class GroupsService {
 
     return maps;
   }
-  async createGroup(data: GroupCreateData, userId?: string) {
-    const { layers = [], ...groupData } = data;
+  async createGroup(data: GroupWriteData, userId?: string) {
+    const {
+      layers = [],
+      layerSwitcherTree,
+      restrictedToRoles = [],
+      ...groupData
+    } = data;
     const groupType = groupData.type ?? GroupType.Layer;
-    const layerInstances = layers.map((layer) => ({
-      usage: layer.usage ?? UseType.FOREGROUND,
-      infoClickActive: layer.infoClickActive ?? true,
-      visibleAtStart: layer.visibleAtStart ?? false,
-      zIndex: layer.zIndex ?? 0,
-      options: layer.options ?? {},
-      ...(groupType === GroupType.Search
-        ? { searchLayerId: layer.layerId }
-        : { displayLayerId: layer.layerId }),
-    }));
+    const layerInstances = buildLayerInstances(
+      layers,
+      groupType,
+      layerSwitcherTree
+    );
+    const roleConnections = buildRoleConnections(restrictedToRoles);
 
     return await prisma.group.create({
       data: {
@@ -99,20 +214,56 @@ class GroupsService {
         ...(layerInstances.length > 0 && {
           layers: { create: layerInstances },
         }),
+        ...(roleConnections.length > 0 && {
+          restrictedToRoles: { create: roleConnections },
+        }),
       },
     });
   }
   async updateGroup(
     id: string,
-    data: Prisma.GroupUpdateInput,
+    data: GroupWriteData,
     userId?: string
   ) {
+    const { layers, layerSwitcherTree, restrictedToRoles, ...groupData } = data;
+    const existingGroup =
+      layers !== undefined
+        ? await prisma.group.findUnique({ where: { id } })
+        : null;
+    const groupType =
+      groupData.type ?? existingGroup?.type ?? GroupType.Layer;
+    const layerInstances =
+      layers !== undefined
+        ? buildLayerInstances(layers, groupType, layerSwitcherTree)
+        : undefined;
+    const roleConnections =
+      restrictedToRoles !== undefined
+        ? buildRoleConnections(restrictedToRoles)
+        : undefined;
+
     return await prisma.group.update({
       where: { id },
       data: {
-        ...data,
+        ...groupData,
         lastSavedBy: userId,
         lastSavedDate: new Date(),
+        ...(layerInstances !== undefined && {
+          layers: {
+            deleteMany: {},
+            create: layerInstances,
+          },
+        }),
+        ...(roleConnections !== undefined && {
+          restrictedToRoles: {
+            deleteMany: {},
+            create: roleConnections,
+          },
+        }),
+      },
+      include: {
+        restrictedToRoles: {
+          include: { role: true },
+        },
       },
     });
   }

@@ -4,7 +4,7 @@ import {
   GroupCreateInput,
   GroupUpdateInput,
 } from "./types";
-import { Layer, LayersApiResponse } from "../layers";
+import { GroupLayersApiResponse } from "./types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 import { GlobalMapsApiResponse } from "../tools";
 import { Map } from "../maps";
@@ -66,16 +66,18 @@ export const getGroupById = async (groupId: string): Promise<Group> => {
   }
 };
 
-export const getLayersByGroupId = async (groupId: string): Promise<Layer[]> => {
+export const getLayersByGroupId = async (
+  groupId: string
+): Promise<GroupLayersApiResponse> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<LayersApiResponse>(
+    const response = await internalApiClient.get<GroupLayersApiResponse>(
       `/groups/${groupId}/layers`
     );
     if (!response.data) {
       throw new Error("No layers data found");
     }
-    return response.data.layers;
+    return response.data;
   } catch (error) {
     const axiosError = error as InternalApiError;
 
@@ -136,7 +138,7 @@ export const createGroup = async (newGroup: GroupCreateInput): Promise<Group> =>
 export const updateGroup = async (
   groupId: string,
   data: GroupUpdateInput
-): Promise<GroupUpdateInput> => {
+): Promise<Group> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.patch<Group>(

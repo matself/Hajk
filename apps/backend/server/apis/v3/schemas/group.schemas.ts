@@ -37,6 +37,7 @@ export const GroupCreateSchema = z.object({
   type: GroupTypeSchema.default("Layer"),
   locked: z.boolean().default(false),
   layers: z.array(LayerInstanceSchema).optional(),
+  layerSwitcherTree: z.array(z.record(z.string(), z.unknown())).optional(),
   maps: z.array(GroupsOnMapsSchema).optional(),
   restrictedToRoles: z.array(RoleOnGroupSchema).optional(),
 });
@@ -57,6 +58,7 @@ export const GroupUpdateSchema = z.object({
   type: GroupTypeSchema.optional(),
   locked: z.boolean().optional(),
   layers: z.array(LayerInstanceSchema).optional(),
+  layerSwitcherTree: z.array(z.record(z.string(), z.unknown())).optional(),
   maps: z.array(GroupsOnMapsSchema).optional(),
   restrictedToRoles: z.array(RoleOnGroupSchema).optional(),
 });

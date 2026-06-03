@@ -25,8 +25,13 @@ class GroupsController {
   }
 
   async getLayersByGroupId(req: Request, res: Response) {
-    const layers = await GroupsService.getLayersByGroupId(req.params.id);
-    res.status(HttpStatusCodes.OK).json({ count: layers.length, layers });
+    const { layers, layerSwitcherTree } =
+      await GroupsService.getLayersByGroupId(req.params.id);
+    res.status(HttpStatusCodes.OK).json({
+      count: layers.length,
+      layers,
+      layerSwitcherTree,
+    });
   }
 
   async getMapsByGroupId(req: Request, res: Response) {
