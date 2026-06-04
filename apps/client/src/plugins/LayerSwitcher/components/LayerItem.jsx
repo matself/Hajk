@@ -131,7 +131,7 @@ function LayerItem({
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const applyLabelStyle = useCallback(() => {
     if (!olLayer) return;
-    if (allSubLayers?.length) return; // Group layers handle labels per-sublayer
+    if (olLayer.get("allSubLayers")?.length > 1) return; // Multi-sublayer group layers handle labels per-sublayer
 
     const source = olLayer.getSource?.();
     if (!source || typeof source.updateParams !== "function") return;
@@ -151,7 +151,7 @@ function LayerItem({
       LAYERS: layerName,
       STYLES: isActive ? `${layerName}_labels` : baseStyle,
     });
-  }, [olLayer, layerId, allSubLayers]);
+  }, [olLayer]);
 
   const toggleLabelLayer = (e) => {
     e.stopPropagation();
@@ -431,12 +431,15 @@ function LayerItem({
               }}
             >
               {renderStatusIcon()}
-              {layerInfo?.hasLabelStyle && !allSubLayers?.length && (
-                <BtnToggleLayerLabel
-                  active={showingLabelLayer}
-                  onClick={toggleLabelLayer}
-                />
-              )}
+              {!(allSubLayers?.length > 1) &&
+                (layerInfo?.hasLabelStyle ||
+                  layerInfo?.layersInfo?.[allSubLayers?.[0]]
+                    ?.hasLabelStyle) && (
+                  <BtnToggleLayerLabel
+                    active={showingLabelLayer}
+                    onClick={toggleLabelLayer}
+                  />
+                )}
               {!toggleable && !draggable ? (
                 <LsIconButton size="small">
                   <HajkToolTip title="Bakgrundskartan ligger låst längst ner i ritordningen">

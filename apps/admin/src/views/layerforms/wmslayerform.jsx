@@ -512,6 +512,31 @@ class WMSLayerForm extends Component {
           </div>
         </div>
 
+        <div className="form-row split0">
+          <div>
+            <label>Har etikettstil (se issue #1842)</label>
+          </div>
+          <div>
+            <input
+              id="hasLabelStyle"
+              type="checkbox"
+              checked={layerInfo.hasLabelStyle || false}
+              onChange={(e) => {
+                let addedLayersInfo = this.state.addedLayersInfo;
+                addedLayersInfo[layerInfo.id].hasLabelStyle = e.target.checked;
+                this.setState(
+                  {
+                    addedLayersInfo: addedLayersInfo,
+                  },
+                  () => {
+                    this.renderLayerInfoDialog(layerInfo);
+                  },
+                );
+              }}
+            />
+          </div>
+        </div>
+
         <div className="separator">Infoklick</div>
 
         <div className="form-row split0">
@@ -526,30 +551,6 @@ class WMSLayerForm extends Component {
               onChange={(e) => {
                 let addedLayersInfo = this.state.addedLayersInfo;
                 addedLayersInfo[layerInfo.id].queryable = e.target.checked;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  },
-                );
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-row split0">
-          <div>
-            <label>Har etikettstil</label>
-          </div>
-          <div>
-            <input
-              id="hasLabelStyle"
-              type="checkbox"
-              checked={layerInfo.hasLabelStyle || false}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].hasLabelStyle = e.target.checked;
                 this.setState(
                   {
                     addedLayersInfo: addedLayersInfo,
@@ -1387,7 +1388,6 @@ class WMSLayerForm extends Component {
       visibleAtStart: this.getValue("visibleAtStart"),
       tiled: this.getValue("tiled"),
       showAttributeTableButton: this.getValue("showAttributeTableButton"),
-      hasLabelStyle: this.getValue("hasLabelStyle"),
       opacity: this.getValue("opacity"),
       maxZoom: this.getValue("maxZoom"),
       minZoom: this.getValue("minZoom"),
@@ -1469,7 +1469,6 @@ class WMSLayerForm extends Component {
       value = parseFloat(Number(value).toFixed(2));
     if (fieldName === "tiled") value = input.checked;
     if (fieldName === "showAttributeTableButton") value = input.checked;
-    if (fieldName === "hasLabelStyle") value = input.checked;
     if (fieldName === "layers") value = format_layers(this.state.addedLayers);
     if (fieldName === "layersInfo")
       value = format_layers_info(this.state.addedLayersInfo);
@@ -1987,26 +1986,6 @@ class WMSLayerForm extends Component {
               className="fa fa-question-circle"
               data-toggle="tooltip"
               title="Visar knappen för att visa lagrets attributtabell. Se även GitHub, issue #595."
-            />
-          </label>
-        </div>
-        <div>
-          <input
-            type="checkbox"
-            ref="input_hasLabelStyle"
-            id="input_hasLabelStyle"
-            onChange={(e) => {
-              this.setState({ hasLabelStyle: e.target.checked });
-            }}
-            checked={this.state.hasLabelStyle}
-          />
-          &nbsp;
-          <label htmlFor="input_hasLabelStyle">
-            Har etikettstil (måste sluta på "_labels"){" "}
-            <i
-              className="fa fa-question-circle"
-              data-toggle="tooltip"
-              title="Aktivera om lagret har en tillhörande etikettstil i WMS:en, där namnet på stilen är samma som lagret med tillägget '_labels'. Exempelvis: 'mystyle' och 'mystyle_labels'. Se issue #1816."
             />
           </label>
         </div>
