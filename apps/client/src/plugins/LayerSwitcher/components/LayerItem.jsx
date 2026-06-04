@@ -131,6 +131,7 @@ function LayerItem({
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const applyLabelStyle = useCallback(() => {
     if (!olLayer) return;
+    if (allSubLayers?.length) return; // Group layers handle labels per-sublayer
 
     const source = olLayer.getSource?.();
     if (!source || typeof source.updateParams !== "function") return;
@@ -150,7 +151,7 @@ function LayerItem({
       LAYERS: layerName,
       STYLES: isActive ? `${layerName}_labels` : baseStyle,
     });
-  }, [olLayer, layerId]);
+  }, [olLayer, layerId, allSubLayers]);
 
   const toggleLabelLayer = (e) => {
     e.stopPropagation();
