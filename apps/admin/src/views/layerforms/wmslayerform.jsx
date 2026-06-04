@@ -286,6 +286,7 @@ class WMSLayerForm extends Component {
             style: "",
             queryable: true,
             infoclickIcon: "",
+            hasLabelStyle: false,
           };
         });
       }
@@ -525,6 +526,30 @@ class WMSLayerForm extends Component {
               onChange={(e) => {
                 let addedLayersInfo = this.state.addedLayersInfo;
                 addedLayersInfo[layerInfo.id].queryable = e.target.checked;
+                this.setState(
+                  {
+                    addedLayersInfo: addedLayersInfo,
+                  },
+                  () => {
+                    this.renderLayerInfoDialog(layerInfo);
+                  },
+                );
+              }}
+            />
+          </div>
+        </div>
+        <div className="form-row split0">
+          <div>
+            <label>Har etikettstil</label>
+          </div>
+          <div>
+            <input
+              id="hasLabelStyle"
+              type="checkbox"
+              checked={layerInfo.hasLabelStyle || false}
+              onChange={(e) => {
+                let addedLayersInfo = this.state.addedLayersInfo;
+                addedLayersInfo[layerInfo.id].hasLabelStyle = e.target.checked;
                 this.setState(
                   {
                     addedLayersInfo: addedLayersInfo,
@@ -856,6 +881,7 @@ class WMSLayerForm extends Component {
           style: "",
           queryable: true,
           infoclickIcon: "",
+          hasLabelStyle: false,
         };
       }
     });

@@ -12,6 +12,7 @@ import LegendImage from "./LegendImage";
 
 import BtnShowDetails from "./BtnShowDetails";
 import BtnShowLegend from "./BtnShowLegend";
+import BtnToggleLayerLabel from "./BtnToggleLayerLabel";
 import LsCheckBox from "./LsCheckBox";
 
 export default function SubLayerItem({
@@ -23,6 +24,9 @@ export default function SubLayerItem({
   visible,
   toggleSubLayer,
   zoomVisible,
+  hasLabelStyle,
+  labelActive,
+  onToggleLabel,
 }) {
   const layersInfo = layerConfig.layerInfo.layersInfo;
   const subLayerInfo = layersInfo[subLayer];
@@ -113,8 +117,18 @@ export default function SubLayerItem({
             top: "1px",
             paddingTop: "3px",
             transform: "none",
+            display: "flex",
           }}
         >
+          {hasLabelStyle && (
+            <BtnToggleLayerLabel
+              active={labelActive}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLabel(subLayer);
+              }}
+            />
+          )}
           <BtnShowDetails onClick={(e) => showLayerDetails(e)} />
         </ListItemSecondaryAction>
       </ListItemButton>
