@@ -218,14 +218,17 @@ const LayerGroup = ({
           <div style={{ width: "100%", display: "flex", flexDirection: "row" }}>
             <ListItemText
               style={{ flex: 1 }}
+              sx={{ alignSelf: "center", pt: "1px" }}
               primary={name}
               slotProps={{
                 primary: {
-                  pb: "2px", // jesade-vbg compact mode, added line.
-                  py: groupIsToggable ? 0 : getIsMobile() ? "3px" : "1px", // jesade-vbg compact mode
-                  pl: groupIsToggable ? 0 : "3px",
                   variant: "body1",
-                  fontWeight: isToggled || isSemiToggled ? "bold" : "inherit",
+                  sx: {
+                    pb: "2px", // jesade-vbg compact mode, added line.
+                    py: groupIsToggable ? 0 : getIsMobile() ? "3px" : "1px", // jesade-vbg compact mode
+                    pl: groupIsToggable ? 0 : "3px",
+                    fontWeight: isToggled || isSemiToggled ? "bold" : "inherit",
+                  },
                 },
               }}
             />

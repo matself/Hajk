@@ -33,7 +33,7 @@
     "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "log4js": "^6.9.1",
-    "write-excel-file": "^3.0.8"
+    "write-excel-file": "^4.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9",

@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking
 
 - Client: PropertyChecker got a substantial overhaul, including changing the format requirements for the underlying WMS layer. See [#1761](https://github.com/hajkmap/Hajk/issues/1761) as well as the tool's updated [README.md](https://github.com/hajkmap/Hajk/blob/f1bdbb77aff736df0675dc1e65234ec8be9ed3aa/apps/client/src/plugins/PropertyChecker/readme.md).
+- Client: InfoDialog - because this plugin now internally uses the LocalStorageHelper, existing settings already stored in user's LocalStorage under the old key will not be respected. In practice this means user will (once again) see any dialog where `visibleAtStart` and `showOnlyOnce` are set to `true`. This will happen once only. After this render, the `alreadyShown` value is written using the LocalStorageHelper and is respected in future renders.
 
 ### Added
 
+- Client + Admin: LayerSwitcher - Added a new admin setting "Visa teckenförklaring direkt" that forces the legend to be expanded by default in the layer details view, so users don't have to click the legend button. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client + Admin: DocumentHandler - Added a "Direct Print" setting that prints the currently active document directly without showing the document selection dialog [#1773](https://github.com/hajkmap/Hajk/issues/1773)
 - Client: Infoclick - Functionality to hide links that point to non-existing resources [#1804](https://github.com/hajkmap/Hajk/issues/1804)
 - Client: LayerComparer - Added the long-awaited spy glass mode [#1808](https://github.com/hajkmap/Hajk/issues/1808)
@@ -23,16 +25,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Better WMTS Support [#1795](https://github.com/hajkmap/Hajk/issues/1795)
 - Client: LayerSwitcher - it is possible to add an additional style to WMS layers that contains feature labels. A button in the LayerSwitcher allows user to control labels' visibility for such a layer. [#1816](https://github.com/hajkmap/Hajk/issues/1816)
 - Client + Admin: DocumentHandler — Added support for embedding external content via iframes, such as Microsoft Power BI reports, directly in documents.
+- Client: PropertyChecker - There's now a new option, `showToggleAllCheckLayers` that can add a toggle all button to the check layer results view, part of [#1760](https://github.com/hajkmap/Hajk/issues/1760).
+- Client: PropertyChecker - Added a `q_pc` URL parameter that programmatically triggers a property check from a property name or address. It reuses an existing WFS search source (configured via `propertyNameLookupWfsLayerId` and the optional `addressLookupWfsLayerId`) to resolve the value to a geometry, pans the map there, and is written back to the URL hash on map click so results are shareable. Closes [#1827](https://github.com/hajkmap/Hajk/issues/1827).
 
 ### Changed
 
-- Client: AppModel refactored — split the 1444-line class into 8 focused modules under `appModel/` (urlParamsMerger, configTranslator, backgroundLayers, clickBindings, mapFactory, layerLoader, layerVisibility, pluginManager). No behavior change; all public methods preserved. [PR](https://github.com/hajkmap/Hajk/pull/1826)
+- Backend: Upgraded `write-excel-file` from 3.x to 4.x.
+- Backend: Enhance detailed request logger with structured output and file logging configuration [#1836](https://github.com/hajkmap/Hajk/pull/1836)
+- Backend: Bumped the [API Explorer](https://github.com/swagger-api/swagger-ui) to v5.32.6.
+- Client: AppModel refactored — split the 1444-line class into 8 focused modules under `appModel/` (urlParamsMerger, configTranslator, backgroundLayers, clickBindings, mapFactory, layerLoader, layerVisibility, pluginManager). No behavior change; all public methods preserved. [#1826](https://github.com/hajkmap/Hajk/pull/1826)
 - Client: New Mobile UI etc, see [#1778](https://github.com/hajkmap/Hajk/issues/1778).
 - Client: New CQL filter UI, PR [#1756](https://github.com/hajkmap/Hajk/pull/1756).
 - Client: TypeScript is now supported, see [#1824.](https://github.com/hajkmap/Hajk/pull/1824)
+- Client: Upgraded MUI packages to v9. Completed the migration steps not covered by the codemods — Autocomplete `renderInput` now reads `params.slotProps` (fixes a startup crash in the search bar), `PopperComponent`/`PaperComponent` moved to `slots`, Dialog `PaperComponent`/`PaperProps`/`BackdropProps`/`onBackdropClick` and Tooltip `TransitionProps` moved to `slots`/`slotProps`, remaining `InputProps` on TextField moved to `slotProps.input`, `SpeedDialAction` tooltip props moved to `slotProps.tooltip`, and CSS props inside `ListItemText` Typography slots moved into `sx` (silences DOM prop warnings and restores layer-name truncation).
 
 ### Fixed
 
+- Client: DocumentHandler - Fixed maplink and link not being triggered when opening a document via search results. [#1833](https://github.com/hajkmap/Hajk/issues/1833)
+- Backend: Prevent path traversal in v2 map config loading by validating map names before reading files (`js/path-injection`, [code scanning alert #53](https://github.com/hajkmap/Hajk/security/code-scanning/53)).
+- Client: LayerSwitcher - Fixed vertical alignment of list items when using icons in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
+- Client: LayerSwitcher - Removed redundant (i) icon next to the "Info" label in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
+- Client: LayerSwitcher - The "Inställningar" heading is no longer shown when there are no settings available for a layer. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client: DocumentHandler - Fixed subscription accumulation in Contents.jsx that caused duplicate print headers [#1773](https://github.com/hajkmap/Hajk/issues/1773)
 - Client: Ensure the Quick Access function respects the cookie setting [Issue #1798](https://github.com/hajkmap/Hajk/issues/1798)
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).
@@ -42,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Mobile UI - Reset the WindowSheet's scroll position when its content changes (opening the sheet, switching documents in DocumentHandler, navigating between feature collections/features in Infoclick) so new content always starts at the top. [commit](https://github.com/hajkmap/Hajk/commit/d6073ce901d117efd296a53f17654ab6e3b849d5)
 - Admin: Fixed a long-standing bug where the algorithm used to determine if a layer is used in a map was faulty. Also, added a slight hover effect to some buttons. [commit](https://github.com/hajkmap/Hajk/commit/b0bcc56369d749e731d05344f92d7d8808bedf27)
 - Backend: Removed unused dependencies (clf-date, ws, query-string and @babel/runtime).
+- Client: LayerSwitcher - Fix an issue where loading a saved favorite in some cases caused the layer to show a warning icon ([commit](https://github.com/hajkmap/Hajk/commit/11142352f0a4130c0292a7298dc6f73f0cda3c99)).
+- Client: LayerSwitcher - Fix an issue where loading saved favorites and presets did not hide previously visible group layers ([commit](https://github.com/hajkmap/Hajk/commit/bc49dc4fa73c820546b90f97870a17d0a6cb1a00)).
 
 ## [4.3.0] 2026-04-20
 

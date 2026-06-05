@@ -131,6 +131,7 @@ function LayerItem({
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const applyLabelStyle = useCallback(() => {
     if (!olLayer) return;
+    if (olLayer.get("allSubLayers")?.length > 1) return; // Multi-sublayer group layers handle labels per-sublayer
 
     const source = olLayer.getSource?.();
     if (!source || typeof source.updateParams !== "function") return;
@@ -150,7 +151,7 @@ function LayerItem({
       LAYERS: layerName,
       STYLES: isActive ? `${layerName}_labels` : baseStyle,
     });
-  }, [olLayer, layerId]);
+  }, [olLayer]);
 
   const toggleLabelLayer = (e) => {
     e.stopPropagation();
@@ -407,13 +408,17 @@ function LayerItem({
             />
             <ListItemText
               primary={layerCaption}
+              sx={{ alignSelf: "center" }}
               slotProps={{
                 primary: {
-                  pr: 5,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
                   variant: "body1",
-                  fontWeight: layerIsToggled && !draggable ? "bold" : "inherit",
+                  sx: {
+                    pr: 5,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontWeight:
+                      layerIsToggled && !draggable ? "bold" : "inherit",
+                  },
                 },
               }}
             />
@@ -426,12 +431,15 @@ function LayerItem({
               }}
             >
               {renderStatusIcon()}
-              {layerInfo?.hasLabelStyle && (
-                <BtnToggleLayerLabel
-                  active={showingLabelLayer}
-                  onClick={toggleLabelLayer}
-                />
-              )}
+              {!(allSubLayers?.length > 1) &&
+                (layerInfo?.hasLabelStyle ||
+                  layerInfo?.layersInfo?.[allSubLayers?.[0]]
+                    ?.hasLabelStyle) && (
+                  <BtnToggleLayerLabel
+                    active={showingLabelLayer}
+                    onClick={toggleLabelLayer}
+                  />
+                )}
               {!toggleable && !draggable ? (
                 <LsIconButton size="small">
                   <HajkToolTip title="Bakgrundskartan ligger låst längst ner i ritordningen">
