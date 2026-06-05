@@ -149,7 +149,7 @@ paths:
                         additionalProperties: true
                         description: Feature attributes (excluding id and read-only fields)
                       geometry:
-                        $ref: "#/components/schemas/GeoJSONGeometry"
+                        $ref: "#/components/schemas/Geometry"
                 updates:
                   type: array
                   description: Features to update
@@ -165,7 +165,7 @@ paths:
                         additionalProperties: true
                         description: Attributes to update
                       geometry:
-                        $ref: "#/components/schemas/GeoJSONGeometry"
+                        $ref: "#/components/schemas/Geometry"
                         description: New geometry (optional, only if changed)
                 deletes:
                   type: array
