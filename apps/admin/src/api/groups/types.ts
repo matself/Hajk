@@ -39,6 +39,11 @@ export interface GroupUpdateInput {
   restrictedToRoles?: GroupRoleUpdateInput[];
 }
 
+export interface GroupLayersUpdateInput {
+  layers: GroupLayerCreateInput[];
+  layerSwitcherTree?: LayerSwitcherTreeNode[];
+}
+
 export type LayerSwitcherTreeNode =
   | { type: "layer"; id: string }
   | { type: "group"; id: string; name: string; children: LayerSwitcherTreeNode[] };

@@ -27,6 +27,7 @@ import Page from "../../layouts/root/components/page";
 import {
   GroupLayer,
   GroupLayerCreateInput,
+  GroupLayersUpdateInput,
   GroupType,
   GroupUpdateInput,
   LayerSwitcherTreeNode,
@@ -40,6 +41,7 @@ import {
   useGroupById,
   useLayersByGroupId,
   useMapsByGroupId,
+  useUpdateGroupLayers,
 } from "../../api/groups";
 import { useRoles } from "../../api/users";
 import type { Role } from "../../api/users";
@@ -55,6 +57,7 @@ import FormPanel from "../../components/form-components/form-panel";
 import UsedInMapsPanel from "../../components/used-in-maps-panel";
 import FormFieldGrid from "../../components/form-components/form-field-grid";
 import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
+import { getDeleteGroupErrorMessage } from "./utils/group-errors";
 
 const compositionKey = (
   layers: GroupLayerCreateInput[],
@@ -106,6 +109,7 @@ function GroupSettings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { mutateAsync: updateGroup, status: updateStatus } = useUpdateGroup();
+  const { mutateAsync: updateGroupLayers } = useUpdateGroupLayers();
   const { mutateAsync: deleteGroup, isPending: isDeletingGroup } =
     useDeleteGroup();
   const { data: group, isLoading, isError } = useGroupById(groupId ?? "");
@@ -236,18 +240,25 @@ function GroupSettings() {
         return known.layerKind === targetLayerKind;
       });
 
-      const payload: GroupUpdateInput = {
+      const groupIdValue = group?.id ?? "";
+      const metadataPayload: GroupUpdateInput = {
         name: groupData.name?.trim(),
         internalName: groupData.internalName?.trim(),
         type: groupData.type,
         locked: groupData.locked ?? false,
-        layers: layersForType,
-        layerSwitcherTree: compositionTree,
         restrictedToRoles: selectedRoleIds.map((roleId) => ({ roleId })),
       };
+      const layersPayload: GroupLayersUpdateInput = {
+        layers: layersForType,
+        layerSwitcherTree: compositionTree,
+      };
       const updatedGroup = await updateGroup({
-        groupId: group?.id ?? "",
-        data: payload,
+        groupId: groupIdValue,
+        data: metadataPayload,
+      });
+      await updateGroupLayers({
+        groupId: groupIdValue,
+        data: layersPayload,
       });
       toast.success(t("groups.updateGroupSuccess", { name: groupData.name }), {
         position: "bottom-left",
@@ -290,7 +301,7 @@ function GroupSettings() {
       void navigate("/groups");
     } catch (error) {
       console.error("Deletion failed:", error);
-      toast.error(t("groups.deleteGroupFailed", { name: group.name }), {
+      toast.error(getDeleteGroupErrorMessage(error, t, group.name), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,

@@ -1,5 +1,11 @@
 import * as express from "express";
 import controller from "./controller.ts";
+import { validatePayload } from "../../middlewares/payload.validation.ts";
+import {
+  GroupCreateSchema,
+  GroupLayersUpdateSchema,
+  GroupUpdateSchema,
+} from "../../schemas/group.schemas.ts";
 
 export default express
   .Router()
@@ -7,6 +13,11 @@ export default express
   .get("/:id", controller.getGroupById)
   .get("/:id/layers", controller.getLayersByGroupId)
   .get("/:id/maps", controller.getMapsByGroupId)
-  .post("/", controller.createGroup)
-  .patch("/:id", controller.updateGroup)
+  .post("/", validatePayload(GroupCreateSchema), controller.createGroup)
+  .patch(
+    "/:id/layers",
+    validatePayload(GroupLayersUpdateSchema),
+    controller.updateGroupLayers
+  )
+  .patch("/:id", validatePayload(GroupUpdateSchema), controller.updateGroup)
   .delete("/:id", controller.deleteGroup);

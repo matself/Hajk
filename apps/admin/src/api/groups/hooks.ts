@@ -11,9 +11,15 @@ import {
   getMapsByGroupId,
   createGroup,
   updateGroup,
+  updateGroupLayers,
   deleteGroup,
 } from "./requests";
-import { Group, GroupLayersApiResponse, GroupUpdateInput } from "./types";
+import {
+  Group,
+  GroupLayersApiResponse,
+  GroupLayersUpdateInput,
+  GroupUpdateInput,
+} from "./types";
 import { Map } from "../maps";
 
 // A React Query hook to fetch groups
@@ -31,6 +37,7 @@ export const useGroupById = (groupId: string): UseQueryResult<Group> => {
   return useQuery({
     queryKey: ["groups", groupId],
     queryFn: () => getGroupById(groupId),
+    enabled: Boolean(groupId),
   });
 };
 
@@ -42,6 +49,7 @@ export const useLayersByGroupId = (
   return useQuery({
     queryKey: ["layersByGroupId", groupId],
     queryFn: () => getLayersByGroupId(groupId),
+    enabled: Boolean(groupId),
   });
 };
 
@@ -51,6 +59,7 @@ export const useMapsByGroupId = (groupId: string): UseQueryResult<Map[]> => {
   return useQuery({
     queryKey: ["mapsByGroupId", groupId],
     queryFn: () => getMapsByGroupId(groupId),
+    enabled: Boolean(groupId),
   });
 };
 
@@ -59,8 +68,11 @@ export const useCreateGroup = () => {
 
   return useMutation({
     mutationFn: createGroup,
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
+      if (data?.id) {
+        queryClient.setQueryData(["groups", data.id], data);
+      }
     },
     onError: (error) => {
       console.error(error);
@@ -83,11 +95,31 @@ export const useUpdateGroup = () => {
       queryClient.setQueryData(["groups", groupId], data);
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
       void queryClient.invalidateQueries({
-        queryKey: ["layersByGroupId", groupId],
-      });
-      void queryClient.invalidateQueries({
         queryKey: ["mapsByGroupId", groupId],
       });
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+};
+
+export const useUpdateGroupLayers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      data,
+    }: {
+      groupId: string;
+      data: GroupLayersUpdateInput;
+    }) => updateGroupLayers(groupId, data),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: ["layersByGroupId", groupId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ["groups", groupId] });
     },
     onError: (error) => {
       console.error(error);
@@ -102,9 +134,9 @@ export const useDeleteGroup = () => {
     mutationFn: (groupId: string) => deleteGroup(groupId),
     onSuccess: (_, groupId) => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
-      void queryClient.removeQueries({ queryKey: ["groups", groupId] });
-      void queryClient.removeQueries({ queryKey: ["layersByGroupId", groupId] });
-      void queryClient.removeQueries({ queryKey: ["mapsByGroupId", groupId] });
+      queryClient.removeQueries({ queryKey: ["groups", groupId] });
+      queryClient.removeQueries({ queryKey: ["layersByGroupId", groupId] });
+      queryClient.removeQueries({ queryKey: ["mapsByGroupId", groupId] });
     },
     onError: (error) => {
       console.error(error);

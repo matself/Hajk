@@ -42,6 +42,7 @@ import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
 import { ApiValidationDetail } from "../../../lib/internal-api-client";
+import { getDeleteGroupErrorMessage } from "../utils/group-errors";
 
 interface GroupCreateForm {
   name: string;
@@ -174,11 +175,14 @@ export default function GroupsList({
       handleCloseDeleteDialog();
     } catch (error) {
       console.error("Failed to delete group:", error);
-      toast.error(t("groups.deleteGroupFailed", { name: selectedGroup.name }), {
-        position: "bottom-left",
-        theme: palette.mode,
-        hideProgressBar: true,
-      });
+      toast.error(
+        getDeleteGroupErrorMessage(error, t, selectedGroup.name),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
     }
   };
 
@@ -247,12 +251,12 @@ export default function GroupsList({
         })),
       };
       const response = await createGroup(payload);
-      toast.success(t("groups.createGroupSuccess", { name: response?.name }), {
+      toast.success(t("groups.createGroupSuccess", { name: response.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
       });
-      void navigate(`${baseRoute}/${response?.id}`);
+      void navigate(`${baseRoute}/${response.id}`);
       reset();
       handleClose();
     } catch (error) {
@@ -432,17 +436,24 @@ export default function GroupsList({
               columns={[
                 {
                   field: "name",
-                  headerName: "Visningsnamn",
+                  headerName: t("common.name"),
                   flex: 0.4,
                 },
                 {
                   field: "type",
-                  headerName: "Typ av grupp",
+                  headerName: t("groups.type"),
                   flex: 0.5,
+                  valueFormatter: (value: GroupType) => {
+                    const key = Object.keys(GroupType).find(
+                      (enumKey) =>
+                        GroupType[enumKey as keyof typeof GroupType] === value,
+                    );
+                    return key ? t(`groupType.${key}`) : value;
+                  },
                 },
                 {
                   field: "internalName",
-                  headerName: "Intern namn",
+                  headerName: t("groups.internalName"),
                   flex: 0.3,
                 },
                 {

@@ -4,14 +4,15 @@ import GroupsService from "../../services/groups.service.ts";
 import HttpStatusCodes from "../../../../common/http-status-codes.ts";
 import { HajkError } from "../../../../common/classes.ts";
 import HajkStatusCodes from "../../../../common/hajk-status-codes.ts";
+import { asyncHandler } from "../../utils/async-handler.ts";
 
 class GroupsController {
-  async getGroups(_: Request, res: Response) {
+  getGroups = asyncHandler(async (_: Request, res: Response) => {
     const groups = await GroupsService.getGroups();
     res.status(HttpStatusCodes.OK).json({ count: groups.length, groups });
-  }
+  });
 
-  async getGroupById(req: Request, res: Response) {
+  getGroupById = asyncHandler(async (req: Request, res: Response) => {
     const group = await GroupsService.getGroupById(req.params.id);
     if (group === null) {
       throw new HajkError(
@@ -22,9 +23,9 @@ class GroupsController {
     }
 
     res.status(HttpStatusCodes.OK).json(group);
-  }
+  });
 
-  async getLayersByGroupId(req: Request, res: Response) {
+  getLayersByGroupId = asyncHandler(async (req: Request, res: Response) => {
     const { layers, layerSwitcherTree } =
       await GroupsService.getLayersByGroupId(req.params.id);
     res.status(HttpStatusCodes.OK).json({
@@ -32,27 +33,40 @@ class GroupsController {
       layers,
       layerSwitcherTree,
     });
-  }
+  });
 
-  async getMapsByGroupId(req: Request, res: Response) {
+  getMapsByGroupId = asyncHandler(async (req: Request, res: Response) => {
     const maps = await GroupsService.getMapsByGroupId(req.params.id);
     res.status(HttpStatusCodes.OK).json({ count: maps.length, maps });
-  }
-  async createGroup(req: Request, res: Response) {
+  });
+
+  createGroup = asyncHandler(async (req: Request, res: Response) => {
     const group = await GroupsService.createGroup(req.body, req.user?.id);
     res.status(HttpStatusCodes.CREATED).json(group);
-  }
-  async updateGroup(req: Request, res: Response) {
+  });
+
+  updateGroupLayers = asyncHandler(async (req: Request, res: Response) => {
+    const group = await GroupsService.updateGroupLayers(
+      req.params.id,
+      req.body,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.OK).json(group);
+  });
+
+  updateGroup = asyncHandler(async (req: Request, res: Response) => {
     const group = await GroupsService.updateGroup(
       req.params.id,
       req.body,
       req.user?.id
     );
     res.status(HttpStatusCodes.OK).json(group);
-  }
-  async deleteGroup(req: Request, res: Response) {
+  });
+
+  deleteGroup = asyncHandler(async (req: Request, res: Response) => {
     await GroupsService.deleteGroup(req.params.id);
     res.status(HttpStatusCodes.NO_CONTENT).send();
-  }
+  });
 }
+
 export default new GroupsController();

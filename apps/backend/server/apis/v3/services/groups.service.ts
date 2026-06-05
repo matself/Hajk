@@ -2,6 +2,9 @@ import { GroupType, Prisma, UseType } from "@prisma/client";
 
 import log4js from "log4js";
 import prisma from "../../../common/prisma.ts";
+import { HajkError } from "../../../common/classes.ts";
+import HttpStatusCodes from "../../../common/http-status-codes.ts";
+import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import {
   activeLayerInstanceWhere,
   layerInstanceIncludeAll,
@@ -11,9 +14,20 @@ const logger = log4js.getLogger("service.v3.layer");
 
 export type LayerSwitcherTreeNode =
   | { type: "layer"; id: string }
-  | { type: "group"; id: string; name: string; children: LayerSwitcherTreeNode[] };
+  | {
+      type: "group";
+      id: string;
+      name: string;
+      children: LayerSwitcherTreeNode[];
+    };
 
 const LAYER_SWITCHER_TREE_OPTIONS_KEY = "layerSwitcherTree";
+
+const groupInclude = {
+  restrictedToRoles: {
+    include: { role: true },
+  },
+} as const;
 
 function omitLayerSwitcherTree(
   options: Record<string, unknown>
@@ -38,12 +52,29 @@ interface RoleOnGroupInput {
   roleId: string;
 }
 
+interface GroupsOnMapInput {
+  id?: string;
+  mapName: string;
+  groupId?: string;
+  parentGroupId?: string | null;
+  usage: UseType;
+  name: string;
+  toggled?: boolean;
+  expanded?: boolean;
+}
+
 interface GroupWriteData
-  extends Omit<Prisma.GroupCreateInput, "layers" | "restrictedToRoles"> {
+  extends Omit<Prisma.GroupCreateInput, "layers" | "restrictedToRoles" | "maps"> {
   layers?: GroupLayerInput[];
   layerSwitcherTree?: LayerSwitcherTreeNode[];
   restrictedToRoles?: RoleOnGroupInput[];
+  maps?: GroupsOnMapInput[];
   type?: GroupType;
+}
+
+interface GroupLayersUpdateData {
+  layers: GroupLayerInput[];
+  layerSwitcherTree?: LayerSwitcherTreeNode[];
 }
 
 function extractLayerSwitcherTree(
@@ -64,7 +95,9 @@ function buildLayerInstanceOptions(
   layerSwitcherTree?: LayerSwitcherTreeNode[]
 ): Prisma.InputJsonValue {
   const base =
-    layer.options && typeof layer.options === "object" && !Array.isArray(layer.options)
+    layer.options &&
+    typeof layer.options === "object" &&
+    !Array.isArray(layer.options)
       ? { ...(layer.options as Record<string, unknown>) }
       : {};
 
@@ -103,9 +136,73 @@ const buildRoleConnections = (roles: RoleOnGroupInput[]) =>
     role: { connect: { id: role.roleId } },
   }));
 
+async function syncGroupsOnMaps(
+  transaction: Prisma.TransactionClient,
+  groupId: string,
+  maps: GroupsOnMapInput[]
+) {
+  await transaction.groupsOnMaps.deleteMany({ where: { groupId } });
+
+  if (maps.length === 0) {
+    return;
+  }
+
+  const pending = [...maps];
+  const createdIds = new Set<string>();
+
+  while (pending.length > 0) {
+    const batch = pending.filter(
+      (entry) => !entry.parentGroupId || createdIds.has(entry.parentGroupId)
+    );
+
+    if (batch.length === 0) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Invalid groups-on-maps parent references.",
+        HajkStatusCodes.INVALID_REQUEST_BODY
+      );
+    }
+
+    for (const entry of batch) {
+      const created = await transaction.groupsOnMaps.create({
+        data: {
+          id: entry.id,
+          mapName: entry.mapName,
+          groupId,
+          parentGroupId: entry.parentGroupId ?? null,
+          usage: entry.usage,
+          name: entry.name,
+          toggled: entry.toggled ?? false,
+          expanded: entry.expanded ?? false,
+        },
+      });
+      createdIds.add(created.id);
+    }
+
+    for (const entry of batch) {
+      const index = pending.indexOf(entry);
+      if (index !== -1) {
+        pending.splice(index, 1);
+      }
+    }
+  }
+}
+
 class GroupsService {
   constructor() {
     logger.debug("Initiating Groups Service");
+  }
+
+  private async requireGroup(id: string) {
+    const group = await prisma.group.findUnique({ where: { id } });
+    if (group === null) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `No group with id: ${id} could be found.`,
+        HajkStatusCodes.UNKNOWN_GROUP_ID
+      );
+    }
+    return group;
   }
 
   async getGroups() {
@@ -113,16 +210,10 @@ class GroupsService {
   }
 
   async getGroupById(id: string) {
-    const group = await prisma.group.findUnique({
+    return await prisma.group.findUnique({
       where: { id },
-      include: {
-        restrictedToRoles: {
-          include: { role: true },
-        },
-      },
+      include: groupInclude,
     });
-
-    return group;
   }
 
   async getLayersByGroupId(id: string) {
@@ -146,7 +237,6 @@ class GroupsService {
 
     const layers = instances
       .map((instance) => {
-
         const placementOptions =
           instance.options &&
           typeof instance.options === "object" &&
@@ -189,11 +279,13 @@ class GroupsService {
 
     return maps;
   }
+
   async createGroup(data: GroupWriteData, userId?: string) {
     const {
       layers = [],
       layerSwitcherTree,
       restrictedToRoles = [],
+      maps,
       ...groupData
     } = data;
     const groupType = groupData.type ?? GroupType.Layer;
@@ -204,73 +296,143 @@ class GroupsService {
     );
     const roleConnections = buildRoleConnections(restrictedToRoles);
 
-    return await prisma.group.create({
-      data: {
-        ...groupData,
-        createdBy: userId,
-        createdDate: new Date(),
-        lastSavedBy: userId,
-        lastSavedDate: new Date(),
-        ...(layerInstances.length > 0 && {
-          layers: { create: layerInstances },
-        }),
-        ...(roleConnections.length > 0 && {
-          restrictedToRoles: { create: roleConnections },
-        }),
-      },
+    return await prisma.$transaction(async (transaction) => {
+      const group = await transaction.group.create({
+        data: {
+          ...groupData,
+          createdBy: userId,
+          createdDate: new Date(),
+          lastSavedBy: userId,
+          lastSavedDate: new Date(),
+          ...(layerInstances.length > 0 && {
+            layers: { create: layerInstances },
+          }),
+          ...(roleConnections.length > 0 && {
+            restrictedToRoles: { create: roleConnections },
+          }),
+        },
+      });
+
+      if (maps !== undefined) {
+        await syncGroupsOnMaps(transaction, group.id, maps);
+      }
+
+      return transaction.group.findUnique({
+        where: { id: group.id },
+        include: groupInclude,
+      });
     });
   }
-  async updateGroup(
+
+  async updateGroupLayers(
     id: string,
-    data: GroupWriteData,
+    data: GroupLayersUpdateData,
     userId?: string
   ) {
-    const { layers, layerSwitcherTree, restrictedToRoles, ...groupData } = data;
-    const existingGroup =
-      layers !== undefined
-        ? await prisma.group.findUnique({ where: { id } })
-        : null;
-    const groupType =
-      groupData.type ?? existingGroup?.type ?? GroupType.Layer;
-    const layerInstances =
-      layers !== undefined
-        ? buildLayerInstances(layers, groupType, layerSwitcherTree)
-        : undefined;
-    const roleConnections =
-      restrictedToRoles !== undefined
-        ? buildRoleConnections(restrictedToRoles)
-        : undefined;
+    const existingGroup = await this.requireGroup(id);
+    const layerInstances = buildLayerInstances(
+      data.layers,
+      existingGroup.type,
+      data.layerSwitcherTree
+    );
 
     return await prisma.group.update({
       where: { id },
       data: {
-        ...groupData,
         lastSavedBy: userId,
         lastSavedDate: new Date(),
-        ...(layerInstances !== undefined && {
-          layers: {
-            deleteMany: {},
-            create: layerInstances,
-          },
-        }),
-        ...(roleConnections !== undefined && {
-          restrictedToRoles: {
-            deleteMany: {},
-            create: roleConnections,
-          },
-        }),
-      },
-      include: {
-        restrictedToRoles: {
-          include: { role: true },
+        layers: {
+          deleteMany: {},
+          create: layerInstances,
         },
       },
+      include: groupInclude,
     });
   }
-  async deleteGroup(id: string) {
-    return await prisma.group.delete({
-      where: { id },
+
+  async updateGroup(id: string, data: GroupWriteData, userId?: string) {
+    const { layers, layerSwitcherTree, restrictedToRoles, maps, ...groupData } =
+      data;
+
+    return await prisma.$transaction(async (transaction) => {
+      const existingGroup = await transaction.group.findUnique({
+        where: { id },
+      });
+
+      if (existingGroup === null) {
+        throw new HajkError(
+          HttpStatusCodes.NOT_FOUND,
+          `No group with id: ${id} could be found.`,
+          HajkStatusCodes.UNKNOWN_GROUP_ID
+        );
+      }
+
+      const groupType = groupData.type ?? existingGroup.type;
+      const layerInstances =
+        layers !== undefined
+          ? buildLayerInstances(layers, groupType, layerSwitcherTree)
+          : undefined;
+      const roleConnections =
+        restrictedToRoles !== undefined
+          ? buildRoleConnections(restrictedToRoles)
+          : undefined;
+
+      await transaction.group.update({
+        where: { id },
+        data: {
+          ...groupData,
+          lastSavedBy: userId,
+          lastSavedDate: new Date(),
+          ...(layerInstances !== undefined && {
+            layers: {
+              deleteMany: {},
+              create: layerInstances,
+            },
+          }),
+          ...(roleConnections !== undefined && {
+            restrictedToRoles: {
+              deleteMany: {},
+              create: roleConnections,
+            },
+          }),
+        },
+      });
+
+      if (maps !== undefined) {
+        await syncGroupsOnMaps(transaction, id, maps);
+      }
+
+      return transaction.group.findUnique({
+        where: { id },
+        include: groupInclude,
+      });
     });
+  }
+
+  async deleteGroup(id: string) {
+    await this.requireGroup(id);
+
+    const mapUsage = await prisma.groupsOnMaps.findMany({
+      where: { groupId: id },
+      select: { mapName: true },
+      distinct: ["mapName"],
+      orderBy: { mapName: "asc" },
+    });
+
+    if (mapUsage.length > 0) {
+      const mapNames = mapUsage.map((entry) => entry.mapName).join(", ");
+      throw new HajkError(
+        HttpStatusCodes.CONFLICT,
+        `Group cannot be deleted because it is used in map(s): ${mapNames}.`,
+        HajkStatusCodes.GROUP_DELETE_BLOCKED_BY_REFERENCES
+      );
+    }
+
+    await prisma.$transaction([
+      prisma.layerInstance.deleteMany({ where: { groupId: id } }),
+      prisma.roleOnGroup.deleteMany({ where: { groupId: id } }),
+      prisma.group.delete({ where: { id } }),
+    ]);
   }
 }
 

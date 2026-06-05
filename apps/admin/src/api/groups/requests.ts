@@ -2,6 +2,7 @@ import {
   Group,
   GroupsApiResponse,
   GroupCreateInput,
+  GroupLayersUpdateInput,
   GroupUpdateInput,
 } from "./types";
 import { GroupLayersApiResponse } from "./types";
@@ -18,6 +19,10 @@ import { generateRandomName } from "../generated/names";
  * - The `getGroupById` function fetches details of a specific group by its ID.
  * - The `getLayersByGroupId` function retrieves all layers associated with a given group ID.
  * - The `getMapsByGroupId` function fetches all maps linked to a specific group ID.
+ * - The `createGroup` function creates a new group.
+ * - The `updateGroup` function updates group metadata and nested relations.
+ * - The `updateGroupLayers` function updates a group's layer order and tree.
+ * - The `deleteGroup` function deletes a group.
  *
  * These functions utilize a custom Axios instance and throw appropriate error messages for failures.
  *
@@ -37,7 +42,7 @@ export const getGroups = async (): Promise<Group[]> => {
 
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch groups. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch groups. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch groups");
@@ -58,7 +63,7 @@ export const getGroupById = async (groupId: string): Promise<Group> => {
 
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch group. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch group. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch group");
@@ -67,12 +72,12 @@ export const getGroupById = async (groupId: string): Promise<Group> => {
 };
 
 export const getLayersByGroupId = async (
-  groupId: string
+  groupId: string,
 ): Promise<GroupLayersApiResponse> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<GroupLayersApiResponse>(
-      `/groups/${groupId}/layers`
+      `/groups/${groupId}/layers`,
     );
     if (!response.data) {
       throw new Error("No layers data found");
@@ -83,7 +88,7 @@ export const getLayersByGroupId = async (
 
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch layers. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch layers. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch layers");
@@ -94,7 +99,7 @@ export const getMapsByGroupId = async (groupId: string): Promise<Map[]> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<GlobalMapsApiResponse>(
-      `/groups/${groupId}/maps`
+      `/groups/${groupId}/maps`,
     );
 
     if (!response.data) {
@@ -106,7 +111,7 @@ export const getMapsByGroupId = async (groupId: string): Promise<Map[]> => {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to fetch maps. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to fetch maps. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to fetch maps");
@@ -114,7 +119,9 @@ export const getMapsByGroupId = async (groupId: string): Promise<Map[]> => {
   }
 };
 
-export const createGroup = async (newGroup: GroupCreateInput): Promise<Group> => {
+export const createGroup = async (
+  newGroup: GroupCreateInput,
+): Promise<Group> => {
   const internalApiClient = getApiClient();
   if (!newGroup.name) {
     newGroup.name = generateRandomName();
@@ -135,15 +142,15 @@ export const createGroup = async (newGroup: GroupCreateInput): Promise<Group> =>
   }
 };
 
-export const updateGroup = async (
+export const updateGroupLayers = async (
   groupId: string,
-  data: GroupUpdateInput
+  data: GroupLayersUpdateInput,
 ): Promise<Group> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.patch<Group>(
-      `/groups/${groupId}`,
-      data
+      `/groups/${groupId}/layers`,
+      data,
     );
     if (!response.data) {
       throw new Error("No group data found");
@@ -153,7 +160,33 @@ export const updateGroup = async (
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
       throw new Error(
-        `Failed to update group. ErrorId: ${axiosError.response.data.errorId}.`
+        `Failed to update group layers. ErrorId: ${axiosError.response.data.errorId}.`,
+      );
+    } else {
+      throw new Error("Failed to update group layers");
+    }
+  }
+};
+
+export const updateGroup = async (
+  groupId: string,
+  data: GroupUpdateInput,
+): Promise<Group> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.patch<Group>(
+      `/groups/${groupId}`,
+      data,
+    );
+    if (!response.data) {
+      throw new Error("No group data found");
+    }
+    return response.data;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to update group. ErrorId: ${axiosError.response.data.errorId}.`,
       );
     } else {
       throw new Error("Failed to update group");
@@ -168,9 +201,7 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to delete group. ErrorId: ${axiosError.response.data.errorId}.`
-      );
+      throw axiosError;
     } else {
       throw new Error("Failed to delete group");
     }
