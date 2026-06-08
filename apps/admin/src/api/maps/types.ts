@@ -47,3 +47,17 @@ export interface MapMutation {
   name: string;
   options?: Record<string, string>;
 }
+
+export type ToolZone = "drawer" | "widgetLeft" | "widgetRight" | "controlButton";
+
+export interface ToolOnMap {
+  mapName: string;
+  toolId: number;
+  index: number;
+  options: { target: ToolZone };
+  tool: {
+    id: number;
+    type: string;
+    options: Record<string, unknown>;
+  };
+}

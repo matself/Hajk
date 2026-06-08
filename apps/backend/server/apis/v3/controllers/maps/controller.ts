@@ -42,6 +42,14 @@ class MapsController {
     res.status(HttpStatusCodes.OK).json({ count: tools.length, tools });
   }
 
+  async updateMapTools(req: Request, res: Response) {
+    const { tools } = req.body as {
+      tools: { toolId: number; index: number; options: Record<string, unknown> }[];
+    };
+    await MapService.updateMapTools(req.params.mapName, tools ?? []);
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  }
+
   async createMap(req: Request, res: Response) {
     const map = await MapService.createMap(req.body, req.user?.id);
     res.status(HttpStatusCodes.CREATED).json(map);

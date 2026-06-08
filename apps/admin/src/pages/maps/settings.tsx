@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
@@ -22,6 +22,9 @@ import {
   MapMutation,
   useUpdateMap,
   useMaps,
+  useToolsByMapName,
+  useUpdateMapTools,
+  ToolOnMap,
 } from "../../api/maps";
 import { SquareSpinnerComponent } from "../../components/progress/square-progress";
 import FormActionPanel from "../../components/form-action-panel";
@@ -34,11 +37,12 @@ import {
   LayerSwitcherDnD,
   TreeItemData,
   ToolPlacementDnD,
+  ID_DELIMITER,
 } from "../../components/layerswitcher-dnd";
 import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
 import { useTools } from "../../api/tools";
-import { TreeItems } from "dnd-kit-sortable-tree";
+import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
 
 export default function MapSettings() {
   const { t } = useTranslation();
@@ -55,6 +59,8 @@ export default function MapSettings() {
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
+  const { data: mapTools } = useToolsByMapName(mapName ?? "");
+  const { mutateAsync: updateMapToolsMutation } = useUpdateMapTools();
 
   // Drop zone states
   const [backgroundLayersDZ, setBackgroundLayersDZ] = useState<
@@ -69,10 +75,75 @@ export default function MapSettings() {
   const [widgetRightDZ, setWidgetRightDZ] = useState<TreeItems<TreeItemData>>(
     []
   );
+  const [isToolsDirty, setIsToolsDirty] = useState(false);
+  const initialToolsLoaded = useRef(false);
+
+  useEffect(() => {
+    if (!mapTools) return;
+    const toItem = (t: ToolOnMap): TreeItem<TreeItemData> => ({
+      id: `tool${ID_DELIMITER}${t.toolId}`,
+      name: t.tool.type,
+      type: "tool" as const,
+      canHaveChildren: false,
+    });
+
+    const byZone = (zone: string) =>
+      [...mapTools]
+        .filter((t) => t.options?.target === zone)
+        .sort((a, b) => a.index - b.index)
+        .map(toItem);
+
+    setDrawerDZ(byZone("drawer"));
+    setWidgetLeftDZ(byZone("widgetLeft"));
+    setWidgetRightDZ(byZone("widgetRight"));
+    setControlDZ(byZone("controlButton"));
+    initialToolsLoaded.current = true;
+    setIsToolsDirty(false);
+  }, [mapTools]);
+
+  const markToolsDirty = useCallback(() => {
+    if (initialToolsLoaded.current) setIsToolsDirty(true);
+  }, []);
+
+  const handleSaveTools = async () => {
+    const zones: [TreeItems<TreeItemData>, string][] = [
+      [drawerDZ, "drawer"],
+      [widgetLeftDZ, "widgetLeft"],
+      [widgetRightDZ, "widgetRight"],
+      [controlDZ, "controlButton"],
+    ];
+    const toolsPayload = zones.flatMap(([items, zone]) =>
+      items.map((item, index) => ({
+        toolId: parseInt(String(item.id).split(ID_DELIMITER)[1], 10),
+        index,
+        options: { target: zone },
+      }))
+    );
+    try {
+      await updateMapToolsMutation({ mapName: mapName ?? "", tools: toolsPayload });
+      toast.success(t("maps.updateMapSuccess", { name: mapName }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      setIsToolsDirty(false);
+    } catch (error) {
+      console.error("Failed to update map tools:", error);
+      toast.error(t("maps.updateMapFailed", { name: mapName }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
+  };
 
   const backgroundImage = "/mapbackground.png";
 
   const handleExternalSubmit = () => {
+    if (activeTab === "tools") {
+      void handleSaveTools();
+      return;
+    }
     if (formRef.current) {
       formRef.current.requestSubmit();
     }
@@ -239,7 +310,7 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
-        isDirty={isDirty}
+        isDirty={isDirty || isToolsDirty}
       >
         {activeTab === "settings" && (
           <FormContainer
@@ -1206,13 +1277,13 @@ export default function MapSettings() {
           <ToolPlacementDnD
             tools={tools.map((tool) => ({ id: tool.id, name: tool.type }))}
             drawerItems={drawerDZ}
-            onDrawerItemsChange={setDrawerDZ}
+            onDrawerItemsChange={(items) => { setDrawerDZ(items); markToolsDirty(); }}
             widgetLeftItems={widgetLeftDZ}
-            onWidgetLeftItemsChange={setWidgetLeftDZ}
+            onWidgetLeftItemsChange={(items) => { setWidgetLeftDZ(items); markToolsDirty(); }}
             widgetRightItems={widgetRightDZ}
-            onWidgetRightItemsChange={setWidgetRightDZ}
+            onWidgetRightItemsChange={(items) => { setWidgetRightDZ(items); markToolsDirty(); }}
             controlButtonItems={controlDZ}
-            onControlButtonItemsChange={setControlDZ}
+            onControlButtonItemsChange={(items) => { setControlDZ(items); markToolsDirty(); }}
             backgroundImage={backgroundImage}
           />
         )}
