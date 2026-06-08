@@ -772,6 +772,7 @@
       "minMaxZoomAlertOnToggleOnly": "Show min/max zoom alert on toggle only",
       "visibleAtStartMobile": "Visible at start (mobile)",
       "usedInMaps": "Used in maps",
+      "usedInMapsNone": "This tool is not used in any maps.",
       "searchTitle": "Search tools...",
       "windowSettings": "Window settings",
       "windowPlacement": "Window placement",

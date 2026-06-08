@@ -6,6 +6,8 @@ export interface Tool {
   createdDate?: string;
   lastSavedBy?: string;
   lastSavedDate?: string;
+  mapsCount: number;
+  mapNames: string[];
 }
 
 export interface ToolUpdateInput {

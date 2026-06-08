@@ -705,6 +705,7 @@
       "minMaxZoomAlertOnToggleOnly": "Visa endast min/max-varning vid växling",
       "visibleAtStartMobile": "Synlig vid start (mobil)",
       "usedInMaps": "Används i kartor",
+      "usedInMapsNone": "Det här verktyget används inte i några kartor.",
       "searchTitle": "Sök bland verktyg...",
       "windowSettings": "Fönsterinställningar",
       "windowPlacement": "Fönsterplacering",

@@ -11,7 +11,10 @@ class ToolService {
   }
 
   async getTools() {
-    return await prisma.tool.findMany({ orderBy: { type: "asc" } });
+    return await prisma.tool.findMany({
+      orderBy: { type: "asc" },
+      include: { maps: { select: { mapName: true } } },
+    });
   }
 
   async isToolTypeValid(toolType: string) {

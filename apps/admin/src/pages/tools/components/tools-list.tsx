@@ -1,11 +1,86 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid2";
-import { TextField, Typography } from "@mui/material";
+import { Box, Chip, Skeleton, TextField, Tooltip, Typography } from "@mui/material";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import { useTools, Tool } from "../../../api/tools";
 import StyledDataGrid from "../../../components/data-grid";
+
+function ToolUsedInMapsCell({
+  count,
+  mapNames,
+}: {
+  count: number;
+  mapNames: string[];
+}) {
+  const { t } = useTranslation();
+
+  if (count === 0) {
+    return (
+      <Box
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.75,
+          height: "100%",
+          color: "text.disabled",
+        }}
+      >
+        <MapOutlinedIcon sx={{ fontSize: 18, opacity: 0.55 }} />
+        <Typography variant="body2" color="text.disabled">
+          0
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Tooltip
+      enterDelay={400}
+      slotProps={{ tooltip: { sx: { maxWidth: 280 } } }}
+      title={
+        <Box sx={{ py: 0.25 }}>
+          <Typography
+            variant="caption"
+            sx={{ display: "block", fontWeight: 600, mb: 0.75 }}
+          >
+            {t("common.usedInMaps")}
+          </Typography>
+          {mapNames.map((mapName) => (
+            <Typography
+              key={mapName}
+              variant="caption"
+              sx={{ display: "block" }}
+            >
+              {mapName}
+            </Typography>
+          ))}
+        </Box>
+      }
+    >
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", alignItems: "center", height: "100%" }}
+      >
+        <Chip
+          icon={<MapOutlinedIcon />}
+          label={count}
+          size="small"
+          color="primary"
+          variant="outlined"
+          sx={{
+            height: 26,
+            fontWeight: 600,
+            "& .MuiChip-icon": { fontSize: 16, ml: 0.75 },
+            "& .MuiChip-label": { px: 0.75 },
+          }}
+        />
+      </Box>
+    </Tooltip>
+  );
+}
 
 interface ToolsListProps {
   filterTools: (tools: Tool[]) => Tool[];
@@ -83,9 +158,17 @@ export default function ToolsList({
                   flex: 0.4,
                 },
                 {
-                  field: "usedInHajk",
-                  headerName: "Används i HAJK",
+                  field: "mapsCount",
+                  headerName: t("tools.usedInHajk"),
                   flex: 0.4,
+                  align: "center",
+                  headerAlign: "center",
+                  renderCell: (params: { row: Tool }) => (
+                    <ToolUsedInMapsCell
+                      count={params.row.mapsCount}
+                      mapNames={params.row.mapNames}
+                    />
+                  ),
                 },
                 {
                   field: "lastSavedDate",
