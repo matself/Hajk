@@ -475,9 +475,6 @@ class DrawModel {
   #setFeatureZIndex = (feature, zIndex) => {
     let styles = feature.getStyle();
 
-    // Skip features with custom style functions - they manage their own styles
-    if (typeof styles === "function") return;
-
     if (styles) {
       styles = Array.isArray(styles) ? styles : [styles];
       styles.map((style) => {
@@ -492,9 +489,6 @@ class DrawModel {
   #getFeatureZIndex = (feature) => {
     let styles = feature.getStyle();
     let zIndex = 0;
-
-    // Skip features with custom style functions - return default zIndex
-    if (typeof styles === "function") return zIndex;
 
     if (styles) {
       styles = Array.isArray(styles) ? styles : [styles];
@@ -1249,9 +1243,6 @@ class DrawModel {
       // Get the current style.
       const featureStyle = feature.getStyle();
 
-      // Skip features with custom style functions - they manage their own styles
-      if (typeof featureStyle === "function") return;
-
       // Get an updated text-style (which depends on the #measurementSettings).
       const textStyle = this.#getFeatureTextStyle(feature);
       // Set the updated text-style on the base-style.
@@ -1425,10 +1416,7 @@ class DrawModel {
   // the style to make sure the svg gets the correct color.
   #refreshArrowStyle = (f) => {
     try {
-      // Skip features with custom style functions - they manage their own styles
       const style = f.getStyle();
-      if (typeof style === "function") return;
-
       const strokeStyle = style[0].getStroke();
       f.setStyle(
         this.#getArrowStyle(f, {
@@ -2067,9 +2055,6 @@ class DrawModel {
     // For example: If an arrow is moved, we have to refresh the style so that the arrow
     // head is in the correct location.
     e.deselected.forEach((f) => {
-      // Skip style refresh for features with custom style functions
-      // (as opposed to Style objects). These features manage their own styles.
-      if (typeof f.getStyle() === "function") return;
       f.setStyle(this.#getFeatureStyle(f));
     });
   };
@@ -2904,10 +2889,6 @@ class DrawModel {
   // The arrows are handled separately since they need some special styling...
   refreshDrawLayer = () => {
     this.#drawSource.forEachFeature((f) => {
-      // Skip features with custom style functions
-      // (as opposed to Style objects). These features manage their own styles.
-      if (typeof f.getStyle() === "function") return;
-
       if (f.get("DRAW_METHOD") === "Arrow") {
         this.#refreshArrowStyle(f);
       } else {
