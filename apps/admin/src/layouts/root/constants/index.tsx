@@ -3,7 +3,6 @@ import LayersIcon from "@mui/icons-material/Layers";
 import HandymanIcon from "@mui/icons-material/Handyman";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import NetworkPingIcon from "@mui/icons-material/NetworkPing";
-import DynamicFormIcon from "@mui/icons-material/DynamicForm";
 import GroupIcon from "@mui/icons-material/Group";
 import Diversity2Icon from "@mui/icons-material/Diversity2";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -94,11 +93,6 @@ export const SIDEBAR_MENU = [
     collapsible: true,
     icon: <MoreHorizIcon />,
     subItems: [
-      {
-        to: "/form-factory",
-        titleKey: "Form factory",
-        icon: <DynamicFormIcon />,
-      },
       {
         to: "/examples",
         titleKey: "Form examples",

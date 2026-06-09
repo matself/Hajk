@@ -1,30 +1,85 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Grid } from "@mui/material";
 import {
+  Autocomplete,
+  Alert,
   Button,
+  CircularProgress,
   TextField,
   useTheme,
   FormControl,
+  FormHelperText,
+  IconButton,
   InputLabel,
+  Menu,
   Select,
   MenuItem,
+  Chip,
+  Typography,
 } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { Trans, useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { isAxiosError } from "axios";
+import type { GridRenderCellParams } from "@mui/x-data-grid";
 import Page from "../../../layouts/root/components/page";
 import {
   useGroups,
   Group,
   useCreateGroup,
+  useDeleteGroup,
   GroupCreateInput,
   GroupType,
 } from "../../../api/groups";
+import { useLayers } from "../../../api/layers";
+import type { Layer } from "../../../api/layers";
 import DialogWrapper from "../../../components/flexible-dialog";
 import CreateButton from "../../../components/create-button";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
+import { ApiValidationDetail } from "../../../lib/internal-api-client";
+import { getDeleteGroupErrorMessage } from "../utils/group-errors";
+
+interface GroupCreateForm {
+  name: string;
+  internalName?: string;
+  type: GroupType | "";
+  layerIds: string[];
+}
+
+interface GroupCreateErrorBody {
+  errorId?: string;
+  error?: string;
+  details?: ApiValidationDetail[] | string;
+}
+
+function getCreateGroupErrorMessage(error: unknown, t: TFunction): string {
+  if (!isAxiosError<GroupCreateErrorBody>(error) || !error.response) {
+    return t("groups.createGroupFailed");
+  }
+
+  const data = error.response.data;
+  if (Array.isArray(data?.details)) {
+    const messages = data.details.map((d) => d.message).filter(Boolean);
+    if (messages.length > 0) {
+      return messages.join(" · ");
+    }
+  }
+
+  if (typeof data?.details === "string" && data.details.trim()) {
+    return data.details.trim();
+  }
+
+  if (typeof data?.error === "string" && data.error.trim()) {
+    return data.error.trim();
+  }
+
+  return t("groups.createGroupFailed");
+}
 
 interface GroupsListProps {
   filterGroups: (groups: Group[]) => Group[];
@@ -42,11 +97,24 @@ export default function GroupsList({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: groups, isLoading } = useGroups();
-  const { mutateAsync: createGroup } = useCreateGroup();
+  const { data: layers = [] } = useLayers();
+  const { mutateAsync: createGroup, isPending: isCreatingGroup } =
+    useCreateGroup();
+  const { mutateAsync: removeGroup, isPending: isDeletingGroup } =
+    useDeleteGroup();
   const { palette } = useTheme();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const actionsMenuOpen = Boolean(anchorEl);
+  const selectedGroup = useMemo(
+    () => groups?.find((group) => group.id === selectedGroupId),
+    [groups, selectedGroupId],
+  );
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -57,6 +125,65 @@ export default function GroupsList({
   };
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    groupId: string,
+  ) => {
+    if (isDeletingGroup) return;
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedGroupId(groupId);
+  };
+
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (isDeletingGroup) return;
+    setIsDeleteDialogOpen(false);
+    setSelectedGroupId(null);
+    setDeleteConfirmName("");
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedGroup?.name) && deleteConfirmName === selectedGroup?.name;
+
+  const handleConfirmDelete = async () => {
+    if (!selectedGroupId || !selectedGroup || !isDeleteConfirmNameMatching) {
+      return;
+    }
+
+    try {
+      await removeGroup(selectedGroupId);
+      toast.success(
+        t("groups.deleteGroupSuccess", { name: selectedGroup.name }),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete group:", error);
+      toast.error(
+        getDeleteGroupErrorMessage(error, t, selectedGroup.name),
+        {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        },
+      );
+    }
   };
 
   const filteredGroups = useMemo(() => {
@@ -76,43 +203,65 @@ export default function GroupsList({
     return typeFilteredGroups.filter(searchFilter);
   }, [groups, searchTerm, filterGroups]);
 
-  const defaultValues = {
+  const defaultValues: GroupCreateForm = {
     name: "",
     internalName: "",
     type: "",
+    layerIds: [],
   };
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     formState: { errors },
     reset,
-  } = useForm<GroupCreateInput>({
+  } = useForm<GroupCreateForm>({
     defaultValues,
     mode: "onChange",
     reValidateMode: "onChange",
   });
 
-  const handleGroupSubmit = async (groupData: GroupCreateInput) => {
+  const watchGroupType = watch("type");
+
+  useEffect(() => {
+    setValue("layerIds", []);
+  }, [setValue, watchGroupType]);
+
+  const availableLayerOptions = useMemo(() => {
+    if (!watchGroupType) return [];
+    const allowedKind =
+      watchGroupType === GroupType.SEARCH ? "search" : "display";
+    return layers
+      .filter((layer) => layer.layerKind === allowedKind)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [layers, watchGroupType]);
+
+  const handleGroupSubmit = async (groupData: GroupCreateForm) => {
     try {
-      const payload = {
+      const payload: GroupCreateInput = {
         name: groupData.name,
         internalName: groupData.internalName,
-        type: groupData.type,
+        type: groupData.type as GroupType,
+        layers: groupData.layerIds.map((layerId) => ({
+          layerId,
+          usage: "FOREGROUND",
+        })),
       };
       const response = await createGroup(payload);
-      toast.success(t("groups.createGroupSuccess", { name: response?.name }), {
+      toast.success(t("groups.createGroupSuccess", { name: response.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
       });
-      void navigate(`${baseRoute}/${response?.id}`);
+      void navigate(`${baseRoute}/${response.id}`);
       reset();
       handleClose();
     } catch (error) {
       console.error("Failed to submit group:", error);
-      toast.error(t("groups.createGroupFailed"), {
+      toast.error(getCreateGroupErrorMessage(error, t), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -120,7 +269,7 @@ export default function GroupsList({
     }
   };
 
-  const onSubmit = (data: GroupCreateInput) => {
+  const onSubmit = (data: GroupCreateForm) => {
     void handleGroupSubmit(data);
   };
 
@@ -147,7 +296,12 @@ export default function GroupsList({
             <Button variant="text" onClick={handleClose} color="primary">
               {t("common.dialog.closeBtn")}
             </Button>
-            <Button type="submit" color="primary" variant="contained">
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              disabled={isCreatingGroup}
+            >
               {t("common.dialog.saveBtn")}
             </Button>
           </>
@@ -173,30 +327,79 @@ export default function GroupsList({
             />
           </Grid>
           <Grid size={12}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={!!errors.type}>
               <InputLabel id="type-label">{t("groups.type")}</InputLabel>
               <Controller
                 name="type"
                 control={control}
                 rules={{ required: `${t("common.required")}` }}
                 render={({ field }) => (
-                  <Select
-                    labelId="type-label"
-                    label={t("groups.type")}
-                    {...field}
-                  >
-                    {Object.keys(GroupType).map((key) => {
-                      const value = GroupType[key as keyof typeof GroupType];
-                      return (
-                        <MenuItem key={key} value={value}>
-                          {t(`groupType.${key}`)}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
+                  <>
+                    <Select
+                      labelId="type-label"
+                      label={t("groups.type")}
+                      error={!!errors.type}
+                      {...field}
+                    >
+                      {Object.keys(GroupType).map((key) => {
+                        const value = GroupType[key as keyof typeof GroupType];
+                        return (
+                          <MenuItem key={key} value={value}>
+                            {t(`groupType.${key}`)}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                    <FormHelperText error={!!errors.type}>
+                      {errors.type?.message}
+                    </FormHelperText>
+                  </>
                 )}
               />
             </FormControl>
+          </Grid>
+          <Grid size={12}>
+            <Controller
+              name="layerIds"
+              control={control}
+              render={({ field }) => {
+                const selectedLayers = availableLayerOptions.filter((layer) =>
+                  field.value.includes(layer.id)
+                );
+                return (
+                  <Autocomplete<Layer, true, false, false>
+                    multiple
+                    disabled={!watchGroupType}
+                    options={availableLayerOptions}
+                    value={selectedLayers}
+                    getOptionLabel={(option) => option.name}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    onChange={(_, value) =>
+                      field.onChange(value.map((layer) => layer.id))
+                    }
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip
+                          label={option.name}
+                          {...getTagProps({ index })}
+                          key={option.id}
+                        />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={t("groups.layers")}
+                        helperText={t("groups.layersHelp")}
+                      />
+                    )}
+                    noOptionsText={t("common.noLayersAvailable")}
+                  />
+                );
+              }}
+            />
           </Grid>
         </Grid>
       </DialogWrapper>
@@ -230,17 +433,24 @@ export default function GroupsList({
               columns={[
                 {
                   field: "name",
-                  headerName: "Visningsnamn",
+                  headerName: t("common.name"),
                   flex: 0.4,
                 },
                 {
                   field: "type",
-                  headerName: "Typ av grupp",
+                  headerName: t("groups.type"),
                   flex: 0.5,
+                  valueFormatter: (value: GroupType) => {
+                    const key = Object.keys(GroupType).find(
+                      (enumKey) =>
+                        GroupType[enumKey as keyof typeof GroupType] === value,
+                    );
+                    return key ? t(`groupType.${key}`) : value;
+                  },
                 },
                 {
                   field: "internalName",
-                  headerName: "Intern namn",
+                  headerName: t("groups.internalName"),
                   flex: 0.3,
                 },
                 {
@@ -250,8 +460,105 @@ export default function GroupsList({
                   valueFormatter: (value: string) =>
                     value ? new Date(value).toLocaleDateString("sv-SE") : "–",
                 },
+                {
+                  field: "actions",
+                  headerName: "",
+                  width: 60,
+                  align: "center",
+                  sortable: false,
+                  filterable: false,
+                  disableColumnMenu: true,
+                  renderCell: (params: GridRenderCellParams<Group>) => (
+                    <IconButton
+                      aria-label={t("common.actions")}
+                      size="small"
+                      disabled={isDeletingGroup}
+                      onClick={(event) =>
+                        handleOpenActionsMenu(event, params.row.id)
+                      }
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  ),
+                },
               ]}
             />
+            <Menu
+              anchorEl={anchorEl}
+              open={actionsMenuOpen}
+              onClose={handleCloseActionsMenu}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MenuItem
+                onClick={handleOpenDeleteDialog}
+                data-group-id={selectedGroupId ?? ""}
+                disabled={isDeletingGroup}
+              >
+                {t("common.delete")}
+              </MenuItem>
+            </Menu>
+            <DialogWrapper
+              fullWidth
+              open={isDeleteDialogOpen}
+              title={t("groups.deleteGroupConfirmTitle")}
+              onClose={handleCloseDeleteDialog}
+              actions={
+                <>
+                  <Button
+                    variant="text"
+                    onClick={handleCloseDeleteDialog}
+                    color="primary"
+                    disabled={isDeletingGroup}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={isDeletingGroup || !isDeleteConfirmNameMatching}
+                    onClick={() => {
+                      void handleConfirmDelete();
+                    }}
+                    startIcon={
+                      isDeletingGroup ? (
+                        <CircularProgress color="inherit" size={18} />
+                      ) : (
+                        <DeleteOutlineIcon />
+                      )
+                    }
+                  >
+                    {t("common.delete")}
+                  </Button>
+                </>
+              }
+            >
+              <Typography>
+                <Trans
+                  i18nKey="groups.deleteGroupConfirmMessage"
+                  values={{ name: selectedGroup?.name ?? "" }}
+                  components={{ strong: <strong /> }}
+                />
+              </Typography>
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                {t("groups.deleteGroupWarning")}
+              </Alert>
+              <TextField
+                fullWidth
+                autoComplete="off"
+                margin="normal"
+                label={t("groups.deleteGroupTypeNameLabel")}
+                helperText={
+                  <Trans
+                    i18nKey="groups.deleteGroupTypeNameHelper"
+                    values={{ name: selectedGroup?.name ?? "" }}
+                    components={{ strong: <strong /> }}
+                  />
+                }
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                disabled={isDeletingGroup}
+              />
+            </DialogWrapper>
           </Grid>
         </>
       )}

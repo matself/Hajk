@@ -41,6 +41,11 @@ enum HajkStatusCodes {
    * Service deletion is blocked because the service is still referenced.
    */
   SERVICE_DELETE_BLOCKED_BY_REFERENCES = "DB007",
+
+  /**
+   * Group deletion is blocked because the group is still used on one or more maps.
+   */
+  GROUP_DELETE_BLOCKED_BY_REFERENCES = "DB008",
   /**
    * The requested layer type is not one of the valid ones. Valid layer
    * types are defined by the enum LayerType.

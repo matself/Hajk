@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import {
+  Box,
   Button,
+  Chip,
   useTheme,
   TextField,
   ListItemText,
@@ -13,9 +15,12 @@ import {
   IconButton,
   Menu,
   CircularProgress,
+  Skeleton,
+  Tooltip,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { Trans, useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -25,6 +30,7 @@ import {
   LayerCreateInput,
   useCreateLayer,
   useDeleteLayer,
+  useLayersUsageSummary,
 } from "../../../api/layers";
 import { LayerCreationError } from "../../../api/layers/types";
 import { LAYER_CATEGORY_I18N_KEYS } from "../layer-category";
@@ -38,7 +44,7 @@ import { useNavigate } from "react-router";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import DialogWrapper from "../../../components/flexible-dialog";
 import CreateButton from "../../../components/create-button";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import LayerKindBadge from "./layer-kind-badge";
 import { LayerCategory, normalizeLayerCategory } from "../layer-category";
@@ -58,9 +64,104 @@ type LayersGridRow = Omit<Layer, "status"> & {
   url: string;
   status: SERVICE_STATUS | undefined;
   lastChecked: string | undefined;
+  usedInMapsCount: number;
+  usedInMapNames: string[];
 };
 
 type CreateLayerStep = "details" | "capabilities";
+
+function LayerUsedInMapsCell({
+  count,
+  mapNames,
+  isLoading,
+}: {
+  count: number;
+  mapNames: string[];
+  isLoading: boolean;
+}) {
+  const { t } = useTranslation();
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Skeleton variant="rounded" width={52} height={26} />
+      </Box>
+    );
+  }
+
+  if (count === 0) {
+    return (
+      <Box
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.75,
+          height: "100%",
+          color: "text.disabled",
+        }}
+      >
+        <MapOutlinedIcon sx={{ fontSize: 18, opacity: 0.55 }} />
+        <Typography variant="body2" color="text.disabled">
+          0
+        </Typography>
+      </Box>
+    );
+  }
+
+  const chip = (
+    <Chip
+      icon={<MapOutlinedIcon />}
+      label={count}
+      size="small"
+      color="primary"
+      variant="outlined"
+      sx={{
+        height: 26,
+        fontWeight: 600,
+        "& .MuiChip-icon": {
+          fontSize: 16,
+          ml: 0.75,
+        },
+        "& .MuiChip-label": {
+          px: 0.75,
+        },
+      }}
+    />
+  );
+
+  return (
+    <Tooltip
+      enterDelay={400}
+      slotProps={{
+        tooltip: {
+          sx: { maxWidth: 280 },
+        },
+      }}
+      title={
+        <Box sx={{ py: 0.25 }}>
+          <Typography
+            variant="caption"
+            sx={{ display: "block", fontWeight: 600, mb: 0.75 }}
+          >
+            {t("common.usedInMaps")}
+          </Typography>
+          {mapNames.map((mapName) => (
+            <Typography key={mapName} variant="caption" sx={{ display: "block" }}>
+              {mapName}
+            </Typography>
+          ))}
+        </Box>
+      }
+    >
+      <Box
+        component="span"
+        sx={{ display: "inline-flex", alignItems: "center", height: "100%" }}
+      >
+        {chip}
+      </Box>
+    </Tooltip>
+  );
+}
 
 export default function LayersList({
   layerKind,
@@ -70,6 +171,8 @@ export default function LayersList({
 }: LayersListProps) {
   const { t } = useTranslation();
   const { data: layers, isLoading } = useLayers();
+  const { data: usageSummary, isLoading: isLoadingUsageSummary } =
+    useLayersUsageSummary();
   const navigate = useNavigate();
   const [open, setOpen] = useState<boolean>(false);
   const { data: services } = useServices();
@@ -187,15 +290,18 @@ export default function LayersList({
       const service = services.find(
         (service) => service.id === layer.serviceId,
       );
+      const usage = usageSummary?.[layer.id];
       return {
         ...layer,
         layerKind: normalizeLayerCategory(layer.layerKind),
         url: service?.url ?? "",
         status: service?.status,
         lastChecked: service?.lastChecked,
+        usedInMapsCount: usage?.mapCount ?? 0,
+        usedInMapNames: usage?.mapNames ?? [],
       };
     });
-  }, [layers, services, searchTerm, selectedServiceUrl, layerKind]);
+  }, [layers, services, searchTerm, selectedServiceUrl, layerKind, usageSummary]);
 
   const handleClose = () => {
     setOpen(false);
@@ -219,14 +325,14 @@ export default function LayersList({
     handleSubmit,
     control,
     reset,
+    watch,
     formState: { errors },
   } = useForm<LayerCreateForm>({
     defaultValues: { name: "", serviceId: "" },
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  const watchServiceId = useWatch({ control, name: "serviceId" });
+  const watchServiceId = watch("serviceId");
   const { mutateAsync: createLayer, isPending: isCreatingLayer } =
     useCreateLayer(watchServiceId);
   const [duplicateConfirm, setDuplicateConfirm] =
@@ -547,7 +653,7 @@ export default function LayersList({
           </DialogWrapper>
 
           <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 8 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 fullWidth
                 label={t("layers.searchTitle")}
@@ -609,9 +715,21 @@ export default function LayersList({
                     ),
                   },
                   {
-                    field: "usedInMaps",
-                    flex: 0.3,
+                    field: "usedInMapsCount",
+                    flex: 0.28,
                     headerName: t("common.usedInMaps"),
+                    align: "center",
+                    headerAlign: "center",
+                    sortable: true,
+                    renderCell: (
+                      params: GridRenderCellParams<LayersGridRow>,
+                    ) => (
+                      <LayerUsedInMapsCell
+                        count={params.row.usedInMapsCount}
+                        mapNames={params.row.usedInMapNames}
+                        isLoading={isLoadingUsageSummary}
+                      />
+                    ),
                   },
                   {
                     field: "lastSavedDate",

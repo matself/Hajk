@@ -26,7 +26,6 @@ import ServicesPage from "./pages/services/index.tsx";
 import ServiceSettings from "./pages/services/settings.tsx";
 import GroupsPage from "./pages/groups/index.tsx";
 import GroupSettings from "./pages/groups/settings.tsx";
-import FormFactoryPage from "./pages/form-factory/index.tsx";
 import UsersPage from "./pages/users/index.tsx";
 import UserRolesPage from "./pages/user-roles/index.tsx";
 import FormComponentsExamplePage from "./pages/examples/index.tsx";
@@ -116,10 +115,6 @@ const router = createBrowserRouter(
         {
           path: "user-roles",
           element: <UserRolesPage />,
-        },
-        {
-          path: "form-factory",
-          element: <FormFactoryPage />,
         },
         {
           path: "examples",

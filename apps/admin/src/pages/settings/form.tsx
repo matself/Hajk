@@ -1,118 +1,106 @@
-import { useMemo } from "react";
-import DynamicFormContainer from "../../components/form-factory/dynamic-form-container";
-import { FieldValues } from "react-hook-form";
-import CONTAINER_TYPE from "../../components/form-factory/types/container-types";
-import INPUT_TYPE from "../../components/form-factory/types/input-type";
-import { DefaultUseForm } from "../../components/form-factory/default-use-form";
-import FormRenderer from "../../components/form-factory/form-renderer";
-import { createOnSubmitHandler } from "../../components/form-factory/form-utils";
+import { useEffect } from "react";
+import { FieldValues, useForm, Controller } from "react-hook-form";
+import {
+  Grid2 as Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { useTranslation } from "react-i18next";
+import FormContainer from "../../components/form-components/form-container";
+import FormAccordion from "../../components/form-components/form-accordion";
 
-function createTranslatedSettingsContainer(
-  t: (key: string) => string,
-): DynamicFormContainer<FieldValues> {
-    const settingsContainer = new DynamicFormContainer<FieldValues>();
-
-    const accordionContainer = new DynamicFormContainer<FieldValues>(
-      t("settings.common.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-    const accordionContainer2 = new DynamicFormContainer<FieldValues>(
-      t("settings.service.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-    const accordionContainer3 = new DynamicFormContainer<FieldValues>(
-      t("settings.layer.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-    const accordionContainer4 = new DynamicFormContainer<FieldValues>(
-      t("settings.map.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-    const accordionContainer5 = new DynamicFormContainer<FieldValues>(
-      t("settings.tools.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-    const accordionContainer6 = new DynamicFormContainer<FieldValues>(
-      t("settings.authorization.title"),
-      CONTAINER_TYPE.ACCORDION,
-    );
-
-    accordionContainer.addInput({
-      type: INPUT_TYPE.SELECT,
-      gridColumns: 6,
-      name: "availableCoordinateSystem",
-      title: t("settings.available.coordinateSystem"),
-      defaultValue: "1",
-      optionList: [
-        { title: "Option 1", value: "1" },
-        { title: "Option 2", value: "2" },
-        { title: "Option 3", value: "3" },
-      ],
-    });
-
-    accordionContainer.addInput({
-      type: INPUT_TYPE.SELECT,
-      gridColumns: 6,
-      name: "preSelectedCoordinateSystem",
-      title: t("settings.preSelected.coordinateSystem"),
-      defaultValue: "1",
-      optionList: [
-        { title: "Option 1", value: "1" },
-        { title: "Option 2", value: "2" },
-        { title: "Option 3", value: "3" },
-      ],
-    });
-
-    settingsContainer.addContainer(accordionContainer);
-    settingsContainer.addContainer(accordionContainer2);
-    settingsContainer.addContainer(accordionContainer3);
-    settingsContainer.addContainer(accordionContainer4);
-    settingsContainer.addContainer(accordionContainer5);
-    settingsContainer.addContainer(accordionContainer6);
-
-  return settingsContainer;
+interface SettingsFormValues extends FieldValues {
+  availableCoordinateSystem: string;
+  preSelectedCoordinateSystem: string;
 }
 
+const defaultValues: SettingsFormValues = {
+  availableCoordinateSystem: "1",
+  preSelectedCoordinateSystem: "1",
+};
+
 export default function SettingsForm() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const settingsContainerData = useMemo(
-    () => createTranslatedSettingsContainer(t),
-    [t],
-  );
-
-  const defaultValues = settingsContainerData.getDefaultValues();
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    getValues,
-    formState: { errors, dirtyFields },
-  } = DefaultUseForm(defaultValues);
-
-  const onSubmit = createOnSubmitHandler({
-    handleSubmit,
-    dirtyFields,
-    onValid: (data, dirtyData) => {
-      console.log("All Data: ", data);
-      console.log("Dirty Data: ", dirtyData);
-    },
-    onInvalid: (errors) => {
-      console.log("Errors: ", errors);
-    },
+  const { control, handleSubmit, reset } = useForm<SettingsFormValues>({
+    defaultValues,
+    mode: "onChange",
   });
 
+  useEffect(() => {
+    reset(defaultValues);
+    // Re-initialize when language changes so translated labels refresh
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language]);
+
+  const onSubmit = (data: SettingsFormValues) => {
+    console.log("All Data: ", data);
+  };
+
   return (
-    <form onSubmit={onSubmit}>
-      <FormRenderer
-        formControls={settingsContainerData}
-        formGetValues={getValues}
-        register={register}
-        control={control}
-        errors={errors}
-      />
-    </form>
+    <FormContainer
+      onSubmit={(e) => {
+        void handleSubmit(onSubmit)(e);
+      }}
+    >
+      <FormAccordion title={t("settings.common.title")}>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormControl fullWidth>
+              <InputLabel id="available-coord-label" shrink>
+                {t("settings.available.coordinateSystem")}
+              </InputLabel>
+              <Controller
+                name="availableCoordinateSystem"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    labelId="available-coord-label"
+                    label={t("settings.available.coordinateSystem")}
+                    displayEmpty
+                    {...field}
+                  >
+                    <MenuItem value="1">Option 1</MenuItem>
+                    <MenuItem value="2">Option 2</MenuItem>
+                    <MenuItem value="3">Option 3</MenuItem>
+                  </Select>
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormControl fullWidth>
+              <InputLabel id="preselected-coord-label" shrink>
+                {t("settings.preSelected.coordinateSystem")}
+              </InputLabel>
+              <Controller
+                name="preSelectedCoordinateSystem"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    labelId="preselected-coord-label"
+                    label={t("settings.preSelected.coordinateSystem")}
+                    displayEmpty
+                    {...field}
+                  >
+                    <MenuItem value="1">Option 1</MenuItem>
+                    <MenuItem value="2">Option 2</MenuItem>
+                    <MenuItem value="3">Option 3</MenuItem>
+                  </Select>
+                )}
+              />
+            </FormControl>
+          </Grid>
+        </Grid>
+      </FormAccordion>
+
+      <FormAccordion title={t("settings.service.title")} />
+      <FormAccordion title={t("settings.layer.title")} />
+      <FormAccordion title={t("settings.map.title")} />
+      <FormAccordion title={t("settings.tools.title")} />
+      <FormAccordion title={t("settings.authorization.title")} />
+    </FormContainer>
   );
 }

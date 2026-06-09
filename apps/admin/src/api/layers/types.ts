@@ -219,6 +219,15 @@ export interface LayerUsageApiResponse {
   usage: LayerUsage[];
 }
 
+export interface LayerUsageSummaryEntry {
+  mapCount: number;
+  mapNames: string[];
+}
+
+export interface LayerUsageSummaryApiResponse {
+  summary: Record<string, LayerUsageSummaryEntry>;
+}
+
 export interface RoleOnLayer {
   layerId: string;
   roleId: string;

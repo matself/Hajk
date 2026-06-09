@@ -9,6 +9,11 @@ import prisma from "../../../common/prisma.ts";
 // import { isAuthActive } from "../../../common/auth/is-auth-active.ts";
 import getAnalyticsOptionsFromDotEnv from "../utils/get-analytics-options-from-dotenv.ts";
 import { buildLegacyLayersConfigForMap } from "../utils/build-legacy-layers-config.ts";
+import {
+  buildClientMapForMap,
+  buildClientProjectionsForMap,
+  buildClientToolsForMap,
+} from "../utils/build-client-map-config.ts";
 
 const logger = log4js.getLogger("service.v3.public");
 
@@ -53,33 +58,19 @@ class PublicService {
     // - mapConfig (with its own sub-properties)
     // - userSpecificMaps
 
-    // ** layersConfig ** — flat buckets + service fields in Hajk client shape
-    const layersConfig = await buildLegacyLayersConfigForMap(mapName);
-
-    // ** mapConfig.analytics **
-    // Ensure that we provide Analytics configuration from .env, if none exists in
-    // mapConfig yet but there are necessary keys in process.env.
-    const analytics = ["plausible", "matomo"].includes(
-      process.env.ANALYTICS_TYPE as string
-    )
-      ? getAnalyticsOptionsFromDotEnv()
-      : [];
-
-    // ** mapConfig.map **
-    // TODO: Implement full map response, consider moving the logic
-    // to a separate method.
-    const theMap = await prisma.map.findFirst({
-      where: { name: mapName },
-    });
-
-    // ** mapConfig.projections **
-    // TODO: Implement projections response.
-
-    // ** mapConfig.tools **
-    // TODO: Implement tools response.
-
-    // ** userSpecificMaps **
-    const userSpecificMaps = await this.#getAllMaps();
+    const [layersConfig, analytics, theMap, projections, tools, userSpecificMaps] =
+      await Promise.all([
+        buildLegacyLayersConfigForMap(mapName),
+        Promise.resolve(
+          ["plausible", "matomo"].includes(process.env.ANALYTICS_TYPE as string)
+            ? getAnalyticsOptionsFromDotEnv()
+            : []
+        ),
+        buildClientMapForMap(mapName),
+        buildClientProjectionsForMap(mapName),
+        buildClientToolsForMap(mapName),
+        this.#getAllMaps(),
+      ]);
 
     return this.#useLegacyConfig
       ? {
@@ -87,8 +78,8 @@ class PublicService {
           mapConfig: {
             analytics,
             map: theMap,
-            projections: [],
-            tools: [],
+            projections,
+            tools,
           },
           userSpecificMaps,
         }

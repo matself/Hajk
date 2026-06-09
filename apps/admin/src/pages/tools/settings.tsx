@@ -3,18 +3,20 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
 
-import { useTools, useUpdateTool, Tool } from "../../api/tools";
+import { useTools, useUpdateTool, useMapsByToolName, Tool } from "../../api/tools";
 import FormContainer from "../../components/form-components/form-container";
 import FormActionPanel from "../../components/form-action-panel";
 import { useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import RenderTool from "./renderers/render-tool";
+import UsedInMapsPanel from "../../components/used-in-maps-panel";
 import { useForm, FieldValues } from "react-hook-form";
 
 export default function ToolSettings() {
   const { t } = useTranslation();
   const { toolName } = useParams<{ toolName: string }>();
   const { data: tools, isLoading } = useTools();
+  const { data: mapsData, isLoading: isLoadingMaps } = useMapsByToolName(toolName ?? "");
   const updateToolMutation = useUpdateTool();
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -114,6 +116,11 @@ export default function ToolSettings() {
             formRef={formRef}
           >
             {renderTool(tool)}
+            <UsedInMapsPanel
+              rows={(mapsData ?? []).map((map) => ({ id: map.id, map: map.name }))}
+              isLoading={isLoadingMaps}
+              emptyMessage={t("tools.usedInMapsNone")}
+            />
           </FormContainer>
         )}
       </FormActionPanel>
