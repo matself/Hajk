@@ -39,6 +39,7 @@ import {
   insertIntoGroup,
 } from "./utils";
 import { DraggableSourceItem } from "./draggable-source-item";
+import { DND_ITEM_TITLE_SX } from "./utils";
 import { SortableDropZone } from "./sortable-drop-zone";
 
 export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
@@ -195,13 +196,15 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
         onDragEnd={handleDragEnd}
       >
         <Grid container spacing={3}>
-          <Grid size={4}>
+          <Grid size={4} sx={{ minWidth: 0 }}>
             <Paper
               sx={{
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
                 maxHeight: 630,
+                minWidth: 0,
+                overflow: "hidden",
               }}
             >
               {availableTabs.length > 1 && (
@@ -218,13 +221,21 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
               <TextField
                 size="small"
                 fullWidth
-                sx={{ my: 2, flexShrink: 0 }}
+                sx={{ my: 2, flexShrink: 0, minWidth: 0 }}
                 placeholder={t("common.search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
 
-              <List sx={{ overflowY: "auto", overflowX: "hidden", flex: 1 }}>
+              <List
+                sx={{
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  flex: 1,
+                  minWidth: 0,
+                  width: "100%",
+                }}
+              >
                 {currentTabType === "layer" &&
                   filteredLayers.map((i) => (
                     <DraggableSourceItem key={i.id} item={i} type="layer" />
@@ -270,10 +281,18 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
         <DragOverlay>
           {activeDrag && (
             <Paper
-              sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 1 }}
+              sx={{
+                p: 1.5,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 1,
+                maxWidth: "100%",
+              }}
             >
-              <DragIndicator />
-              <Typography>{activeDrag.name}</Typography>
+              <DragIndicator sx={{ mt: 0.25, flexShrink: 0 }} />
+              <Typography title={activeDrag.name} sx={DND_ITEM_TITLE_SX}>
+                {activeDrag.name}
+              </Typography>
             </Paper>
           )}
         </DragOverlay>

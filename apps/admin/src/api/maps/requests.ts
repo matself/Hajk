@@ -173,7 +173,7 @@ export const getToolsByMapName = async (
 
 export const updateMapTools = async (
   mapName: string,
-  tools: { toolId: number; index: number; options: Record<string, unknown> }[]
+  tools: { toolId: number; index: number; target: string }[]
 ): Promise<void> => {
   const internalApiClient = getApiClient();
   try {

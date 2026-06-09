@@ -89,7 +89,7 @@ export default function MapSettings() {
 
     const byZone = (zone: string) =>
       [...mapTools]
-        .filter((t) => t.options?.target === zone)
+        .filter((t) => t.target === zone)
         .sort((a, b) => a.index - b.index)
         .map(toItem);
 
@@ -116,7 +116,7 @@ export default function MapSettings() {
       items.map((item, index) => ({
         toolId: parseInt(String(item.id).split(ID_DELIMITER)[1], 10),
         index,
-        options: { target: zone },
+        target: zone,
       }))
     );
     try {

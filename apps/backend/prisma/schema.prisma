@@ -152,9 +152,11 @@ model Tool {
 model ToolsOnMaps {
   mapName String
   toolId  Int
-  /// Determines the sort between tools
+  /// Determines the sort between tools within a zone
   index   Int    @default(0)
-  /// Allows overridding default tool options (set in Tool) on a per-map basis
+  /// Placement zone in the map UI: drawer | widgetLeft | widgetRight | controlButton
+  target  String @default("drawer")
+  /// Allows overriding default tool options (set in Tool) on a per-map basis
   options Json   @default("{}")
   map     Map    @relation(fields: [mapName], references: [name])
   tool    Tool   @relation(fields: [toolId], references: [id])
