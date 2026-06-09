@@ -33,7 +33,9 @@ const HEALTH_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 function isStale(lastChecked?: string): boolean {
   if (!lastChecked) return true;
-  return Date.now() - new Date(lastChecked).getTime() >= HEALTH_CHECK_INTERVAL_MS;
+  return (
+    Date.now() - new Date(lastChecked).getTime() >= HEALTH_CHECK_INTERVAL_MS
+  );
 }
 
 async function runWithConcurrencyLimit(
@@ -199,7 +201,9 @@ export const useServicesHealthCheck = (services: Service[]) => {
   const isCheckRunning = useRef(false);
 
   // Keep servicesRef in sync without triggering re-runs
-  servicesRef.current = services;
+  useEffect(() => {
+    servicesRef.current = services;
+  }, [services]);
 
   useEffect(() => {
     const updateCache = (id: string, status: SERVICE_STATUS) => {

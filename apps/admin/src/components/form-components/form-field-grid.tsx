@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 
 /** Vertical gap between stacked fields in settings panels (12px). */
 export const FORM_FIELD_ROW_SPACING = 1.5;

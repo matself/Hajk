@@ -9,7 +9,7 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Grid2 as Grid,
+  Grid,
   TextField,
   useTheme,
   MenuItem,
@@ -27,7 +27,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -36,8 +36,13 @@ import LayersIcon from "@mui/icons-material/Layers";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { GridRowId } from "@mui/x-data-grid";
+import type { GridRowSelectionModel } from "@mui/x-data-grid";
+import {
+  isGridRowSelected,
+  normalizeRowSelectionModel,
+} from "./row-selection-model";
+import { Controller, FieldValues, useForm, useWatch } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
   useLayerById,
@@ -77,7 +82,6 @@ import { buildLayerUpdatePayload } from "../../api/layers/build-layer-payload";
 import {
   getLayerCategoryFromPathname,
   getLayerSettingsVisibility,
-  isLayerSettingsChanged,
   LayerSettingsTab,
   normalizeLayerCategory,
 } from "./layer-category";
@@ -174,7 +178,6 @@ export default function LayerSettings() {
   const { data: roleOnLayer } = useGetRoleOnLayerByLayerId(layerId ?? "");
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [formBaseline, setFormBaseline] = useState<FieldValues | null>(null);
   const { data: service, isLoading: serviceLoading } = useServiceByLayerId(
     layer?.id ?? "",
     !!layer?.id,
@@ -329,62 +332,88 @@ export default function LayerSettings() {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FieldValues>({
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
+  const layerFormBaseline = useMemo(
+    () =>
+      layer ? buildLayerSettingsFormValues(layer, roleOnLayer?.roleId) : null,
+    [layer, roleOnLayer?.roleId],
+  );
 
-  // Reset form with layer data when it loads
-  useEffect(() => {
-    if (layer) {
-      const baseline = buildLayerSettingsFormValues(layer, roleOnLayer?.roleId);
-      setFormBaseline(baseline);
-      reset(baseline);
-    }
-  }, [layer, roleOnLayer, reset]);
-
-  useEffect(() => {
-    if (!layer) return;
+  const layerEditingDefaults = useMemo(() => {
+    if (!layer) return null;
     const opts =
       layer.options &&
       typeof layer.options === "object" &&
       !Array.isArray(layer.options)
         ? layer.options
         : {};
-    setEditingGeometryTypes(geometryTypesFromOptions(opts));
-    setEditingEditableFields(
-      Array.isArray(opts.editableFields)
+    return {
+      geometryTypes: geometryTypesFromOptions(opts),
+      editableFields: Array.isArray(opts.editableFields)
         ? (opts.editableFields as EditableFieldConfig[])
         : [],
-    );
-    setEditingNonEditableFields(
-      Array.isArray(opts.nonEditableFields)
+      nonEditableFields: Array.isArray(opts.nonEditableFields)
         ? (opts.nonEditableFields as EditableFieldConfig[])
         : [],
-    );
+    };
   }, [layer]);
 
-  const formValues = watch();
-  const watchRoleIdInput = watch("roleId") as string | undefined;
-  const watchGeometryField = watch("searchSettings.geometryField") as
+  const layerFormSyncKey = layer
+    ? `${layer.id}:${roleOnLayer?.roleId ?? ""}`
+    : null;
+
+  const [committedFormBaseline, setCommittedFormBaseline] =
+    useState<FieldValues | null>(null);
+  const [syncedLayerFormKey, setSyncedLayerFormKey] = useState<string | null>(
+    null,
+  );
+
+  if (layerFormSyncKey !== syncedLayerFormKey) {
+    setSyncedLayerFormKey(layerFormSyncKey);
+    setCommittedFormBaseline(null);
+    if (layerEditingDefaults) {
+      setEditingGeometryTypes(layerEditingDefaults.geometryTypes);
+      setEditingEditableFields(layerEditingDefaults.editableFields);
+      setEditingNonEditableFields(layerEditingDefaults.nonEditableFields);
+    }
+  }
+
+  const formBaseline = committedFormBaseline ?? layerFormBaseline;
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    getValues,
+    formState: { errors, isDirty },
+  } = useForm<FieldValues>({
+    mode: "onChange",
+    reValidateMode: "onChange",
+    values: formBaseline ?? undefined,
+  });
+
+  const watchRoleIdInput = useWatch({ control, name: "roleId" }) as
     | string
     | undefined;
-  const watchSingleTile = watch("singleTile") as boolean | undefined;
+  const watchGeometryField = useWatch({
+    control,
+    name: "searchSettings.geometryField",
+  }) as string | undefined;
+  const watchSingleTile = useWatch({ control, name: "singleTile" }) as
+    | boolean
+    | undefined;
+
+  const normalizedSelection = useMemo(
+    () => normalizeRowSelectionModel(selectGridId),
+    [selectGridId],
+  );
 
   const filteredLayers = useMemo(() => {
     if (!getCapLayers) return [];
 
     const searchAndSelectedFilteredLayers = getCapLayers
       .map((layer, index) => {
-        const isSelected = selectGridId?.includes(index);
+        const isSelected = isGridRowSelected(index, normalizedSelection);
         return {
           id: index,
           layer,
@@ -395,7 +424,6 @@ export default function LayerSettings() {
       })
       .filter(
         (layer) =>
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           layer?.selected || // Disable lint here since ?? is messing with the data-grid search logic
           layer.layer.toLowerCase().includes(searchTerm.toLowerCase()),
       )
@@ -412,13 +440,20 @@ export default function LayerSettings() {
         return 0;
       });
     return searchAndSelectedFilteredLayers;
-  }, [getCapLayers, searchTerm, selectGridId]);
+  }, [getCapLayers, searchTerm, normalizedSelection]);
 
-  const selectedRowsData = useMemo(
-    () =>
-      selectGridId?.map((id) => filteredLayers.find((row) => row.id === id)),
-    [selectGridId, filteredLayers],
-  );
+  const selectedRowsData = useMemo(() => {
+    if (!normalizedSelection) return undefined;
+
+    const selectedIds: GridRowId[] =
+      normalizedSelection.type === "include"
+        ? Array.from(normalizedSelection.ids)
+        : filteredLayers
+            .map((row) => row.id)
+            .filter((id) => !normalizedSelection.ids.has(id));
+
+    return selectedIds.map((id) => filteredLayers.find((row) => row.id === id));
+  }, [normalizedSelection, filteredLayers]);
 
   const selectedRowObjects = useMemo(
     () => selectedRowsData?.map((row) => row?.layer ?? ""),
@@ -432,13 +467,6 @@ export default function LayerSettings() {
     if (saved.length !== current.length) return true;
     return saved.some((value, index) => value !== current[index]);
   }, [layer?.selectedLayers, selectedRowObjects, selectGridId]);
-
-  const isSaveDirty = useMemo(() => {
-    if (!formBaseline) return false;
-    return isLayerSettingsChanged(layerCategory, formValues, formBaseline, {
-      selectedLayersDirty,
-    });
-  }, [layerCategory, formValues, formBaseline, selectedLayersDirty]);
 
   const [openInfoClickModal, setOpenInfoClickModal] = useState(false);
   const [selectedInfoClickLayer, setSelectedInfoClickLayer] =
@@ -570,15 +598,12 @@ export default function LayerSettings() {
     const mergedOptions: Record<string, unknown> = {
       ...existingOptions,
       layersInfo: updatedLayersInfo,
-      keyword: (existingOptions.keyword as string | undefined) ?? "",
-      category: (existingOptions.category as string | undefined) ?? "",
-      layerDisplayDescription:
-        (existingOptions.layerDisplayDescription as string | undefined) ?? "",
-      geoWebCache:
-        (existingOptions.geoWebCache as boolean | undefined) ?? false,
+      keyword: existingOptions.keyword ?? "",
+      category: existingOptions.category ?? "",
+      layerDisplayDescription: existingOptions.layerDisplayDescription ?? "",
+      geoWebCache: existingOptions.geoWebCache ?? false,
       showAttributeTableButton:
-        (existingOptions.showAttributeTableButton as boolean | undefined) ??
-        false,
+        existingOptions.showAttributeTableButton ?? false,
     };
 
     const currentValues = {
@@ -739,21 +764,15 @@ export default function LayerSettings() {
         // Use the appropriate layersInfo (new takes precedence)
         ...(layersInfoToUse && { layersInfo: layersInfoToUse }),
         // Override with new values if provided
-        keyword:
-          (newOptions.keyword as string | undefined) ??
-          (existingOptions.keyword as string | undefined),
-        category:
-          (newOptions.category as string | undefined) ??
-          (existingOptions.category as string | undefined),
-        geoWebCache:
-          (newOptions.geoWebCache as boolean | undefined) ??
-          (existingOptions.geoWebCache as boolean | undefined),
+        keyword: newOptions.keyword ?? existingOptions.keyword,
+        category: newOptions.category ?? existingOptions.category,
+        geoWebCache: newOptions.geoWebCache ?? existingOptions.geoWebCache,
         showAttributeTableButton:
-          (newOptions.showAttributeTableButton as boolean | undefined) ??
-          (existingOptions.showAttributeTableButton as boolean | undefined),
+          newOptions.showAttributeTableButton ??
+          existingOptions.showAttributeTableButton,
         layerDisplayDescription:
-          (newOptions.layerDisplayDescription as string | undefined) ??
-          (existingOptions.layerDisplayDescription as string | undefined),
+          newOptions.layerDisplayDescription ??
+          existingOptions.layerDisplayDescription,
         ...(settingsVisibility.showEditingSettingsPanel && {
           editPoint: editingGeometryTypes.editPoint,
           editMultiPoint: editingGeometryTypes.editMultiPoint,
@@ -825,11 +844,11 @@ export default function LayerSettings() {
           format: layerData?.infoClickSettings?.format,
           sortMethod: layerData?.infoClickSettings?.sortMethod,
         },
-      } as Record<string, unknown>);
+      });
 
       await updateLayer({
         layerId: layer?.id ?? "",
-        data: payload as Partial<LayerUpdateInput>,
+        data: payload,
       });
       toast.success(t("layers.updateLayerSuccess", { name: layerData.name }), {
         position: "bottom-left",
@@ -928,8 +947,7 @@ export default function LayerSettings() {
             nonEditableFields: editingNonEditableFields,
           },
         };
-        setFormBaseline(savedBaseline);
-        reset(savedBaseline);
+        setCommittedFormBaseline(savedBaseline);
       }
     } catch (error) {
       console.error("Failed to update layer:", error);
@@ -975,7 +993,7 @@ export default function LayerSettings() {
         createdDate={layer?.createdDate}
         lastSavedBy={layer?.lastSavedBy}
         lastSavedDate={layer?.lastSavedDate}
-        isDirty={isSaveDirty}
+        isDirty={isDirty || selectedLayersDirty}
         warning={
           <Box sx={{ mt: 1 }}>
             <Button
@@ -1047,10 +1065,7 @@ export default function LayerSettings() {
                         .filter((s) => s.length > 0)
                     : undefined;
 
-              if (
-                selectedRowObjects !== undefined &&
-                selectedRowObjects.length === 0
-              ) {
+              if (selectedRowObjects?.length === 0) {
                 toast.warning(t("layers.noLayersSelected"), {
                   position: "bottom-left",
                   theme: palette.mode,
@@ -1139,9 +1154,9 @@ export default function LayerSettings() {
                   }),
                 },
                 selectedLayers: selectedRowObjects,
-              } as Record<string, unknown>);
+              });
 
-              void handleUpdateLayer(normalized as LayerUpdateInput);
+              void handleUpdateLayer(normalized);
             })(e);
           }}
           formRef={formRef}
@@ -1194,7 +1209,7 @@ export default function LayerSettings() {
                 "options.category",
                 "metadata.attribution",
               ]}
-              allValues={formValues}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.information")}>
@@ -1204,7 +1219,7 @@ export default function LayerSettings() {
                     fields={["name"]}
                     synonyms={["namn", "name"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={12}>
                       <TextFieldWithHelp
@@ -1227,7 +1242,7 @@ export default function LayerSettings() {
                     fields={["serviceId"]}
                     synonyms={["tjänst", "service"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -1274,7 +1289,7 @@ export default function LayerSettings() {
                     fields={["internalName"]}
                     synonyms={["intern", "internal"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1289,7 +1304,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.copyRight"]}
                     fields={["metadata.attribution"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1305,7 +1320,7 @@ export default function LayerSettings() {
                     fields={["description"]}
                     synonyms={["beskrivning", "description"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1323,7 +1338,7 @@ export default function LayerSettings() {
                     fields={["options.keyword"]}
                     synonyms={["nyckelord", "keyword"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1339,7 +1354,7 @@ export default function LayerSettings() {
                     fields={["options.category"]}
                     synonyms={["kategori", "category"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1364,7 +1379,7 @@ export default function LayerSettings() {
                 "role",
               ]}
               fields={["roleId"]}
-              allValues={formValues}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("layers.permissions")}>
@@ -1374,7 +1389,7 @@ export default function LayerSettings() {
                     fields={["roleId"]}
                     synonyms={["behörighet", "roll", "role"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
@@ -1430,7 +1445,7 @@ export default function LayerSettings() {
                   "options.geoWebCache",
                   "customRatio",
                 ]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("services.settings.request")}>
@@ -1450,7 +1465,7 @@ export default function LayerSettings() {
                       ]}
                       synonyms={["hidpi", "tiled", "geoWebCache", "gwc"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -1542,7 +1557,9 @@ export default function LayerSettings() {
                         labelKeys={["layers.customRatio"]}
                         fields={["customRatio"]}
                         searchTerm={settingsSearchTerm}
-                        allValues={formValues}
+                        allValues={
+                          showSettingsSearchUi ? getValues() : undefined
+                        }
                       >
                         <Grid size={{ xs: 12, md: 10 }}>
                           <TextFieldWithHelp
@@ -1577,7 +1594,7 @@ export default function LayerSettings() {
                   "dpi",
                 ]}
                 fields={["useCustomDpiList"]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.customDpi")}>
@@ -1587,7 +1604,7 @@ export default function LayerSettings() {
                       fields={["useCustomDpiList"]}
                       synonyms={["dpi list", "dpi-lista"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -1630,12 +1647,20 @@ export default function LayerSettings() {
                           "pixelratio",
                         ]}
                         searchTerm={settingsSearchTerm}
-                        allValues={formValues}
+                        allValues={
+                          showSettingsSearchUi ? getValues() : undefined
+                        }
                       >
                         <Grid container rowSpacing={1.5} columnSpacing={1.5}>
                           {customDpiList.map((item, index) => (
                             <Grid size={12} key={index}>
-                              <Box display="flex" alignItems="center" gap={2}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 2,
+                                }}
+                              >
                                 <TextFieldWithHelp
                                   labelKey="layers.pxRatio"
                                   helpKey="layers.help.pxRatio"
@@ -1716,7 +1741,7 @@ export default function LayerSettings() {
                 "style",
                 "legendOptions",
               ]}
-              allValues={formValues}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("layers.settings")}>
@@ -1726,7 +1751,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.style"]}
                       fields={["style"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <Controller
@@ -1760,7 +1785,7 @@ export default function LayerSettings() {
                     fields={["opacity"]}
                     synonyms={["opacitet", "opacity"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid
                       size={{
@@ -1799,7 +1824,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.minZoom"]}
                     fields={["minZoom"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1819,7 +1844,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.maxZoom"]}
                     fields={["maxZoom"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1839,7 +1864,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.zIndex"]}
                     fields={["zIndex"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1859,7 +1884,7 @@ export default function LayerSettings() {
                     fields={["legendOptions"]}
                     synonyms={["teckenförklaring", "legend"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -1873,7 +1898,7 @@ export default function LayerSettings() {
                   <SettingsSearchField
                     labelKeys={["layers.minMaxZoomAlertOnToggleOnly"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={12}>
                       <FormGroup>
@@ -1922,7 +1947,7 @@ export default function LayerSettings() {
                   "timeSliderStart",
                   "timeSliderEnd",
                 ]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.timeSlider")}>
@@ -1932,7 +1957,7 @@ export default function LayerSettings() {
                       fields={["timeSliderVisible"]}
                       synonyms={["tidsreglage synlig", "visible"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -1963,7 +1988,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.timeSliderStart"]}
                       fields={["timeSliderStart"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -1978,7 +2003,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.timeSliderEnd"]}
                       fields={["timeSliderEnd"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2007,7 +2032,7 @@ export default function LayerSettings() {
                   "layerswitcher",
                 ]}
                 fields={["hideExpandArrow"]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.layerSwitcher")}>
@@ -2017,7 +2042,7 @@ export default function LayerSettings() {
                       fields={["hideExpandArrow"]}
                       synonyms={["expand", "pil", "arrow"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -2085,7 +2110,7 @@ export default function LayerSettings() {
                 "metadata.urlTitle",
                 "options.layerDisplayDescription",
               ]}
-              allValues={formValues}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("layers.metadataTab")}>
@@ -2101,7 +2126,7 @@ export default function LayerSettings() {
                     ]}
                     synonyms={["attributtabell", "attribute table"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={12}>
                       <FormGroup>
@@ -2152,7 +2177,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.metadata.title"]}
                     fields={["metadata.title"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2167,7 +2192,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.metadata.owner"]}
                     fields={["metadata.owner"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2182,7 +2207,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.metadata.description"]}
                     fields={["metadata.description"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2199,7 +2224,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.metadata.urlTitle"]}
                     fields={["metadata.urlTitle"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2214,7 +2239,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.metadata.url"]}
                     fields={["metadata.url"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2229,7 +2254,7 @@ export default function LayerSettings() {
                     labelKeys={["layers.layerDisplayDescription"]}
                     fields={["options.layerDisplayDescription"]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <Grid size={{ xs: 12, md: 10 }}>
                       <TextFieldWithHelp
@@ -2277,7 +2302,7 @@ export default function LayerSettings() {
                   "infoClickSettings.format",
                   "infoClickSettings.sortMethod",
                 ]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("common.infoclick")}>
@@ -2287,7 +2312,7 @@ export default function LayerSettings() {
                       fields={["infoClickActive"]}
                       synonyms={["infoklick", "active"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -2318,7 +2343,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.infobox"]}
                       fields={["infoClickSettings.definition"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2336,7 +2361,7 @@ export default function LayerSettings() {
                       fields={["infoClickSettings.icon"]}
                       synonyms={["ikon", "icon"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2352,7 +2377,7 @@ export default function LayerSettings() {
                       fields={["infoClickSettings.sortProperty"]}
                       synonyms={["sortering", "sort"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2367,7 +2392,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.infoClickFormat"]}
                       fields={["infoClickSettings.format"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <Controller
@@ -2397,7 +2422,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.infoClickSortMethod"]}
                       fields={["infoClickSettings.sortMethod"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <Controller
@@ -2445,7 +2470,7 @@ export default function LayerSettings() {
                   "searchSettings.secondaryDisplayFields",
                   "searchSettings.shortDisplayFields",
                 ]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.settings.displayFields")}>
@@ -2454,7 +2479,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.primaryDisplayFields"]}
                       fields={["searchSettings.primaryDisplayFields"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <TextFieldWithHelp
@@ -2469,7 +2494,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.secondaryDisplayFields"]}
                       fields={["searchSettings.secondaryDisplayFields"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2484,7 +2509,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.shortDisplayFields"]}
                       fields={["searchSettings.shortDisplayFields"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2530,7 +2555,7 @@ export default function LayerSettings() {
                   "searchSettings.outputFormat",
                   "searchSettings.geometryField",
                 ]}
-                allValues={formValues}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.settings.searchSettings")}>
@@ -2539,7 +2564,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.searchSettings.active"]}
                       fields={["searchSettings.active"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={12}>
                         <FormGroup>
@@ -2570,7 +2595,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.searchSettings.url"]}
                       fields={["searchSettings.url"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2597,7 +2622,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.searchSettings.searchFields"]}
                       fields={["searchSettings.searchFields"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2613,16 +2638,14 @@ export default function LayerSettings() {
                       labelKeys={["layers.searchSettings.outputFormat"]}
                       fields={["searchSettings.outputFormat"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <Box>
                           <FieldLabelAbove
                             htmlFor="searchSettings-outputFormat"
                             label={t("layers.searchSettings.outputFormat")}
-                            help={String(
-                              t("layers.help.searchOutputFormat" as never),
-                            )}
+                            help={String(t("layers.help.searchOutputFormat"))}
                           />
                           <Controller
                             name="searchSettings.outputFormat"
@@ -2653,7 +2676,7 @@ export default function LayerSettings() {
                       labelKeys={["layers.searchSettings.geometryField"]}
                       fields={["searchSettings.geometryField"]}
                       searchTerm={settingsSearchTerm}
-                      allValues={formValues}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
                       <Grid size={{ xs: 12, md: 10 }}>
                         <TextFieldWithHelp
@@ -2708,7 +2731,7 @@ export default function LayerSettings() {
                 "options.editMultiPolygon",
                 "options.allowMultiGeometries",
               ]}
-              allValues={formValues}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
               searchTerm={settingsSearchTerm}
             >
               {settingsVisibility.showEditingSettingsPanel &&
@@ -2751,7 +2774,7 @@ export default function LayerSettings() {
                       "polygon",
                     ]}
                     searchTerm={settingsSearchTerm}
-                    allValues={formValues}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
                     <EditingLayerSettings
                       serviceUrl={service.url}

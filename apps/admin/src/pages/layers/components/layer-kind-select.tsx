@@ -35,7 +35,7 @@ export default function LayerKindSelect({
   const selectableCategories = getSelectableLayerCategories(serviceType);
 
   const handleChange = (event: SelectChangeEvent<LayerCategory>) => {
-    onChange(event.target.value as LayerCategory);
+    onChange(event.target.value);
   };
 
   return (

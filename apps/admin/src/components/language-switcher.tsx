@@ -1,4 +1,3 @@
-import Grid from "@mui/material/Grid2";
 import {
   Box,
   FormControl,
@@ -6,6 +5,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Grid,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import useAppStateStore from "../store/use-app-state-store";
@@ -20,9 +20,13 @@ export default function LanguageSwitcher() {
     <Paper elevation={4} sx={{ height: 80, width: 250, mt: 2 }}>
       <Grid
         container
-        sx={{ height: "100%", width: "100%", p: 2 }}
-        justifyContent="center"
-        alignContent="center"
+        sx={{
+          height: "100%",
+          width: "100%",
+          p: 2,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <FormControl variant="outlined" fullWidth>
           <InputLabel id="language-select-label">
@@ -39,26 +43,26 @@ export default function LanguageSwitcher() {
             label={t("common.language")}
           >
             <MenuItem value={LANGUAGES.EN}>
-              <Box display="flex">
+              <Box sx={{ display: "flex" }}>
                 {t("common.english")}
                 <Box
                   component="img"
                   src={`${import.meta.env.BASE_URL.replace(
                     /\/$/,
-                    ""
+                    "",
                   )}/en.logo.svg`}
                   sx={{ ml: 1 }}
                 />
               </Box>
             </MenuItem>
             <MenuItem value={LANGUAGES.SV}>
-              <Box display="flex">
+              <Box sx={{ display: "flex" }}>
                 {t("common.swedish")}
                 <Box
                   component="img"
                   src={`${import.meta.env.BASE_URL.replace(
                     /\/$/,
-                    ""
+                    "",
                   )}/sv.logo.svg`}
                   sx={{ ml: 1 }}
                 />

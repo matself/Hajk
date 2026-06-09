@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Autocomplete,
   Alert,
@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { Trans, useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { isAxiosError } from "axios";
@@ -278,10 +278,7 @@ export default function GroupsList({
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <CreateButton
-            onClick={handleClickOpen}
-            label={t("groups.create")}
-          />
+          <CreateButton onClick={handleClickOpen} label={t("groups.create")} />
         ) : undefined
       }
     >

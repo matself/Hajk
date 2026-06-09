@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Grid2 as Grid, Switch } from "@mui/material";
+import { Grid, Switch } from "@mui/material";
 import { TextField, FormControlLabel, Checkbox } from "@mui/material";
 import { useForm, Controller, FieldValues, Control } from "react-hook-form";
 import FormAccordion from "../../../components/form-components/form-accordion";
@@ -308,7 +308,12 @@ export default function SearchRenderer({
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.userSettings.title")}>
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="searchVisibleLayers"
@@ -335,7 +340,12 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="wildcardBefore"
@@ -362,7 +372,12 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="wildcardAfter"
@@ -389,7 +404,12 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="caseSensitive"
@@ -416,7 +436,12 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="requireFullObject"
@@ -443,7 +468,12 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center" rowSpacing={1.5}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="showResultLabel"

@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { SERVICE_TYPE } from "../../../api/services";
 import { Chip } from "@mui/material";
 
@@ -11,9 +11,12 @@ export default function ServiceTypeBadge(props: Props) {
   return (
     <Grid
       container
-      justifyContent="flex-start"
-      alignContent="center"
-      sx={{ height: "100%", width: "100%" }}
+      sx={{
+        height: "100%",
+        width: "100%",
+        justifyContent: "flex-start",
+        alignItems: "center",
+      }}
     >
       <Chip
         size="small"

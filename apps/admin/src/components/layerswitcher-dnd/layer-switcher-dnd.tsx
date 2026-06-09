@@ -6,7 +6,7 @@ import {
   Typography,
   TextField,
   List,
-  Grid2 as Grid,
+  Grid,
   Paper,
 } from "@mui/material";
 import { DragIndicator } from "@mui/icons-material";

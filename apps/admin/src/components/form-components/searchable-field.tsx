@@ -19,7 +19,7 @@ interface SearchableFieldProps {
 export function SearchableField({
   keywords,
   fields = [],
-  allValues = {},
+  allValues,
   searchTerm,
   children,
 }: SearchableFieldProps) {
@@ -48,7 +48,7 @@ export function SettingsSearchField({
   labelKeys,
   fields = [],
   synonyms = [],
-  allValues = {},
+  allValues,
   searchTerm,
   children,
 }: SettingsSearchFieldProps) {

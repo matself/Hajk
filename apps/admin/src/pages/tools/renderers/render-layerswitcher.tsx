@@ -1,4 +1,4 @@
-import { Grid2 as Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import {
   TextField,
   FormGroup,
@@ -21,7 +21,7 @@ import { Tool } from "../../../api/tools";
 const getOption = <T,>(
   options: Record<string, unknown> | undefined,
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): T => {
   if (!options || !(key in options)) return defaultValue;
   return options[key] as T;
@@ -48,7 +48,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 return [`options.${k}`, String(v)];
               }
               return [`options.${k}`, ""];
-            })
+            }),
           )
         : {}),
     },
@@ -312,7 +312,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "legendForceTransparency",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -352,7 +352,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "enableTransparencySlider",
-                true
+                true,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -398,7 +398,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "enableSystemLayersSwitch",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -460,7 +460,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "enableQuickAccessPresets",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -498,7 +498,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "enableUserQuickAccessFavorites",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -520,7 +520,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "userQuickAccessFavoritesInfoText",
-                ""
+                "",
               )}
               render={({ field }) => (
                 <TextField
@@ -584,7 +584,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "minMaxZoomAlertOnToggleOnly",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel
@@ -684,7 +684,7 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
               defaultValue={getOption(
                 options,
                 "renderSpecialBackgroundsAtBottom",
-                false
+                false,
               )}
               render={({ field }) => (
                 <FormControlLabel

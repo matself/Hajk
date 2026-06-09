@@ -26,6 +26,8 @@ import {
   TextField,
   IconButton,
   Switch,
+  type SxProps,
+  type Theme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import {
@@ -114,15 +116,19 @@ const TOOL_ICON_MAP: Record<
   vtsearch: SearchIcon,
 };
 
-// Helper to get icon component for a tool name
-const getToolIconComponent = (
-  toolName: string
-): React.ComponentType<{
-  fontSize?: "small" | "inherit" | "medium" | "large";
-}> => {
-  // Convert to lowercase to match the map keys
-  return TOOL_ICON_MAP[toolName.toLowerCase()] ?? MoreIcon;
-};
+type ToolIconFontSize = "small" | "inherit" | "medium" | "large";
+
+interface ToolIconProps {
+  name: string;
+  fontSize?: ToolIconFontSize;
+  sx?: SxProps<Theme>;
+}
+
+const ToolIcon = ({ name, fontSize = "medium", sx }: ToolIconProps) =>
+  React.createElement(TOOL_ICON_MAP[name.toLowerCase()] ?? MoreIcon, {
+    fontSize,
+    sx,
+  });
 
 // Compact draggable item for grid layout
 interface CompactDraggableItemProps {
@@ -202,8 +208,6 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const IconComponent = getToolIconComponent(name);
-
   if (isControlButton) {
     return (
       <Paper
@@ -229,7 +233,7 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
         }}
         title={name}
       >
-        <IconComponent fontSize="medium" />
+        <ToolIcon name={name} fontSize="medium" />
         {onRemove && (
           <IconButton
             className="remove-btn"
@@ -281,7 +285,11 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
           },
         }}
       >
-        <IconComponent fontSize="large" sx={{ mt: 0.25, flexShrink: 0 }} />
+        <ToolIcon
+          name={name}
+          fontSize="large"
+          sx={{ mt: 0.25, flexShrink: 0 }}
+        />
         <Typography variant="body2" title={name} sx={DND_ITEM_TITLE_SX}>
           {name}
         </Typography>
@@ -331,7 +339,11 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
         },
       }}
     >
-      <IconComponent fontSize="medium" sx={{ mt: 0.25, flexShrink: 0 }} />
+      <ToolIcon
+        name={name}
+        fontSize="medium"
+        sx={{ mt: 0.25, flexShrink: 0 }}
+      />
       <Typography variant="body2" title={name} sx={DND_ITEM_TITLE_SX}>
         {name}
       </Typography>
@@ -406,7 +418,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 5 },
     }),
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
   // Collect all added tool IDs from all zones
@@ -430,7 +442,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
     return tools.filter(
       (tool) =>
         tool.name.toLowerCase().includes(search.toLowerCase()) &&
-        !addedToolIds.has(`tool${ID_DELIMITER}${tool.id}`)
+        !addedToolIds.has(`tool${ID_DELIMITER}${tool.id}`),
     );
   }, [tools, search, addedToolIds]);
 
@@ -485,7 +497,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
 
   // Helper to find which zone an item belongs to
   const findZoneForItem = (
-    itemId: string
+    itemId: string,
   ): {
     zone: ToolPlacement;
     items: TreeItems<TreeItemData>;
@@ -493,7 +505,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
   } | null => {
     const containsId = (
       items: TreeItems<TreeItemData>,
-      id: string
+      id: string,
     ): boolean => {
       for (const it of items) {
         if (it.id === id) return true;
@@ -558,12 +570,12 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
     // If active item is from a zone
     if (activeZone) {
       // Dropping on another item in the same zone - reorder
-      if (overZone && activeZone.zone === overZone.zone) {
+      if (overZone?.zone === activeZone.zone) {
         const oldIndex = activeZone.items.findIndex((i) => i.id === activeId);
         const newIndex = activeZone.items.findIndex((i) => i.id === overId);
         if (oldIndex !== newIndex) {
           activeZone.onChange(
-            arrayMove([...activeZone.items], oldIndex, newIndex)
+            arrayMove([...activeZone.items], oldIndex, newIndex),
           );
         }
         return;
@@ -695,12 +707,12 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
         break;
       case "widgetRight":
         onWidgetRightItemsChange(
-          widgetRightItems.filter((i) => i.id !== itemId)
+          widgetRightItems.filter((i) => i.id !== itemId),
         );
         break;
       case "controlButton":
         onControlButtonItemsChange(
-          controlButtonItems.filter((i) => i.id !== itemId)
+          controlButtonItems.filter((i) => i.id !== itemId),
         );
         break;
     }
@@ -708,7 +720,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
 
   const renderSortableZoneItems = (
     items: TreeItems<TreeItemData>,
-    zone: ToolPlacement
+    zone: ToolPlacement,
   ) => {
     const isControlButton = zone === "controlButton";
     const isWidget = zone === "widgetLeft" || zone === "widgetRight";
@@ -758,15 +770,15 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
           drawerContent={renderSortableZoneItems(drawerItems, "drawer")}
           widgetLeftContent={renderSortableZoneItems(
             widgetLeftItems,
-            "widgetLeft"
+            "widgetLeft",
           )}
           widgetRightContent={renderSortableZoneItems(
             widgetRightItems,
-            "widgetRight"
+            "widgetRight",
           )}
           controlButtonContent={renderSortableZoneItems(
             controlButtonItems,
-            "controlButton"
+            "controlButton",
           )}
           isWidgetLeftFull={widgetLeftItems.length >= 3}
           isWidgetRightFull={widgetRightItems.length >= 3}
@@ -794,7 +806,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
                 mb: 1.5,
               }}
             >
-              <Typography variant="subtitle1" fontWeight={600}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 {t("common.tools")}
               </Typography>
               <TextField
@@ -827,17 +839,14 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
               gap: 0.75,
             }}
           >
-            {filteredTools.map((tool) => {
-              const IconComponent = getToolIconComponent(tool.name);
-              return (
-                <CompactDraggableItem
-                  key={tool.id}
-                  item={tool}
-                  type="tool"
-                  icon={<IconComponent fontSize="small" />}
-                />
-              );
-            })}
+            {filteredTools.map((tool) => (
+              <CompactDraggableItem
+                key={tool.id}
+                item={tool}
+                type="tool"
+                icon={<ToolIcon name={tool.name} fontSize="small" />}
+              />
+            ))}
           </Box>
         </Paper>
 
@@ -852,12 +861,11 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
                 maxWidth: "100%",
               }}
             >
-              {(() => {
-                const OverlayIcon = getToolIconComponent(activeDrag.name);
-                return (
-                  <OverlayIcon fontSize="small" sx={{ mt: 0.25, flexShrink: 0 }} />
-                );
-              })()}
+              <ToolIcon
+                name={activeDrag.name}
+                fontSize="small"
+                sx={{ mt: 0.25, flexShrink: 0 }}
+              />
               <Typography title={activeDrag.name} sx={DND_ITEM_TITLE_SX}>
                 {activeDrag.name}
               </Typography>

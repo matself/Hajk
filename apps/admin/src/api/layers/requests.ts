@@ -166,9 +166,7 @@ export const createLayer = async (
   const { layersDefault } = useAppStateStore.getState();
 
   const payload: LayerCreateInput = { ...newLayer };
-  if (!payload.name) {
-    payload.name = generateRandomName();
-  }
+  payload.name ??= generateRandomName();
 
   const layerKind: LayerKind = payload.layerKind ?? "display";
   const kindDefaults = filterDefaultsForLayerKind(
@@ -178,7 +176,7 @@ export const createLayer = async (
 
   const merged = mergeWithConfigDefaults(
     { ...kindDefaults },
-    { ...payload } as Record<string, unknown>,
+    { ...payload },
     {
       deepMergeKeys:
         layerKind === "search"

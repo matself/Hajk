@@ -7,6 +7,7 @@ import {
   ServiceCapabilities,
   SERVICE_STATUS,
   SERVICE_TYPE,
+  Projection,
 } from "./types";
 import { LayersApiResponse } from "../layers";
 import { Map } from "../maps";
@@ -165,12 +166,13 @@ export const getGroupsByServiceId = async (
   }
 };
 
-export const getAllProjections = async (): Promise<string[]> => {
+export const getAllProjections = async (): Promise<Projection[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<{ projections: string[] }>(
-      "/services/projections",
-    );
+    const response = await internalApiClient.get<{
+      count: number;
+      projections: Projection[];
+    }>("/services/projections");
     if (!response.data) {
       throw new Error("No projections data found");
     }
@@ -217,7 +219,7 @@ function buildCreateServicePayload(
 
   const merged = mergeWithConfigDefaults(
     { ...(servicesDefault ?? {}) },
-    { ...input } as Record<string, unknown>,
+    { ...input },
     { deepMergeKeys: ["projection"] },
   );
 
@@ -409,7 +411,10 @@ const parseCapabilitiesFromXML = (
           ?.getElementsByTagName("OnlineResource")[0]
           ?.getAttribute("xlink:href");
         if (styleName) {
-          styleData.push({ name: styleName, legendUrl: legendUrl ?? undefined });
+          styleData.push({
+            name: styleName,
+            legendUrl: legendUrl ?? undefined,
+          });
         }
       }
       styles[name] = styleData;
@@ -466,7 +471,9 @@ export const fetchCapabilities = async (
   );
 
   if (!response.ok) {
-    throw new Error(`Capabilities request failed with status ${response.status}`);
+    throw new Error(
+      `Capabilities request failed with status ${response.status}`,
+    );
   }
 
   const xmlData = await response.text();

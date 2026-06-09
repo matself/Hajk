@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { Button, TextField, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -61,17 +61,19 @@ export default function MapsList({
         debouncedSearchString === "" ||
         Object.values(map).some((value) => {
           return (
-            (typeof value === "string" &&
+            ((typeof value === "string" &&
               value
                 .toLowerCase()
                 .includes(debouncedSearchString.toLowerCase())) ||
-            (value &&
-              typeof value === "object" &&
-              Object.values(map).some(
-                (v) =>
-                  typeof v === "string" &&
-                  v.toLowerCase().includes(debouncedSearchString.toLowerCase()),
-              )) ||
+              (value &&
+                typeof value === "object" &&
+                Object.values(map).some(
+                  (v) =>
+                    typeof v === "string" &&
+                    v
+                      .toLowerCase()
+                      .includes(debouncedSearchString.toLowerCase()),
+                ))) ??
             (typeof map === "object" &&
               typeof map.options === "object" &&
               Object.values(map.options).some(
@@ -185,10 +187,7 @@ export default function MapsList({
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <CreateButton
-            onClick={handleClickOpen}
-            label={t("map.createMap")}
-          />
+          <CreateButton onClick={handleClickOpen} label={t("map.createMap")} />
         ) : undefined
       }
     >

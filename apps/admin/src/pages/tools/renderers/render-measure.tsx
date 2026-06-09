@@ -1,4 +1,4 @@
-import { Grid2 as Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import {
   TextField,
   FormControl,
@@ -28,7 +28,7 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
       type: tool?.type ?? "sketch",
       ...(tool?.options
         ? Object.fromEntries(
-            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v])
+            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v]),
           )
         : {}),
     },

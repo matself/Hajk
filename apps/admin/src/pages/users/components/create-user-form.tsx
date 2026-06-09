@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Box,
   Button,
@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm, useWatch } from "react-hook-form";
 
 import { useCreateLocalUser } from "../../../api/users/hooks";
 import { useToastifyOptions } from "../../../lib/toastify-helper";
@@ -27,7 +27,7 @@ export default function CreateUserForm() {
   const getToastifyOptions = useToastifyOptions();
   const toastifyOptions = getToastifyOptions(
     "user.createUserFailed",
-    "user.createUserSuccess"
+    "user.createUserSuccess",
   );
 
   const createUserMutation = useCreateLocalUser();
@@ -36,7 +36,6 @@ export default function CreateUserForm() {
     handleSubmit,
     control,
     reset,
-    watch,
     formState: { errors },
   } = useForm<CreateUserInput>();
 
@@ -54,11 +53,11 @@ export default function CreateUserForm() {
           toastifyOptions.onSuccess();
           reset();
         },
-      }
+      },
     );
   };
 
-  const password = watch("password");
+  const password = useWatch({ control, name: "password" });
 
   return (
     <Paper sx={{ p: 2, maxWidth: 500 }} elevation={4}>
@@ -109,7 +108,7 @@ export default function CreateUserForm() {
             />
           )}
         />
-        <Grid container justifyContent="center" sx={{ mt: 1, mb: 1 }}>
+        <Grid container sx={{ justifyContent: "center", mt: 1, mb: 1 }}>
           <Divider sx={{ width: "30%" }} />
         </Grid>
         <Controller
@@ -156,7 +155,7 @@ export default function CreateUserForm() {
             />
           )}
         />
-        <Grid container justifyContent="center">
+        <Grid container sx={{ justifyContent: "center" }}>
           <Button
             type="submit"
             variant="contained"

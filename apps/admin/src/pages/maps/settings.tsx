@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import {
-  Grid2 as Grid,
+  Grid,
   TextField,
   useTheme,
   FormControl,
@@ -54,7 +54,7 @@ export default function MapSettings() {
   const { palette } = useTheme();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [activeTab, setActiveTab] = useState<"menu" | "settings" | "tools">(
-    "settings"
+    "settings",
   );
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
@@ -67,13 +67,13 @@ export default function MapSettings() {
     TreeItems<TreeItemData>
   >([]);
   const [groupLayersDZ, setGroupLayersDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
   const [drawerDZ, setDrawerDZ] = useState<TreeItems<TreeItemData>>([]);
   const [controlDZ, setControlDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetLeftDZ, setWidgetLeftDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetRightDZ, setWidgetRightDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
   const [isToolsDirty, setIsToolsDirty] = useState(false);
   const initialToolsLoaded = useRef(false);
@@ -330,7 +330,7 @@ export default function MapSettings() {
                     projection:
                       (data["options.projection"] as string) ?? "EPSG:3006",
                     startZoom: String(
-                      toNumber(data["options.startZoom"]) ?? 1.33
+                      toNumber(data["options.startZoom"]) ?? 1.33,
                     ),
                     maxZoom: String(toNumber(data["options.maxZoom"]) ?? 8),
                     minZoom: String(toNumber(data["options.minZoom"]) ?? 0),
@@ -347,22 +347,22 @@ export default function MapSettings() {
                     printResolutions:
                       (data["options.printResolutions"] as string) ?? "",
                     constrainResolution: String(
-                      Boolean(data["options.constrainResolution"])
+                      Boolean(data["options.constrainResolution"]),
                     ),
                     constrainOnlyCenter: String(
-                      Boolean(data["options.constrainOnlyCenter"])
+                      Boolean(data["options.constrainOnlyCenter"]),
                     ),
                     constrainResolutionMobile: String(
-                      Boolean(data["options.constrainResolutionMobile"])
+                      Boolean(data["options.constrainResolutionMobile"]),
                     ),
                     enableDownloadLink: String(
-                      Boolean(data["options.enableDownloadLink"])
+                      Boolean(data["options.enableDownloadLink"]),
                     ),
                     enableAppStateInHash: String(
-                      Boolean(data["options.enableAppStateInHash"])
+                      Boolean(data["options.enableAppStateInHash"]),
                     ),
                     confirmOnWindowClose: String(
-                      Boolean(data["options.confirmOnWindowClose"])
+                      Boolean(data["options.confirmOnWindowClose"]),
                     ),
                     logoLight:
                       (data["options.logoLight"] as string) ?? "/logoLight.png",
@@ -375,36 +375,36 @@ export default function MapSettings() {
                     mapcleaner: String(Boolean(data["options.mapcleaner"])),
                     mapresetter: String(Boolean(data["options.mapresetter"])),
                     showThemeToggler: String(
-                      Boolean(data["options.showThemeToggler"])
+                      Boolean(data["options.showThemeToggler"]),
                     ),
                     showUserAvatar: String(
-                      Boolean(data["options.showUserAvatar"])
+                      Boolean(data["options.showUserAvatar"]),
                     ),
                     showRecentlyUsedPlugins: String(
-                      Boolean(data["options.showRecentlyUsedPlugins"])
+                      Boolean(data["options.showRecentlyUsedPlugins"]),
                     ),
                     altShiftDragRotate: String(
-                      Boolean(data["options.altShiftDragRotate"])
+                      Boolean(data["options.altShiftDragRotate"]),
                     ),
                     onFocusOnly: String(Boolean(data["options.onFocusOnly"])),
                     doubleClickZoom: String(
-                      Boolean(data["options.doubleClickZoom"])
+                      Boolean(data["options.doubleClickZoom"]),
                     ),
                     keyboard: String(Boolean(data["options.keyboard"])),
                     mouseWheelZoom: String(
-                      Boolean(data["options.mouseWheelZoom"])
+                      Boolean(data["options.mouseWheelZoom"]),
                     ),
                     shiftDragZoom: String(
-                      Boolean(data["options.shiftDragZoom"])
+                      Boolean(data["options.shiftDragZoom"]),
                     ),
                     dragPan: String(Boolean(data["options.dragPan"])),
                     pinchRotate: String(Boolean(data["options.pinchRotate"])),
                     pinchZoom: String(Boolean(data["options.pinchZoom"])),
                     zoomLevelDelta: String(
-                      toNumber(data["options.zoomLevelDelta"]) ?? ""
+                      toNumber(data["options.zoomLevelDelta"]) ?? "",
                     ),
                     zoomAnimationDuration: String(
-                      toNumber(data["options.zoomAnimationDuration"]) ?? ""
+                      toNumber(data["options.zoomAnimationDuration"]) ?? "",
                     ),
                     preferredColorScheme:
                       (data["options.preferredColorScheme"] as string) ??
@@ -415,13 +415,13 @@ export default function MapSettings() {
                       (data["options.secondaryColor"] as string) ?? "#ffa000",
                     drawerStatic: String(Boolean(data["options.drawerStatic"])),
                     drawerVisible: String(
-                      Boolean(data["options.drawerVisible"])
+                      Boolean(data["options.drawerVisible"]),
                     ),
                     drawerVisibleMobile: String(
-                      Boolean(data["options.drawerVisibleMobile"])
+                      Boolean(data["options.drawerVisibleMobile"]),
                     ),
                     drawerPermanent: String(
-                      Boolean(data["options.drawerPermanent"])
+                      Boolean(data["options.drawerPermanent"]),
                     ),
                     drawerContent:
                       (data["options.drawerContent"] as string) ?? "plugins",
@@ -433,13 +433,13 @@ export default function MapSettings() {
                     drawerButtonIcon:
                       (data["options.drawerButtonIcon"] as string) ?? "MapIcon",
                     showCookieNotice: String(
-                      Boolean(data["options.showCookieNotice"])
+                      Boolean(data["options.showCookieNotice"]),
                     ),
                     cookieUse3dPart: String(
-                      Boolean(data["options.cookieUse3dPart"])
+                      Boolean(data["options.cookieUse3dPart"]),
                     ),
                     showCookieNoticeButton: String(
-                      Boolean(data["options.showCookieNoticeButton"])
+                      Boolean(data["options.showCookieNoticeButton"]),
                     ),
                     cookieLink:
                       (data["options.cookieLink"] as string) ??
@@ -448,14 +448,14 @@ export default function MapSettings() {
                       (data["options.cookieMessage"] as string) ??
                       "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
                     introductionEnabled: String(
-                      Boolean(data["options.introductionEnabled"])
+                      Boolean(data["options.introductionEnabled"]),
                     ),
                     introductionShowControlButton: String(
-                      Boolean(data["options.introductionShowControlButton"])
+                      Boolean(data["options.introductionShowControlButton"]),
                     ),
                     introductionSteps:
                       (data["options.introductionSteps"] as string) ?? "[]",
-                  } as Record<string, string>,
+                  },
                 };
 
                 void handleUpdateMap(normalized);

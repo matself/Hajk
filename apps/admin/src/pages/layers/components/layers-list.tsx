@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import {
   Box,
   Button,
@@ -19,7 +19,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { GridRenderCellParams, GridColDef } from "@mui/x-data-grid";
 import { Trans, useTranslation } from "react-i18next";

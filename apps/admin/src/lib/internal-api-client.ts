@@ -105,8 +105,6 @@ const createApiClient = (): AxiosInstance => {
 let apiClientInstance: AxiosInstance | null = null;
 
 export const getApiClient = (): AxiosInstance => {
-  if (!apiClientInstance) {
-    apiClientInstance = createApiClient();
-  }
+  apiClientInstance ??= createApiClient();
   return apiClientInstance;
 };

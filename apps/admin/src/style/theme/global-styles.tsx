@@ -37,7 +37,7 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
             color: isDarkMode ? "#fff" : "rgba(0, 0, 0, 0.87)",
           },
         },
-        ".form-container .MuiPaper-root .MuiGrid2-root > .MuiGrid2-root > .MuiGrid2-root":
+        ".form-container .MuiPaper-root .MuiGrid-root > .MuiGrid-root > .MuiGrid-root":
           {
             // Fix for nested grids which is generated when helpText is added.
             width: "100%",
