@@ -11,7 +11,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface FormAccordionProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   defaultExpanded?: boolean;
 }
 
