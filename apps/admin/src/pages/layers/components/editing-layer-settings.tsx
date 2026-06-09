@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -9,7 +9,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  Grid2 as Grid,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -174,7 +174,7 @@ function ListValuesCell({
           size="small"
           fullWidth
           placeholder={String(
-            t("layers.editing.listValueAddPlaceholder" as never),
+            t("layers.editing.listValueAddPlaceholder"),
           )}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -186,7 +186,11 @@ function ListValuesCell({
           }}
         />
         {list.length > 0 ? (
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.5}>
+          <Stack
+            sx={{ direction: "row", flexWrap: "wrap" }}
+            useFlexGap
+            spacing={0.5}
+          >
             {list.map((v, valueIdx) => (
               <Chip
                 key={`${rowIndex}-${valueIdx}`}
@@ -198,7 +202,7 @@ function ListValuesCell({
                   <CloseRoundedIcon
                     fontSize="small"
                     aria-label={String(
-                      t("layers.editing.listValueRemoveAria" as never, {
+                      t("layers.editing.listValueRemoveAria", {
                         value: v,
                       }),
                     )}
@@ -230,7 +234,6 @@ export default function EditingLayerSettings({
 }: EditingLayerSettingsProps) {
   const { t } = useTranslation();
   const { fieldLabel } = useLayerFieldLabels();
-  const [fieldRows, setFieldRows] = useState<EditingFieldRow[]>([]);
   const [fieldsDialogOpen, setFieldsDialogOpen] = useState(false);
   const [draftFieldRows, setDraftFieldRows] = useState<EditingFieldRow[]>([]);
 
@@ -245,21 +248,14 @@ export default function EditingLayerSettings({
     enabled: Boolean(serviceUrl && typeName),
   });
 
-  useEffect(() => {
-    if (!describeProperties) return;
-    setFieldRows(
-      mergeDescribeWithSavedFields(
-        describeProperties,
-        savedEditableFields,
-        savedNonEditableFields,
-      ),
+  const fieldRows = useMemo(() => {
+    if (!describeProperties) return [];
+    return mergeDescribeWithSavedFields(
+      describeProperties,
+      savedEditableFields,
+      savedNonEditableFields,
     );
-  }, [
-    describeProperties,
-    typeName,
-    savedEditableFields,
-    savedNonEditableFields,
-  ]);
+  }, [describeProperties, savedEditableFields, savedNonEditableFields]);
 
   const updateDraftFieldRow = (
     index: number,
@@ -280,7 +276,6 @@ export default function EditingLayerSettings({
   };
 
   const handleApplyFieldsDialog = () => {
-    setFieldRows(draftFieldRows);
     const { editableFields, nonEditableFields } = splitRows(draftFieldRows);
     onFieldsChange(editableFields, nonEditableFields);
     setFieldsDialogOpen(false);
@@ -327,7 +322,11 @@ export default function EditingLayerSettings({
                   {t("layers.editing.geometryTypesNone")}
                 </Typography>
               ) : (
-                <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+                <Stack
+                  sx={{ direction: "row", flexWrap: "wrap" }}
+                  useFlexGap
+                  spacing={1}
+                >
                   {GEOMETRY_TYPE_ROW_CONFIG.filter(
                     ({ field }) => geometryTypes[field],
                   ).map(({ field, labelKey }) => (
@@ -477,7 +476,7 @@ export default function EditingLayerSettings({
         {!typeName ? (
           <Alert severity="info">{t("layers.editing.selectLayerFirst")}</Alert>
         ) : isLoading ? (
-          <Box display="flex" justifyContent="center" py={3}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
             <CircularProgress size={32} />
           </Box>
         ) : isError ? (
@@ -500,7 +499,7 @@ export default function EditingLayerSettings({
             {t("layers.editing.noFieldsFromCapabilities")}
           </Alert>
         ) : (
-          <Box display="flex" flexDirection="column" gap={2}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="body2" color="text.secondary">
               {t("layers.editing.fieldsSummary", {
                 editable: editableCount,
@@ -537,7 +536,7 @@ export default function EditingLayerSettings({
         }
       >
         {isLoading ? (
-          <Box display="flex" justifyContent="center" py={4}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress size={32} />
           </Box>
         ) : isError ? (

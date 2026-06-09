@@ -8,7 +8,11 @@ import {
   RoleOnLayerCreateAndUpdateInput,
   RoleOnLayer,
 } from "./types";
-import type { LayerUsage, LayerUsageApiResponse } from "./types";
+import type {
+  LayerUsage,
+  LayerUsageApiResponse,
+  LayerUsageSummaryApiResponse,
+} from "./types";
 import { Service } from "../services";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 import { generateRandomName } from "../generated/names";
@@ -162,9 +166,7 @@ export const createLayer = async (
   const { layersDefault } = useAppStateStore.getState();
 
   const payload: LayerCreateInput = { ...newLayer };
-  if (!payload.name) {
-    payload.name = generateRandomName();
-  }
+  payload.name ??= generateRandomName();
 
   const layerKind: LayerKind = payload.layerKind ?? "display";
   const kindDefaults = filterDefaultsForLayerKind(
@@ -174,7 +176,7 @@ export const createLayer = async (
 
   const merged = mergeWithConfigDefaults(
     { ...kindDefaults },
-    { ...payload } as Record<string, unknown>,
+    { ...payload },
     {
       deepMergeKeys:
         layerKind === "search"
@@ -309,6 +311,28 @@ export const getLayerUsage = async (layerId: string): Promise<LayerUsage[]> => {
       );
     } else {
       throw new Error("Failed to fetch layer usage");
+    }
+  }
+};
+
+export const getLayersUsageSummary = async () => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.get<LayerUsageSummaryApiResponse>(
+      "/layers/usage-summary",
+    );
+    if (!response.data?.summary) {
+      throw new Error("No layer usage summary found");
+    }
+    return response.data.summary;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to fetch layer usage summary. ErrorId: ${axiosError.response.data.errorId}.`,
+      );
+    } else {
+      throw new Error("Failed to fetch layer usage summary");
     }
   }
 };

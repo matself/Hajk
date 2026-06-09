@@ -9,6 +9,7 @@ import {
 export default express
   .Router()
   .get("/", controller.getLayers)
+  .get("/usage-summary", controller.getUsageSummary)
   .get("/:id/service", controller.getServiceByLayerId)
   .get("/:id/usage", controller.getUsageByLayerId)
   .get("/types", controller.getLayerTypes)

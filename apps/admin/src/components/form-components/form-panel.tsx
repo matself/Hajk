@@ -13,8 +13,7 @@ export default function FormPanel({ title, children }: FormPanelProps) {
         backgroundColor: "none",
         width: "100%",
         p: 2,
-        pb: 1,
-        mb: 2,
+        mb: 3,
         display: "block",
       }}
     >

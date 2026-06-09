@@ -9,12 +9,9 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Grid2 as Grid,
+  Grid,
   TextField,
   useTheme,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   FormGroup,
   FormControlLabel,
@@ -30,17 +27,22 @@ import {
   CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TuneIcon from "@mui/icons-material/Tune";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import LayersIcon from "@mui/icons-material/Layers";
-import MapIcon from "@mui/icons-material/Map";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import { GridRowSelectionModel } from "@mui/x-data-grid";
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import { GridRowId } from "@mui/x-data-grid";
+import type { GridRowSelectionModel } from "@mui/x-data-grid";
+import {
+  isGridRowSelected,
+  normalizeRowSelectionModel,
+} from "./row-selection-model";
+import { Controller, FieldValues, useForm, useWatch } from "react-hook-form";
 import UsedInMapsGrid from "./used-in-maps-grid";
 import {
   useLayerById,
@@ -80,7 +82,6 @@ import { buildLayerUpdatePayload } from "../../api/layers/build-layer-payload";
 import {
   getLayerCategoryFromPathname,
   getLayerSettingsVisibility,
-  isLayerSettingsChanged,
   LayerSettingsTab,
   normalizeLayerCategory,
 } from "./layer-category";
@@ -91,8 +92,13 @@ import {
 } from "./layer-settings-form-values";
 import {
   FieldLabelAbove,
+  SelectWithHelp,
   TextFieldWithHelp,
 } from "../../components/form-components/field-label-with-help";
+import FormFieldGrid from "../../components/form-components/form-field-grid";
+import SearchablePanel from "../../components/form-components/searchable-panel";
+import { SettingsSearchField } from "../../components/form-components/searchable-field";
+import { useSettingsSearchLabels } from "../../hooks/use-settings-search-labels";
 import { useLayerFieldLabels } from "./use-layer-field-labels";
 
 const StyledTabButton = styled(Button, {
@@ -144,14 +150,19 @@ const ALL_SETTINGS_TABS: {
     labelKey: "layers.availableLayers",
     icon: <LayersIcon />,
   },
-  { key: "maps", labelKey: "common.usedInMaps", icon: <MapIcon /> },
+  {
+    key: "search",
+    labelKey: "common.searchSettings",
+    icon: <ManageSearchIcon />,
+  },
 ];
 
 export default function LayerSettings() {
   const { t } = useTranslation();
-  const { fieldLabel, selectLabel } = useLayerFieldLabels();
+  const settingsSearchLabels = useSettingsSearchLabels();
+  const { fieldLabel } = useLayerFieldLabels();
   const { layerId } = useParams<{ layerId: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
   const fromService = searchParams.get("fromService");
@@ -167,7 +178,6 @@ export default function LayerSettings() {
   const { data: roleOnLayer } = useGetRoleOnLayerByLayerId(layerId ?? "");
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [formBaseline, setFormBaseline] = useState<FieldValues | null>(null);
   const { data: service, isLoading: serviceLoading } = useServiceByLayerId(
     layer?.id ?? "",
     !!layer?.id,
@@ -231,7 +241,7 @@ export default function LayerSettings() {
       });
     }
   };
-  const [activeTab, setActiveTab] = useState<LayerSettingsTab>("general");
+  const tabFromUrl = searchParams.get("tab") as LayerSettingsTab | null;
 
   const layerCategory = useMemo(
     () =>
@@ -253,11 +263,27 @@ export default function LayerSettings() {
     [settingsVisibility.tabs],
   );
 
+  const activeTab =
+    tabFromUrl && settingsVisibility.tabs.includes(tabFromUrl)
+      ? tabFromUrl
+      : settingsVisibility.tabs[0];
+  const setActiveTab = (tab: LayerSettingsTab) => {
+    setSearchParams({ tab }, { replace: true });
+  };
+
   useEffect(() => {
-    if (!settingsVisibility.tabs.includes(activeTab)) {
-      setActiveTab(settingsVisibility.tabs[0]);
+    if (tabFromUrl && !settingsVisibility.tabs.includes(tabFromUrl)) {
+      setSearchParams({ tab: settingsVisibility.tabs[0] }, { replace: true });
     }
-  }, [activeTab, settingsVisibility.tabs]);
+  }, [tabFromUrl, settingsVisibility.tabs, setSearchParams]);
+  const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
+  const showSettingsSearchUi = activeTab === "search";
+  const showGeneralTab = activeTab === "general" || showSettingsSearchUi;
+  const showDisplayTab = activeTab === "display" || showSettingsSearchUi;
+  const showMetadataTab = activeTab === "metadata" || showSettingsSearchUi;
+  const showInfoclickTab = activeTab === "infoclick" || showSettingsSearchUi;
+  const showEditingTab = activeTab === "editing" || showSettingsSearchUi;
+  const settingsSearchTerm = showSettingsSearchUi ? settingsSearchQuery : "";
   const [searchTerm, setSearchTerm] = useState("");
   const [selectGridId, setSelectGridId] = useState<GridRowSelectionModel>();
   const [useCustomDpiList, setUseCustomDpiList] = useState<boolean>(false);
@@ -306,62 +332,88 @@ export default function LayerSettings() {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FieldValues>({
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
+  const layerFormBaseline = useMemo(
+    () =>
+      layer ? buildLayerSettingsFormValues(layer, roleOnLayer?.roleId) : null,
+    [layer, roleOnLayer?.roleId],
+  );
 
-  // Reset form with layer data when it loads
-  useEffect(() => {
-    if (layer) {
-      const baseline = buildLayerSettingsFormValues(layer, roleOnLayer?.roleId);
-      setFormBaseline(baseline);
-      reset(baseline);
-    }
-  }, [layer, roleOnLayer, reset]);
-
-  useEffect(() => {
-    if (!layer) return;
+  const layerEditingDefaults = useMemo(() => {
+    if (!layer) return null;
     const opts =
       layer.options &&
       typeof layer.options === "object" &&
       !Array.isArray(layer.options)
         ? layer.options
         : {};
-    setEditingGeometryTypes(geometryTypesFromOptions(opts));
-    setEditingEditableFields(
-      Array.isArray(opts.editableFields)
+    return {
+      geometryTypes: geometryTypesFromOptions(opts),
+      editableFields: Array.isArray(opts.editableFields)
         ? (opts.editableFields as EditableFieldConfig[])
         : [],
-    );
-    setEditingNonEditableFields(
-      Array.isArray(opts.nonEditableFields)
+      nonEditableFields: Array.isArray(opts.nonEditableFields)
         ? (opts.nonEditableFields as EditableFieldConfig[])
         : [],
-    );
+    };
   }, [layer]);
 
-  const formValues = watch();
-  const watchRoleIdInput = watch("roleId") as string | undefined;
-  const watchGeometryField = watch("searchSettings.geometryField") as
+  const layerFormSyncKey = layer
+    ? `${layer.id}:${roleOnLayer?.roleId ?? ""}`
+    : null;
+
+  const [committedFormBaseline, setCommittedFormBaseline] =
+    useState<FieldValues | null>(null);
+  const [syncedLayerFormKey, setSyncedLayerFormKey] = useState<string | null>(
+    null,
+  );
+
+  if (layerFormSyncKey !== syncedLayerFormKey) {
+    setSyncedLayerFormKey(layerFormSyncKey);
+    setCommittedFormBaseline(null);
+    if (layerEditingDefaults) {
+      setEditingGeometryTypes(layerEditingDefaults.geometryTypes);
+      setEditingEditableFields(layerEditingDefaults.editableFields);
+      setEditingNonEditableFields(layerEditingDefaults.nonEditableFields);
+    }
+  }
+
+  const formBaseline = committedFormBaseline ?? layerFormBaseline;
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    getValues,
+    formState: { errors, isDirty },
+  } = useForm<FieldValues>({
+    mode: "onChange",
+    reValidateMode: "onChange",
+    values: formBaseline ?? undefined,
+  });
+
+  const watchRoleIdInput = useWatch({ control, name: "roleId" }) as
     | string
     | undefined;
-  const watchSingleTile = watch("singleTile") as boolean | undefined;
+  const watchGeometryField = useWatch({
+    control,
+    name: "searchSettings.geometryField",
+  }) as string | undefined;
+  const watchSingleTile = useWatch({ control, name: "singleTile" }) as
+    | boolean
+    | undefined;
+
+  const normalizedSelection = useMemo(
+    () => normalizeRowSelectionModel(selectGridId),
+    [selectGridId],
+  );
 
   const filteredLayers = useMemo(() => {
     if (!getCapLayers) return [];
 
     const searchAndSelectedFilteredLayers = getCapLayers
       .map((layer, index) => {
-        const isSelected = selectGridId?.includes(index);
+        const isSelected = isGridRowSelected(index, normalizedSelection);
         return {
           id: index,
           layer,
@@ -372,7 +424,6 @@ export default function LayerSettings() {
       })
       .filter(
         (layer) =>
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           layer?.selected || // Disable lint here since ?? is messing with the data-grid search logic
           layer.layer.toLowerCase().includes(searchTerm.toLowerCase()),
       )
@@ -389,13 +440,20 @@ export default function LayerSettings() {
         return 0;
       });
     return searchAndSelectedFilteredLayers;
-  }, [getCapLayers, searchTerm, selectGridId]);
+  }, [getCapLayers, searchTerm, normalizedSelection]);
 
-  const selectedRowsData = useMemo(
-    () =>
-      selectGridId?.map((id) => filteredLayers.find((row) => row.id === id)),
-    [selectGridId, filteredLayers],
-  );
+  const selectedRowsData = useMemo(() => {
+    if (!normalizedSelection) return undefined;
+
+    const selectedIds: GridRowId[] =
+      normalizedSelection.type === "include"
+        ? Array.from(normalizedSelection.ids)
+        : filteredLayers
+            .map((row) => row.id)
+            .filter((id) => !normalizedSelection.ids.has(id));
+
+    return selectedIds.map((id) => filteredLayers.find((row) => row.id === id));
+  }, [normalizedSelection, filteredLayers]);
 
   const selectedRowObjects = useMemo(
     () => selectedRowsData?.map((row) => row?.layer ?? ""),
@@ -409,13 +467,6 @@ export default function LayerSettings() {
     if (saved.length !== current.length) return true;
     return saved.some((value, index) => value !== current[index]);
   }, [layer?.selectedLayers, selectedRowObjects, selectGridId]);
-
-  const isSaveDirty = useMemo(() => {
-    if (!formBaseline) return false;
-    return isLayerSettingsChanged(layerCategory, formValues, formBaseline, {
-      selectedLayersDirty,
-    });
-  }, [layerCategory, formValues, formBaseline, selectedLayersDirty]);
 
   const [openInfoClickModal, setOpenInfoClickModal] = useState(false);
   const [selectedInfoClickLayer, setSelectedInfoClickLayer] =
@@ -547,15 +598,12 @@ export default function LayerSettings() {
     const mergedOptions: Record<string, unknown> = {
       ...existingOptions,
       layersInfo: updatedLayersInfo,
-      keyword: (existingOptions.keyword as string | undefined) ?? "",
-      category: (existingOptions.category as string | undefined) ?? "",
-      layerDisplayDescription:
-        (existingOptions.layerDisplayDescription as string | undefined) ?? "",
-      geoWebCache:
-        (existingOptions.geoWebCache as boolean | undefined) ?? false,
+      keyword: existingOptions.keyword ?? "",
+      category: existingOptions.category ?? "",
+      layerDisplayDescription: existingOptions.layerDisplayDescription ?? "",
+      geoWebCache: existingOptions.geoWebCache ?? false,
       showAttributeTableButton:
-        (existingOptions.showAttributeTableButton as boolean | undefined) ??
-        false,
+        existingOptions.showAttributeTableButton ?? false,
     };
 
     const currentValues = {
@@ -716,21 +764,15 @@ export default function LayerSettings() {
         // Use the appropriate layersInfo (new takes precedence)
         ...(layersInfoToUse && { layersInfo: layersInfoToUse }),
         // Override with new values if provided
-        keyword:
-          (newOptions.keyword as string | undefined) ??
-          (existingOptions.keyword as string | undefined),
-        category:
-          (newOptions.category as string | undefined) ??
-          (existingOptions.category as string | undefined),
-        geoWebCache:
-          (newOptions.geoWebCache as boolean | undefined) ??
-          (existingOptions.geoWebCache as boolean | undefined),
+        keyword: newOptions.keyword ?? existingOptions.keyword,
+        category: newOptions.category ?? existingOptions.category,
+        geoWebCache: newOptions.geoWebCache ?? existingOptions.geoWebCache,
         showAttributeTableButton:
-          (newOptions.showAttributeTableButton as boolean | undefined) ??
-          (existingOptions.showAttributeTableButton as boolean | undefined),
+          newOptions.showAttributeTableButton ??
+          existingOptions.showAttributeTableButton,
         layerDisplayDescription:
-          (newOptions.layerDisplayDescription as string | undefined) ??
-          (existingOptions.layerDisplayDescription as string | undefined),
+          newOptions.layerDisplayDescription ??
+          existingOptions.layerDisplayDescription,
         ...(settingsVisibility.showEditingSettingsPanel && {
           editPoint: editingGeometryTypes.editPoint,
           editMultiPoint: editingGeometryTypes.editMultiPoint,
@@ -802,11 +844,11 @@ export default function LayerSettings() {
           format: layerData?.infoClickSettings?.format,
           sortMethod: layerData?.infoClickSettings?.sortMethod,
         },
-      } as Record<string, unknown>);
+      });
 
       await updateLayer({
         layerId: layer?.id ?? "",
-        data: payload as Partial<LayerUpdateInput>,
+        data: payload,
       });
       toast.success(t("layers.updateLayerSuccess", { name: layerData.name }), {
         position: "bottom-left",
@@ -905,8 +947,7 @@ export default function LayerSettings() {
             nonEditableFields: editingNonEditableFields,
           },
         };
-        setFormBaseline(savedBaseline);
-        reset(savedBaseline);
+        setCommittedFormBaseline(savedBaseline);
       }
     } catch (error) {
       console.error("Failed to update layer:", error);
@@ -952,7 +993,7 @@ export default function LayerSettings() {
         createdDate={layer?.createdDate}
         lastSavedBy={layer?.lastSavedBy}
         lastSavedDate={layer?.lastSavedDate}
-        isDirty={isSaveDirty}
+        isDirty={isDirty || selectedLayersDirty}
         warning={
           <Box sx={{ mt: 1 }}>
             <Button
@@ -1024,10 +1065,7 @@ export default function LayerSettings() {
                         .filter((s) => s.length > 0)
                     : undefined;
 
-              if (
-                selectedRowObjects !== undefined &&
-                selectedRowObjects.length === 0
-              ) {
+              if (selectedRowObjects?.length === 0) {
                 toast.warning(t("layers.noLayersSelected"), {
                   position: "bottom-left",
                   theme: palette.mode,
@@ -1116,957 +1154,1672 @@ export default function LayerSettings() {
                   }),
                 },
                 selectedLayers: selectedRowObjects,
-              } as Record<string, unknown>);
+              });
 
-              void handleUpdateLayer(normalized as LayerUpdateInput);
+              void handleUpdateLayer(normalized);
             })(e);
           }}
           formRef={formRef}
           noValidate={false}
         >
-          <Box sx={{ display: activeTab === "general" ? "block" : "none" }}>
-            <FormPanel title={t("common.information")}>
-              <Grid container rowSpacing={2} columnSpacing={2}>
-                <Grid size={12}>
-                  <TextFieldWithHelp
-                    labelKey="common.name"
-                    helpKey="layers.help.name"
-                    fullWidth
-                    {...register("name", {
-                      required: `${t("common.required")}`,
-                    })}
-                    error={!!errors.name}
-                    helperText={
-                      (errors.name as unknown as { message?: string })?.message
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
-                  <Controller
-                    name="serviceId"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl fullWidth>
-                        <InputLabel id="serviceId-label" shrink>
-                          {fieldLabel(
-                            "layers.common.service",
-                            "layers.help.service",
-                          )}
-                        </InputLabel>
-                        <Select
-                          labelId="serviceId-label"
-                          {...selectLabel(
-                            "layers.common.service",
-                            "layers.help.service",
-                          )}
-                          {...field}
-                          value={(field.value as string) ?? ""}
-                        >
-                          {(services ?? []).map((service) => (
-                            <MenuItem key={service.id} value={service.id}>
-                              {service.name}({service.type})
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-                {service && (
-                  <Grid size={12}>
-                    <Alert severity="info" variant="outlined" sx={{ py: 0.5 }}>
-                      <Typography variant="body2" component="span">
-                        {t("layers.serviceConnectionSummary", {
-                          type: service.type,
-                          url: service.url,
-                          version: service.version,
-                          imageFormat: service.imageFormat,
-                          projection: service.projection?.code ?? "—",
+          {showSettingsSearchUi && (
+            <TextField
+              placeholder={`${t("common.searchSettings")}...`}
+              fullWidth
+              autoFocus
+              value={settingsSearchQuery}
+              onChange={(e) => setSettingsSearchQuery(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <ManageSearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+                  ),
+                },
+              }}
+              sx={{ mb: 2 }}
+            />
+          )}
+          <Box sx={{ display: showGeneralTab ? "block" : "none" }}>
+            <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("common.information")}
+              keywords={[
+                ...settingsSearchLabels(
+                  "common.name",
+                  "layers.common.service",
+                  "layers.internalName",
+                  "layers.copyRight",
+                  "map.description",
+                  "layers.keyword",
+                  "layers.category",
+                ),
+                "namn",
+                "name",
+                "tjänst",
+                "intern",
+                "beskrivning",
+                "nyckelord",
+                "kategori",
+              ]}
+              fields={[
+                "name",
+                "serviceId",
+                "internalName",
+                "description",
+                "options.keyword",
+                "options.category",
+                "metadata.attribution",
+              ]}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
+            >
+              <FormPanel title={t("common.information")}>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["common.name"]}
+                    fields={["name"]}
+                    synonyms={["namn", "name"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={12}>
+                      <TextFieldWithHelp
+                        labelKey="common.name"
+                        helpKey="layers.help.name"
+                        fullWidth
+                        {...register("name", {
+                          required: `${t("common.required")}`,
                         })}
-                      </Typography>
-                    </Alert>
-                  </Grid>
-                )}
-                <Grid size={{ xs: 12, md: 10 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.internalName"
-                    helpKey="layers.help.internalName"
-                    fullWidth
-                    {...register("internalName")}
-                  />
-                </Grid>
-                <Grid size={10}>
-                  <TextFieldWithHelp
-                    labelKey="layers.copyRight"
-                    helpKey="layers.help.attribution"
-                    fullWidth
-                    {...register("metadata.attribution")}
-                  />
-                </Grid>
-                <Grid size={10}>
-                  <TextFieldWithHelp
-                    labelKey="map.description"
-                    helpKey="layers.help.description"
-                    fullWidth
-                    multiline
-                    rows={3}
-                    {...register("description")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.keyword"
-                    helpKey="layers.help.keyword"
-                    fullWidth
-                    {...register("options.keyword")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.category"
-                    helpKey="layers.help.category"
-                    fullWidth
-                    {...register("options.category")}
-                  />
-                </Grid>
-              </Grid>
-            </FormPanel>
+                        error={!!errors.name}
+                        helperText={
+                          (errors.name as unknown as { message?: string })
+                            ?.message
+                        }
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.common.service"]}
+                    fields={["serviceId"]}
+                    synonyms={["tjänst", "service"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <Controller
+                        name="serviceId"
+                        control={control}
+                        render={({ field }) => (
+                          <SelectWithHelp
+                            labelKey="layers.common.service"
+                            helpKey="layers.help.service"
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {(services ?? []).map((service) => (
+                              <MenuItem key={service.id} value={service.id}>
+                                {service.name}({service.type})
+                              </MenuItem>
+                            ))}
+                          </SelectWithHelp>
+                        )}
+                      />
+                    </Grid>
+                    {service && (
+                      <Grid size={12}>
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          sx={{ py: 0.5, my: 0 }}
+                        >
+                          <Typography variant="body2" component="span">
+                            {t("layers.serviceConnectionSummary", {
+                              type: service.type,
+                              url: service.url,
+                              version: service.version,
+                              imageFormat: service.imageFormat,
+                              projection: service.projection?.code ?? "—",
+                            })}
+                          </Typography>
+                        </Alert>
+                      </Grid>
+                    )}
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.internalName"]}
+                    fields={["internalName"]}
+                    synonyms={["intern", "internal"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.internalName"
+                        helpKey="layers.help.internalName"
+                        fullWidth
+                        {...register("internalName")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.copyRight"]}
+                    fields={["metadata.attribution"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.copyRight"
+                        helpKey="layers.help.attribution"
+                        fullWidth
+                        {...register("metadata.attribution")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["map.description"]}
+                    fields={["description"]}
+                    synonyms={["beskrivning", "description"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="map.description"
+                        helpKey="layers.help.description"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("description")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.keyword"]}
+                    fields={["options.keyword"]}
+                    synonyms={["nyckelord", "keyword"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.keyword"
+                        helpKey="layers.help.keyword"
+                        fullWidth
+                        {...register("options.keyword")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.category"]}
+                    fields={["options.category"]}
+                    synonyms={["kategori", "category"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.category"
+                        helpKey="layers.help.category"
+                        fullWidth
+                        {...register("options.category")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
+              </FormPanel>
+            </SearchablePanel>
 
-            <FormPanel title={t("layers.permissions")}>
-              <FormControl fullWidth>
-                <InputLabel id="roleId-label" shrink>
-                  {fieldLabel("layers.permission", "layers.help.permission")}
-                </InputLabel>
-                <Controller
-                  name="roleId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      labelId="roleId-label"
-                      {...selectLabel(
-                        "layers.permission",
-                        "layers.help.permission",
-                      )}
-                      {...field}
-                      value={(field.value as string) ?? ""}
-                    >
-                      {(roles ?? []).map((role) => (
-                        <MenuItem key={role.id} value={role.id}>
-                          {role.title}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-              </FormControl>
-            </FormPanel>
+            <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("layers.permissions")}
+              keywords={[
+                ...settingsSearchLabels("layers.permission"),
+                "behörighet",
+                "permission",
+                "roll",
+                "role",
+              ]}
+              fields={["roleId"]}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
+            >
+              <FormPanel title={t("layers.permissions")}>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["layers.permission"]}
+                    fields={["roleId"]}
+                    synonyms={["behörighet", "roll", "role"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <Controller
+                        name="roleId"
+                        control={control}
+                        render={({ field }) => (
+                          <SelectWithHelp
+                            labelKey="layers.permission"
+                            helpKey="layers.help.permission"
+                            {...field}
+                            value={(field.value as string) ?? ""}
+                          >
+                            {(roles ?? []).map((role) => (
+                              <MenuItem key={role.id} value={role.id}>
+                                {role.title}
+                              </MenuItem>
+                            ))}
+                          </SelectWithHelp>
+                        )}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
+              </FormPanel>
+            </SearchablePanel>
+
+            {layerId && <UsedInMapsGrid layerId={layerId} />}
           </Box>
 
-          <Box sx={{ display: activeTab === "display" ? "block" : "none" }}>
+          <Box sx={{ display: showDisplayTab ? "block" : "none" }}>
             {settingsVisibility.showDisplayRequestOptions && (
-              <FormPanel title={t("services.settings.request")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="hidpi"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels(
+                  "services.settings.request",
+                )}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.hidpi",
+                    "layers.tiled",
+                    "layers.singleTile",
+                    "layers.geoWebCache",
+                    "layers.customRatio",
+                  ),
+                  "förfrågan",
+                  "request",
+                  "hidpi",
+                  "tiled",
+                ]}
+                fields={[
+                  "hidpi",
+                  "tiled",
+                  "singleTile",
+                  "options.geoWebCache",
+                  "customRatio",
+                ]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("services.settings.request")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={[
+                        "layers.hidpi",
+                        "layers.tiled",
+                        "layers.singleTile",
+                        "layers.geoWebCache",
+                      ]}
+                      fields={[
+                        "hidpi",
+                        "tiled",
+                        "singleTile",
+                        "options.geoWebCache",
+                      ]}
+                      synonyms={["hidpi", "tiled", "geoWebCache", "gwc"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="hidpi"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.hidpi",
+                                  "layers.help.hidpi",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.hidpi",
-                              "layers.help.hidpi",
                             )}
                           />
-                        )}
-                      />
-                      <Controller
-                        name="tiled"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+                          <Controller
+                            name="tiled"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.tiled",
+                                  "layers.help.tiled",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.tiled",
-                              "layers.help.tiled",
                             )}
                           />
-                        )}
-                      />
-                      <Controller
-                        name="singleTile"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+                          <Controller
+                            name="singleTile"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.singleTile",
+                                  "layers.help.singleTile",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.singleTile",
-                              "layers.help.singleTile",
                             )}
                           />
-                        )}
-                      />
-                      <Controller
-                        name="options.geoWebCache"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+                          <Controller
+                            name="options.geoWebCache"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.geoWebCache",
+                                  "layers.help.geoWebCache",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.geoWebCache",
-                              "layers.help.geoWebCache",
                             )}
                           />
-                        )}
-                      />
-                    </FormGroup>
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    {watchSingleTile ? (
+                      <SettingsSearchField
+                        labelKeys={["layers.customRatio"]}
+                        fields={["customRatio"]}
+                        searchTerm={settingsSearchTerm}
+                        allValues={
+                          showSettingsSearchUi ? getValues() : undefined
+                        }
+                      >
+                        <Grid size={{ xs: 12, md: 10 }}>
+                          <TextFieldWithHelp
+                            labelKey="layers.customRatio"
+                            helpKey="layers.help.customRatio"
+                            fullWidth
+                            type="number"
+                            slotProps={{
+                              htmlInput: { step: 1 },
+                            }}
+                            {...register("customRatio")}
+                          />
+                        </Grid>
+                      </SettingsSearchField>
+                    ) : null}
                   </Grid>
-                  {watchSingleTile ? (
-                    <Grid size={{ xs: 12, md: 6 }}>
+                </FormPanel>
+              </SearchablePanel>
+            )}
+
+            {settingsVisibility.showDisplayRequestOptions && (
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels("layers.customDpi")}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.customDpi",
+                    "layers.useCustomDpiList",
+                    "layers.pxRatio",
+                    "layers.dpi",
+                    "layers.addDpiRow",
+                  ),
+                  "dpi",
+                ]}
+                fields={["useCustomDpiList"]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("layers.customDpi")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.useCustomDpiList"]}
+                      fields={["useCustomDpiList"]}
+                      synonyms={["dpi list", "dpi-lista"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <FormControlLabel
+                            control={
+                              <Controller
+                                name="useCustomDpiList"
+                                control={control}
+                                render={({ field }) => (
+                                  <Checkbox
+                                    {...field}
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) => {
+                                      field.onChange(e.target.checked);
+                                      setUseCustomDpiList(e.target.checked);
+                                    }}
+                                  />
+                                )}
+                              />
+                            }
+                            label={fieldLabel(
+                              "layers.useCustomDpiList",
+                              "layers.help.useCustomDpiList",
+                            )}
+                          />
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    {useCustomDpiList && (
+                      <SettingsSearchField
+                        labelKeys={[
+                          "layers.pxRatio",
+                          "layers.dpi",
+                          "layers.addDpiRow",
+                        ]}
+                        synonyms={[
+                          "dpi",
+                          "px ratio",
+                          "pixel ratio",
+                          "pixelratio",
+                        ]}
+                        searchTerm={settingsSearchTerm}
+                        allValues={
+                          showSettingsSearchUi ? getValues() : undefined
+                        }
+                      >
+                        <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                          {customDpiList.map((item, index) => (
+                            <Grid size={12} key={index}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 2,
+                                }}
+                              >
+                                <TextFieldWithHelp
+                                  labelKey="layers.pxRatio"
+                                  helpKey="layers.help.pxRatio"
+                                  type="number"
+                                  value={item.pxRatio}
+                                  onChange={(e) =>
+                                    handleUpdateDpiList(
+                                      index,
+                                      "pxRatio",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ width: 150 }}
+                                />
+                                <TextFieldWithHelp
+                                  labelKey="layers.dpi"
+                                  helpKey="layers.help.dpi"
+                                  type="number"
+                                  value={item.dpi}
+                                  onChange={(e) =>
+                                    handleUpdateDpiList(
+                                      index,
+                                      "dpi",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ width: 150 }}
+                                />
+                                <IconButton
+                                  onClick={() => handleRemoveDpiListRow(index)}
+                                  disabled={customDpiList.length <= 1}
+                                  color="error"
+                                  aria-label={t("common.delete")}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Box>
+                            </Grid>
+                          ))}
+                          <Grid size={12}>
+                            <Button
+                              variant="outlined"
+                              startIcon={<AddIcon />}
+                              onClick={handleAddDpiListRow}
+                            >
+                              {t("layers.addDpiRow")}
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </SettingsSearchField>
+                    )}
+                  </Grid>
+                </FormPanel>
+              </SearchablePanel>
+            )}
+
+            <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("layers.settings")}
+              keywords={[
+                ...settingsSearchLabels(
+                  "layers.opacity",
+                  "layers.minZoom",
+                  "layers.maxZoom",
+                  "layers.zIndex",
+                  "layers.style",
+                  "layers.legendOptions",
+                  "layers.minMaxZoomAlertOnToggleOnly",
+                ),
+                "opacitet",
+                "opacity",
+                "teckenförklaring",
+              ]}
+              fields={[
+                "opacity",
+                "minZoom",
+                "maxZoom",
+                "zIndex",
+                "style",
+                "legendOptions",
+              ]}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
+            >
+              <FormPanel title={t("layers.settings")}>
+                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  {settingsVisibility.showDisplayRequestOptions && (
+                    <SettingsSearchField
+                      labelKeys={["layers.style"]}
+                      fields={["style"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Controller
+                          name="style"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectWithHelp
+                              labelKey="layers.style"
+                              helpKey="layers.help.style"
+                              {...field}
+                              displayEmpty
+                              value={(field.value as string) ?? ""}
+                              renderValue={(value: unknown) =>
+                                value === "" ? "<default>" : String(value)
+                              }
+                            >
+                              <MenuItem value="">{"<default>"}</MenuItem>
+                              {(styles ?? []).map((s) => (
+                                <MenuItem key={s.name} value={s.name}>
+                                  {s.name}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
+                          )}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  )}
+                  <SettingsSearchField
+                    labelKeys={["layers.opacity"]}
+                    fields={["opacity"]}
+                    synonyms={["opacitet", "opacity"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid
+                      size={{
+                        xs: 12,
+                        md: settingsVisibility.showDisplayRequestOptions
+                          ? 10
+                          : 12,
+                      }}
+                    >
                       <TextFieldWithHelp
-                        labelKey="layers.customRatio"
-                        helpKey="layers.help.customRatio"
+                        labelKey="layers.opacity"
+                        helpKey="layers.help.opacity"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: {
+                            min: 0,
+                            max: 1,
+                            step: 0.01,
+                          },
+                        }}
+                        {...register("opacity", {
+                          valueAsNumber: true,
+                          min: { value: 0, message: t("layers.opacityRange") },
+                          max: { value: 1, message: t("layers.opacityRange") },
+                        })}
+                        error={!!errors.opacity}
+                        helperText={
+                          (errors.opacity as unknown as { message?: string })
+                            ?.message
+                        }
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.minZoom"]}
+                    fields={["minZoom"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.minZoom"
+                        helpKey="layers.help.minZoom"
                         fullWidth
                         type="number"
                         slotProps={{
                           htmlInput: { step: 1 },
                         }}
-                        {...register("customRatio")}
+                        helperText={t("layers.zoomNegativeOneHint")}
+                        {...register("minZoom")}
                       />
                     </Grid>
-                  ) : null}
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.maxZoom"]}
+                    fields={["maxZoom"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.maxZoom"
+                        helpKey="layers.help.maxZoom"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: { step: 1 },
+                        }}
+                        helperText={t("layers.zoomNegativeOneHint")}
+                        {...register("maxZoom")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.zIndex"]}
+                    fields={["zIndex"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.zIndex"
+                        helpKey="layers.help.zIndex"
+                        fullWidth
+                        type="number"
+                        slotProps={{
+                          htmlInput: { step: 1 },
+                        }}
+                        {...register("zIndex")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.legendOptions"]}
+                    fields={["legendOptions"]}
+                    synonyms={["teckenförklaring", "legend"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.legendOptions"
+                        helpKey="layers.help.legendOptions"
+                        fullWidth
+                        {...register("legendOptions")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.minMaxZoomAlertOnToggleOnly"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={12}>
+                      <FormGroup>
+                        <Controller
+                          name="minMaxZoomAlertOnToggleOnly"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.minMaxZoomAlertOnToggleOnly",
+                                "layers.help.minMaxZoomAlertOnToggleOnly",
+                              )}
+                            />
+                          )}
+                        />
+                      </FormGroup>
+                    </Grid>
+                  </SettingsSearchField>
                 </Grid>
               </FormPanel>
-            )}
+            </SearchablePanel>
 
             {settingsVisibility.showDisplayRequestOptions && (
-              <FormPanel title={t("layers.customDpi")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels("layers.timeSlider")}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.timeSlider",
+                    "layers.timeSliderVisible",
+                    "layers.timeSliderStart",
+                    "layers.timeSliderEnd",
+                  ),
+                  "tidsreglage",
+                  "slider",
+                ]}
+                fields={[
+                  "timeSliderVisible",
+                  "timeSliderStart",
+                  "timeSliderEnd",
+                ]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("layers.timeSlider")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderVisible"]}
+                      fields={["timeSliderVisible"]}
+                      synonyms={["tidsreglage synlig", "visible"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
                           <Controller
-                            name="useCustomDpiList"
+                            name="timeSliderVisible"
                             control={control}
                             render={({ field }) => (
-                              <Checkbox
-                                {...field}
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) => {
-                                  field.onChange(e.target.checked);
-                                  setUseCustomDpiList(e.target.checked);
-                                }}
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
+                                }
+                                label={fieldLabel(
+                                  "layers.timeSliderVisible",
+                                  "layers.help.timeSliderVisible",
+                                )}
                               />
                             )}
                           />
-                        }
-                        label={fieldLabel(
-                          "layers.useCustomDpiList",
-                          "layers.help.useCustomDpiList",
-                        )}
-                      />
-                    </FormGroup>
-                  </Grid>
-                  {useCustomDpiList && (
-                    <Grid container rowSpacing={2} columnSpacing={2}>
-                      {customDpiList.map((item, index) => (
-                        <Grid size={12} key={index}>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <TextFieldWithHelp
-                              labelKey="layers.pxRatio"
-                              helpKey="layers.help.pxRatio"
-                              type="number"
-                              value={item.pxRatio}
-                              onChange={(e) =>
-                                handleUpdateDpiList(
-                                  index,
-                                  "pxRatio",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ width: 150 }}
-                            />
-                            <TextFieldWithHelp
-                              labelKey="layers.dpi"
-                              helpKey="layers.help.dpi"
-                              type="number"
-                              value={item.dpi}
-                              onChange={(e) =>
-                                handleUpdateDpiList(
-                                  index,
-                                  "dpi",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ width: 150 }}
-                            />
-                            <IconButton
-                              onClick={() => handleRemoveDpiListRow(index)}
-                              disabled={customDpiList.length <= 1}
-                              color="error"
-                              aria-label={t("common.delete")}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        </Grid>
-                      ))}
-                      <Grid size={12}>
-                        <Button
-                          variant="outlined"
-                          startIcon={<AddIcon />}
-                          onClick={handleAddDpiListRow}
-                        >
-                          {t("layers.addDpiRow")}
-                        </Button>
+                        </FormGroup>
                       </Grid>
-                    </Grid>
-                  )}
-                </Grid>
-              </FormPanel>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderStart"]}
+                      fields={["timeSliderStart"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.timeSliderStart"
+                          helpKey="layers.help.timeSliderStart"
+                          fullWidth
+                          {...register("timeSliderStart")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.timeSliderEnd"]}
+                      fields={["timeSliderEnd"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.timeSliderEnd"
+                          helpKey="layers.help.timeSliderEnd"
+                          fullWidth
+                          {...register("timeSliderEnd")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                  </Grid>
+                </FormPanel>
+              </SearchablePanel>
             )}
 
-            <FormPanel title={t("layers.settings")}>
-              <Grid container rowSpacing={2} columnSpacing={2}>
-                {settingsVisibility.showDisplayRequestOptions && (
-                  <Grid size={12}>
-                    <FormControl fullWidth>
-                      <InputLabel id="style-label" shrink>
-                        {fieldLabel("layers.style", "layers.help.style")}
-                      </InputLabel>
-                      <Controller
-                        name="style"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            labelId="style-label"
-                            {...selectLabel(
-                              "layers.style",
-                              "layers.help.style",
-                            )}
-                            {...field}
-                            displayEmpty
-                            value={(field.value as string) ?? ""}
-                            renderValue={(value) =>
-                              value === "" ? "<default>" : value
-                            }
-                          >
-                            <MenuItem value="">{"<default>"}</MenuItem>
-
-                            {(styles ?? []).map((s) => (
-                              <MenuItem key={s.name} value={s.name}>
-                                {s.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
-                  </Grid>
+            {settingsVisibility.showDisplayRequestOptions && (
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels(
+                  "layers.layerSwitcher",
                 )}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.opacity"
-                    helpKey="layers.help.opacity"
-                    fullWidth
-                    type="number"
-                    slotProps={{
-                      htmlInput: {
-                        min: 0,
-                        max: 1,
-                        step: 0.01,
-                      },
-                    }}
-                    {...register("opacity", {
-                      valueAsNumber: true,
-                      min: { value: 0, message: t("layers.opacityRange") },
-                      max: { value: 1, message: t("layers.opacityRange") },
-                    })}
-                    error={!!errors.opacity}
-                    helperText={
-                      (errors.opacity as unknown as { message?: string })
-                        ?.message
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.minZoom"
-                    helpKey="layers.help.minZoom"
-                    fullWidth
-                    type="number"
-                    slotProps={{
-                      htmlInput: { step: 1 },
-                    }}
-                    helperText={t("layers.zoomNegativeOneHint")}
-                    {...register("minZoom")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.maxZoom"
-                    helpKey="layers.help.maxZoom"
-                    fullWidth
-                    type="number"
-                    slotProps={{
-                      htmlInput: { step: 1 },
-                    }}
-                    helperText={t("layers.zoomNegativeOneHint")}
-                    {...register("maxZoom")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.zIndex"
-                    helpKey="layers.help.zIndex"
-                    fullWidth
-                    type="number"
-                    slotProps={{
-                      htmlInput: { step: 1 },
-                    }}
-                    {...register("zIndex")}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextFieldWithHelp
-                    labelKey="layers.legendOptions"
-                    helpKey="layers.help.legendOptions"
-                    fullWidth
-                    {...register("legendOptions")}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <FormGroup>
-                    <Controller
-                      name="minMaxZoomAlertOnToggleOnly"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={Boolean(field.value as boolean)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          }
-                          label={fieldLabel(
-                            "layers.minMaxZoomAlertOnToggleOnly",
-                            "layers.help.minMaxZoomAlertOnToggleOnly",
-                          )}
-                        />
-                      )}
-                    />
-                  </FormGroup>
-                </Grid>
-              </Grid>
-            </FormPanel>
-
-            {settingsVisibility.showDisplayRequestOptions && (
-              <FormPanel title={t("layers.timeSlider")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="timeSliderVisible"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.layerSwitcher",
+                    "layers.hideExpandArrow",
+                  ),
+                  "layerswitcher",
+                ]}
+                fields={["hideExpandArrow"]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("layers.layerSwitcher")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.hideExpandArrow"]}
+                      fields={["hideExpandArrow"]}
+                      synonyms={["expand", "pil", "arrow"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="hideExpandArrow"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.hideExpandArrow",
+                                  "layers.help.hideExpandArrow",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.timeSliderVisible",
-                              "layers.help.timeSliderVisible",
                             )}
                           />
-                        )}
-                      />
-                    </FormGroup>
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
                   </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.timeSliderStart"
-                      helpKey="layers.help.timeSliderStart"
-                      fullWidth
-                      {...register("timeSliderStart")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.timeSliderEnd"
-                      helpKey="layers.help.timeSliderEnd"
-                      fullWidth
-                      {...register("timeSliderEnd")}
-                    />
-                  </Grid>
-                </Grid>
-              </FormPanel>
-            )}
-
-            {settingsVisibility.showDisplayRequestOptions && (
-              <FormPanel title={t("layers.layerSwitcher")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="hideExpandArrow"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
-                                }
-                              />
-                            }
-                            label={fieldLabel(
-                              "layers.hideExpandArrow",
-                              "layers.help.hideExpandArrow",
-                            )}
-                          />
-                        )}
-                      />
-                    </FormGroup>
-                  </Grid>
-                </Grid>
-              </FormPanel>
+                </FormPanel>
+              </SearchablePanel>
             )}
           </Box>
 
-          <Box sx={{ display: activeTab === "metadata" ? "block" : "none" }}>
-            <FormPanel title={t("layers.metadataTab")}>
-              <Grid container rowSpacing={2} columnSpacing={2}>
-                <Grid size={12}>
-                  <FormGroup>
-                    <Controller
-                      name="showMetadata"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={Boolean(field.value as boolean)}
-                              onChange={(e) => field.onChange(e.target.checked)}
+          <Box sx={{ display: showMetadataTab ? "block" : "none" }}>
+            <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("layers.metadataTab")}
+              keywords={[
+                ...settingsSearchLabels(
+                  "layers.metadataTab",
+                  "layers.showMetadata",
+                  "layers.showAttributeTableButton",
+                  "layers.metadata.title",
+                  "layers.metadata.owner",
+                  "layers.metadata.description",
+                  "layers.metadata.urlTitle",
+                  "layers.metadata.url",
+                  "layers.layerDisplayDescription",
+                ),
+                "metadata",
+                "ägare",
+                "owner",
+                "beskrivning",
+                "description",
+                "url",
+                "attribut",
+                "attribute",
+                "tabell",
+              ]}
+              fields={[
+                "showMetadata",
+                "options.showAttributeTableButton",
+                "metadata.title",
+                "metadata.owner",
+                "metadata.description",
+                "metadata.url",
+                "metadata.urlTitle",
+                "options.layerDisplayDescription",
+              ]}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
+            >
+              <FormPanel title={t("layers.metadataTab")}>
+                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <SettingsSearchField
+                    labelKeys={[
+                      "layers.showMetadata",
+                      "layers.showAttributeTableButton",
+                    ]}
+                    fields={[
+                      "showMetadata",
+                      "options.showAttributeTableButton",
+                    ]}
+                    synonyms={["attributtabell", "attribute table"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={12}>
+                      <FormGroup>
+                        <Controller
+                          name="showMetadata"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.showMetadata",
+                                "layers.help.showMetadata",
+                              )}
                             />
-                          }
-                          label={fieldLabel(
-                            "layers.showMetadata",
-                            "layers.help.showMetadata",
                           )}
                         />
-                      )}
-                    />
-                    <Controller
-                      name="options.showAttributeTableButton"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={Boolean(field.value as boolean)}
-                              onChange={(e) => field.onChange(e.target.checked)}
+                        <Controller
+                          name="options.showAttributeTableButton"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={Boolean(field.value as boolean)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.checked)
+                                  }
+                                />
+                              }
+                              label={fieldLabel(
+                                "layers.showAttributeTableButton",
+                                "layers.help.showAttributeTableButton",
+                              )}
                             />
-                          }
-                          label={fieldLabel(
-                            "layers.showAttributeTableButton",
-                            "layers.help.showAttributeTableButton",
                           )}
                         />
-                      )}
-                    />
-                  </FormGroup>
+                      </FormGroup>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.title"]}
+                    fields={["metadata.title"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.title"
+                        helpKey="layers.help.metadataTitle"
+                        fullWidth
+                        {...register("metadata.title")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.owner"]}
+                    fields={["metadata.owner"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.owner"
+                        helpKey="layers.help.metadataOwner"
+                        fullWidth
+                        {...register("metadata.owner")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.description"]}
+                    fields={["metadata.description"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.description"
+                        helpKey="layers.help.metadataDescription"
+                        fullWidth
+                        multiline
+                        rows={6}
+                        {...register("metadata.description")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.urlTitle"]}
+                    fields={["metadata.urlTitle"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.urlTitle"
+                        helpKey="layers.help.metadataUrlTitle"
+                        fullWidth
+                        {...register("metadata.urlTitle")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.metadata.url"]}
+                    fields={["metadata.url"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.metadata.url"
+                        helpKey="layers.help.metadataUrl"
+                        fullWidth
+                        {...register("metadata.url")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["layers.layerDisplayDescription"]}
+                    fields={["options.layerDisplayDescription"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="layers.layerDisplayDescription"
+                        helpKey="layers.help.layerDisplayDescription"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("options.layerDisplayDescription")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.metadata.title"
-                    helpKey="layers.help.metadataTitle"
-                    fullWidth
-                    {...register("metadata.title")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.metadata.owner"
-                    helpKey="layers.help.metadataOwner"
-                    fullWidth
-                    {...register("metadata.owner")}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextFieldWithHelp
-                    labelKey="layers.metadata.description"
-                    helpKey="layers.help.metadataDescription"
-                    fullWidth
-                    multiline
-                    rows={6}
-                    {...register("metadata.description")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.metadata.urlTitle"
-                    helpKey="layers.help.metadataUrlTitle"
-                    fullWidth
-                    {...register("metadata.urlTitle")}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextFieldWithHelp
-                    labelKey="layers.metadata.url"
-                    helpKey="layers.help.metadataUrl"
-                    fullWidth
-                    {...register("metadata.url")}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextFieldWithHelp
-                    labelKey="layers.layerDisplayDescription"
-                    helpKey="layers.help.layerDisplayDescription"
-                    fullWidth
-                    multiline
-                    rows={3}
-                    {...register("options.layerDisplayDescription")}
-                  />
-                </Grid>
-              </Grid>
-            </FormPanel>
+              </FormPanel>
+            </SearchablePanel>
           </Box>
 
-          <Box sx={{ display: activeTab === "infoclick" ? "block" : "none" }}>
+          <Box sx={{ display: showInfoclickTab ? "block" : "none" }}>
             {settingsVisibility.showInfoClickSettingsPanel && (
-              <FormPanel title={t("common.infoclick")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="infoClickActive"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels("common.infoclick")}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "common.infoclick",
+                    "layers.infobox",
+                    "layers.infoClickIcon",
+                    "layers.sortByAttribute",
+                    "layers.infoClickFormat",
+                    "layers.infoClickSortMethod",
+                  ),
+                  "infoclick",
+                  "infoklick",
+                  "infobox",
+                  "ikon",
+                  "icon",
+                  "sortering",
+                  "sort",
+                  "format",
+                ]}
+                fields={[
+                  "infoClickActive",
+                  "infoClickSettings.definition",
+                  "infoClickSettings.icon",
+                  "infoClickSettings.sortProperty",
+                  "infoClickSettings.format",
+                  "infoClickSettings.sortMethod",
+                ]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("common.infoclick")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["common.infoclick"]}
+                      fields={["infoClickActive"]}
+                      synonyms={["infoklick", "active"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="infoClickActive"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "common.infoclick",
+                                  "layers.help.infoClickActive",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "common.infoclick",
-                              "layers.help.infoClickActive",
                             )}
                           />
-                        )}
-                      />
-                    </FormGroup>
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infobox"]}
+                      fields={["infoClickSettings.definition"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.infobox"
+                          helpKey="layers.help.infobox"
+                          fullWidth
+                          multiline
+                          rows={3}
+                          {...register("infoClickSettings.definition")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickIcon"]}
+                      fields={["infoClickSettings.icon"]}
+                      synonyms={["ikon", "icon"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.infoClickIcon"
+                          helpKey="layers.help.infoClickIcon"
+                          fullWidth
+                          {...register("infoClickSettings.icon")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.sortByAttribute"]}
+                      fields={["infoClickSettings.sortProperty"]}
+                      synonyms={["sortering", "sort"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.sortByAttribute"
+                          helpKey="layers.help.sortByAttribute"
+                          fullWidth
+                          {...register("infoClickSettings.sortProperty")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickFormat"]}
+                      fields={["infoClickSettings.format"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Controller
+                          name="infoClickSettings.format"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectWithHelp
+                              labelKey="layers.infoClickFormat"
+                              helpKey="layers.help.infoClickFormat"
+                              {...field}
+                              value={(field.value as string) ?? ""}
+                            >
+                              {infoClickFormat.map((format) => (
+                                <MenuItem
+                                  key={format.value}
+                                  value={format.value}
+                                >
+                                  {format.title}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
+                          )}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.infoClickSortMethod"]}
+                      fields={["infoClickSettings.sortMethod"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Controller
+                          name="infoClickSettings.sortMethod"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectWithHelp
+                              labelKey="layers.infoClickSortMethod"
+                              helpKey="layers.help.infoClickSortMethod"
+                              {...field}
+                              value={(field.value as string) ?? ""}
+                            >
+                              {sortType.map((type) => (
+                                <MenuItem key={type.value} value={type.value}>
+                                  {type.title}
+                                </MenuItem>
+                              ))}
+                            </SelectWithHelp>
+                          )}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
                   </Grid>
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="layers.infobox"
-                      helpKey="layers.help.infobox"
-                      fullWidth
-                      multiline
-                      rows={3}
-                      {...register("infoClickSettings.definition")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.infoClickIcon"
-                      helpKey="layers.help.infoClickIcon"
-                      fullWidth
-                      {...register("infoClickSettings.icon")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.sortByAttribute"
-                      helpKey="layers.help.sortByAttribute"
-                      fullWidth
-                      {...register("infoClickSettings.sortProperty")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="format-label" shrink>
-                        {fieldLabel(
-                          "layers.infoClickFormat",
-                          "layers.help.infoClickFormat",
-                        )}
-                      </InputLabel>
-                      <Controller
-                        name="infoClickSettings.format"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            labelId="format-label"
-                            {...selectLabel(
-                              "layers.infoClickFormat",
-                              "layers.help.infoClickFormat",
-                            )}
-                            {...field}
-                            value={(field.value as string) ?? ""}
-                          >
-                            {infoClickFormat.map((format) => (
-                              <MenuItem key={format.value} value={format.value}>
-                                {format.title}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="sortMethod-label" shrink>
-                        {fieldLabel(
-                          "layers.infoClickSortMethod",
-                          "layers.help.infoClickSortMethod",
-                        )}
-                      </InputLabel>
-                      <Controller
-                        name="infoClickSettings.sortMethod"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            labelId="sortMethod-label"
-                            {...selectLabel(
-                              "layers.infoClickSortMethod",
-                              "layers.help.infoClickSortMethod",
-                            )}
-                            {...field}
-                            value={(field.value as string) ?? ""}
-                          >
-                            {sortType.map((type) => (
-                              <MenuItem key={type.value} value={type.value}>
-                                {type.title}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </FormPanel>
+                </FormPanel>
+              </SearchablePanel>
             )}
 
             {settingsVisibility.showDisplayFieldsPanel && (
-              <FormPanel title={t("layers.settings.displayFields")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="layers.primaryDisplayFields"
-                      helpKey="layers.help.primaryDisplayFields"
-                      fullWidth
-                      {...register("searchSettings.primaryDisplayFields")}
-                    />
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels(
+                  "layers.settings.displayFields",
+                )}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.settings.displayFields",
+                    "layers.primaryDisplayFields",
+                    "layers.secondaryDisplayFields",
+                    "layers.shortDisplayFields",
+                  ),
+                  "visningsfält",
+                  "display",
+                ]}
+                fields={[
+                  "searchSettings.primaryDisplayFields",
+                  "searchSettings.secondaryDisplayFields",
+                  "searchSettings.shortDisplayFields",
+                ]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("layers.settings.displayFields")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.primaryDisplayFields"]}
+                      fields={["searchSettings.primaryDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <TextFieldWithHelp
+                          labelKey="layers.primaryDisplayFields"
+                          helpKey="layers.help.primaryDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.primaryDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.secondaryDisplayFields"]}
+                      fields={["searchSettings.secondaryDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.secondaryDisplayFields"
+                          helpKey="layers.help.secondaryDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.secondaryDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.shortDisplayFields"]}
+                      fields={["searchSettings.shortDisplayFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.shortDisplayFields"
+                          helpKey="layers.help.shortDisplayFields"
+                          fullWidth
+                          {...register("searchSettings.shortDisplayFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
                   </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.secondaryDisplayFields"
-                      helpKey="layers.help.secondaryDisplayFields"
-                      fullWidth
-                      {...register("searchSettings.secondaryDisplayFields")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.shortDisplayFields"
-                      helpKey="layers.help.shortDisplayFields"
-                      fullWidth
-                      {...register("searchSettings.shortDisplayFields")}
-                    />
-                  </Grid>
-                </Grid>
-              </FormPanel>
+                </FormPanel>
+              </SearchablePanel>
             )}
 
             {settingsVisibility.showSearchSettingsPanel && (
-              <FormPanel title={t("layers.settings.searchSettings")}>
-                <Grid container rowSpacing={2} columnSpacing={2}>
-                  <Grid size={12}>
-                    <FormGroup>
-                      <Controller
-                        name="searchSettings.active"
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(field.value as boolean)}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
+              <SearchablePanel
+                panelTitleKeywords={settingsSearchLabels(
+                  "layers.settings.searchSettings",
+                )}
+                keywords={[
+                  ...settingsSearchLabels(
+                    "layers.settings.searchSettings",
+                    "layers.searchSettings.active",
+                    "layers.searchSettings.url",
+                    "layers.searchSettings.searchFields",
+                    "layers.searchSettings.outputFormat",
+                    "layers.searchSettings.geometryField",
+                  ),
+                  "sök",
+                  "search",
+                  "url",
+                  "fält",
+                  "fields",
+                  "geometri",
+                  "geometry",
+                  "format",
+                ]}
+                fields={[
+                  "searchSettings.active",
+                  "searchSettings.url",
+                  "searchSettings.searchFields",
+                  "searchSettings.outputFormat",
+                  "searchSettings.geometryField",
+                ]}
+                allValues={showSettingsSearchUi ? getValues() : undefined}
+                searchTerm={settingsSearchTerm}
+              >
+                <FormPanel title={t("layers.settings.searchSettings")}>
+                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.active"]}
+                      fields={["searchSettings.active"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={12}>
+                        <FormGroup>
+                          <Controller
+                            name="searchSettings.active"
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={Boolean(field.value as boolean)}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                  />
                                 }
+                                label={fieldLabel(
+                                  "layers.searchSettings.active",
+                                  "layers.help.searchActive",
+                                )}
                               />
-                            }
-                            label={fieldLabel(
-                              "layers.searchSettings.active",
-                              "layers.help.searchActive",
                             )}
                           />
-                        )}
-                      />
-                    </FormGroup>
+                        </FormGroup>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.url"]}
+                      fields={["searchSettings.url"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.url"
+                          helpKey="layers.help.searchUrl"
+                          fullWidth
+                          helperText={
+                            service &&
+                            [
+                              SERVICE_TYPE.WFS,
+                              SERVICE_TYPE.WFST,
+                              SERVICE_TYPE.VECTOR,
+                            ].includes(service.type)
+                              ? t("layers.searchSettings.urlServiceHint", {
+                                  url: service.url,
+                                })
+                              : undefined
+                          }
+                          {...register("searchSettings.url")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.searchFields"]}
+                      fields={["searchSettings.searchFields"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.searchFields"
+                          helpKey="layers.help.searchFields"
+                          fullWidth
+                          helperText={t("layers.searchFieldsHelp")}
+                          {...register("searchSettings.searchFields")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.outputFormat"]}
+                      fields={["searchSettings.outputFormat"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <Box>
+                          <FieldLabelAbove
+                            htmlFor="searchSettings-outputFormat"
+                            label={t("layers.searchSettings.outputFormat")}
+                            help={String(t("layers.help.searchOutputFormat"))}
+                          />
+                          <Controller
+                            name="searchSettings.outputFormat"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                id="searchSettings-outputFormat"
+                                select
+                                fullWidth
+                                value={(field.value as string) ?? ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                inputRef={field.ref}
+                              >
+                                {searchOutputFormat.map((format) => (
+                                  <MenuItem key={format} value={format}>
+                                    {format}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+                    </SettingsSearchField>
+                    <SettingsSearchField
+                      labelKeys={["layers.searchSettings.geometryField"]}
+                      fields={["searchSettings.geometryField"]}
+                      searchTerm={settingsSearchTerm}
+                      allValues={showSettingsSearchUi ? getValues() : undefined}
+                    >
+                      <Grid size={{ xs: 12, md: 10 }}>
+                        <TextFieldWithHelp
+                          labelKey="layers.searchSettings.geometryField"
+                          helpKey="layers.help.geometryField"
+                          fullWidth
+                          {...register("searchSettings.geometryField")}
+                        />
+                      </Grid>
+                    </SettingsSearchField>
                   </Grid>
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="layers.searchSettings.url"
-                      helpKey="layers.help.searchUrl"
-                      fullWidth
-                      helperText={
-                        service &&
-                        [
-                          SERVICE_TYPE.WFS,
-                          SERVICE_TYPE.WFST,
-                          SERVICE_TYPE.VECTOR,
-                        ].includes(service.type)
-                          ? t("layers.searchSettings.urlServiceHint", {
-                              url: service.url,
-                            })
-                          : undefined
-                      }
-                      {...register("searchSettings.url")}
-                    />
-                  </Grid>
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="layers.searchSettings.searchFields"
-                      helpKey="layers.help.searchFields"
-                      fullWidth
-                      helperText={t("layers.searchFieldsHelp")}
-                      {...register("searchSettings.searchFields")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Box>
-                      <FieldLabelAbove
-                        htmlFor="searchSettings-outputFormat"
-                        label={t("layers.searchSettings.outputFormat")}
-                        help={String(
-                          t("layers.help.searchOutputFormat" as never),
-                        )}
-                      />
-                      <Controller
-                        name="searchSettings.outputFormat"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            id="searchSettings-outputFormat"
-                            select
-                            fullWidth
-                            value={(field.value as string) ?? ""}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            inputRef={field.ref}
-                          >
-                            {searchOutputFormat.map((format) => (
-                              <MenuItem key={format} value={format}>
-                                {format}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextFieldWithHelp
-                      labelKey="layers.searchSettings.geometryField"
-                      helpKey="layers.help.geometryField"
-                      fullWidth
-                      {...register("searchSettings.geometryField")}
-                    />
-                  </Grid>
-                </Grid>
-              </FormPanel>
+                </FormPanel>
+              </SearchablePanel>
             )}
           </Box>
 
-          <Box sx={{ display: activeTab === "editing" ? "block" : "none" }}>
-            {settingsVisibility.showEditingSettingsPanel &&
-              service &&
-              layer && (
-                <EditingLayerSettings
-                  serviceUrl={service.url}
-                  typeName={layer.selectedLayers?.[0] ?? ""}
-                  geometryField={watchGeometryField ?? ""}
-                  onGeometryFieldChange={(value) =>
-                    setValue("searchSettings.geometryField", value, {
-                      shouldDirty: true,
-                    })
-                  }
-                  geometryTypes={editingGeometryTypes}
-                  onGeometryTypesChange={(types) => {
-                    setEditingGeometryTypes(types);
-                    (
-                      [
-                        "editPoint",
-                        "editMultiPoint",
-                        "editLine",
-                        "editMultiLine",
-                        "editPolygon",
-                        "editMultiPolygon",
-                        "allowMultiGeometries",
-                      ] as const satisfies readonly (keyof EditingGeometryTypes)[]
-                    ).forEach((key) => {
-                      setValue(`options.${key}`, types[key], {
-                        shouldDirty: true,
-                      });
-                    });
-                  }}
-                  savedEditableFields={editingEditableFields}
-                  savedNonEditableFields={editingNonEditableFields}
-                  onFieldsChange={(editable, nonEditable) => {
-                    setEditingEditableFields(editable);
-                    setEditingNonEditableFields(nonEditable);
-                    setValue("options.editableFields", editable, {
-                      shouldDirty: true,
-                    });
-                    setValue("options.nonEditableFields", nonEditable, {
-                      shouldDirty: true,
-                    });
-                  }}
-                />
-              )}
+          <Box sx={{ display: showEditingTab ? "block" : "none" }}>
+            <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("layers.editing.tab")}
+              keywords={[
+                ...settingsSearchLabels(
+                  "layers.editing.tab",
+                  "layers.editing.geometrySection",
+                  "layers.editing.geometryTypes",
+                  "layers.editing.editableFields",
+                  "layers.searchSettings.geometryField",
+                  "layers.editing.geometry.point",
+                  "layers.editing.geometry.multipoint",
+                  "layers.editing.geometry.line",
+                  "layers.editing.geometry.multiline",
+                  "layers.editing.geometry.polygon",
+                  "layers.editing.geometry.multipolygon",
+                  "layers.editing.allowMultiGeometries",
+                ),
+                "redigering",
+                "editing",
+                "geometri",
+                "geometry",
+                "fält",
+                "fields",
+                "punkt",
+                "linje",
+                "polygon",
+              ]}
+              fields={[
+                "searchSettings.geometryField",
+                "options.editPoint",
+                "options.editMultiPoint",
+                "options.editLine",
+                "options.editMultiLine",
+                "options.editPolygon",
+                "options.editMultiPolygon",
+                "options.allowMultiGeometries",
+              ]}
+              allValues={showSettingsSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
+            >
+              {settingsVisibility.showEditingSettingsPanel &&
+                service &&
+                layer && (
+                  <SettingsSearchField
+                    labelKeys={[
+                      "layers.editing.tab",
+                      "layers.editing.geometrySection",
+                      "layers.editing.geometryTypes",
+                      "layers.searchSettings.geometryField",
+                      "layers.editing.editableFields",
+                      "layers.editing.geometry.point",
+                      "layers.editing.geometry.multipoint",
+                      "layers.editing.geometry.line",
+                      "layers.editing.geometry.multiline",
+                      "layers.editing.geometry.polygon",
+                      "layers.editing.geometry.multipolygon",
+                      "layers.editing.allowMultiGeometries",
+                    ]}
+                    fields={[
+                      "searchSettings.geometryField",
+                      "options.editPoint",
+                      "options.editMultiPoint",
+                      "options.editLine",
+                      "options.editMultiLine",
+                      "options.editPolygon",
+                      "options.editMultiPolygon",
+                      "options.allowMultiGeometries",
+                    ]}
+                    synonyms={[
+                      "redigering",
+                      "editing",
+                      "geometri",
+                      "geometry",
+                      "fält",
+                      "fields",
+                      "punkt",
+                      "linje",
+                      "polygon",
+                    ]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSettingsSearchUi ? getValues() : undefined}
+                  >
+                    <EditingLayerSettings
+                      serviceUrl={service.url}
+                      typeName={layer.selectedLayers?.[0] ?? ""}
+                      geometryField={watchGeometryField ?? ""}
+                      onGeometryFieldChange={(value) =>
+                        setValue("searchSettings.geometryField", value, {
+                          shouldDirty: true,
+                        })
+                      }
+                      geometryTypes={editingGeometryTypes}
+                      onGeometryTypesChange={(types) => {
+                        setEditingGeometryTypes(types);
+                        (
+                          [
+                            "editPoint",
+                            "editMultiPoint",
+                            "editLine",
+                            "editMultiLine",
+                            "editPolygon",
+                            "editMultiPolygon",
+                            "allowMultiGeometries",
+                          ] as const satisfies readonly (keyof EditingGeometryTypes)[]
+                        ).forEach((key) => {
+                          setValue(`options.${key}`, types[key], {
+                            shouldDirty: true,
+                          });
+                        });
+                      }}
+                      savedEditableFields={editingEditableFields}
+                      savedNonEditableFields={editingNonEditableFields}
+                      onFieldsChange={(editable, nonEditable) => {
+                        setEditingEditableFields(editable);
+                        setEditingNonEditableFields(nonEditable);
+                        setValue("options.editableFields", editable, {
+                          shouldDirty: true,
+                        });
+                        setValue("options.nonEditableFields", nonEditable, {
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                  </SettingsSearchField>
+                )}
+            </SearchablePanel>
           </Box>
 
           {activeTab === "layers" && layer && (
@@ -2088,11 +2841,6 @@ export default function LayerSettings() {
             </Box>
           )}
 
-          {activeTab === "maps" && (
-            <Box>
-              <UsedInMapsGrid layerId={layerId ?? ""} />
-            </Box>
-          )}
         </FormContainer>
       </FormActionPanel>
       <LayerInfoClickModal

@@ -203,19 +203,32 @@ class MapService {
   }
 
   async getToolsForMap(mapName: string) {
-    const tools = await prisma.tool.findMany({
-      where: {
-        maps: {
-          some: {
-            map: {
-              name: mapName,
-            },
-          },
-        },
-      },
+    return await prisma.toolsOnMaps.findMany({
+      where: { mapName },
+      include: { tool: true },
+      orderBy: { index: "asc" },
     });
+  }
 
-    return tools;
+  async updateMapTools(
+    mapName: string,
+    tools: { toolId: number; index: number; target: string }[]
+  ) {
+    await prisma.$transaction([
+      prisma.toolsOnMaps.deleteMany({ where: { mapName } }),
+      ...(tools.length > 0
+        ? [
+            prisma.toolsOnMaps.createMany({
+              data: tools.map((t) => ({
+                mapName,
+                toolId: t.toolId,
+                index: t.index,
+                target: t.target,
+              })),
+            }),
+          ]
+        : []),
+    ]);
   }
 
   async createMap(data: Prisma.MapCreateInput, userId?: string) {

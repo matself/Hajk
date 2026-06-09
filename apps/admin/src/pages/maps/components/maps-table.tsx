@@ -63,19 +63,19 @@ export default function MapsTable() {
             debouncedSearchString === "" ||
             Object.values(map).some((value) => {
               return (
-                (typeof value === "string" &&
+                ((typeof value === "string" &&
                   value
                     .toLowerCase()
                     .includes(debouncedSearchString.toLowerCase())) ||
-                (value &&
-                  typeof value === "object" &&
-                  Object.values(map).some(
-                    (v) =>
-                      typeof v === "string" &&
-                      v
-                        .toLowerCase()
-                        .includes(debouncedSearchString.toLowerCase()),
-                  )) ||
+                  (value &&
+                    typeof value === "object" &&
+                    Object.values(map).some(
+                      (v) =>
+                        typeof v === "string" &&
+                        v
+                          .toLowerCase()
+                          .includes(debouncedSearchString.toLowerCase()),
+                    ))) ??
                 // TODO: This filters on ALL properties inside the options object.
                 // Probably not what we want, so we need to fix this at some point
                 // and limit to perhaps "description", "title" and maybe something more.

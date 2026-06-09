@@ -113,6 +113,64 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /maps/{mapName}/tools:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: mapName
+          in: path
+          description: Name of the map
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return the tools configured for the map
+        404:
+          description: Map not found
+    put:
+      tags:
+        - Admin only
+      parameters:
+        - name: mapName
+          in: path
+          description: Name of the map
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: List of tools with placement and order
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tools:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      toolId:
+                        type: integer
+                      index:
+                        type: integer
+                      target:
+                        type: string
+                        enum: [drawer, widgetLeft, widgetRight, controlButton]
+                    required:
+                      - toolId
+                      - index
+                      - target
+      responses:
+        204:
+          description: Map tools updated
+        400:
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /layers:
     get:
       tags:

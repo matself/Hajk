@@ -1,11 +1,5 @@
 import { VerticalAlignTop as ScrollToTopIcon } from "@mui/icons-material";
-import {
-  Box,
-  Typography,
-  IconButton,
-  useTheme,
-  Grid2 as Grid,
-} from "@mui/material";
+import { Box, Typography, IconButton, useTheme, Grid } from "@mui/material";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
@@ -23,13 +17,13 @@ const Page = (props: Props) => {
 
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    scrollToTop("instant");
-  }, [pathname]);
-
   const scrollToTop = (behavior: ScrollBehavior) => {
     window.scrollTo({ top: 0, behavior: behavior });
   };
+
+  useEffect(() => {
+    scrollToTop("instant");
+  }, [pathname]);
 
   const onScroll = () => {
     setHasVerticalScroll(window.scrollY > 0);
@@ -67,7 +61,11 @@ const Page = (props: Props) => {
         <Grid container size="auto">
           <Typography variant="h1">{props.title}</Typography>
         </Grid>
-        <Grid container size="grow" alignContent="center" justifyContent="end">
+        <Grid
+          container
+          size="grow"
+          sx={{ alignItems: "center", justifyContent: "end" }}
+        >
           {props.actionButtons}
         </Grid>
       </Grid>

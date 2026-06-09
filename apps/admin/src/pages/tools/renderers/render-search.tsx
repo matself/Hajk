@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Grid2 as Grid, Switch } from "@mui/material";
+import { Grid, Switch } from "@mui/material";
 import { TextField, FormControlLabel, Checkbox } from "@mui/material";
 import { useForm, Controller, FieldValues, Control } from "react-hook-form";
 import FormAccordion from "../../../components/form-components/form-accordion";
@@ -94,9 +94,9 @@ export default function SearchRenderer({
   return (
     <>
       <FormPanel title={t("tools.search.generalSettings")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Infotext */}
-          <Grid size={{ xs: 12 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Controller
               name="searchInfoText"
               control={control}
@@ -209,7 +209,7 @@ export default function SearchRenderer({
       </FormPanel>
 
       <FormAccordion title={t("tools.search.spatialSettings")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Spatial search checkboxes */}
           <Grid size={{ xs: 12 }}>
             <Controller
@@ -263,7 +263,7 @@ export default function SearchRenderer({
             />
           </Grid>
         </Grid>
-        <Grid container columns={12}>
+        <Grid container columns={12} rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: "auto" }}>
             <FormControl fullWidth>
               <InputLabel id="strokeColor" shrink>
@@ -308,8 +308,13 @@ export default function SearchRenderer({
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.userSettings.title")}>
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="searchVisibleLayers"
               control={control}
@@ -335,8 +340,13 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="wildcardBefore"
               control={control}
@@ -362,8 +372,13 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="wildcardAfter"
               control={control}
@@ -389,8 +404,13 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="caseSensitive"
               control={control}
@@ -416,8 +436,13 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="requireFullObject"
               control={control}
@@ -443,8 +468,13 @@ export default function SearchRenderer({
           </Grid>
         </Grid>
 
-        <Grid container columns={12} alignItems="center">
-          <Grid size={{ xs: 6 }}>
+        <Grid
+          container
+          columns={12}
+          sx={{ alignItems: "center" }}
+          rowSpacing={1.5}
+        >
+          <Grid size={{ xs: 12, md: 10 }}>
             <Controller
               name="showResultLabel"
               control={control}
@@ -476,7 +506,7 @@ export default function SearchRenderer({
           defaultValue: "Alternativ för visning av resultat",
         })}
       >
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12 }}>
             <Controller
               name="autoShowAllResultsOnMap"
@@ -610,7 +640,7 @@ export default function SearchRenderer({
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.hitIconandResultsInMap")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Hit icon */}
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller
@@ -676,7 +706,7 @@ export default function SearchRenderer({
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.standardAppearance")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: "auto" }}>
             <FormControl fullWidth>
               <InputLabel id="standardResultsMarkedFillColor" shrink>
@@ -721,7 +751,7 @@ export default function SearchRenderer({
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.markedResultsAppearance")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: "auto" }}>
             <FormControl fullWidth>
               <InputLabel id="markedResultsTextFillColor" shrink>
@@ -806,7 +836,7 @@ export default function SearchRenderer({
       </FormAccordion>
       {/* Utseende för det aktiva ("highlightade") resultatet */}
       <FormAccordion title={t("tools.search.activeResultAppearance")}>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           <Grid size={{ xs: 12, md: "auto" }}>
             <FormControl fullWidth>
               <InputLabel id="activeResultTextFillColor" shrink>

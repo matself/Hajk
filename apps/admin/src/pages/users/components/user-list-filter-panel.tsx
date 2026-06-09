@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useTranslation } from "react-i18next";

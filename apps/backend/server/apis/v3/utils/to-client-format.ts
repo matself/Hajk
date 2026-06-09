@@ -21,8 +21,10 @@
  *     - `apps/client/src/models/SearchModel.js`         (`searchSource.serverType === "qgis"`)
  *
  *   These helpers are used when building `layersConfig` in
- *   `apps/backend/server/apis/v3/utils/build-legacy-layers-config.ts`, which
- *   is consumed from `public.service.ts#getClientConfigForMap`.
+ *   `apps/backend/server/apis/v3/utils/build-legacy-layers-config.ts` and
+ *   `layerswitcher.options.groups` in
+ *   `apps/backend/server/apis/v3/utils/build-layer-switcher-groups-for-map.ts`,
+ *   consumed from `public.service.ts#getClientConfigForMap`.
  */
 
 /**

@@ -59,6 +59,8 @@ const FormActionPanel: React.FC<FormActionProps> = ({
   return (
     <Box
       sx={{
+        display: "flex",
+        flexDirection: "row-reverse",
         alignItems: "flex-start",
         gap: 3,
         width: "100%",
@@ -69,18 +71,16 @@ const FormActionPanel: React.FC<FormActionProps> = ({
           display: "flex",
           flexDirection: "column",
           textAlign: "center",
-          float: "right",
+          flexShrink: 0,
           gap: 2,
           p: 2,
-          ml: 3,
-          mb: 2,
           border: "1px solid",
           borderColor: "grey.300",
           borderRadius: 3,
-          maxWidth: "300px",
+          width: 240,
+          maxWidth: 240,
           top: "100px",
           position: "sticky",
-          width: "100%",
         }}
       >
         {updateStatus === "error" && (
@@ -158,6 +158,8 @@ const FormActionPanel: React.FC<FormActionProps> = ({
       <Box
         sx={{
           flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
           display: "flex",
           flexDirection: "column",
           gap: 2,

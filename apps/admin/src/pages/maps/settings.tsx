@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import {
-  Grid2 as Grid,
+  Grid,
   TextField,
   useTheme,
   FormControl,
@@ -22,6 +22,9 @@ import {
   MapMutation,
   useUpdateMap,
   useMaps,
+  useToolsByMapName,
+  useUpdateMapTools,
+  ToolOnMap,
 } from "../../api/maps";
 import { SquareSpinnerComponent } from "../../components/progress/square-progress";
 import FormActionPanel from "../../components/form-action-panel";
@@ -34,11 +37,12 @@ import {
   LayerSwitcherDnD,
   TreeItemData,
   ToolPlacementDnD,
+  ID_DELIMITER,
 } from "../../components/layerswitcher-dnd";
 import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
 import { useTools } from "../../api/tools";
-import { TreeItems } from "dnd-kit-sortable-tree";
+import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
 
 export default function MapSettings() {
   const { t } = useTranslation();
@@ -50,29 +54,96 @@ export default function MapSettings() {
   const { palette } = useTheme();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [activeTab, setActiveTab] = useState<"menu" | "settings" | "tools">(
-    "settings"
+    "settings",
   );
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
+  const { data: mapTools } = useToolsByMapName(mapName ?? "");
+  const { mutateAsync: updateMapToolsMutation } = useUpdateMapTools();
 
   // Drop zone states
   const [backgroundLayersDZ, setBackgroundLayersDZ] = useState<
     TreeItems<TreeItemData>
   >([]);
   const [groupLayersDZ, setGroupLayersDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
   const [drawerDZ, setDrawerDZ] = useState<TreeItems<TreeItemData>>([]);
   const [controlDZ, setControlDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetLeftDZ, setWidgetLeftDZ] = useState<TreeItems<TreeItemData>>([]);
   const [widgetRightDZ, setWidgetRightDZ] = useState<TreeItems<TreeItemData>>(
-    []
+    [],
   );
+  const [isToolsDirty, setIsToolsDirty] = useState(false);
+  const initialToolsLoaded = useRef(false);
+
+  useEffect(() => {
+    if (!mapTools) return;
+    const toItem = (t: ToolOnMap): TreeItem<TreeItemData> => ({
+      id: `tool${ID_DELIMITER}${t.toolId}`,
+      name: t.tool.type,
+      type: "tool" as const,
+      canHaveChildren: false,
+    });
+
+    const byZone = (zone: string) =>
+      [...mapTools]
+        .filter((t) => t.target === zone)
+        .sort((a, b) => a.index - b.index)
+        .map(toItem);
+
+    setDrawerDZ(byZone("drawer"));
+    setWidgetLeftDZ(byZone("widgetLeft"));
+    setWidgetRightDZ(byZone("widgetRight"));
+    setControlDZ(byZone("controlButton"));
+    initialToolsLoaded.current = true;
+    setIsToolsDirty(false);
+  }, [mapTools]);
+
+  const markToolsDirty = useCallback(() => {
+    if (initialToolsLoaded.current) setIsToolsDirty(true);
+  }, []);
+
+  const handleSaveTools = async () => {
+    const zones: [TreeItems<TreeItemData>, string][] = [
+      [drawerDZ, "drawer"],
+      [widgetLeftDZ, "widgetLeft"],
+      [widgetRightDZ, "widgetRight"],
+      [controlDZ, "controlButton"],
+    ];
+    const toolsPayload = zones.flatMap(([items, zone]) =>
+      items.map((item, index) => ({
+        toolId: parseInt(String(item.id).split(ID_DELIMITER)[1], 10),
+        index,
+        target: zone,
+      }))
+    );
+    try {
+      await updateMapToolsMutation({ mapName: mapName ?? "", tools: toolsPayload });
+      toast.success(t("maps.updateMapSuccess", { name: mapName }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      setIsToolsDirty(false);
+    } catch (error) {
+      console.error("Failed to update map tools:", error);
+      toast.error(t("maps.updateMapFailed", { name: mapName }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
+  };
 
   const backgroundImage = "/mapbackground.png";
 
   const handleExternalSubmit = () => {
+    if (activeTab === "tools") {
+      void handleSaveTools();
+      return;
+    }
     if (formRef.current) {
       formRef.current.requestSubmit();
     }
@@ -239,7 +310,7 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
-        isDirty={isDirty}
+        isDirty={isDirty || isToolsDirty}
       >
         {activeTab === "settings" && (
           <FormContainer
@@ -259,7 +330,7 @@ export default function MapSettings() {
                     projection:
                       (data["options.projection"] as string) ?? "EPSG:3006",
                     startZoom: String(
-                      toNumber(data["options.startZoom"]) ?? 1.33
+                      toNumber(data["options.startZoom"]) ?? 1.33,
                     ),
                     maxZoom: String(toNumber(data["options.maxZoom"]) ?? 8),
                     minZoom: String(toNumber(data["options.minZoom"]) ?? 0),
@@ -276,22 +347,22 @@ export default function MapSettings() {
                     printResolutions:
                       (data["options.printResolutions"] as string) ?? "",
                     constrainResolution: String(
-                      Boolean(data["options.constrainResolution"])
+                      Boolean(data["options.constrainResolution"]),
                     ),
                     constrainOnlyCenter: String(
-                      Boolean(data["options.constrainOnlyCenter"])
+                      Boolean(data["options.constrainOnlyCenter"]),
                     ),
                     constrainResolutionMobile: String(
-                      Boolean(data["options.constrainResolutionMobile"])
+                      Boolean(data["options.constrainResolutionMobile"]),
                     ),
                     enableDownloadLink: String(
-                      Boolean(data["options.enableDownloadLink"])
+                      Boolean(data["options.enableDownloadLink"]),
                     ),
                     enableAppStateInHash: String(
-                      Boolean(data["options.enableAppStateInHash"])
+                      Boolean(data["options.enableAppStateInHash"]),
                     ),
                     confirmOnWindowClose: String(
-                      Boolean(data["options.confirmOnWindowClose"])
+                      Boolean(data["options.confirmOnWindowClose"]),
                     ),
                     logoLight:
                       (data["options.logoLight"] as string) ?? "/logoLight.png",
@@ -304,36 +375,36 @@ export default function MapSettings() {
                     mapcleaner: String(Boolean(data["options.mapcleaner"])),
                     mapresetter: String(Boolean(data["options.mapresetter"])),
                     showThemeToggler: String(
-                      Boolean(data["options.showThemeToggler"])
+                      Boolean(data["options.showThemeToggler"]),
                     ),
                     showUserAvatar: String(
-                      Boolean(data["options.showUserAvatar"])
+                      Boolean(data["options.showUserAvatar"]),
                     ),
                     showRecentlyUsedPlugins: String(
-                      Boolean(data["options.showRecentlyUsedPlugins"])
+                      Boolean(data["options.showRecentlyUsedPlugins"]),
                     ),
                     altShiftDragRotate: String(
-                      Boolean(data["options.altShiftDragRotate"])
+                      Boolean(data["options.altShiftDragRotate"]),
                     ),
                     onFocusOnly: String(Boolean(data["options.onFocusOnly"])),
                     doubleClickZoom: String(
-                      Boolean(data["options.doubleClickZoom"])
+                      Boolean(data["options.doubleClickZoom"]),
                     ),
                     keyboard: String(Boolean(data["options.keyboard"])),
                     mouseWheelZoom: String(
-                      Boolean(data["options.mouseWheelZoom"])
+                      Boolean(data["options.mouseWheelZoom"]),
                     ),
                     shiftDragZoom: String(
-                      Boolean(data["options.shiftDragZoom"])
+                      Boolean(data["options.shiftDragZoom"]),
                     ),
                     dragPan: String(Boolean(data["options.dragPan"])),
                     pinchRotate: String(Boolean(data["options.pinchRotate"])),
                     pinchZoom: String(Boolean(data["options.pinchZoom"])),
                     zoomLevelDelta: String(
-                      toNumber(data["options.zoomLevelDelta"]) ?? ""
+                      toNumber(data["options.zoomLevelDelta"]) ?? "",
                     ),
                     zoomAnimationDuration: String(
-                      toNumber(data["options.zoomAnimationDuration"]) ?? ""
+                      toNumber(data["options.zoomAnimationDuration"]) ?? "",
                     ),
                     preferredColorScheme:
                       (data["options.preferredColorScheme"] as string) ??
@@ -344,13 +415,13 @@ export default function MapSettings() {
                       (data["options.secondaryColor"] as string) ?? "#ffa000",
                     drawerStatic: String(Boolean(data["options.drawerStatic"])),
                     drawerVisible: String(
-                      Boolean(data["options.drawerVisible"])
+                      Boolean(data["options.drawerVisible"]),
                     ),
                     drawerVisibleMobile: String(
-                      Boolean(data["options.drawerVisibleMobile"])
+                      Boolean(data["options.drawerVisibleMobile"]),
                     ),
                     drawerPermanent: String(
-                      Boolean(data["options.drawerPermanent"])
+                      Boolean(data["options.drawerPermanent"]),
                     ),
                     drawerContent:
                       (data["options.drawerContent"] as string) ?? "plugins",
@@ -362,13 +433,13 @@ export default function MapSettings() {
                     drawerButtonIcon:
                       (data["options.drawerButtonIcon"] as string) ?? "MapIcon",
                     showCookieNotice: String(
-                      Boolean(data["options.showCookieNotice"])
+                      Boolean(data["options.showCookieNotice"]),
                     ),
                     cookieUse3dPart: String(
-                      Boolean(data["options.cookieUse3dPart"])
+                      Boolean(data["options.cookieUse3dPart"]),
                     ),
                     showCookieNoticeButton: String(
-                      Boolean(data["options.showCookieNoticeButton"])
+                      Boolean(data["options.showCookieNoticeButton"]),
                     ),
                     cookieLink:
                       (data["options.cookieLink"] as string) ??
@@ -377,14 +448,14 @@ export default function MapSettings() {
                       (data["options.cookieMessage"] as string) ??
                       "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
                     introductionEnabled: String(
-                      Boolean(data["options.introductionEnabled"])
+                      Boolean(data["options.introductionEnabled"]),
                     ),
                     introductionShowControlButton: String(
-                      Boolean(data["options.introductionShowControlButton"])
+                      Boolean(data["options.introductionShowControlButton"]),
                     ),
                     introductionSteps:
                       (data["options.introductionSteps"] as string) ?? "[]",
-                  } as Record<string, string>,
+                  },
                 };
 
                 void handleUpdateMap(normalized);
@@ -394,8 +465,8 @@ export default function MapSettings() {
             noValidate={false}
           >
             <FormPanel title={t("map.baseSettings")}>
-              <Grid container>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 12 }}>
                   <TextField
                     label={t("map.projection")}
                     fullWidth
@@ -482,8 +553,8 @@ export default function MapSettings() {
             </FormPanel>
 
             <FormAccordion title={t("map.extraSettings")}>
-              <Grid container>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -613,8 +684,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.extraMapControls")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -712,8 +783,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.interactions")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -872,7 +943,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.colors")}>
-              <Grid container>
+              <Grid container rowSpacing={1.5}>
                 <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="preferredColorScheme-label">
@@ -924,7 +995,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.sidepanel")}>
-              <Grid container>
+              <Grid container rowSpacing={1.5}>
                 <FormGroup>
                   <Grid size={12}>
                     <FormControlLabel
@@ -1047,8 +1118,8 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.cookies")}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container rowSpacing={1.5}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -1125,7 +1196,7 @@ export default function MapSettings() {
             </FormAccordion>
 
             <FormAccordion title={t("map.introGuide")}>
-              <Grid container spacing={2}>
+              <Grid container rowSpacing={1.5}>
                 <Grid size={6}>
                   <FormGroup>
                     <FormControlLabel
@@ -1206,13 +1277,13 @@ export default function MapSettings() {
           <ToolPlacementDnD
             tools={tools.map((tool) => ({ id: tool.id, name: tool.type }))}
             drawerItems={drawerDZ}
-            onDrawerItemsChange={setDrawerDZ}
+            onDrawerItemsChange={(items) => { setDrawerDZ(items); markToolsDirty(); }}
             widgetLeftItems={widgetLeftDZ}
-            onWidgetLeftItemsChange={setWidgetLeftDZ}
+            onWidgetLeftItemsChange={(items) => { setWidgetLeftDZ(items); markToolsDirty(); }}
             widgetRightItems={widgetRightDZ}
-            onWidgetRightItemsChange={setWidgetRightDZ}
+            onWidgetRightItemsChange={(items) => { setWidgetRightDZ(items); markToolsDirty(); }}
             controlButtonItems={controlDZ}
-            onControlButtonItemsChange={setControlDZ}
+            onControlButtonItemsChange={(items) => { setControlDZ(items); markToolsDirty(); }}
             backgroundImage={backgroundImage}
           />
         )}

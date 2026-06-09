@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
-import { Button, TextField, Typography, useTheme } from "@mui/material";
+import { Grid } from "@mui/material";
+import { Button, TextField, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import { useMaps, Map, useCreateMap, MapMutation } from "../../../api/maps";
 import DialogWrapper from "../../../components/flexible-dialog";
+import CreateButton from "../../../components/create-button";
+import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
@@ -59,17 +61,19 @@ export default function MapsList({
         debouncedSearchString === "" ||
         Object.values(map).some((value) => {
           return (
-            (typeof value === "string" &&
+            ((typeof value === "string" &&
               value
                 .toLowerCase()
                 .includes(debouncedSearchString.toLowerCase())) ||
-            (value &&
-              typeof value === "object" &&
-              Object.values(map).some(
-                (v) =>
-                  typeof v === "string" &&
-                  v.toLowerCase().includes(debouncedSearchString.toLowerCase()),
-              )) ||
+              (value &&
+                typeof value === "object" &&
+                Object.values(map).some(
+                  (v) =>
+                    typeof v === "string" &&
+                    v
+                      .toLowerCase()
+                      .includes(debouncedSearchString.toLowerCase()),
+                ))) ??
             (typeof map === "object" &&
               typeof map.options === "object" &&
               Object.values(map.options).some(
@@ -180,18 +184,10 @@ export default function MapsList({
 
   return (
     <Page
-      title={t(pageTitleKey) + (maps && ` (${maps.length})`)}
+      title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <>
-            <Button
-              onClick={handleClickOpen}
-              color="primary"
-              variant="contained"
-            >
-              {t("map.createMap")}
-            </Button>
-          </>
+          <CreateButton onClick={handleClickOpen} label={t("map.createMap")} />
         ) : undefined
       }
     >
@@ -250,17 +246,19 @@ export default function MapsList({
         </Grid>
       </DialogWrapper>
       {isLoading ? (
-        <Typography variant="h6">{t("common.loading")}</Typography>
+        <SquareSpinnerComponent />
       ) : (
         <>
-          <Grid size={12} container sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label={t("map.searchTitle")}
-              variant="outlined"
-              value={searchString}
-              onChange={handleSearchChange}
-            />
+          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextField
+                fullWidth
+                label={t("map.searchTitle")}
+                variant="outlined"
+                value={searchString}
+                onChange={handleSearchChange}
+              />
+            </Grid>
           </Grid>
 
           <Grid size={12}>

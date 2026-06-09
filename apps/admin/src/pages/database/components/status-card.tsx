@@ -24,7 +24,7 @@ export default function DatabaseStatusCard() {
     return (
       <Card>
         <CardContent>
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <CircularProgress size={24} />
             <Typography>{t("database.status.loading")}</Typography>
           </Box>
@@ -56,16 +56,16 @@ export default function DatabaseStatusCard() {
   return (
     <Card>
       <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <StorageIcon color="primary" />
           <Typography variant="h6">{t("database.status.title")}</Typography>
         </Box>
 
-        <Box mb={3}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" gutterBottom>
             {t("database.status.postgresqlTools")}
           </Typography>
-          <Box display="flex" gap={1} flexWrap="wrap">
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             {tools && (
               <>
                 <Chip
@@ -105,7 +105,7 @@ export default function DatabaseStatusCard() {
           </Box>
         </Box>
 
-        <Box mb={2}>
+        <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" gutterBottom>
             {t("database.status.availableExports")}
           </Typography>

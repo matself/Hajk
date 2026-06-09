@@ -19,6 +19,11 @@ import { GRID_SWEDISH_LOCALE_TEXT } from "../../i18n/translations/datagrid/sv";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import DataGridBadgeButton from "./components/data-grid-badge";
+import {
+  emptyIncludeSelectionModel,
+  includeSelectionModel,
+  normalizeRowSelectionModel,
+} from "./row-selection-model";
 
 function AvailableLayersGrid({
   isLoading,
@@ -109,14 +114,16 @@ function AvailableLayersGrid({
       .filter((layer) => selectedLayers.includes(layer?.layer as string))
       .map((layer: GridValidRowModel) => layer.id as string);
 
-    const currentIdsArray = Array.isArray(selectGridId) ? selectGridId : [];
+    const normalized = normalizeRowSelectionModel(selectGridId);
+    const currentIdsArray =
+      normalized?.type === "include" ? Array.from(normalized.ids) : [];
     const currentIds = currentIdsArray.slice().sort().join(",");
     const expectedIdsStr = expectedIds.slice().sort().join(",");
 
     if (expectedIds.length > 0 && currentIds !== expectedIdsStr) {
-      setSelectGridId(expectedIds);
+      setSelectGridId(includeSelectionModel(expectedIds));
     } else if (expectedIds.length === 0 && currentIdsArray.length > 0) {
-      setSelectGridId([]);
+      setSelectGridId(emptyIncludeSelectionModel());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLayers, filteredLayers]);
@@ -224,7 +231,8 @@ function AvailableLayersGrid({
             localeText={
               language === "sv" ? GRID_SWEDISH_LOCALE_TEXT : undefined
             }
-            rowSelectionModel={selectGridId ?? []}
+            disableRowSelectionExcludeModel
+            rowSelectionModel={selectGridId ?? emptyIncludeSelectionModel()}
             onRowSelectionModelChange={(ids) => {
               userHasInteractedRef.current = true;
               if (onSelectionChange) {

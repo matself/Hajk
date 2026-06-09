@@ -60,7 +60,7 @@ export default function DatabaseExportCard() {
 
   const handleOptionChange = (
     key: keyof ExportOptions,
-    value: boolean | string
+    value: boolean | string,
   ) => {
     setOptions((prev) => ({
       ...prev,
@@ -79,7 +79,7 @@ export default function DatabaseExportCard() {
             justifyContent: "center",
           }}
         >
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <CircularProgress size={24} />
             <Typography>{t("common.loading")}</Typography>
           </Box>
@@ -91,16 +91,16 @@ export default function DatabaseExportCard() {
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <DownloadIcon color="primary" />
           <Typography variant="h6">{t("database.export.title")}</Typography>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" mb={3}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           {t("database.export.description")}
         </Typography>
 
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <FormControl fullWidth>
             <InputLabel>{t("database.export.format")}</InputLabel>
             <Select
@@ -149,7 +149,7 @@ export default function DatabaseExportCard() {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.export.includeData.desc")}
             </Typography>
@@ -174,7 +174,7 @@ export default function DatabaseExportCard() {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.export.schemaOnly.desc")}
             </Typography>
@@ -199,7 +199,7 @@ export default function DatabaseExportCard() {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.export.dataOnly.desc")}
             </Typography>
@@ -220,7 +220,7 @@ export default function DatabaseExportCard() {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               {t("database.export.compress.desc")}
             </Typography>

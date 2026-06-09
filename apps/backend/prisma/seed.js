@@ -146,7 +146,6 @@ async function readMapConfigAndPopulateMap(file) {
 
   // Take care of tools. Right now we let each map have it's own Tool.
   console.log("Creating tools…");
-  const toolsToConnectToMap = [];
   for await (const t of mapConfig.tools) {
     const tool = await prisma.tool.create({
       data: { type: t.type, options: t.options },
@@ -158,16 +157,6 @@ async function readMapConfigAndPopulateMap(file) {
       tool.id,
       "tool"
     );
-
-    // While inserting each of the tools, we prepare an object
-    // that will be used later, to connect the recently-inserted tool
-    // with the map that it belongs to.
-    toolsToConnectToMap.push({
-      toolId: tool.id,
-      mapName: file,
-      index: t.index,
-      options: t.options,
-    });
   }
 
   // Finally we can create the map
@@ -196,12 +185,6 @@ async function readMapConfigAndPopulateMap(file) {
 
   // Add potential role restrictions on the map
   await updateRolesFromVisibleForGroups(visibleForGroups, createdMap.id, "map");
-
-  // Once the map is created, we can connect it with its tools
-  const connectedTools = await prisma.toolsOnMaps.createMany({
-    data: toolsToConnectToMap,
-  });
-  console.log(`Connected ${connectedTools.count} tools to map ${file}`);
 
   console.log(`END MAP CONFIG "${file}"\n\n`);
 }

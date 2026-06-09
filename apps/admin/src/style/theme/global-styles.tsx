@@ -7,36 +7,6 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
   return (
     <GlobalStyles
       styles={{
-        ".form-factory .MuiPaper-root": {
-          "&:before": {
-            display: "none", // Hide the fake top border on Accordion
-          },
-          backgroundColor: isDarkMode ? "#121212" : "#efefef",
-          border: 0,
-          boxShadow: "none",
-          borderRadius: "8px", // Default is 4px
-        },
-        ".form-factory .MuiAccordion-root": {
-          maxWidth: "calc(100% - 1rem)",
-          border: 0,
-          boxShadow: "none",
-          borderRadius: "8px", // Default is 4px
-        },
-        ".form-factory .MuiAccordionSummary-content": {
-          maxWidth: "calc(100% - 28px)",
-        },
-        ".form-factory .MuiInputBase-root": {
-          backgroundColor: isDarkMode ? "#3b3b3b" : "#fbfbfb",
-          "&.Mui-disabled": {
-            opacity: 0.5,
-          },
-        },
-        ".form-factory .MuiPaper-root .MuiGrid2-root > .MuiGrid2-root > .MuiGrid2-root":
-          {
-            // Fix for nested grids which is generated when helpText is added.
-            width: "100%",
-          },
-
         ".form-container .MuiPaper-root": {
           "&:before": {
             display: "none", // Hide the fake top border on Accordion
@@ -52,9 +22,6 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
           boxShadow: "none",
           borderRadius: "8px", // Default is 4px
         },
-        // ".form-factory .MuiAccordionDetails-root": {
-        //   paddingTop: "16px",
-        // },
         ".form-container .MuiAccordionSummary-content": {
           maxWidth: "calc(100% - 28px)",
         },
@@ -70,14 +37,11 @@ export function GlobalStylesComponent({ mode }: { mode: PaletteMode }) {
             color: isDarkMode ? "#fff" : "rgba(0, 0, 0, 0.87)",
           },
         },
-        ".form-container .MuiPaper-root .MuiGrid2-root > .MuiGrid2-root > .MuiGrid2-root":
+        ".form-container .MuiPaper-root .MuiGrid-root > .MuiGrid-root > .MuiGrid-root":
           {
             // Fix for nested grids which is generated when helpText is added.
             width: "100%",
           },
-        ".form-container [class*='MuiGrid2-grid']": {
-          paddingBottom: "16px",
-        },
         ".form-container .MuiSwitch-root": {
           marginLeft: 6,
         },

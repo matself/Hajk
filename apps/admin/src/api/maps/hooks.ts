@@ -11,6 +11,7 @@ import {
   getLayersByMapName,
   getProjectionsByMapName,
   getToolsByMapName,
+  updateMapTools,
   createMap,
   deleteMap,
   updateMap,
@@ -20,9 +21,9 @@ import {
   ProjectionsApiResponse,
   GroupApiResponse,
   MapMutation,
+  ToolOnMap,
 } from "./types";
 import { LayersApiResponse } from "../layers/types";
-import { ToolsApiResponse } from "../tools/types";
 
 // React Query hook to fetch all maps
 // This hook uses the `getMaps` function from the `requests` module
@@ -79,10 +80,28 @@ export const useProjectionByMapName = (
 // This hook uses the `getToolsByMapName` function from the maps `requests` module
 export const useToolsByMapName = (
   mapName: string
-): UseQueryResult<ToolsApiResponse[]> => {
+): UseQueryResult<ToolOnMap[]> => {
   return useQuery({
     queryKey: ["toolsByMap", mapName],
     queryFn: () => getToolsByMapName(mapName),
+    enabled: Boolean(mapName),
+  });
+};
+
+// React mutation to update tools for a map
+export const useUpdateMapTools = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      mapName,
+      tools,
+    }: {
+      mapName: string;
+      tools: { toolId: number; index: number; target: string }[];
+    }) => updateMapTools(mapName, tools),
+    onSuccess: (_, { mapName }) => {
+      void queryClient.invalidateQueries({ queryKey: ["toolsByMap", mapName] });
+    },
   });
 };
 

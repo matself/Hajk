@@ -21,9 +21,12 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LayersIcon from "@mui/icons-material/Layers";
+import TuneIcon from "@mui/icons-material/Tune";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import SearchablePanel from "../../components/form-components/searchable-panel";
+import { SettingsSearchField } from "../../components/form-components/searchable-field";
+import { useSettingsSearchLabels } from "../../hooks/use-settings-search-labels";
 import {
   useServiceById,
   useUpdateService,
@@ -38,36 +41,38 @@ import {
   useServiceCapabilities,
 } from "../../api/services";
 import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
-import Grid from "@mui/material/Grid2";
-import { TextFieldWithHelp } from "../../components/form-components/field-label-with-help";
-import { FieldLabelWithHelp } from "../../components/form-components/field-help-tooltip";
+import { Grid } from "@mui/material";
+import {
+  SelectWithHelp,
+  TextFieldWithHelp,
+} from "../../components/form-components/field-label-with-help";
+import FormFieldGrid from "../../components/form-components/form-field-grid";
 
 const StyledTabButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "isActive",
 })<{ isActive: boolean }>(({ theme, isActive }) => ({
-    textTransform: "none",
-    width: "100%",
-    borderRadius: 14,
-    justifyContent: "flex-start",
-    color: theme.palette.text.primary,
-    paddingTop: theme.spacing(1.8),
-    paddingBottom: theme.spacing(1.8),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    minHeight: 48,
-    backgroundColor: isActive ? theme.palette.action.focus : "transparent",
-    transition: "all 200ms ease",
-    "&:hover": {
-      backgroundColor: isActive
-        ? theme.palette.action.selected
-        : theme.palette.action.hover,
-    },
-    "& .MuiButton-startIcon": {
-      fontSize: "1.25rem",
-      marginRight: theme.spacing(2),
-    },
-  }),
-);
+  textTransform: "none",
+  width: "100%",
+  borderRadius: 14,
+  justifyContent: "flex-start",
+  color: theme.palette.text.primary,
+  paddingTop: theme.spacing(1.8),
+  paddingBottom: theme.spacing(1.8),
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  minHeight: 48,
+  backgroundColor: isActive ? theme.palette.action.focus : "transparent",
+  transition: "all 200ms ease",
+  "&:hover": {
+    backgroundColor: isActive
+      ? theme.palette.action.selected
+      : theme.palette.action.hover,
+  },
+  "& .MuiButton-startIcon": {
+    fontSize: "1.25rem",
+    marginRight: theme.spacing(2),
+  },
+}));
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
 
@@ -85,16 +90,22 @@ export default function ServiceSettings() {
   const navigate = useNavigate();
   const { palette } = useTheme();
   const { t } = useTranslation();
+  const settingsSearchLabels = useSettingsSearchLabels();
   const { serviceId } = useParams<{ serviceId: string }>();
   const { data: service, isError, isLoading } = useServiceById(serviceId ?? "");
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get("tab") ?? "settings") as
     | "settings"
+    | "display"
     | "layers"
     | "search";
+  const showSearchUi = activeTab === "search";
+  const showSettingsPanels = activeTab === "settings" || activeTab === "search";
+  const showDisplayPanels = activeTab === "display" || activeTab === "search";
   const setActiveTab = (tab: string) =>
     setSearchParams({ tab }, { replace: true });
   const [searchQuery, setSearchQuery] = useState("");
+  const settingsSearchTerm = showSearchUi ? searchQuery : "";
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogUrl, setDialogUrl] = useState("");
   const [dialogServiceType, setDialogServiceType] = useState("");
@@ -145,23 +156,10 @@ export default function ServiceSettings() {
     setValue,
     getValues,
     reset,
-    watch,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
-  });
-
-  const allValues = watch();
-
-  const fieldLabel = (labelKey: string, helpKey: string) => (
-    <FieldLabelWithHelp
-      label={String(t(labelKey as never))}
-      help={String(t(helpKey as never))}
-    />
-  );
-  const selectLabel = (labelKey: string, helpKey: string) => ({
-    label: fieldLabel(labelKey, helpKey),
   });
 
   // Reset form with service data when it loads
@@ -370,7 +368,13 @@ export default function ServiceSettings() {
   }
 
   return (
-    <Page title={service?.name ? `${t("common.settings")} - ${service.name}` : t("common.settings")}>
+    <Page
+      title={
+        service?.name
+          ? `${t("common.settings")} - ${service.name}`
+          : t("common.settings")
+      }
+    >
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
@@ -427,6 +431,11 @@ export default function ServiceSettings() {
                 icon: <SettingsIcon />,
               },
               {
+                key: "display",
+                label: t("layers.display"),
+                icon: <TuneIcon />,
+              },
+              {
                 key: "layers",
                 label: t("services.publishedLayers"),
                 icon: <LayersIcon />,
@@ -455,15 +464,8 @@ export default function ServiceSettings() {
           ))}
         </List>
         <FormContainer formRef={formRef} onSubmit={onSubmit} noValidate={false}>
-          <Box
-            sx={{
-              display:
-                activeTab === "settings" || activeTab === "search"
-                  ? "block"
-                  : "none",
-            }}
-          >
-            {activeTab === "search" && (
+          <Box sx={{ display: showSettingsPanels ? "block" : "none" }}>
+            {showSearchUi && (
               <TextField
                 placeholder={t("common.searchSettings") + "..."}
                 fullWidth
@@ -483,98 +485,126 @@ export default function ServiceSettings() {
               />
             )}
             <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("common.information")}
               keywords={[
+                ...settingsSearchLabels(
+                  "common.name",
+                  "common.serviceType",
+                  "services.description",
+                ),
                 "namn",
                 "name",
                 "tjänst",
                 "tjänsttyp",
-                "service type",
                 "beskrivning",
-                "description",
                 "kommentar",
-                "comment",
               ]}
               fields={["name", "type", "comment"]}
-              allValues={allValues}
-              searchTerm={activeTab === "search" ? searchQuery : ""}
+              allValues={showSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.information")}>
-                <Grid container>
-                  <Grid size={12}>
-                    <TextFieldWithHelp
-                      labelKey="common.name"
-                      helpKey="services.help.name"
-                      fullWidth
-                      {...register("name", {
-                        required: `${t("common.required")}`,
-                      })}
-                      error={!!errors.name}
-                      helperText={
-                        (errors.name as { message?: string } | undefined)
-                          ?.message
-                      }
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="common.serviceType"
-                      helpKey="services.help.type"
-                      fullWidth
-                      slotProps={{ input: { readOnly: true } }}
-                      {...register("type")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 10 }}>
-                    <TextFieldWithHelp
-                      labelKey="services.description"
-                      helpKey="services.help.comment"
-                      fullWidth
-                      multiline
-                      rows={3}
-                      {...register("comment")}
-                    />
-                  </Grid>
-                </Grid>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["common.name"]}
+                    fields={["name"]}
+                    synonyms={["namn", "name"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 12 }}>
+                      <TextFieldWithHelp
+                        labelKey="common.name"
+                        helpKey="services.help.name"
+                        fullWidth
+                        {...register("name", {
+                          required: `${t("common.required")}`,
+                        })}
+                        error={!!errors.name}
+                        helperText={
+                          (errors.name as { message?: string } | undefined)
+                            ?.message
+                        }
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["common.serviceType"]}
+                    fields={["type"]}
+                    synonyms={["tjänsttyp", "service type"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="common.serviceType"
+                        helpKey="services.help.type"
+                        fullWidth
+                        slotProps={{ input: { readOnly: true } }}
+                        {...register("type")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.description"]}
+                    fields={["comment"]}
+                    synonyms={["beskrivning", "kommentar", "comment"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="services.description"
+                        helpKey="services.help.comment"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("comment")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
 
             <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("common.connection")}
               keywords={[
+                ...settingsSearchLabels(
+                  "common.serverType",
+                  "services.url",
+                  "services.workspace",
+                ),
                 "anslutning",
                 "connection",
                 "url",
                 "servertyp",
-                "server type",
-                "geoserver",
-                "mapserver",
                 "arbetsområde",
                 "workspace",
               ]}
               fields={["url", "serverType", "workspace"]}
-              allValues={allValues}
-              searchTerm={activeTab === "search" ? searchQuery : ""}
+              allValues={showSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.connection")}>
-                <Grid container rowSpacing={2}>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <FormControl fullWidth error={!!errors.serverType}>
-                      <InputLabel id="serverType-label" shrink>
-                        {fieldLabel(
-                          "common.serverType",
-                          "services.help.serverType",
-                        )}
-                      </InputLabel>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["common.serverType"]}
+                    fields={["serverType"]}
+                    synonyms={["servertyp", "server type"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
                         name="serverType"
                         control={control}
                         rules={{ required: `${t("common.required")}` }}
                         render={({ field }) => (
-                          <Select
-                            labelId="serverType-label"
-                            {...selectLabel(
-                              "common.serverType",
-                              "services.help.serverType",
-                            )}
+                          <SelectWithHelp
+                            labelKey="common.serverType"
+                            helpKey="services.help.serverType"
+                            error={!!errors.serverType}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -583,54 +613,58 @@ export default function ServiceSettings() {
                                 {s.title}
                               </MenuItem>
                             ))}
-                          </Select>
+                          </SelectWithHelp>
                         )}
                       />
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextFieldWithHelp
-                      labelKey="services.url"
-                      helpKey="services.help.url"
-                      fullWidth
-                      disabled
-                      {...register("url")}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <Button
-                              sx={{
-                                color: palette.primary.main,
-                                fontWeight: 600,
-                              }}
-                              size="small"
-                              onClick={handleDialogOpen}
-                            >
-                              {t("services.url.btnLabel")}
-                            </Button>
-                          ),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="workspace-label" shrink>
-                        {fieldLabel(
-                          "services.workspace",
-                          "services.help.workspace",
-                        )}
-                      </InputLabel>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.url"]}
+                    fields={["url"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="services.url"
+                        helpKey="services.help.url"
+                        fullWidth
+                        disabled
+                        {...register("url")}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <Button
+                                sx={{
+                                  color: palette.primary.main,
+                                  fontWeight: 600,
+                                }}
+                                size="small"
+                                onClick={handleDialogOpen}
+                              >
+                                {t("services.url.btnLabel")}
+                              </Button>
+                            ),
+                          },
+                        }}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.workspace"]}
+                    fields={["workspace"]}
+                    synonyms={["arbetsområde", "workspace"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
                         name="workspace"
                         control={control}
                         render={({ field }) => (
-                          <Select
-                            labelId="workspace-label"
-                            {...selectLabel(
-                              "services.workspace",
-                              "services.help.workspace",
-                            )}
+                          <SelectWithHelp
+                            labelKey="services.workspace"
+                            helpKey="services.help.workspace"
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -640,24 +674,32 @@ export default function ServiceSettings() {
                                 {w}
                               </MenuItem>
                             ))}
-                          </Select>
+                          </SelectWithHelp>
                         )}
                       />
-                    </FormControl>
-                  </Grid>
-                </Grid>
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
+          </Box>
 
+          <Box sx={{ display: showDisplayPanels ? "block" : "none" }}>
             <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels(
+                "services.settings.request",
+              )}
               keywords={[
+                ...settingsSearchLabels(
+                  "services.getMapUrl",
+                  "services.version",
+                  "services.imageFormats",
+                  "services.coordinateSystem",
+                ),
                 "förfrågan",
                 "request",
                 "getmap",
-                "version",
                 "bildformat",
-                "image format",
-                "koordinatsystem",
                 "projektion",
                 "projection",
               ]}
@@ -667,38 +709,43 @@ export default function ServiceSettings() {
                 "imageFormat",
                 "projection.code",
               ]}
-              allValues={allValues}
-              searchTerm={activeTab === "search" ? searchQuery : ""}
+              allValues={showSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("services.settings.request")}>
-                <Grid container rowSpacing={2}>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextFieldWithHelp
-                      labelKey="services.getMapUrl"
-                      helpKey="services.help.getMapUrl"
-                      fullWidth
-                      {...register("getMapUrl")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <FormControl fullWidth error={!!errors.version}>
-                      <InputLabel id="version-label" shrink>
-                        {fieldLabel(
-                          "services.version",
-                          "services.help.version",
-                        )}
-                      </InputLabel>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["services.getMapUrl"]}
+                    fields={["getMapUrl"]}
+                    synonyms={["getmap", "url"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 12 }}>
+                      <TextFieldWithHelp
+                        labelKey="services.getMapUrl"
+                        helpKey="services.help.getMapUrl"
+                        fullWidth
+                        {...register("getMapUrl")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.version"]}
+                    fields={["version"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
                         name="version"
                         control={control}
                         rules={{ required: `${t("common.required")}` }}
                         render={({ field }) => (
-                          <Select
-                            labelId="version-label"
-                            {...selectLabel(
-                              "services.version",
-                              "services.help.version",
-                            )}
+                          <SelectWithHelp
+                            labelKey="services.version"
+                            helpKey="services.help.version"
+                            error={!!errors.version}
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -707,29 +754,26 @@ export default function ServiceSettings() {
                                 {v.title}
                               </MenuItem>
                             ))}
-                          </Select>
+                          </SelectWithHelp>
                         )}
                       />
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="imageFormat-label" shrink>
-                        {fieldLabel(
-                          "services.imageFormats",
-                          "services.help.imageFormat",
-                        )}
-                      </InputLabel>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.imageFormats"]}
+                    fields={["imageFormat"]}
+                    synonyms={["bildformat", "image format"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
                         name="imageFormat"
                         control={control}
                         render={({ field }) => (
-                          <Select
-                            labelId="imageFormat-label"
-                            {...selectLabel(
-                              "services.imageFormats",
-                              "services.help.imageFormat",
-                            )}
+                          <SelectWithHelp
+                            labelKey="services.imageFormats"
+                            helpKey="services.help.imageFormat"
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -738,29 +782,26 @@ export default function ServiceSettings() {
                                 {f.title}
                               </MenuItem>
                             ))}
-                          </Select>
+                          </SelectWithHelp>
                         )}
                       />
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <FormControl fullWidth>
-                      <InputLabel id="projection-label" shrink>
-                        {fieldLabel(
-                          "services.coordinateSystem",
-                          "services.help.projection",
-                        )}
-                      </InputLabel>
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.coordinateSystem"]}
+                    fields={["projection.code"]}
+                    synonyms={["koordinatsystem", "projektion", "projection"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
                       <Controller
                         name="projection.code"
                         control={control}
                         render={({ field }) => (
-                          <Select
-                            labelId="projection-label"
-                            {...selectLabel(
-                              "services.coordinateSystem",
-                              "services.help.projection",
-                            )}
+                          <SelectWithHelp
+                            labelKey="services.coordinateSystem"
+                            helpKey="services.help.projection"
                             {...field}
                             value={(field.value as string) ?? ""}
                           >
@@ -777,50 +818,69 @@ export default function ServiceSettings() {
                                 </MenuItem>
                               );
                             })}
-                          </Select>
+                          </SelectWithHelp>
                         )}
                       />
-                    </FormControl>
-                  </Grid>
-                </Grid>
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
 
             <SearchablePanel
+              panelTitleKeywords={settingsSearchLabels("common.infobutton")}
               keywords={[
-                "info",
+                ...settingsSearchLabels(
+                  "services.owner",
+                  "services.layerDescription",
+                ),
                 "infoknapp",
                 "ägare",
                 "owner",
                 "beskrivning",
-                "description",
                 "metadata",
               ]}
               fields={["metadata.owner", "metadata.description"]}
-              allValues={allValues}
-              searchTerm={activeTab === "search" ? searchQuery : ""}
+              allValues={showSearchUi ? getValues() : undefined}
+              searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("common.infobutton")}>
-                <Grid container rowSpacing={2}>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextFieldWithHelp
-                      labelKey="services.owner"
-                      helpKey="services.help.metadataOwner"
-                      fullWidth
-                      {...register("metadata.owner")}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextFieldWithHelp
-                      labelKey="services.layerDescription"
-                      helpKey="services.help.metadataDescription"
-                      fullWidth
-                      multiline
-                      rows={3}
-                      {...register("metadata.description")}
-                    />
-                  </Grid>
-                </Grid>
+                <FormFieldGrid>
+                  <SettingsSearchField
+                    labelKeys={["services.owner"]}
+                    fields={["metadata.owner"]}
+                    synonyms={["ägare", "owner"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="services.owner"
+                        helpKey="services.help.metadataOwner"
+                        fullWidth
+                        {...register("metadata.owner")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                  <SettingsSearchField
+                    labelKeys={["services.layerDescription"]}
+                    fields={["metadata.description"]}
+                    synonyms={["beskrivning", "description"]}
+                    searchTerm={settingsSearchTerm}
+                    allValues={showSearchUi ? getValues() : undefined}
+                  >
+                    <Grid size={{ xs: 12, md: 10 }}>
+                      <TextFieldWithHelp
+                        labelKey="services.layerDescription"
+                        helpKey="services.help.metadataDescription"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        {...register("metadata.description")}
+                      />
+                    </Grid>
+                  </SettingsSearchField>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
           </Box>
@@ -831,6 +891,7 @@ export default function ServiceSettings() {
                 layers={getCapLayers}
                 workspaces={getCapWorkspaces}
                 serviceId={service.id}
+                serviceType={service.type}
                 isError={layersError}
                 isLoading={layersLoading}
                 onRetry={() => void refetchLayers()}

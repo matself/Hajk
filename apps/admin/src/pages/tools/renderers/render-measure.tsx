@@ -1,4 +1,4 @@
-import { Grid2 as Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import {
   TextField,
   FormControl,
@@ -28,7 +28,7 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
       type: tool?.type ?? "sketch",
       ...(tool?.options
         ? Object.fromEntries(
-            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v])
+            Object.entries(tool.options).map(([k, v]) => [`options.${k}`, v]),
           )
         : {}),
     },
@@ -38,7 +38,7 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
     <>
       <FormPanel title={t("common.information")}>
         {/* Aktiverad */}
-        <Grid size={{ xs: 12, md: 10 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <Controller
             name="options.active"
             control={control}
@@ -58,7 +58,7 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
         </Grid>
       </FormPanel>
       <FormAccordion title={t("tools.windowSettings")} defaultExpanded>
-        <Grid container>
+        <Grid container rowSpacing={1.5}>
           {/* Sorteringsordning */}
           <Grid size={{ xs: 12, md: 10 }}>
             <Controller

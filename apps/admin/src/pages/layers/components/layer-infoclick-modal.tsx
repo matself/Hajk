@@ -13,7 +13,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Grid2 as Grid,
+  Grid,
   Box,
   Divider,
   Typography,
@@ -410,10 +410,12 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={12}>
                   <Box
-                    display="flex"
-                    gap={1}
-                    alignItems="center"
-                    flexWrap="wrap"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
                   >
                     <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
                       <TextFieldWithHelp
@@ -444,10 +446,12 @@ export default function LayerInfoClickModal({
                 </Grid>
                 <Grid size={12}>
                   <Box
-                    display="flex"
-                    gap={1}
-                    alignItems="center"
-                    flexWrap="wrap"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
                   >
                     <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
                       <TextFieldWithHelp
@@ -593,7 +597,7 @@ export default function LayerInfoClickModal({
                     </Typography>
                   </Divider>
                 </Grid>
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.url"
                     helpKey="layers.help.searchUrl"
@@ -601,7 +605,7 @@ export default function LayerInfoClickModal({
                     {...register("searchUrl")}
                   />
                 </Grid>
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchFields"
                     helpKey="layers.help.searchFields"
@@ -610,7 +614,7 @@ export default function LayerInfoClickModal({
                     helperText={t("layers.searchFieldsHelp")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.outputFormat"
                     helpKey="layers.help.searchOutputFormat"
@@ -618,7 +622,7 @@ export default function LayerInfoClickModal({
                     {...register("searchOutputFormat")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.geometryField"
                     helpKey="layers.help.geometryField"
@@ -628,7 +632,7 @@ export default function LayerInfoClickModal({
                 </Grid>
 
                 {/* Infoklick Sort Settings */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.sortByAttribute"
                     helpKey="layers.help.sortByAttribute"
@@ -636,7 +640,7 @@ export default function LayerInfoClickModal({
                     {...register("sortProperty")}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="format-label" shrink>
                       {fieldLabel(
@@ -667,7 +671,7 @@ export default function LayerInfoClickModal({
                     />
                   </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="sortMethod-label" shrink>
                       {fieldLabel(

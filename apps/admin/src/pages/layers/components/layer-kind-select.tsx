@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import {
+  getSelectableLayerCategories,
   LAYER_CATEGORIES,
   LAYER_CATEGORY_I18N_KEYS,
   LayerCategory,
@@ -18,6 +19,8 @@ interface LayerKindSelectProps {
   labelKey?: string;
   fullWidth?: boolean;
   minWidth?: number;
+  /** When set, only categories valid for this service type can be selected. */
+  serviceType?: string;
 }
 
 export default function LayerKindSelect({
@@ -26,11 +29,13 @@ export default function LayerKindSelect({
   labelKey = "layers.layerKind",
   fullWidth = false,
   minWidth = 220,
+  serviceType,
 }: LayerKindSelectProps) {
   const { t } = useTranslation();
+  const selectableCategories = getSelectableLayerCategories(serviceType);
 
   const handleChange = (event: SelectChangeEvent<LayerCategory>) => {
-    onChange(event.target.value as LayerCategory);
+    onChange(event.target.value);
   };
 
   return (
@@ -46,7 +51,11 @@ export default function LayerKindSelect({
         onChange={handleChange}
       >
         {LAYER_CATEGORIES.map((kind) => (
-          <MenuItem key={kind} value={kind}>
+          <MenuItem
+            key={kind}
+            value={kind}
+            disabled={!selectableCategories.includes(kind)}
+          >
             {t(LAYER_CATEGORY_I18N_KEYS[kind])}
           </MenuItem>
         ))}

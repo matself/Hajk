@@ -13,4 +13,5 @@ export default express
   .get("/:mapName/layers", MapsController.getLayersForMap)
   .get("/:mapName/projections", MapsController.getProjectionsForMap)
   .get("/:mapName/tools", MapsController.getToolsForMap)
+  .put("/:mapName/tools", MapsController.updateMapTools)
   .use("/:mapName/documenthandler", documentHandlerRouter);

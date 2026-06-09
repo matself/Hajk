@@ -11,7 +11,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface FormAccordionProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   defaultExpanded?: boolean;
 }
 
@@ -36,7 +36,6 @@ export default function FormAccordion({
       onChange={handleAccordionChange}
       sx={{
         width: "100%",
-        //ml: 2,
         marginBottom: "24px !important",
         backgroundColor: "none",
       }}
@@ -51,19 +50,21 @@ export default function FormAccordion({
         })}
       >
         <Box
-          sx={{ width: "calc(100% - 20px)", maxWidth: "calc(100% - 20px)" }}
-          display="flex"
-          alignItems="center"
-          overflow="hidden"
+          component="div"
+          sx={{
+            width: "calc(100% - 20px)",
+            maxWidth: "calc(100% - 20px)",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
+          }}
         >
           <Typography variant="h6" sx={{ flexShrink: 0, paddingRight: 2 }}>
             {title}
           </Typography>
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ pl: 2, pb: 0, pt: "1.5rem" }}>
-        {children}
-      </AccordionDetails>
+      <AccordionDetails sx={{ p: 2 }}>{children}</AccordionDetails>
     </Accordion>
   );
 }

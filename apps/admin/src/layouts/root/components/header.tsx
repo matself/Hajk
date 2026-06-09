@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import { Link, useLocation, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Box, Paper, useTheme } from "@mui/material";
@@ -32,8 +32,7 @@ export default function Header() {
     pathParts.length > 0
       ? [
           <Box
-            sx={{ color: palette.text.secondary }}
-            mx={1}
+            sx={{ color: palette.text.secondary, mx: 1 }}
             component="span"
             key="home"
           >
@@ -112,8 +111,7 @@ export default function Header() {
         ]
       : [
           <Box
-            sx={{ color: palette.text.secondary }}
-            mx={1}
+            sx={{ color: palette.text.secondary, mx: 1 }}
             component="span"
             key="home"
           >
@@ -143,18 +141,17 @@ export default function Header() {
       <Grid
         container
         size={12}
-        alignItems="center"
         direction={"row"}
         sx={{
           width: "100%",
           height: `${HEADER_HEIGHT}px`,
           px: 3,
+          alignItems: "center",
         }}
       >
         <Grid
           size={{ xs: 12 }}
           container
-          alignItems="center"
           sx={{
             display: "flex",
             alignItems: "center",

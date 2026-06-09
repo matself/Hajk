@@ -92,7 +92,7 @@ export default function DatabaseExportsList() {
     return (
       <Card>
         <CardContent>
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <CircularProgress size={24} />
             <Typography>{t("database.exports.loading")}</Typography>
           </Box>
@@ -123,7 +123,7 @@ export default function DatabaseExportsList() {
   return (
     <Card>
       <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <StorageIcon color="primary" />
           <Typography variant="h6">{t("database.exports.title")}</Typography>
         </Box>

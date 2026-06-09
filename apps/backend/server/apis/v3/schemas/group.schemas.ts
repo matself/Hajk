@@ -8,23 +8,59 @@ const RoleOnGroupSchema = z.object({
   roleId: z.string().min(1, "Role ID is required"),
 });
 
+const RoleOnGroupWriteSchema = z.object({
+  roleId: z.string().min(1, "Role ID is required"),
+  groupId: z.string().optional(),
+});
+
 const LayerInstanceSchema = z.object({
   id: z.string().optional(),
   layerId: z.string().min(1, "Layer ID is required"),
   mapId: z.number().optional(),
   groupId: z.string().optional(),
-  usage: UseTypeSchema,
+  usage: UseTypeSchema.optional().default("FOREGROUND"),
   infoClickActive: z.boolean().default(true),
   visibleAtStart: z.boolean().default(false),
   zIndex: z.number().default(0),
   options: z.record(z.string(), z.unknown()).default({}),
 });
 
+const LayerSwitcherTreeNodeSchema: z.ZodType<{
+  type: "layer" | "group";
+  id: string;
+  name?: string;
+  children?: unknown[];
+}> = z.lazy(() =>
+  z.discriminatedUnion("type", [
+    z.object({
+      type: z.literal("layer"),
+      id: z.string().min(1),
+    }),
+    z.object({
+      type: z.literal("group"),
+      id: z.string().min(1),
+      name: z.string().min(1),
+      children: z.array(LayerSwitcherTreeNodeSchema).default([]),
+    }),
+  ])
+);
+
+const GroupsOnMapsWriteSchema = z.object({
+  id: z.string().optional(),
+  mapName: z.string().min(1, "Map name is required"),
+  groupId: z.string().optional(),
+  parentGroupId: z.string().optional().nullable(),
+  usage: UseTypeSchema,
+  name: z.string().min(1, "Group name is required"),
+  toggled: z.boolean().default(false),
+  expanded: z.boolean().default(false),
+});
+
 const GroupsOnMapsSchema = z.object({
   id: z.string().optional(),
   mapName: z.string().min(1, "Map name is required"),
   groupId: z.string().min(1, "Group ID is required"),
-  parentGroupId: z.string().optional(),
+  parentGroupId: z.string().optional().nullable(),
   usage: UseTypeSchema,
   name: z.string().min(1, "Group name is required"),
   toggled: z.boolean().default(false),
@@ -37,8 +73,9 @@ export const GroupCreateSchema = z.object({
   type: GroupTypeSchema.default("Layer"),
   locked: z.boolean().default(false),
   layers: z.array(LayerInstanceSchema).optional(),
-  maps: z.array(GroupsOnMapsSchema).optional(),
-  restrictedToRoles: z.array(RoleOnGroupSchema).optional(),
+  layerSwitcherTree: z.array(LayerSwitcherTreeNodeSchema).optional(),
+  maps: z.array(GroupsOnMapsWriteSchema).optional(),
+  restrictedToRoles: z.array(RoleOnGroupWriteSchema).optional(),
 });
 
 export const GroupsOnMapsCreateSchema = z.object({
@@ -57,8 +94,14 @@ export const GroupUpdateSchema = z.object({
   type: GroupTypeSchema.optional(),
   locked: z.boolean().optional(),
   layers: z.array(LayerInstanceSchema).optional(),
-  maps: z.array(GroupsOnMapsSchema).optional(),
-  restrictedToRoles: z.array(RoleOnGroupSchema).optional(),
+  layerSwitcherTree: z.array(LayerSwitcherTreeNodeSchema).optional(),
+  maps: z.array(GroupsOnMapsWriteSchema).optional(),
+  restrictedToRoles: z.array(RoleOnGroupWriteSchema).optional(),
+});
+
+export const GroupLayersUpdateSchema = z.object({
+  layers: z.array(LayerInstanceSchema),
+  layerSwitcherTree: z.array(LayerSwitcherTreeNodeSchema).optional(),
 });
 
 export const GroupsOnMapsUpdateSchema = z.object({
@@ -74,4 +117,6 @@ export const GroupsOnMapsUpdateSchema = z.object({
 export type GroupCreateInput = z.infer<typeof GroupCreateSchema>;
 export type GroupsOnMapsCreateInput = z.infer<typeof GroupsOnMapsCreateSchema>;
 export type GroupUpdateInput = z.infer<typeof GroupUpdateSchema>;
+export type GroupLayersUpdateInput = z.infer<typeof GroupLayersUpdateSchema>;
 export type GroupsOnMapsUpdateInput = z.infer<typeof GroupsOnMapsUpdateSchema>;
+export { RoleOnGroupSchema, GroupsOnMapsSchema };

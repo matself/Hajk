@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid2";
+import { Grid } from "@mui/material";
 import {
   Button,
   TextField,
@@ -19,7 +19,7 @@ import {
   Menu,
   MenuItem as MuiMenuItem,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import CreateButton from "../../../components/create-button";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
@@ -37,7 +37,7 @@ import {
 } from "../../../api/services";
 import { getDeleteServiceErrorMessage } from "../../../api/services/error-messages";
 import DialogWrapper from "../../../components/flexible-dialog";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
 import { GridRenderCellParams } from "@mui/x-data-grid";
@@ -46,7 +46,7 @@ import ServiceStatusIndicator from "../components/service-status-indicator";
 import ServiceTypeBadge from "../components/service-type-badge";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import { ApiValidationDetail } from "../../../lib/internal-api-client";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 
 interface ServiceCreateErrorBody {
   errorId?: string;
@@ -231,7 +231,6 @@ export default function ServicesList({
     register,
     handleSubmit,
     control,
-    watch,
     formState: { errors },
     reset,
   } = useForm<ServiceCreateInput>({
@@ -250,7 +249,7 @@ export default function ServicesList({
     setOpen(false);
   };
 
-  const watchedUrl = watch("url");
+  const watchedUrl = useWatch({ control, name: "url" });
 
   const showUrlUsedElsewhereWarning = useMemo(() => {
     const norm = normalizeUrlForDuplicateCheck(watchedUrl ?? "");
@@ -331,30 +330,10 @@ export default function ServicesList({
             title={t(pageTitleKey)}
             actionButtons={
               showCreateButton ? (
-                <>
-                  <Button
-                    onClick={handleClickOpen}
-                    color="primary"
-                    variant="contained"
-                    aria-label={t("services.dialog.addBtn")}
-                    startIcon={<AddIcon />}
-                    sx={{
-                      minHeight: 44,
-                      px: 2,
-                      fontSize: "0.94rem",
-                      fontWeight: 600,
-                      "& .MuiButton-startIcon": {
-                        display: "flex",
-                        alignItems: "center",
-                        "& .MuiSvgIcon-root": {
-                          fontSize: 21,
-                        },
-                      },
-                    }}
-                  >
-                    <Box component="span">{t("services.dialog.addBtn")}</Box>
-                  </Button>
-                </>
+                <CreateButton
+                  onClick={handleClickOpen}
+                  label={t("services.dialog.addBtn")}
+                />
               ) : undefined
             }
           >
@@ -524,18 +503,16 @@ export default function ServicesList({
                     labelId="type-filter-label"
                     label={t("services.filterByType")}
                     value={typeFilter}
-                    onChange={(e) =>
-                      setTypeFilter(e.target.value as SERVICE_TYPE | "")
-                    }
+                    onChange={(e) => setTypeFilter(e.target.value)}
                   >
                     <MenuItem value="">{t("common.all")}</MenuItem>
-                    {(
-                      Object.values(SERVICE_TYPE) as SERVICE_TYPE[]
-                    ).map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
+                    {(Object.values(SERVICE_TYPE) as SERVICE_TYPE[]).map(
+                      (type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ),
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -548,9 +525,7 @@ export default function ServicesList({
                     labelId="status-filter-label"
                     label={t("services.filterByStatus")}
                     value={statusFilter}
-                    onChange={(e) =>
-                      setStatusFilter(e.target.value as SERVICE_STATUS | "")
-                    }
+                    onChange={(e) => setStatusFilter(e.target.value)}
                   >
                     <MenuItem value="">{t("common.all")}</MenuItem>
                     <MenuItem value={SERVICE_STATUS.HEALTHY}>
@@ -614,7 +589,12 @@ export default function ServicesList({
                     renderCell: (params: { row: { id: string } }) => {
                       const row = params.row as Service;
                       const status = row?.status ?? SERVICE_STATUS.UNKNOWN;
-                      return <ServiceStatusIndicator status={status} lastChecked={row?.lastChecked} />;
+                      return (
+                        <ServiceStatusIndicator
+                          status={status}
+                          lastChecked={row?.lastChecked}
+                        />
+                      );
                     },
                   },
                   {
@@ -678,7 +658,9 @@ export default function ServicesList({
                     <Button
                       variant="contained"
                       color="error"
-                      disabled={isDeletingService || !isDeleteConfirmNameMatching}
+                      disabled={
+                        isDeletingService || !isDeleteConfirmNameMatching
+                      }
                       onClick={() => {
                         void handleConfirmDelete();
                       }}

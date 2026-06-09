@@ -4,9 +4,9 @@ import {
   ProjectionsApiResponse,
   GroupApiResponse,
   MapMutation,
+  ToolOnMap,
 } from "./types";
 import { LayersApiResponse } from "../layers/types";
-import { ToolsApiResponse } from "../tools/types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 
 /**
@@ -147,16 +147,17 @@ export const getProjectionsByMapName = async (
 
 export const getToolsByMapName = async (
   mapName: string
-): Promise<ToolsApiResponse[]> => {
+): Promise<ToolOnMap[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<ToolsApiResponse[]>(
-      `/maps/${mapName}/tools`
-    );
+    const response = await internalApiClient.get<{
+      count: number;
+      tools: ToolOnMap[];
+    }>(`/maps/${mapName}/tools`);
     if (!response.data) {
       throw new Error("No tools data found");
     }
-    return response.data;
+    return response.data.tools;
   } catch (error) {
     const axiosError = error as InternalApiError;
 
@@ -166,6 +167,25 @@ export const getToolsByMapName = async (
       );
     } else {
       throw new Error(`Failed to fetch tools.`);
+    }
+  }
+};
+
+export const updateMapTools = async (
+  mapName: string,
+  tools: { toolId: number; index: number; target: string }[]
+): Promise<void> => {
+  const internalApiClient = getApiClient();
+  try {
+    await internalApiClient.put(`/maps/${mapName}/tools`, { tools });
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to update map tools. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to update map tools.`);
     }
   }
 };
