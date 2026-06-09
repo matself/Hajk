@@ -97,7 +97,7 @@ export const useUpdateMapTools = () => {
       tools,
     }: {
       mapName: string;
-      tools: { toolId: number; index: number; options: Record<string, unknown> }[];
+      tools: { toolId: number; index: number; target: string }[];
     }) => updateMapTools(mapName, tools),
     onSuccess: (_, { mapName }) => {
       void queryClient.invalidateQueries({ queryKey: ["toolsByMap", mapName] });

@@ -44,7 +44,7 @@ class MapsController {
 
   async updateMapTools(req: Request, res: Response) {
     const { tools } = req.body as {
-      tools: { toolId: number; index: number; options: Record<string, unknown> }[];
+      tools: { toolId: number; index: number; target: string }[];
     };
     await MapService.updateMapTools(req.params.mapName, tools ?? []);
     res.status(HttpStatusCodes.NO_CONTENT).send();

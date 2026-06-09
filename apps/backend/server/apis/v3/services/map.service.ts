@@ -212,7 +212,7 @@ class MapService {
 
   async updateMapTools(
     mapName: string,
-    tools: { toolId: number; index: number; options: Record<string, unknown> }[]
+    tools: { toolId: number; index: number; target: string }[]
   ) {
     await prisma.$transaction([
       prisma.toolsOnMaps.deleteMany({ where: { mapName } }),
@@ -223,7 +223,7 @@ class MapService {
                 mapName,
                 toolId: t.toolId,
                 index: t.index,
-                options: t.options,
+                target: t.target,
               })),
             }),
           ]

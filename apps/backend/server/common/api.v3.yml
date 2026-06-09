@@ -155,16 +155,13 @@ paths:
                         type: integer
                       index:
                         type: integer
-                      options:
-                        type: object
-                        properties:
-                          target:
-                            type: string
-                            enum: [drawer, widgetLeft, widgetRight, controlButton]
+                      target:
+                        type: string
+                        enum: [drawer, widgetLeft, widgetRight, controlButton]
                     required:
                       - toolId
                       - index
-                      - options
+                      - target
       responses:
         204:
           description: Map tools updated
