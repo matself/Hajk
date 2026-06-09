@@ -29,7 +29,6 @@ import {
 import {
   Close as CloseIcon,
   DragIndicator,
-  Add as AddIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
 } from "@mui/icons-material";
@@ -45,8 +44,13 @@ import {
   unwrapEditingGroupContainer,
   type LayerSwitcherTreeItem,
 } from "../utils/layer-switcher-tree";
+import { TreeItemActions } from "../../../components/layerswitcher-dnd/tree-item-actions";
 import {
+  DND_DRAG_HANDLE_SX,
   DND_ITEM_TITLE_SX,
+  DND_TREE_ICON_BUTTON_SX,
+  DND_TREE_ITEM_CARD_SX,
+  DND_TREE_SORTABLE_OVERRIDES_SX,
   flattenTreeItemIds,
   getDropLineSx,
   getReorderDropPosition,
@@ -179,7 +183,6 @@ const TreeItemComponent = React.forwardRef<
   const {
     item,
     isOver,
-    isOverParent,
     onMoveUp,
     onMoveDown,
     onAdd,
@@ -203,8 +206,13 @@ const TreeItemComponent = React.forwardRef<
 
   useTrackTreeDragActiveId();
 
-  const isTargetGroup = isGroup && isOverParent;
-  const isReorderTarget = isOver && !isOverParent;
+  const activeDragId = treeDragActiveIdRef.current;
+  const isDropIntoGroup =
+    isGroup &&
+    isOver &&
+    !!activeDragId &&
+    activeDragId !== item.id.toString();
+  const isReorderTarget = isOver && !isDropIntoGroup;
   const reorderDropPosition = getReorderDropPosition(
     item.id.toString(),
     treeDragActiveIdRef.current,
@@ -216,6 +224,8 @@ const TreeItemComponent = React.forwardRef<
     <SimpleTreeItemWrapper
       {...props}
       ref={ref}
+      manualDrag
+      showDragHandle={false}
       style={{ ...props.style, position: "relative" }}
     >
       {isTopLevelGroup && (
@@ -253,36 +263,25 @@ const TreeItemComponent = React.forwardRef<
 
       <Box
         sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 1,
-          p: 1.5,
-          minWidth: 0,
-          maxWidth: "100%",
-          overflow: "hidden",
-          backgroundColor: isTargetGroup
-            ? isDarkMode
-              ? "rgba(66, 165, 245, 0.2)"
-              : "rgba(25, 118, 210, 0.12)"
-            : isDarkMode
-              ? "#1a1a1a"
-              : "#fff",
-          border: isTargetGroup
-            ? `2px solid ${isDarkMode ? "#42a5f5" : "#1976d2"}`
-            : "1px solid #ddd",
-          borderRadius: 1,
-          mb: 0.5,
-          ml: 2,
-          minHeight: "auto",
-          position: "relative",
+          ...DND_TREE_ITEM_CARD_SX,
+          mb: 0.25,
+          ml: 1,
+          backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+          border: "1px solid #ddd",
           transition: "all 0.2s ease",
-          boxShadow: isTargetGroup
-            ? `0 0 8px ${
-                isDarkMode
-                  ? "rgba(66, 165, 245, 0.4)"
-                  : "rgba(25, 118, 210, 0.3)"
-              }`
-            : "none",
+          ...(isDropIntoGroup
+            ? {
+                backgroundColor: isDarkMode
+                  ? "rgba(102, 187, 106, 0.2)"
+                  : "rgba(76, 175, 80, 0.14)",
+                border: `2px dashed ${isDarkMode ? "#66bb6a" : "#43a047"}`,
+                boxShadow: `inset 0 0 0 1px ${
+                  isDarkMode
+                    ? "rgba(102, 187, 106, 0.45)"
+                    : "rgba(67, 160, 71, 0.35)"
+                }`,
+              }
+            : {}),
           "& > *": {
             position: "relative",
             zIndex: 2,
@@ -292,139 +291,41 @@ const TreeItemComponent = React.forwardRef<
         <Box
           {...(props.handleProps as Record<string, unknown>)}
           sx={{
-            cursor: "grab",
             display: "flex",
-            alignItems: "center",
-            mt: 0.25,
-            flexShrink: 0,
-            pointerEvents: "auto",
-            "&:active": {
-              cursor: "grabbing",
-            },
-          }}
-        />
-
-        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-          <Typography
-            variant="body2"
-            fontWeight={isGroup ? 600 : 400}
-            title={item.name ?? ""}
-            sx={{
-              ...DND_ITEM_TITLE_SX,
-              color: isGroup ? "primary.main" : "text.primary",
-            }}
-          >
-            {item.name ?? ""}
-          </Typography>
-
-          {isGroup && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="caption" color="text.secondary">
-                {t("common.group")}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            gap: 0.5,
             alignItems: "flex-start",
             flexShrink: 0,
-            mt: 0.25,
-            position: "relative",
-            zIndex: 10,
             pointerEvents: "auto",
           }}
-          onClick={(e) => {
-            e.stopPropagation();
+        >
+          <DragIndicator sx={DND_DRAG_HANDLE_SX} />
+        </Box>
+
+        <Typography
+          variant="body2"
+          fontWeight={isGroup ? 600 : 400}
+          title={item.name ?? ""}
+          sx={{
+            ...DND_ITEM_TITLE_SX,
+            color: isGroup ? "primary.main" : "text.primary",
           }}
         >
-          {onMoveUp && (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMoveUp();
-              }}
-              disabled={canMoveUp === false}
-              sx={{
-                "&:hover": {
-                  backgroundColor: isDarkMode ? "#2a2a2a" : "#f5f5f5",
-                },
-                opacity: canMoveUp === false ? 0.3 : 1,
-                position: "relative",
-                zIndex: 11,
-              }}
-              title={t("common.moveUp")}
-            >
-              <ArrowUpwardIcon fontSize="small" />
-            </IconButton>
-          )}
+          {item.name ?? ""}
+        </Typography>
 
-          {onMoveDown && (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMoveDown();
-              }}
-              disabled={canMoveDown === false}
-              sx={{
-                "&:hover": {
-                  backgroundColor: isDarkMode ? "#2a2a2a" : "#f5f5f5",
-                },
-                opacity: canMoveDown === false ? 0.3 : 1,
-                position: "relative",
-                zIndex: 11,
-              }}
-              title={t("common.moveDown")}
-            >
-              <ArrowDownwardIcon fontSize="small" />
-            </IconButton>
-          )}
-
-          {isGroup && onAdd && (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAdd();
-              }}
-              sx={{
-                "&:hover": {
-                  backgroundColor: isDarkMode ? "#2a2a2a" : "#f5f5f5",
-                },
-                position: "relative",
-                zIndex: 11,
-              }}
-              title={t("common.addToGroup")}
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
-          )}
-
-          {props.onRemove && (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove();
-              }}
-              sx={{
-                "&:hover": {
-                  backgroundColor: isDarkMode ? "#2a2a2a" : "#f5f5f5",
-                },
-                position: "relative",
-                zIndex: 11,
-              }}
-              title={t("common.delete")}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
+        <TreeItemActions
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+          onAdd={isGroup ? onAdd : undefined}
+          onRemove={props.onRemove ? handleRemove : undefined}
+          canMoveUp={canMoveUp}
+          canMoveDown={canMoveDown}
+          showAddSlot
+          isDarkMode={isDarkMode}
+          moveUpTitle={t("common.moveUp")}
+          moveDownTitle={t("common.moveDown")}
+          addTitle={t("common.addToGroup")}
+          removeTitle={t("common.delete")}
+        />
       </Box>
 
       {reorderDropPosition === "below" && (
@@ -447,6 +348,66 @@ const parseTreeItemId = (
   }
   return null;
 };
+
+const findTreeItem = (
+  treeItems: TreeItems<TreeItemData>,
+  itemId: string,
+): TreeItem<TreeItemData> | null => {
+  for (const item of treeItems) {
+    if (item.id.toString() === itemId) {
+      return item;
+    }
+    if (item.children) {
+      const found = findTreeItem(item.children, itemId);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+};
+
+const isDescendantInTree = (
+  treeItems: TreeItems<TreeItemData>,
+  ancestorId: string,
+  descendantId: string,
+): boolean => {
+  const ancestor = findTreeItem(treeItems, ancestorId);
+  if (!ancestor?.children?.length) {
+    return false;
+  }
+
+  const walk = (nodes: TreeItems<TreeItemData>): boolean => {
+    for (const node of nodes) {
+      if (node.id.toString() === descendantId) {
+        return true;
+      }
+      if (node.children?.length && walk(node.children)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  return walk(ancestor.children);
+};
+
+const expandGroupInTree = (
+  treeItems: TreeItems<TreeItemData>,
+  groupId: string,
+): TreeItems<TreeItemData> =>
+  treeItems.map((item) => {
+    if (item.id.toString() === groupId && item.type === "group") {
+      return { ...item, collapsed: false };
+    }
+    if (item.children?.length) {
+      return {
+        ...item,
+        children: expandGroupInTree(item.children, groupId),
+      };
+    }
+    return item;
+  });
 
 const enforceLayerRules = (
   treeItems: TreeItems<TreeItemData>,
@@ -817,9 +778,9 @@ const DraggableRitordningItem: React.FC<{
           ? `2px solid ${isDarkMode ? "#42a5f5" : "#1976d2"}`
           : "1px solid #ddd",
         borderRadius: 2,
-        mb: 1,
-        px: 2,
-        py: 1.5,
+        mb: 0.5,
+        px: 1,
+        py: 0.75,
         opacity: isDragging ? 0.5 : 1,
         transition: "all 0.2s ease",
         position: "relative",
@@ -830,8 +791,8 @@ const DraggableRitordningItem: React.FC<{
           cursor: "grabbing",
         },
         display: "flex",
-        alignItems: "flex-start",
-        gap: 1,
+        alignItems: "center",
+        gap: 0.5,
       }}
     >
       {showArrowAbove || showArrowBelow ? (
@@ -853,7 +814,10 @@ const DraggableRitordningItem: React.FC<{
           />
         )
       ) : (
-        <DragIndicator sx={{ color: "text.secondary", mt: 0.25, flexShrink: 0 }} />
+        <DragIndicator
+          fontSize="small"
+          sx={{ color: "text.secondary", flexShrink: 0 }}
+        />
       )}
       <Typography variant="body2" title={layerName} sx={DND_ITEM_TITLE_SX}>
         {layerName}
@@ -865,13 +829,15 @@ const DraggableRitordningItem: React.FC<{
           onRemove();
         }}
         sx={{
+          ...DND_TREE_ICON_BUTTON_SX,
+          ml: "auto",
           "&:hover": {
             backgroundColor: isDarkMode ? "#2a2a2a" : "#f5f5f5",
           },
         }}
         title={t("common.delete")}
       >
-        <CloseIcon fontSize="small" />
+        <CloseIcon sx={{ fontSize: 16 }} />
       </IconButton>
     </ListItem>
   );
@@ -898,7 +864,7 @@ const TreeDropZone: React.FC<{
         minWidth: 0,
         width: "100%",
         maxWidth: "100%",
-        p: 2,
+        p: 1,
         boxSizing: "border-box",
         backgroundColor: isOver
           ? isDarkMode
@@ -942,7 +908,7 @@ const RitordningDropZone: React.FC<{
         minWidth: 0,
         width: "100%",
         maxWidth: "100%",
-        p: 2,
+        p: 1,
         boxSizing: "border-box",
         backgroundColor: isOver
           ? isDarkMode
@@ -1541,34 +1507,6 @@ export default function LayerSwitcherDnD({
     return null;
   };
 
-  const detectItemOnGroupDrop = (
-    oldItems: TreeItems<TreeItemData>,
-    newItems: TreeItems<TreeItemData>,
-    draggedItemId: string,
-  ): { targetGroupId: string; targetGroupName: string } | null => {
-    const draggedItem = findItemInTree(oldItems, draggedItemId);
-    if (!draggedItem) {
-      return null;
-    }
-
-    const oldParent = findItemParent(oldItems, draggedItemId);
-    const newParent = findItemParent(newItems, draggedItemId);
-
-    if (newParent?.parent?.type === "group") {
-      const oldParentId = oldParent?.parent?.id.toString() ?? null;
-      const newParentId = newParent.parent.id.toString();
-
-      if (oldParentId !== newParentId) {
-        return {
-          targetGroupId: newParentId,
-          targetGroupName: newParent.parent.name,
-        };
-      }
-    }
-
-    return null;
-  };
-
   const openGroupTargetDropDialog = (drop: {
     draggedItemId: string;
     draggedItemName: string;
@@ -1703,6 +1641,16 @@ export default function LayerSwitcherDnD({
 
     const { draggedItemId, targetGroupId, isFromSource } = pendingGroupDrop;
 
+    if (
+      action === "insert" &&
+      !isFromSource &&
+      isDescendantInTree(items, draggedItemId, targetGroupId)
+    ) {
+      setPendingGroupDrop(null);
+      setGroupDropDialogOpen(false);
+      return;
+    }
+
     // Mark that we're processing a group drop action to prevent dialog from reappearing
     isProcessingGroupDropRef.current = true;
 
@@ -1733,8 +1681,11 @@ export default function LayerSwitcherDnD({
                 return item;
               });
             };
-            const updated = enforceLayerRules(
-              addToGroup(prevItems, targetGroupId, newItem),
+            const updated = expandGroupInTree(
+              enforceLayerRules(
+                addToGroup(prevItems, targetGroupId, newItem),
+              ),
+              targetGroupId,
             );
             itemsBeforeChangeRef.current = updated;
             return updated;
@@ -1819,8 +1770,11 @@ export default function LayerSwitcherDnD({
                     children: undefined,
                     canHaveChildren: false,
                   };
-            const updated = enforceLayerRules(
-              addToGroup(updatedItems, targetGroupId, itemToAdd),
+            const updated = expandGroupInTree(
+              enforceLayerRules(
+                addToGroup(updatedItems, targetGroupId, itemToAdd),
+              ),
+              targetGroupId,
             );
             itemsBeforeChangeRef.current = updated;
             return updated;
@@ -2147,6 +2101,13 @@ export default function LayerSwitcherDnD({
         const targetItem = findItemInTree(items, targetId);
 
         if (targetItem?.type === "group") {
+          if (
+            draggedItem.type === "group" &&
+            isDescendantInTree(items, draggedItemId, targetId)
+          ) {
+            return;
+          }
+
           openGroupTargetDropDialog({
             draggedItemId,
             draggedItemName: draggedItem.name,
@@ -2293,6 +2254,7 @@ export default function LayerSwitcherDnD({
   };
 
   const sortableTreeSx = {
+    ...DND_TREE_SORTABLE_OVERRIDES_SX,
     position: "relative" as const,
     maxWidth: "100%",
     minWidth: 0,
@@ -2302,6 +2264,7 @@ export default function LayerSwitcherDnD({
     "& .dnd-sortable-tree_simple_wrapper": {
       maxWidth: "100%",
       minWidth: 0,
+      marginBottom: 0,
     },
     "& .dnd-sortable-tree_simple_tree-item-wrapper": {
       maxWidth: "100%",
@@ -2327,11 +2290,7 @@ export default function LayerSwitcherDnD({
       height: "fit-content",
     },
     "& .dnd-sortable-tree_simple_handle": {
-      cursor: "grab",
-      "&:active": {
-        cursor: "grabbing",
-      },
-      filter: isDarkMode ? "brightness(0) invert(0.6)" : "none",
+      display: "none",
     },
     "& .dnd-sortable-tree_drop-indicator": {
       backgroundColor: isDarkMode ? "#42a5f5" : "#1976d2",
@@ -2638,48 +2597,49 @@ export default function LayerSwitcherDnD({
                                   return;
                                 }
 
-                                // Use ref to get the items state before the change
-                                const oldItems = itemsBeforeChangeRef.current;
-                                const draggedItemId =
-                                  reason.draggedItem.id.toString();
+                                const { draggedItem, droppedToParent, draggedFromParent } =
+                                  reason;
+                                const targetGroupId =
+                                  droppedToParent?.id?.toString() ?? null;
+                                const fromParentId =
+                                  draggedFromParent?.id?.toString() ?? null;
 
-                                // Check if this is a group-on-group drop
-                                let detectedDrop: {
-                                  draggedItemId: string;
-                                  draggedItemName: string;
-                                  targetGroupId: string;
-                                  targetGroupName: string;
-                                } | null = null;
+                                if (
+                                  droppedToParent?.type === "group" &&
+                                  targetGroupId &&
+                                  targetGroupId !== fromParentId
+                                ) {
+                                  const oldItems = itemsBeforeChangeRef.current;
 
-                                const dropInfo = detectItemOnGroupDrop(
-                                  oldItems,
-                                  newItems,
-                                  draggedItemId,
-                                );
-
-                                if (dropInfo) {
-                                  const draggedItem = findItemInTree(
-                                    oldItems,
-                                    draggedItemId,
-                                  );
-                                  if (draggedItem) {
-                                    detectedDrop = {
-                                      draggedItemId,
-                                      draggedItemName: draggedItem.name,
-                                      targetGroupId: dropInfo.targetGroupId,
-                                      targetGroupName: dropInfo.targetGroupName,
-                                    };
+                                  if (
+                                    draggedItem.type === "group" &&
+                                    isDescendantInTree(
+                                      oldItems,
+                                      draggedItem.id.toString(),
+                                      targetGroupId,
+                                    )
+                                  ) {
+                                    return;
                                   }
-                                }
 
-                                if (detectedDrop) {
-                                  // Revert the change and show dialog
-                                  setPendingGroupDrop({
-                                    ...detectedDrop,
-                                    isFromSource: false,
-                                  });
-                                  setGroupDropDialogOpen(true);
-                                  // Don't update items - we'll update after dialog choice
+                                  if (draggedItem.type === "group") {
+                                    setPendingGroupDrop({
+                                      draggedItemId: draggedItem.id.toString(),
+                                      draggedItemName: draggedItem.name,
+                                      targetGroupId,
+                                      targetGroupName: droppedToParent.name,
+                                      isFromSource: false,
+                                    });
+                                    setGroupDropDialogOpen(true);
+                                    return;
+                                  }
+
+                                  const updated = expandGroupInTree(
+                                    nextItems,
+                                    targetGroupId,
+                                  );
+                                  setItems(updated);
+                                  itemsBeforeChangeRef.current = updated;
                                   return;
                                 }
 

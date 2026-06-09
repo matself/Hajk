@@ -28,7 +28,7 @@ export const TreeDropZone: React.FC<TreeDropZoneProps> = ({
       ref={setNodeRef}
       sx={{
         minHeight,
-        p: 2,
+        p: 1,
         borderRadius: 2,
         border: isOver ? "2px dashed" : "1px solid",
         borderColor: isOver ? "primary.main" : "#ddd",

@@ -3,19 +3,17 @@ import {
   SimpleTreeItemWrapper,
   TreeItemComponentProps,
 } from "dnd-kit-sortable-tree";
-import { Box, Typography, IconButton } from "@mui/material";
-import {
-  Close as CloseIcon,
-  DragIndicator,
-  Add as AddIcon,
-  ArrowUpward,
-  ArrowDownward,
-} from "@mui/icons-material";
-import { useTranslation } from "react-i18next";
+import { Box, Typography } from "@mui/material";
+import { DragIndicator } from "@mui/icons-material";
 
 import useAppStateStore from "../../store/use-app-state-store";
 import { TreeItemData } from "./types";
-import { DND_ITEM_TITLE_SX } from "./utils";
+import { TreeItemActions } from "./tree-item-actions";
+import {
+  DND_DRAG_HANDLE_SX,
+  DND_ITEM_TITLE_SX,
+  DND_TREE_ITEM_CARD_SX,
+} from "./utils";
 
 interface TreeItemComponentExtendedProps
   extends TreeItemComponentProps<TreeItemData> {
@@ -32,68 +30,51 @@ export const TreeItemComponent = React.forwardRef<
 >((props, ref) => {
   const { item, onMoveUp, onMoveDown, onAdd, canMoveUp, canMoveDown } = props;
   const isDarkMode = useAppStateStore((s) => s.themeMode === "dark");
-  const { t } = useTranslation();
-
   const isGroup = item.type === "group";
 
   return (
-    <SimpleTreeItemWrapper {...props} ref={ref}>
+    <SimpleTreeItemWrapper
+      {...props}
+      ref={ref}
+      manualDrag
+      showDragHandle={false}
+    >
       <Box
         sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 1,
-          p: 1.5,
+          ...DND_TREE_ITEM_CARD_SX,
           background: isDarkMode ? "#1a1a1a" : "#fff",
           border: "1px solid #ddd",
-          borderRadius: 1,
         }}
       >
-        <Box {...props.handleProps} sx={{ cursor: "grab", mt: 0.25 }}>
-          <DragIndicator />
+        <Box
+          {...props.handleProps}
+          sx={{ display: "flex", alignItems: "flex-start", flexShrink: 0 }}
+        >
+          <DragIndicator sx={DND_DRAG_HANDLE_SX} />
         </Box>
 
-        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-          <Typography
-            fontWeight={isGroup ? 600 : 400}
-            title={item.name}
-            sx={DND_ITEM_TITLE_SX}
-          >
-            {item.name}
-          </Typography>
-          {isGroup && (
-            <Typography variant="caption" color="text.secondary">
-              {t("common.group")}
-            </Typography>
-          )}
-        </Box>
+        <Typography
+          fontWeight={isGroup ? 600 : 400}
+          variant="body2"
+          title={item.name}
+          sx={{
+            ...DND_ITEM_TITLE_SX,
+            color: isGroup ? "primary.main" : "text.primary",
+          }}
+        >
+          {item.name}
+        </Typography>
 
-        <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0, mt: 0.25 }}>
-          {onMoveUp && (
-            <IconButton size="small" onClick={onMoveUp} disabled={!canMoveUp}>
-              <ArrowUpward fontSize="small" />
-            </IconButton>
-          )}
-          {onMoveDown && (
-            <IconButton
-              size="small"
-              onClick={onMoveDown}
-              disabled={!canMoveDown}
-            >
-              <ArrowDownward fontSize="small" />
-            </IconButton>
-          )}
-          {isGroup && onAdd && (
-            <IconButton size="small" onClick={onAdd}>
-              <AddIcon fontSize="small" />
-            </IconButton>
-          )}
-          {props.onRemove && (
-            <IconButton size="small" onClick={() => props.onRemove?.()}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
+        <TreeItemActions
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+          onAdd={isGroup ? onAdd : undefined}
+          onRemove={props.onRemove ? () => props.onRemove?.() : undefined}
+          canMoveUp={canMoveUp}
+          canMoveDown={canMoveDown}
+          showAddSlot
+          isDarkMode={isDarkMode}
+        />
       </Box>
     </SimpleTreeItemWrapper>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import { Box } from "@mui/material";
 import { SortableTree, TreeItems } from "dnd-kit-sortable-tree";
 
 import { TreeItemData } from "./types";
@@ -10,6 +11,7 @@ import {
   moveItemDown,
   canItemMoveUp,
   canItemMoveDown,
+  DND_TREE_SORTABLE_OVERRIDES_SX,
 } from "./utils";
 
 interface SortableDropZoneProps {
@@ -39,6 +41,7 @@ export const SortableDropZone: React.FC<SortableDropZoneProps> = ({
 
   return (
     <TreeDropZone id={id} title={title} minHeight={minHeight}>
+      <Box sx={DND_TREE_SORTABLE_OVERRIDES_SX}>
       <SortableTree
         items={items}
         onItemsChanged={(newItems) => onItemsChange(enforceItemRules(newItems))}
@@ -61,6 +64,7 @@ export const SortableDropZone: React.FC<SortableDropZoneProps> = ({
         }}
         keepGhostInPlace
       />
+      </Box>
     </TreeDropZone>
   );
 };
