@@ -12,7 +12,7 @@ import usersRouter from "./controllers/users/router.ts";
 import websocketsRouter from "./controllers/websockets/router.ts";
 
 import { isAuthenticated } from "../../common/auth/is-authenticated.middleware.ts";
-
+import { isAdmin } from "../../common/auth/is-admin.ts";
 
 export default Router()
   // The /auth endpoint should always be accessible
@@ -20,11 +20,11 @@ export default Router()
   // All other endpoints require authentication
   .use("/public", isAuthenticated, publicRouter)
   // The admin endpoints require that the user is authenticated and has the admin role
-  .use("/websockets",  websocketsRouter) // Note that UPGRADE endpoint at /api/v3/websockets is not behind this router, but rather directly in the websockets.ts file
-  .use("/database",  databaseRouter)
-  .use("/groups",  groupsRouter)
-  .use("/layers",  layersRouter)
-  .use("/maps",  mapsRouter)
-  .use("/services",  servicesRouter)
-  .use("/tools",  toolsRouter)
-  .use("/users",  usersRouter);
+  .use("/websockets", isAdmin, websocketsRouter) // Note that UPGRADE endpoint at /api/v3/websockets is not behind this router, but rather directly in the websockets.ts file
+  .use("/database", isAdmin, databaseRouter)
+  .use("/groups", isAdmin, groupsRouter)
+  .use("/layers", isAdmin, layersRouter)
+  .use("/maps", isAdmin, mapsRouter)
+  .use("/services", isAdmin, servicesRouter)
+  .use("/tools", isAdmin, toolsRouter)
+  .use("/users", isAdmin, usersRouter);
