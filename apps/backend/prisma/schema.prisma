@@ -154,8 +154,8 @@ model ToolsOnMaps {
   toolId  Int
   /// Determines the sort between tools within a zone
   index   Int    @default(0)
-  /// Placement zone in the map UI: drawer | widgetLeft | widgetRight | controlButton
-  target  String @default("drawer")
+  /// Placement zone in the map UI: drawer | widgetLeft | widgetRight | controlButton. Null means unplaced (managed via admin UI).
+  target  String?
   /// Allows overriding default tool options (set in Tool) on a per-map basis
   options Json   @default("{}")
   map     Map    @relation(fields: [mapName], references: [name])

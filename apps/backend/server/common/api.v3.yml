@@ -161,7 +161,6 @@ paths:
                     required:
                       - toolId
                       - index
-                      - target
       responses:
         204:
           description: Map tools updated

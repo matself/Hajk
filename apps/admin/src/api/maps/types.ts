@@ -54,7 +54,7 @@ export interface ToolOnMap {
   mapName: string;
   toolId: number;
   index: number;
-  target: ToolZone;
+  target: ToolZone | null;
   tool: {
     id: number;
     type: string;

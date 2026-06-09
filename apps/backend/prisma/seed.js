@@ -146,6 +146,7 @@ async function readMapConfigAndPopulateMap(file) {
 
   // Take care of tools. Right now we let each map have it's own Tool.
   console.log("Creating tools…");
+  const toolsToConnectToMap = [];
   for await (const t of mapConfig.tools) {
     const tool = await prisma.tool.create({
       data: { type: t.type, options: t.options },
@@ -157,6 +158,10 @@ async function readMapConfigAndPopulateMap(file) {
       tool.id,
       "tool"
     );
+
+    // Connect tool to map — target is intentionally null (unplaced).
+    // Placement is managed via the admin UI, not seeded.
+    toolsToConnectToMap.push({ toolId: tool.id, mapName: file, index: t.index });
   }
 
   // Finally we can create the map
@@ -168,12 +173,9 @@ async function readMapConfigAndPopulateMap(file) {
       projections: {
         connect: projectionsToConnect,
       },
-      // I can't figure out how to connect 'tools' and 'layers' at
-      // this stage. It doesn't work as for 'projections'. The main
-      // difference is that 'projections' is an implicit m-n relation,
-      // while the other are explicit. But we take care of it in the
-      // next step, where we write some data into the relation tables
-      // directly.
+      // Tools and layers can't be connected here like projections because
+      // they use explicit m-n relations (ToolsOnMaps, LayerInstance).
+      // They are connected in the steps below.
     },
   });
 
@@ -185,6 +187,11 @@ async function readMapConfigAndPopulateMap(file) {
 
   // Add potential role restrictions on the map
   await updateRolesFromVisibleForGroups(visibleForGroups, createdMap.id, "map");
+
+  const connectedTools = await prisma.toolsOnMaps.createMany({
+    data: toolsToConnectToMap,
+  });
+  console.log(`Connected ${connectedTools.count} tools to map ${file}`);
 
   console.log(`END MAP CONFIG "${file}"\n\n`);
 }
@@ -544,21 +551,16 @@ async function populateSearchAndEditingLayerInstances() {
 // Populates the database with the layer structure for the map corresponding to mapName
 async function populateMapLayerStructure(mapName) {
   const map = await prisma.map.findUnique({
-    where: {
-      name: mapName,
-    },
+    where: { name: mapName },
     select: {
       id: true,
       tools: {
-        where: {
-          tool: {
-            type: "layerswitcher",
-          },
-        },
+        where: { tool: { type: "layerswitcher" } },
+        include: { tool: true },
       },
     },
   });
-  const { baselayers, groups } = map.tools[0].options;
+  const { baselayers, groups } = map.tools[0].tool.options;
 
   // Imagine this is our "groups.json"…
   const groupsToInsert = [];
