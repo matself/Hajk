@@ -6,6 +6,7 @@ interface AppState {
   language: string;
   themeMode: PaletteMode;
   sidebarLocked: boolean;
+  defaultMap: string | null;
   apiBaseUrl: string;
   axiosConfigOverrides: Record<string, unknown>;
   servicesDefault: Record<string, unknown>;
@@ -15,6 +16,7 @@ interface AppState {
   setLanguage: (lang: Language) => void;
   setThemeMode: (theme: PaletteMode) => void;
   setSidebarLocked: (locked: boolean) => void;
+  setDefaultMap: (mapName: string) => void;
   loadConfig: () => Promise<void>;
 }
 
@@ -43,6 +45,7 @@ const useAppStateStore = create<AppState>((set) => ({
   language: localStorage.getItem("language") ?? "sv",
   themeMode: getDefaultThemeMode(),
   sidebarLocked: getDefaultSidebarLocked(),
+  defaultMap: localStorage.getItem("defaultMap"),
   apiBaseUrl: "",
   axiosConfigOverrides: {},
   servicesDefault: {},
@@ -64,6 +67,11 @@ const useAppStateStore = create<AppState>((set) => ({
   setSidebarLocked: (locked: boolean) => {
     localStorage.setItem("sidebarLocked", locked.toString());
     set({ sidebarLocked: locked });
+  },
+
+  setDefaultMap: (mapName: string) => {
+    localStorage.setItem("defaultMap", mapName);
+    set({ defaultMap: mapName });
   },
 
   loadConfig: async () => {

@@ -1,41 +1,449 @@
-import React from "react";
-import { Box, Typography, Alert } from "@mui/material";
-import { Description as DocumentIcon } from "@mui/icons-material";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  CreateNewFolder as CreateNewFolderIcon,
+} from "@mui/icons-material";
+import { useQueries } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-
-/**
- * TODO: Replace the placeholder content below with the real document editor.
- * This is where the equivalent of the legacy documenteditor.jsx will live.
- * Track as a follow-up issue.
- */
+import {
+  useFolders,
+  useCreateFolder,
+  useDeleteFolder,
+  useCreateDocument,
+  useDeleteDocument,
+  useMoveDocumentAcrossFolders,
+} from "@/api/documents";
+import { getDocuments } from "@/api/documents/requests";
+import { DocumentsTree } from "./documents-tree";
+import { DocumentEditorDialog } from "./document-editor-dialog";
+import type { DocTreeNode } from "./types.ts";
 
 interface DocumentsTabPanelProps {
+  folderName?: string;
   documentId?: string;
+  mapName: string | undefined;
 }
 
-export function DocumentsTabPanel({ documentId }: DocumentsTabPanelProps) {
+export function DocumentsTabPanel({
+  folderName,
+  documentId,
+  mapName,
+}: DocumentsTabPanelProps) {
   const { t } = useTranslation();
 
+  const [selectedFolder, setSelectedFolder] = useState<string | undefined>(
+    folderName
+  );
+  const [selectedDocName, setSelectedDocName] = useState<string | undefined>(
+    documentId
+  );
+  const [editorOpen, setEditorOpen] = useState(
+    !!(documentId && folderName)
+  );
+  // Tracks which node is highlighted in the tree (drives New document target)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (documentId && folderName) {
+      setSelectedFolder(folderName);
+      setSelectedDocName(documentId);
+      setEditorOpen(true);
+    }
+  }, [documentId, folderName]);
+
+  // Dialog state
+  const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
+  const [newFolderTitle, setNewFolderTitle] = useState("");
+  const [newDocDialogOpen, setNewDocDialogOpen] = useState(false);
+  const [newDocTitle, setNewDocTitle] = useState("");
+  const [deleteFolderName, setDeleteFolderName] = useState<string | null>(null);
+  const [deleteDocInfo, setDeleteDocInfo] = useState<{
+    folderName: string;
+    docName: string;
+    docTitle: string;
+  } | null>(null);
+
+  // ─── Data queries ────────────────────────────────────────────────────────────
+
+  const { data: folders = [], isLoading: foldersLoading } =
+    useFolders(mapName);
+
+  // Fetch all documents for all folders so the tree is fully populated
+  const allDocQueries = useQueries({
+    queries: folders.map((folder) => ({
+      queryKey: ["documents", mapName, folder.name],
+      queryFn: () => getDocuments(mapName!, folder.name),
+      enabled: !!mapName,
+      staleTime: 30_000,
+    })),
+  });
+
+  const allDocsLoading = allDocQueries.some((q) => q.isLoading);
+
+  // ─── Build sorted tree data ──────────────────────────────────────────────────
+
+  const treeData = useMemo<DocTreeNode[]>(() => {
+    const sorted = [...folders].sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+    return sorted.map((folder, idx) => {
+      const docs = allDocQueries[idx]?.data ?? [];
+      const sortedDocs = [...docs].sort((a, b) =>
+        a.title.localeCompare(b.title)
+      );
+      return {
+        id: `folder:${folder.name}`,
+        kind: "folder" as const,
+        name: folder.name,
+        title: folder.title || folder.name,
+        docCount: docs.length,
+        children: sortedDocs.map((doc) => ({
+          id: `doc:${folder.name}/${doc.name}`,
+          kind: "document" as const,
+          name: doc.name,
+          title: doc.title || doc.name,
+          folderName: folder.name,
+          children: [],
+        })),
+      };
+    });
+  }, [folders, allDocQueries]);
+
+  // ─── Resolve target folder for "New document" ────────────────────────────────
+
+  function getNewDocFolder(): string | undefined {
+    if (!selectedNodeId) return undefined;
+    if (selectedNodeId.startsWith("folder:")) {
+      return selectedNodeId.slice("folder:".length);
+    }
+    if (selectedNodeId.startsWith("doc:")) {
+      const rest = selectedNodeId.slice("doc:".length);
+      const slashIdx = rest.indexOf("/");
+      return slashIdx !== -1 ? rest.slice(0, slashIdx) : undefined;
+    }
+    return undefined;
+  }
+
+  const activeNewDocFolder = getNewDocFolder();
+
+  // ─── Mutations ───────────────────────────────────────────────────────────────
+
+  const createFolderMutation = useCreateFolder(mapName ?? "");
+  const deleteFolderMutation = useDeleteFolder(mapName ?? "");
+  const createDocMutation = useCreateDocument(
+    mapName ?? "",
+    activeNewDocFolder ?? ""
+  );
+  const deleteDocMutation = useDeleteDocument(
+    mapName ?? "",
+    deleteDocInfo?.folderName ?? ""
+  );
+  const moveDocMutation = useMoveDocumentAcrossFolders(mapName ?? "");
+
+  // ─── Handlers ────────────────────────────────────────────────────────────────
+
+  function handleOpenDocument(folderNameArg: string, docName: string) {
+    setSelectedFolder(folderNameArg);
+    setSelectedDocName(docName);
+    setEditorOpen(true);
+  }
+
+  function handleCloseEditor() {
+    setEditorOpen(false);
+    setSelectedDocName(undefined);
+    setSelectedFolder(undefined);
+  }
+
+  function handleCreateFolder() {
+    if (!newFolderTitle.trim() || !mapName) return;
+    createFolderMutation.mutate(
+      { title: newFolderTitle.trim() },
+      {
+        onSuccess: () => {
+          setNewFolderDialogOpen(false);
+          setNewFolderTitle("");
+        },
+      }
+    );
+  }
+
+  function handleCreateDocument() {
+    if (!newDocTitle.trim() || !activeNewDocFolder || !mapName) return;
+    createDocMutation.mutate(
+      { title: newDocTitle.trim() },
+      {
+        onSuccess: (doc) => {
+          setNewDocDialogOpen(false);
+          setNewDocTitle("");
+          handleOpenDocument(activeNewDocFolder, doc.name);
+        },
+      }
+    );
+  }
+
+  function handleDeleteFolder(name: string) {
+    setDeleteFolderName(name);
+  }
+
+  function handleDeleteDocument(folderNameArg: string, docName: string) {
+    const folder = folders.find((f) => f.name === folderNameArg);
+    const docs = allDocQueries[folders.indexOf(folder!)]?.data ?? [];
+    const doc = docs.find((d) => d.name === docName);
+    setDeleteDocInfo({
+      folderName: folderNameArg,
+      docName,
+      docTitle: doc?.title ?? docName,
+    });
+  }
+
+  if (!mapName) {
+    return null;
+  }
+
+  const isLoading = foldersLoading || allDocsLoading;
+  const selectedDocTreeId =
+    selectedFolder && selectedDocName
+      ? `doc:${selectedFolder}/${selectedDocName}`
+      : null;
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <DocumentIcon color="action" />
-        <Typography variant="h6">
-          {t("tools.documenthandler.documents.title")}
-        </Typography>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      {/* ── Toolbar ─────────────────────────────────────────────────────── */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          flexWrap: "wrap",
+        }}
+      >
+        <Button
+          size="small"
+          startIcon={<CreateNewFolderIcon />}
+          onClick={() => setNewFolderDialogOpen(true)}
+        >
+          {t("tools.documenthandler.documents.newFolder")}
+        </Button>
+
+        <Tooltip
+          title={
+            !activeNewDocFolder
+              ? t(
+                  "tools.documenthandler.documents.selectFolderForNewDocument"
+                )
+              : ""
+          }
+        >
+          <span>
+            <Button
+              size="small"
+              startIcon={<AddIcon />}
+              disabled={!activeNewDocFolder}
+              onClick={() => setNewDocDialogOpen(true)}
+            >
+              {t("tools.documenthandler.documents.newDocument")}
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
 
-      {!documentId ? (
+      <Divider />
+
+      {/* ── Tree ────────────────────────────────────────────────────────── */}
+      {isLoading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : folders.length === 0 ? (
         <Alert severity="info">
-          {t("tools.documenthandler.documents.noDocumentSelected")}
+          {t("tools.documenthandler.documents.noFolders")}
         </Alert>
       ) : (
-        <Alert severity="info">
-          {t("tools.documenthandler.documents.openedDocumentDummy", {
-            id: documentId,
-          })}
-        </Alert>
+        <Box sx={{ maxWidth: { md: "50%" } }}>
+          <DocumentsTree
+            data={treeData}
+            selectedDocId={selectedDocTreeId}
+            selectedNodeId={selectedNodeId}
+            activeFolderName={activeNewDocFolder ?? null}
+            onSelectNode={setSelectedNodeId}
+            onOpenDocument={handleOpenDocument}
+            onDeleteFolder={handleDeleteFolder}
+            onDeleteDocument={handleDeleteDocument}
+            onMoveDocument={({ sourceFolder, name, targetFolder }) => {
+              moveDocMutation.mutate({ sourceFolder, name, targetFolder });
+            }}
+          />
+        </Box>
       )}
+
+      {/* ── Document editor dialog ──────────────────────────────────────── */}
+      {mapName && (
+        <DocumentEditorDialog
+          open={editorOpen}
+          mapName={mapName}
+          folderName={selectedFolder}
+          docName={selectedDocName}
+          onClose={handleCloseEditor}
+        />
+      )}
+
+      {/* ── New folder dialog ───────────────────────────────────────────── */}
+      <Dialog
+        open={newFolderDialogOpen}
+        onClose={() => setNewFolderDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {t("tools.documenthandler.documents.newFolder")}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            label={t("tools.documenthandler.documents.folderTitle")}
+            value={newFolderTitle}
+            onChange={(e) => setNewFolderTitle(e.target.value)}
+            fullWidth
+            size="small"
+            sx={{ mt: 1 }}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateFolder()}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNewFolderDialogOpen(false)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateFolder}
+            disabled={!newFolderTitle.trim() || createFolderMutation.isPending}
+          >
+            {t("common.create")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── New document dialog ─────────────────────────────────────────── */}
+      <Dialog
+        open={newDocDialogOpen}
+        onClose={() => setNewDocDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {t("tools.documenthandler.documents.newDocument")}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            label={t("tools.documenthandler.documents.documentTitle")}
+            value={newDocTitle}
+            onChange={(e) => setNewDocTitle(e.target.value)}
+            fullWidth
+            size="small"
+            sx={{ mt: 1 }}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateDocument()}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNewDocDialogOpen(false)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateDocument}
+            disabled={!newDocTitle.trim() || createDocMutation.isPending}
+          >
+            {t("common.create")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete folder confirmation ──────────────────────────────────── */}
+      <Dialog
+        open={deleteFolderName !== null}
+        onClose={() => setDeleteFolderName(null)}
+        maxWidth="xs"
+      >
+        <DialogTitle>
+          {t("tools.documenthandler.documents.confirmDeleteFolder")}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            {folders.find((f) => f.name === deleteFolderName)?.title ??
+              deleteFolderName}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteFolderName(null)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (!deleteFolderName) return;
+              deleteFolderMutation.mutate(deleteFolderName, {
+                onSuccess: () => setDeleteFolderName(null),
+              });
+            }}
+          >
+            {t("common.delete")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete document confirmation ────────────────────────────────── */}
+      <Dialog
+        open={deleteDocInfo !== null}
+        onClose={() => setDeleteDocInfo(null)}
+        maxWidth="xs"
+      >
+        <DialogTitle>
+          {t("tools.documenthandler.documents.confirmDeleteDocument")}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>{deleteDocInfo?.docTitle ?? deleteDocInfo?.docName}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDocInfo(null)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (!deleteDocInfo) return;
+              deleteDocMutation.mutate(deleteDocInfo.docName, {
+                onSuccess: () => {
+                  const wasOpen = selectedDocName === deleteDocInfo.docName;
+                  setDeleteDocInfo(null);
+                  if (wasOpen) {
+                    setEditorOpen(false);
+                    setSelectedDocName(undefined);
+                  }
+                },
+              });
+            }}
+          >
+            {t("common.delete")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -4,7 +4,6 @@ import {
   FormControlLabel,
   Checkbox,
   Typography,
-  Autocomplete,
   IconButton,
   Tooltip,
   Alert,
@@ -20,21 +19,23 @@ import {
   Description as DescriptionIcon,
   OpenInNew as OpenInNewIcon,
 } from "@mui/icons-material";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import FormColorPicker from "@/components/form-components/form-color-picker";
 import type { MenuConfigItem, MenuTreeNode } from "./types";
 import { isNodeValid, updateNodeById } from "./utils";
 import {
-  STUB_AVAILABLE_DOCUMENTS,
-  STUB_FOLDERS,
-  STUB_USE_DOCUMENT_FOLDERS,
-} from "./constants";
+  useFolders,
+  useDocuments,
+  useResolveDocumentFolder,
+} from "@/api/documents";
 
 interface MenuItemPropertiesProps {
   node: MenuTreeNode | null;
   tree: MenuTreeNode[];
   onNodeChange: (next: MenuTreeNode[]) => void;
-  onOpenDocument: (docId: string) => void;
+  onOpenDocument: (folder: string, document: string) => void;
+  mapName?: string;
 }
 
 const FONT_SIZE_OPTIONS = ["small", "medium", "large"];
@@ -44,8 +45,30 @@ export function MenuItemProperties({
   tree,
   onNodeChange,
   onOpenDocument,
+  mapName,
 }: MenuItemPropertiesProps) {
   const { t } = useTranslation();
+
+  const { data: folders = [] } = useFolders(mapName);
+  const { effectiveFolder, isResolving } = useResolveDocumentFolder(
+    mapName,
+    node?.data.document,
+    node?.data.folder,
+    folders
+  );
+  const { data: documents = [] } = useDocuments(mapName, effectiveFolder);
+
+  useEffect(() => {
+    if (!node || !effectiveFolder || node.userTouchedFolder) return;
+    if ((node.data.folder ?? "").trim() === effectiveFolder) return;
+
+    const next = updateNodeById(tree, node.id, (n) => ({
+      ...n,
+      hadFolder: true,
+      data: { ...n.data, folder: effectiveFolder },
+    }));
+    onNodeChange(next);
+  }, [node, effectiveFolder, tree, onNodeChange]);
 
   if (!node) {
     return (
@@ -91,6 +114,9 @@ export function MenuItemProperties({
     onNodeChange(next);
   }
 
+  const folderValue = effectiveFolder ?? "";
+  const documentInList = documents.some((doc) => doc.name === d.document);
+
   return (
     <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
       {!valid && (
@@ -120,19 +146,32 @@ export function MenuItemProperties({
           onChange={(e) =>
             patch({ icon: { ...d.icon, materialUiIconName: e.target.value } })
           }
-          InputProps={
-            d.icon.materialUiIconName
-              ? {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Icon sx={{ fontSize: 18 }}>
-                        {d.icon.materialUiIconName}
-                      </Icon>
-                    </InputAdornment>
-                  ),
-                }
-              : undefined
-          }
+          InputProps={{
+            startAdornment: d.icon.materialUiIconName ? (
+              <InputAdornment position="start">
+                <Icon sx={{ fontSize: 18 }}>{d.icon.materialUiIconName}</Icon>
+              </InputAdornment>
+            ) : undefined,
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title={t("tools.documenthandler.browseIcons")}>
+                  <IconButton
+                    size="small"
+                    edge="end"
+                    onClick={() =>
+                      window.open(
+                        "https://fonts.google.com/icons",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
+                  >
+                    <OpenInNewIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          }}
         />
         <FormControl size="small" sx={{ minWidth: 100 }}>
           <InputLabel>
@@ -165,27 +204,81 @@ export function MenuItemProperties({
 
       {/* Document */}
       <Box>
+        {folders.length > 0 ? (
+          <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+            <InputLabel>
+              {t("tools.documenthandler.menuEditor.fields.folder")}
+            </InputLabel>
+            <Select
+              label={t("tools.documenthandler.menuEditor.fields.folder")}
+              value={folderValue}
+              disabled={isResolving}
+              onChange={(e) => {
+                patch(
+                  { folder: e.target.value, document: "" },
+                  { userTouchedFolder: true, hadFolder: true }
+                );
+              }}
+            >
+              {folders.map((folder) => (
+                <MenuItem key={folder.name} value={folder.name}>
+                  {folder.title || folder.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        ) : (
+          mapName && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 1, display: "block" }}
+            >
+              {t("tools.documenthandler.documents.noFolders")}
+            </Typography>
+          )
+        )}
+
         <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-          <Autocomplete
-            freeSolo
-            options={STUB_AVAILABLE_DOCUMENTS}
-            value={d.document}
-            onInputChange={(_, value) => patch({ document: value })}
+          <FormControl
+            fullWidth
             size="small"
             sx={{ flex: 1 }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label={t("tools.documenthandler.menuEditor.fields.document")}
-              />
-            )}
-          />
+            disabled={!effectiveFolder || isResolving}
+          >
+            <InputLabel>
+              {t("tools.documenthandler.menuEditor.fields.document")}
+            </InputLabel>
+            <Select
+              label={t("tools.documenthandler.menuEditor.fields.document")}
+              value={d.document}
+              onChange={(e) => patch({ document: e.target.value })}
+            >
+              <MenuItem value="">
+                <em>
+                  {t("tools.documenthandler.menuEditor.fields.noDocument")}
+                </em>
+              </MenuItem>
+              {documents.map((doc) => (
+                <MenuItem key={doc.name} value={doc.name}>
+                  {doc.title ? `${doc.title} (${doc.name})` : doc.name}
+                </MenuItem>
+              ))}
+              {d.document && !documentInList && (
+                <MenuItem value={d.document}>{d.document}</MenuItem>
+              )}
+            </Select>
+          </FormControl>
           <Tooltip title={t("tools.documenthandler.menuEditor.openDocument")}>
             <span>
               <IconButton
                 size="small"
-                disabled={!d.document.trim()}
-                onClick={() => onOpenDocument(d.document.trim())}
+                disabled={
+                  !d.document.trim() || !effectiveFolder || isResolving
+                }
+                onClick={() =>
+                  onOpenDocument(effectiveFolder!, d.document.trim())
+                }
                 sx={{ mt: 0.5, flexShrink: 0 }}
               >
                 <DescriptionIcon fontSize="small" />
@@ -193,36 +286,6 @@ export function MenuItemProperties({
             </span>
           </Tooltip>
         </Box>
-
-        {/* Folder selector — only shown when folder feature is enabled */}
-        {STUB_USE_DOCUMENT_FOLDERS && (
-          <FormControl fullWidth size="small" sx={{ mt: 1 }}>
-            <InputLabel>
-              {t("tools.documenthandler.menuEditor.fields.folder")}
-            </InputLabel>
-            <Select
-              label={t("tools.documenthandler.menuEditor.fields.folder")}
-              value={d.folder ?? ""}
-              onChange={(e) => {
-                patch(
-                  { folder: e.target.value },
-                  { userTouchedFolder: true, hadFolder: true }
-                );
-              }}
-            >
-              <MenuItem value="">
-                <em>
-                  {t("tools.documenthandler.menuEditor.fields.noFolder")}
-                </em>
-              </MenuItem>
-              {STUB_FOLDERS.map((f) => (
-                <MenuItem key={f} value={f}>
-                  {f}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
       </Box>
 
       {/* Map link */}

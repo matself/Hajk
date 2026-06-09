@@ -11,12 +11,13 @@ import DocumentHandlerRenderer from "./render-documenthandler";
 // import LocationRenderer from "./renderers/LocationRenderer";
 // import PresetRenderer from "./renderers/PresetRenderer";
 import React from "react";
-import { Control, FieldValues } from "react-hook-form";
+import { Control, FieldValues, UseFormSetValue } from "react-hook-form";
 import { Tool } from "../../../api/tools";
 
 interface ToolRendererProps {
   tool: Tool;
   control?: Control<FieldValues>;
+  setValue?: UseFormSetValue<FieldValues>;
 }
 
 const toolRenderers: Record<string, React.ComponentType<ToolRendererProps>> = {
@@ -39,14 +40,15 @@ const toolRenderers: Record<string, React.ComponentType<ToolRendererProps>> = {
 interface RenderToolProps {
   tool: Tool;
   control: Control<FieldValues>;
+  setValue: UseFormSetValue<FieldValues>;
 }
 
-export default function RenderTool({ tool, control }: RenderToolProps) {
+export default function RenderTool({ tool, control, setValue }: RenderToolProps) {
   const Renderer = toolRenderers[tool?.type];
 
   if (!Renderer) {
     return <div> Not rendering from render function: {tool?.type}</div>;
   }
 
-  return <Renderer tool={tool} control={control} />;
+  return <Renderer tool={tool} control={control} setValue={setValue} />;
 }

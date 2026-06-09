@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Button, Divider, IconButton, TextField, Typography } from "@mui/material";
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -6,29 +6,38 @@ import {
 import { Control, Controller, FieldValues } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-export interface PdfLink {
+export interface Attachment {
   name: string;
   link: string;
 }
 
-const EMPTY_PDF_LINK: PdfLink = { name: "", link: "" };
+const EMPTY_ATTACHMENT: Attachment = { name: "", link: "" };
 
-function normalizePdfLinks(value: unknown): PdfLink[] {
+function toAttachment(item: unknown): Attachment {
+  if (typeof item !== "object" || item === null) {
+    return { ...EMPTY_ATTACHMENT };
+  }
+
+  const record = item as Record<string, unknown>;
+  return {
+    name: typeof record.name === "string" ? record.name : "",
+    link: typeof record.link === "string" ? record.link : "",
+  };
+}
+
+function normalizeAttachments(value: unknown): Attachment[] {
   if (!Array.isArray(value) || value.length === 0) {
     return [];
   }
 
-  return value.map((item) => ({
-    name: typeof item?.name === "string" ? item.name : "",
-    link: typeof item?.link === "string" ? item.link : "",
-  }));
+  return value.map(toAttachment);
 }
 
-interface PdfLinksEditorProps {
+interface AttachmentsEditorProps {
   control: Control<FieldValues>;
 }
 
-export function PdfLinksEditor({ control }: PdfLinksEditorProps) {
+export function AttachmentsEditor({ control }: AttachmentsEditorProps) {
   const { t } = useTranslation();
 
   return (
@@ -36,30 +45,38 @@ export function PdfLinksEditor({ control }: PdfLinksEditorProps) {
       name="pdfLinks"
       control={control}
       render={({ field }) => {
-        const pdfLinks = normalizePdfLinks(field.value);
+        const attachments = normalizeAttachments(field.value);
 
-        const updateLink = (
+        const updateAttachment = (
           index: number,
-          key: keyof PdfLink,
+          key: keyof Attachment,
           value: string,
         ) => {
-          const next = pdfLinks.map((item, i) =>
+          const next = attachments.map((item, i) =>
             i === index ? { ...item, [key]: value } : item,
           );
           field.onChange(next);
         };
 
         const addRow = () => {
-          field.onChange([...pdfLinks, { ...EMPTY_PDF_LINK }]);
+          field.onChange([...attachments, { ...EMPTY_ATTACHMENT }]);
         };
 
         const removeRow = (index: number) => {
-          field.onChange(pdfLinks.filter((_, i) => i !== index));
+          field.onChange(attachments.filter((_, i) => i !== index));
         };
 
         return (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {pdfLinks.map((pdfLink, index) => (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button size="small" startIcon={<AddIcon />} onClick={addRow}>
+                {t("tools.documenthandler.attachments.addAttachment")}
+              </Button>
+            </Box>
+
+            <Divider />
+
+            {attachments.map((attachment, index) => (
               <Box
                 key={index}
                 sx={{
@@ -81,9 +98,9 @@ export function PdfLinksEditor({ control }: PdfLinksEditorProps) {
                   placeholder={t(
                     "tools.documenthandler.attachments.namePlaceholder",
                   )}
-                  value={pdfLink.name}
+                  value={attachment.name}
                   onChange={(event) =>
-                    updateLink(index, "name", event.target.value)
+                    updateAttachment(index, "name", event.target.value)
                   }
                 />
                 <TextField
@@ -92,13 +109,12 @@ export function PdfLinksEditor({ control }: PdfLinksEditorProps) {
                   placeholder={t(
                     "tools.documenthandler.attachments.linkPlaceholder",
                   )}
-                  value={pdfLink.link}
+                  value={attachment.link}
                   onChange={(event) =>
-                    updateLink(index, "link", event.target.value)
+                    updateAttachment(index, "link", event.target.value)
                   }
                 />
                 <IconButton
-                  color="error"
                   sx={{ flexShrink: 0 }}
                   aria-label={t(
                     "tools.documenthandler.attachments.removeAttachment",
@@ -109,15 +125,6 @@ export function PdfLinksEditor({ control }: PdfLinksEditorProps) {
                 </IconButton>
               </Box>
             ))}
-            <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-              <Button
-                variant="outlined"
-                startIcon={<AddIcon />}
-                onClick={addRow}
-              >
-                {t("tools.documenthandler.attachments.addAttachment")}
-              </Button>
-            </Box>
           </Box>
         );
       }}

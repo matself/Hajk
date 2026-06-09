@@ -1,0 +1,98 @@
+import type { Request, Response } from "express";
+import DocumentService from "../../services/document.service.ts";
+import HttpStatusCodes from "../../../../common/http-status-codes.ts";
+
+class DocumentHandlerController {
+  // ─── Folders ───────────────────────────────────────────────────────────────
+
+  async getFolders(req: Request, res: Response) {
+    const folders = await DocumentService.getFolders(req.params.mapName);
+    res.status(HttpStatusCodes.OK).json({ count: folders.length, folders });
+  }
+
+  async createFolder(req: Request, res: Response) {
+    const folder = await DocumentService.createFolder(
+      req.params.mapName,
+      req.body.title as string,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.CREATED).json(folder);
+  }
+
+  async renameFolder(req: Request, res: Response) {
+    const folder = await DocumentService.renameFolder(
+      req.params.mapName,
+      req.params.folder,
+      req.body.title as string,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.OK).json(folder);
+  }
+
+  async deleteFolder(req: Request, res: Response) {
+    await DocumentService.deleteFolder(req.params.mapName, req.params.folder);
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  }
+
+  // ─── Documents ─────────────────────────────────────────────────────────────
+
+  async getDocuments(req: Request, res: Response) {
+    const documents = await DocumentService.getDocuments(
+      req.params.mapName,
+      req.params.folder
+    );
+    res.status(HttpStatusCodes.OK).json({ count: documents.length, documents });
+  }
+
+  async createDocument(req: Request, res: Response) {
+    const document = await DocumentService.createDocument(
+      req.params.mapName,
+      req.params.folder,
+      req.body.title as string,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.CREATED).json(document);
+  }
+
+  async getDocument(req: Request, res: Response) {
+    const document = await DocumentService.getDocument(
+      req.params.mapName,
+      req.params.folder,
+      req.params.name
+    );
+    res.status(HttpStatusCodes.OK).json(document);
+  }
+
+  async saveDocument(req: Request, res: Response) {
+    const document = await DocumentService.saveDocument(
+      req.params.mapName,
+      req.params.folder,
+      req.params.name,
+      req.body as { title?: string; content: Record<string, unknown> },
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.OK).json(document);
+  }
+
+  async moveDocument(req: Request, res: Response) {
+    const document = await DocumentService.moveDocument(
+      req.params.mapName,
+      req.params.folder,
+      req.params.name,
+      req.body.targetFolder as string,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.OK).json(document);
+  }
+
+  async deleteDocument(req: Request, res: Response) {
+    await DocumentService.deleteDocument(
+      req.params.mapName,
+      req.params.folder,
+      req.params.name
+    );
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  }
+}
+
+export default new DocumentHandlerController();

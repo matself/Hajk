@@ -121,19 +121,60 @@ model RoleOnGroup {
 }
 
 model Map {
-  id                Int             @id @default(autoincrement())
-  locked            Boolean         @default(false)
-  name              String          @unique
-  options           Json            @default("{}")
+  id                Int              @id @default(autoincrement())
+  locked            Boolean          @default(false)
+  name              String           @unique
+  options           Json             @default("{}")
   createdBy         String?
-  createdDate       DateTime?       @db.Timestamptz(3) // Timestamp when created
+  createdDate       DateTime?        @db.Timestamptz(3) // Timestamp when created
   lastSavedBy       String?
-  lastSavedDate     DateTime?       @db.Timestamptz(3) // Timestamp when last saved
+  lastSavedDate     DateTime?        @db.Timestamptz(3) // Timestamp when last saved
   projections       Projection[]
   tools             ToolsOnMaps[]
   layers            LayerInstance[]
   groups            GroupsOnMaps[]
   restrictedToRoles RoleOnMap[]
+  documentFolders   DocumentFolder[]
+  documents         Document[]
+}
+
+/// A folder scoped to one map that groups documents.
+model DocumentFolder {
+  id            Int        @id @default(autoincrement())
+  /// URL-safe slug derived from title at creation time. Immutable.
+  name          String
+  /// Human-readable display name.
+  title         String
+  mapName       String
+  createdBy     String?
+  createdDate   DateTime?  @db.Timestamptz(3)
+  lastSavedBy   String?
+  lastSavedDate DateTime?  @db.Timestamptz(3)
+  map           Map        @relation(fields: [mapName], references: [name], onDelete: Cascade)
+  documents     Document[]
+
+  @@unique([mapName, name])
+}
+
+/// A document belonging to a map and folder. Content is stored as JSON.
+model Document {
+  id            Int            @id @default(autoincrement())
+  /// URL-safe slug derived from title at creation time. Immutable.
+  name          String
+  /// Human-readable display name.
+  title         String
+  /// Chapter tree content: { chapters: [...] }
+  content       Json           @default("{\"chapters\":[]}")
+  mapName       String
+  folderId      Int
+  createdBy     String?
+  createdDate   DateTime?      @db.Timestamptz(3)
+  lastSavedBy   String?
+  lastSavedDate DateTime?      @db.Timestamptz(3)
+  map           Map            @relation(fields: [mapName], references: [name], onDelete: Cascade)
+  folder        DocumentFolder @relation(fields: [folderId], references: [id], onDelete: Restrict)
+
+  @@unique([mapName, folderId, name])
 }
 
 model Tool {

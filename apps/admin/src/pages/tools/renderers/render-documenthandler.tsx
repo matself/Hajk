@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   styled,
   Button,
@@ -6,18 +6,21 @@ import {
   ListItem,
   Typography,
   Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuIcon from "@mui/icons-material/Menu";
 import DescriptionIcon from "@mui/icons-material/Description";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import { Control, Controller, FieldValues } from "react-hook-form";
+import { Control, Controller, FieldValues, UseFormSetValue } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Tool } from "../../../api/tools";
+import { Tool, useMapsByToolName } from "../../../api/tools";
+import { useDefaultMap } from "../../../hooks/use-default-map";
 import { MenuEditor } from "../components/documenthandler/menu-editor/menu-editor";
 import type { MenuConfig } from "../components/documenthandler/menu-editor/types";
 import { DocumentsTabPanel } from "../components/documenthandler/documents/documents-tab-panel";
-import { AttachmentsTabPanel } from "../components/documenthandler/attachments/attachments-tab-panel";
 import { SettingsTabPanel } from "../components/documenthandler/settings/settings-tab-panel";
 
 const StyledTabButton = styled(Button, {
@@ -49,18 +52,39 @@ const StyledTabButton = styled(Button, {
 interface DocumentHandlerRendererProps {
   tool: Tool;
   control: Control<FieldValues>;
+  setValue: UseFormSetValue<FieldValues>;
 }
 
-type ActiveTab = "settings" | "menuSettings" | "documents" | "attachments";
+type ActiveTab = "settings" | "menuSettings" | "documents";
 
 export default function DocumentHandlerRenderer({
+  tool,
   control,
+  setValue,
 }: DocumentHandlerRendererProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ActiveTab>("settings");
-  const [activeDocumentId, setActiveDocumentId] = useState<
-    string | undefined
+  const [activeDocument, setActiveDocument] = useState<
+    { folder: string; document: string } | undefined
   >(undefined);
+  const [selectedMapName, setSelectedMapName] = useState<string | undefined>(
+    undefined
+  );
+
+  const { defaultMap } = useDefaultMap();
+  const { data: mapsWithTool } = useMapsByToolName(tool.type);
+  const maps = mapsWithTool ?? [];
+  const defaultMapForTool = maps.find((map) => map.name === defaultMap)?.name;
+  const resolvedMapName =
+    selectedMapName ??
+    defaultMapForTool ??
+    (maps.length === 1 ? maps[0].name : undefined);
+
+  useEffect(() => {
+    if (!selectedMapName && resolvedMapName) {
+      setSelectedMapName(resolvedMapName);
+    }
+  }, [resolvedMapName, selectedMapName]);
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -78,12 +102,12 @@ export default function DocumentHandlerRenderer({
       label: t("tools.documenthandler.documents.tabLabel"),
       icon: <DescriptionIcon />,
     },
-    {
-      key: "attachments",
-      label: t("tools.documenthandler.attachments.tabLabel"),
-      icon: <AttachFileIcon />,
-    },
   ];
+
+  const handleMapChange = (mapName: string) => {
+    setSelectedMapName(mapName);
+    setActiveDocument(undefined);
+  };
 
   return (
     <>
@@ -91,37 +115,81 @@ export default function DocumentHandlerRenderer({
         rel="stylesheet"
         href="https://fonts.googleapis.com/icon?family=Material+Icons"
       />
-      <List
+      <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
           flexWrap: "wrap",
           gap: 1,
-          p: 0,
           mb: 2,
         }}
       >
-        {tabs.map((tab) => (
-          <ListItem
-            key={tab.key}
-            disablePadding
-            disableGutters
-            sx={{ width: "auto" }}
-          >
-            <StyledTabButton
-              isActive={activeTab === tab.key}
-              startIcon={tab.icon}
-              onClick={() => setActiveTab(tab.key)}
+        <List
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 1,
+            p: 0,
+            flex: 1,
+          }}
+        >
+          {tabs.map((tab) => (
+            <ListItem
+              key={tab.key}
+              disablePadding
+              disableGutters
+              sx={{ width: "auto" }}
             >
-              <Typography>{tab.label}</Typography>
-            </StyledTabButton>
-          </ListItem>
-        ))}
-      </List>
+              <StyledTabButton
+                isActive={activeTab === tab.key}
+                startIcon={tab.icon}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <Typography>{tab.label}</Typography>
+              </StyledTabButton>
+            </ListItem>
+          ))}
+        </List>
+
+        <FormControl
+          size="small"
+          sx={{ minWidth: 220, flexShrink: 0, pr: 2 }}
+          disabled={maps.length === 0}
+        >
+          <InputLabel id="documenthandler-map-select-label">
+            {t("tools.documenthandler.documents.selectMap")}
+          </InputLabel>
+          <Select
+            labelId="documenthandler-map-select-label"
+            label={t("tools.documenthandler.documents.selectMap")}
+            value={resolvedMapName ?? ""}
+            displayEmpty={maps.length === 0}
+            onChange={(e) => handleMapChange(e.target.value)}
+          >
+            {maps.length === 0 ? (
+              <MenuItem value="" disabled>
+                {t("tools.documenthandler.documents.noMapsWithTool")}
+              </MenuItem>
+            ) : (
+              maps.map((map) => (
+                <MenuItem key={map.name} value={map.name}>
+                  {map.options?.title ?? map.name}
+                </MenuItem>
+              ))
+            )}
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Settings tab */}
       <Box sx={{ display: activeTab === "settings" ? "block" : "none" }}>
-        <SettingsTabPanel control={control} />
+        <SettingsTabPanel
+          control={control}
+          setValue={setValue}
+          mapName={resolvedMapName}
+        />
       </Box>
 
       {/* Menu settings tab */}
@@ -133,8 +201,9 @@ export default function DocumentHandlerRenderer({
             <MenuEditor
               value={field.value as MenuConfig | undefined}
               onChange={field.onChange}
-              onOpenDocument={(docId) => {
-                setActiveDocumentId(docId);
+              mapName={resolvedMapName}
+              onOpenDocument={(folder: string, document: string) => {
+                setActiveDocument({ folder, document });
                 setActiveTab("documents");
               }}
             />
@@ -144,13 +213,14 @@ export default function DocumentHandlerRenderer({
 
       {/* Documents tab */}
       <Box sx={{ display: activeTab === "documents" ? "block" : "none" }}>
-        <DocumentsTabPanel documentId={activeDocumentId} />
+        <DocumentsTabPanel
+          key={resolvedMapName ?? "none"}
+          folderName={activeDocument?.folder}
+          documentId={activeDocument?.document}
+          mapName={resolvedMapName}
+        />
       </Box>
 
-      {/* Attachments tab */}
-      <Box sx={{ display: activeTab === "attachments" ? "block" : "none" }}>
-        <AttachmentsTabPanel control={control} />
-      </Box>
     </>
   );
 }

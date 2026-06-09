@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -28,22 +28,33 @@ import {
   removeNodeById,
   findNodeById,
 } from "./utils";
-import { STUB_MENU_CONFIG } from "./constants";
 import { MenuTree } from "./menu-tree";
 import { MenuItemProperties } from "./menu-item-properties";
 
 interface MenuEditorProps {
   value: MenuConfig | undefined;
   onChange: (next: MenuConfig) => void;
-  onOpenDocument: (docId: string) => void;
+  onOpenDocument: (folder: string, document: string) => void;
+  mapName?: string;
 }
 
-export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps) {
+export function MenuEditor({ value, onChange, onOpenDocument, mapName }: MenuEditorProps) {
   const { t } = useTranslation();
-  // TODO: Replace STUB_MENU_CONFIG with value.menu once the backend is wired up.
   const [tree, setTree] = useState<MenuTreeNode[]>(() =>
-    toTree(STUB_MENU_CONFIG.menu)
+    toTree(value?.menu ?? [])
   );
+
+  // Track the last menu we emitted via onChange to distinguish external resets
+  // (e.g. form reset after tool data loads) from our own internal updates.
+  const lastSentMenuRef = useRef<string>(JSON.stringify(value?.menu ?? []));
+
+  useEffect(() => {
+    const incoming = JSON.stringify(value?.menu ?? []);
+    if (incoming !== lastSentMenuRef.current) {
+      lastSentMenuRef.current = incoming;
+      setTree(toTree(value?.menu ?? []));
+    }
+  }, [value]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
   const treeRef = useRef<TreeApi<MenuTreeNode> | undefined>(undefined);
@@ -51,7 +62,9 @@ export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps)
   // Propagate tree changes upward via onChange.
   function handleTreeChange(next: MenuTreeNode[]) {
     setTree(next);
-    onChange({ ...(value ?? {}), menu: fromTree(next) });
+    const nextMenu = fromTree(next);
+    lastSentMenuRef.current = JSON.stringify(nextMenu);
+    onChange({ ...(value ?? {}), menu: nextMenu });
   }
 
   function handleAddRoot() {
@@ -106,7 +119,6 @@ export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps)
       >
         <Button
           size="small"
-          variant="outlined"
           startIcon={<AddIcon />}
           onClick={handleAddRoot}
         >
@@ -158,12 +170,10 @@ export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps)
         }}
       >
         {/* Left: tree */}
-        <Paper
-          variant="outlined"
+        <Box
           sx={{
             flex: "0 0 55%",
             maxWidth: "55%",
-            overflow: "hidden",
             minHeight: 500,
           }}
         >
@@ -198,7 +208,7 @@ export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps)
               onDelete={handleDeleteRequest}
             />
           )}
-        </Paper>
+        </Box>
 
         {/* Right: properties panel */}
         <Paper
@@ -214,6 +224,7 @@ export function MenuEditor({ value, onChange, onOpenDocument }: MenuEditorProps)
             tree={tree}
             onNodeChange={handleTreeChange}
             onOpenDocument={onOpenDocument}
+            mapName={mapName}
           />
         </Paper>
       </Box>
