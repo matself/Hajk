@@ -5,7 +5,7 @@ import { DragIndicator } from "@mui/icons-material";
 
 import useAppStateStore from "../../store/use-app-state-store";
 import { ItemType } from "./types";
-import { createSourceId } from "./utils";
+import { createSourceId, DND_ITEM_TITLE_SX } from "./utils";
 
 interface DraggableSourceItemProps {
   item: { id: string; name: string };
@@ -38,15 +38,16 @@ export const DraggableSourceItem: React.FC<DraggableSourceItemProps> = ({
         background: isDarkMode ? "#1a1a1a" : "#fff",
         opacity: isDragging ? 0.5 : 1,
         width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        overflow: "hidden",
         boxSizing: "border-box",
+        display: "flex",
+        alignItems: "flex-start",
       }}
     >
-      <DragIndicator sx={{ mr: 1, flexShrink: 0 }} />
-      <Typography
-        variant="body2"
-        noWrap
-        sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
-      >
+      <DragIndicator sx={{ mr: 1, mt: 0.25, flexShrink: 0 }} />
+      <Typography variant="body2" title={item.name} sx={DND_ITEM_TITLE_SX}>
         {item.name}
       </Typography>
     </ListItem>

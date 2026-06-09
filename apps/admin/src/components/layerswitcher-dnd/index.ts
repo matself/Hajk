@@ -29,4 +29,10 @@ export {
   moveItemDown,
   canItemMoveUp,
   canItemMoveDown,
+  DND_ITEM_TITLE_SX,
+  getDropLineSx,
+  getReorderDropPosition,
+  flattenTreeItemIds,
+  useTrackTreeDragActiveId,
+  treeDragActiveIdRef,
 } from "./utils";

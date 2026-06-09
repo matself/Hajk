@@ -66,6 +66,7 @@ import { useTranslation } from "react-i18next";
 
 import useAppStateStore from "../../store/use-app-state-store";
 import { ItemType, TreeItemData, SourceItem, ID_DELIMITER } from "./types";
+import { DND_ITEM_TITLE_SX } from "./utils";
 import { ToolPlacementWindow } from "./tool-placement-window";
 import { ToolPlacement } from "./tool-placement-window";
 
@@ -149,7 +150,7 @@ const CompactDraggableItem: React.FC<CompactDraggableItemProps> = ({
       elevation={1}
       sx={{
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: 1,
         px: 1,
         py: 2,
@@ -162,15 +163,7 @@ const CompactDraggableItem: React.FC<CompactDraggableItemProps> = ({
       }}
     >
       {icon}
-      <Typography
-        variant="caption"
-        noWrap
-        sx={{
-          flex: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
+      <Typography variant="caption" title={item.name} sx={DND_ITEM_TITLE_SX}>
         {item.name}
       </Typography>
     </Paper>
@@ -278,7 +271,7 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
           px: 1.5,
           mb: 0.75,
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 1,
           backgroundColor: isDarkMode ? "#2a2a2a" : "#fff",
           cursor: "grab",
@@ -288,18 +281,8 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
           },
         }}
       >
-        <IconComponent fontSize="large" />
-        <Typography
-          variant="body2"
-          sx={{
-            flex: 1,
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            wordBreak: "break-word",
-          }}
-        >
+        <IconComponent fontSize="large" sx={{ mt: 0.25, flexShrink: 0 }} />
+        <Typography variant="body2" title={name} sx={DND_ITEM_TITLE_SX}>
           {name}
         </Typography>
         {onRemove && (
@@ -338,7 +321,7 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
         px: 1.5,
         mb: 0.75,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: 1,
         backgroundColor: isDarkMode ? "#2a2a2a" : "#fff",
         cursor: "grab",
@@ -348,8 +331,8 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
         },
       }}
     >
-      <IconComponent fontSize="medium" />
-      <Typography variant="body2" noWrap sx={{ flex: 1 }}>
+      <IconComponent fontSize="medium" sx={{ mt: 0.25, flexShrink: 0 }} />
+      <Typography variant="body2" title={name} sx={DND_ITEM_TITLE_SX}>
         {name}
       </Typography>
       {onRemove && (
@@ -861,13 +844,23 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
         <DragOverlay>
           {activeDrag && (
             <Paper
-              sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 1 }}
+              sx={{
+                p: 1.5,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 1,
+                maxWidth: "100%",
+              }}
             >
               {(() => {
                 const OverlayIcon = getToolIconComponent(activeDrag.name);
-                return <OverlayIcon fontSize="small" />;
+                return (
+                  <OverlayIcon fontSize="small" sx={{ mt: 0.25, flexShrink: 0 }} />
+                );
               })()}
-              <Typography>{activeDrag.name}</Typography>
+              <Typography title={activeDrag.name} sx={DND_ITEM_TITLE_SX}>
+                {activeDrag.name}
+              </Typography>
             </Paper>
           )}
         </DragOverlay>

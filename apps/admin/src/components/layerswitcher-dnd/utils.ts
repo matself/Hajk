@@ -1,3 +1,5 @@
+import type { SxProps, Theme } from "@mui/material";
+import { useDndMonitor } from "@dnd-kit/core";
 import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
 import {
   ItemType,
@@ -5,6 +7,84 @@ import {
   ID_DELIMITER,
   ITEM_CAPABILITIES,
 } from "./types";
+
+export type ReorderDropPosition = "above" | "below";
+
+export const getDropLineSx = (isDarkMode: boolean, edge: "top" | "bottom") => ({
+  position: "absolute" as const,
+  ...(edge === "top" ? { top: 0 } : { bottom: 0 }),
+  left: 0,
+  right: 0,
+  height: "2px",
+  backgroundColor: isDarkMode ? "#42a5f5" : "#1976d2",
+  zIndex: 10,
+  pointerEvents: "none" as const,
+  boxShadow: `0 0 4px ${isDarkMode ? "#42a5f5" : "#1976d2"}`,
+});
+
+export const treeDragActiveIdRef = { current: null as string | null };
+
+/** Track the item currently being dragged inside a SortableTree. */
+export const useTrackTreeDragActiveId = () => {
+  useDndMonitor({
+    onDragStart(event) {
+      treeDragActiveIdRef.current = event.active.id.toString();
+    },
+    onDragEnd() {
+      treeDragActiveIdRef.current = null;
+    },
+    onDragCancel() {
+      treeDragActiveIdRef.current = null;
+    },
+  });
+};
+
+export const flattenTreeItemIds = <T extends { id: unknown; children?: T[] }>(
+  items: T[],
+): string[] => {
+  const ids: string[] = [];
+  const visit = (nodes: T[]) => {
+    for (const node of nodes) {
+      ids.push(node.id.toString());
+      if (node.children?.length) {
+        visit(node.children);
+      }
+    }
+  };
+  visit(items);
+  return ids;
+};
+
+/** Drop edge from list order: dragging down → below target, dragging up → above. */
+export const getReorderDropPosition = (
+  targetItemId: string,
+  activeDragId: string | null,
+  flattenedIds: readonly string[],
+  isReorderTarget: boolean,
+): ReorderDropPosition | null => {
+  if (!isReorderTarget || !activeDragId || activeDragId === targetItemId) {
+    return null;
+  }
+
+  const dragIndex = flattenedIds.indexOf(activeDragId);
+  const targetIndex = flattenedIds.indexOf(targetItemId);
+  if (dragIndex === -1 || targetIndex === -1) {
+    return null;
+  }
+
+  return dragIndex < targetIndex ? "below" : "above";
+};
+
+/** Up to two lines of item text, clamped with ellipsis when longer. */
+export const DND_ITEM_TITLE_SX: SxProps<Theme> = {
+  flex: 1,
+  minWidth: 0,
+  overflow: "hidden",
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  wordBreak: "break-word",
+};
 
 // Parse source ID: "source::type::actualId" -> { type, id }
 export const parseSourceId = (
