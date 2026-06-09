@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { FieldValues, useForm, Controller } from "react-hook-form";
 import {
-  Grid2 as Grid,
+  Grid,
   FormControl,
   InputLabel,
   Select,
