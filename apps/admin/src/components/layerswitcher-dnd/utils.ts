@@ -41,17 +41,178 @@ export const getDropLineSx = (isDarkMode: boolean, edge: "top" | "bottom") => ({
 
 export const treeDragActiveIdRef = { current: null as string | null };
 
+export const treePointerXRef = { current: null as number | null };
+
+export const treePointerYRef = { current: null as number | null };
+
+/** Last pointer position during a tree drag — kept through drop handling. */
+export const lastTreeDragPointerRef = {
+  current: { x: null as number | null, y: null as number | null },
+};
+
+export type GroupDropIntent = "into" | "above" | "below";
+
+/** Hit area for the drop-into-group icon shown during external drags. */
+export const GROUP_INTO_DROP_TARGET_WIDTH_PX = 64;
+export const GROUP_INTO_DROP_TARGET_HEIGHT_PX = 48;
+
+/** @deprecated Use GROUP_INTO_DROP_TARGET_WIDTH_PX for grid column sizing. */
+export const GROUP_INTO_DROP_TARGET_PX = GROUP_INTO_DROP_TARGET_WIDTH_PX;
+
+export const GROUP_INTO_DROP_ID_PREFIX = "group-into-";
+
+export const createGroupIntoDropId = (groupId: string) =>
+  `${GROUP_INTO_DROP_ID_PREFIX}${groupId}`;
+
+export const parseGroupIntoDropId = (id: string): string | null => {
+  if (!id.startsWith(GROUP_INTO_DROP_ID_PREFIX)) {
+    return null;
+  }
+  return id.slice(GROUP_INTO_DROP_ID_PREFIX.length);
+};
+
+export const treeGroupDropIntentRef = {
+  current: null as { groupId: string; intent: GroupDropIntent } | null,
+};
+
+export const treeIntoDropHandlerRef = {
+  current: null as ((activeId: string, groupId: string) => void) | null,
+};
+
+export const treeSiblingEdgeDropHandlerRef = {
+  current: null as
+    | ((
+        activeId: string,
+        pointer: { x: number | null; y: number | null },
+      ) => void)
+    | null,
+};
+
+const treeDragListeners = new Set<() => void>();
+
+const notifyTreeDragListeners = () => {
+  treeDragListeners.forEach((listener) => listener());
+};
+
+export const subscribeTreeDrag = (listener: () => void) => {
+  treeDragListeners.add(listener);
+  return () => {
+    treeDragListeners.delete(listener);
+  };
+};
+
+export const isPointerInRect = (
+  x: number | null,
+  y: number | null,
+  rect: DOMRect | null,
+  padding = 6,
+): boolean => {
+  if (x === null || y === null || rect === null) {
+    return false;
+  }
+  return (
+    x >= rect.left - padding &&
+    x <= rect.right + padding &&
+    y >= rect.top - padding &&
+    y <= rect.bottom + padding
+  );
+};
+
+export const getGroupIntoTargetElementId = (groupId: string) =>
+  `group-into-el-${groupId}`;
+
+export const getTreeItemRowElementId = (itemId: string) =>
+  `tree-item-row-${itemId}`;
+
+/** Pointer band at the top/bottom of a group row for drag-out-as-sibling. */
+export const GROUP_SIBLING_DROP_ZONE_ABOVE_PX = 24;
+export const GROUP_SIBLING_DROP_ZONE_BELOW_PX = 24;
+export const GROUP_SIBLING_DROP_ZONE_EXTEND_ABOVE_PX = 20;
+
+export const isPointerOverGroupSiblingDropZone = (
+  groupId: string,
+  edge: ReorderDropPosition,
+  pointer?: { x: number | null; y: number | null },
+): boolean => {
+  const x = pointer?.x ?? lastTreeDragPointerRef.current.x ?? treePointerXRef.current;
+  const y = pointer?.y ?? lastTreeDragPointerRef.current.y ?? treePointerYRef.current;
+  const el = document.getElementById(getTreeItemRowElementId(groupId));
+  const rect = el?.getBoundingClientRect() ?? null;
+  if (x === null || y === null || rect === null) {
+    return false;
+  }
+  if (x < rect.left || x > rect.right) {
+    return false;
+  }
+  if (edge === "above") {
+    return (
+      y >= rect.top - GROUP_SIBLING_DROP_ZONE_EXTEND_ABOVE_PX &&
+      y <= rect.top + GROUP_SIBLING_DROP_ZONE_ABOVE_PX
+    );
+  }
+  return (
+    y >= rect.bottom - GROUP_SIBLING_DROP_ZONE_BELOW_PX &&
+    y <= rect.bottom + 10
+  );
+};
+
+export const isPointerOverGroupIntoTarget = (
+  groupId: string,
+  pointer?: { x: number | null; y: number | null },
+): boolean => {
+  const x = pointer?.x ?? treePointerXRef.current;
+  const y = pointer?.y ?? treePointerYRef.current;
+  const el = document.getElementById(getGroupIntoTargetElementId(groupId));
+  return isPointerInRect(x, y, el?.getBoundingClientRect() ?? null, 4);
+};
+
 /** Track the item currently being dragged inside a SortableTree. */
 export const useTrackTreeDragActiveId = () => {
   useDndMonitor({
     onDragStart(event) {
       treeDragActiveIdRef.current = event.active.id.toString();
+      const activator = event.activatorEvent;
+      if (activator instanceof MouseEvent) {
+        lastTreeDragPointerRef.current = {
+          x: activator.clientX,
+          y: activator.clientY,
+        };
+      } else if (
+        activator instanceof TouchEvent &&
+        activator.touches.length > 0
+      ) {
+        lastTreeDragPointerRef.current = {
+          x: activator.touches[0].clientX,
+          y: activator.touches[0].clientY,
+        };
+      }
+      notifyTreeDragListeners();
     },
-    onDragEnd() {
+    onDragEnd(event) {
+      const activeId = event.active.id.toString();
+      const overId = event.over?.id?.toString();
+      const intoGroupId = overId ? parseGroupIntoDropId(overId) : null;
+      if (intoGroupId && isPointerOverGroupIntoTarget(intoGroupId)) {
+        treeGroupDropIntentRef.current = {
+          groupId: intoGroupId,
+          intent: "into",
+        };
+        if (!activeId.startsWith("source-")) {
+          treeIntoDropHandlerRef.current?.(activeId, intoGroupId);
+        }
+      } else if (!activeId.startsWith("source-")) {
+        treeSiblingEdgeDropHandlerRef.current?.(activeId, {
+          x: lastTreeDragPointerRef.current.x,
+          y: lastTreeDragPointerRef.current.y,
+        });
+      }
       treeDragActiveIdRef.current = null;
+      notifyTreeDragListeners();
     },
     onDragCancel() {
       treeDragActiveIdRef.current = null;
+      treeGroupDropIntentRef.current = null;
+      notifyTreeDragListeners();
     },
   });
 };
@@ -62,7 +223,7 @@ export const flattenTreeItemIds = <T extends { id: unknown; children?: T[] }>(
   const ids: string[] = [];
   const visit = (nodes: T[]) => {
     for (const node of nodes) {
-      ids.push(node.id.toString());
+      ids.push(String(node.id));
       if (node.children?.length) {
         visit(node.children);
       }
@@ -111,6 +272,17 @@ export const DND_TREE_ACTION_SLOT_GAP = 2;
 export const getTreeActionsBarWidth = (slotCount: number) =>
   DND_TREE_ACTION_SLOT_SIZE * slotCount +
   DND_TREE_ACTION_SLOT_GAP * (slotCount - 1);
+
+export const getTreeItemGridColumns = (options?: {
+  showIntoDropTarget?: boolean;
+  actionSlotCount?: number;
+}) => {
+  const actionSlots = options?.actionSlotCount ?? 4;
+  const intoColumn = options?.showIntoDropTarget
+    ? `${GROUP_INTO_DROP_TARGET_WIDTH_PX}px `
+    : "";
+  return `auto minmax(0, 1fr) ${intoColumn}${getTreeActionsBarWidth(actionSlots)}px`;
+};
 
 /** Compact row layout for tree drop-zone items. */
 export const DND_TREE_ITEM_CARD_SX: SxProps<Theme> = {
@@ -175,8 +347,7 @@ export const DND_TREE_SORTABLE_OVERRIDES_SX: SxProps<Theme> = {
   "& .dnd-sortable-tree_simple_tree-item": {
     width: "100%",
     maxWidth: "100%",
-    pb: 0.6,
-    pt: 0,
+    p: 0,
     border: "none",
     alignItems: "stretch",
   },
