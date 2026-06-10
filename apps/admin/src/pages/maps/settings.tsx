@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import {
@@ -84,9 +84,13 @@ export default function MapSettings() {
   const { mutateAsync: updateMap, status: updateStatus } = useUpdateMap();
   const { palette } = useTheme();
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [activeTab, setActiveTab] = useState<"menu" | "settings" | "tools">(
-    "settings",
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get("tab") ?? "settings") as
+    | "menu"
+    | "settings"
+    | "tools";
+  const setActiveTab = (tab: string) =>
+    setSearchParams({ tab }, { replace: true });
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
