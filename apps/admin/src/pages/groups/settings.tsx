@@ -57,17 +57,8 @@ import UsedInMapsPanel from "../../components/used-in-maps-panel";
 import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
 import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
 import { getDeleteGroupErrorMessage, getUpdateGroupErrorMessage, applyGroupFormValidationErrors } from "./utils/group-errors";
-
-const compositionKey = (
-  layers: GroupLayerCreateInput[],
-  tree: LayerSwitcherTreeNode[] = []
-) =>
-  [
-    layers
-      .map((layer) => `${layer.layerId}:${layer.usage}:${layer.zIndex ?? 0}`)
-      .join("|"),
-    JSON.stringify(tree),
-  ].join("::");
+import { groupCompositionKey } from "./utils/group-composition";
+import { stripEditingGroupFromTree } from "./utils/layer-switcher-tree";
 
 const EMPTY_GROUP_LAYERS: GroupLayer[] = [];
 const EMPTY_MAPS: Map[] = [];
@@ -119,7 +110,14 @@ function GroupSettings() {
   );
   const { data: rolesData } = useRoles();
   const groupLayers = groupLayersData?.layers ?? EMPTY_GROUP_LAYERS;
-  const savedLayerSwitcherTree = groupLayersData?.layerSwitcherTree;
+  const savedLayerSwitcherTree = useMemo(
+    () =>
+      stripEditingGroupFromTree(
+        groupLayersData?.layerSwitcherTree,
+        groupId,
+      ),
+    [groupLayersData?.layerSwitcherTree, groupId],
+  );
   const maps = mapsData ?? EMPTY_MAPS;
   const roles = rolesData ?? EMPTY_ROLES;
   const { palette } = useTheme();
@@ -138,6 +136,7 @@ function GroupSettings() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const compositionBaselineRef = useRef<string | null>(null);
+  const compositionStateKeyRef = useRef<string>("");
   const [isCompositionDirty, setIsCompositionDirty] = useState(false);
 
   const {
@@ -175,6 +174,18 @@ function GroupSettings() {
       })),
     [initialDndLayers],
   );
+  const initialCompositionKey = useMemo(
+    () => groupCompositionKey(initialComposition),
+    [initialComposition],
+  );
+  const savedLayerSwitcherTreeKey = useMemo(
+    () => JSON.stringify(savedLayerSwitcherTree ?? []),
+    [savedLayerSwitcherTree],
+  );
+  const editingGroup = useMemo(
+    () => (group ? { id: group.id, name: group.name } : undefined),
+    [group?.id, group?.name],
+  );
   const isSaveDirty = isDirty || isCompositionDirty;
   const selectedRoleIds =
     (watch("roleIds") as string[] | undefined) ??
@@ -201,10 +212,11 @@ function GroupSettings() {
 
   useEffect(() => {
     compositionBaselineRef.current = null;
+    compositionStateKeyRef.current = initialCompositionKey;
     setIsCompositionDirty(false);
     setCompositionLayers(initialComposition);
     setCompositionTree(savedLayerSwitcherTree ?? []);
-  }, [initialComposition, savedLayerSwitcherTree]);
+  }, [initialCompositionKey, savedLayerSwitcherTreeKey, initialComposition, savedLayerSwitcherTree]);
 
   const handleExternalSubmit = () => {
     if (formRef.current) {
@@ -222,10 +234,16 @@ function GroupSettings() {
         options: layer.options,
       }));
       const tree = composition.layerSwitcherTree;
+      const key = groupCompositionKey(layers, tree);
+
+      if (key === compositionStateKeyRef.current) {
+        return;
+      }
+      compositionStateKeyRef.current = key;
+
       setCompositionLayers(layers);
       setCompositionTree(tree);
 
-      const key = compositionKey(layers, tree);
       if (compositionBaselineRef.current === null) {
         compositionBaselineRef.current = key;
         return;
@@ -283,10 +301,11 @@ function GroupSettings() {
         },
         { keepDirty: false },
       );
-      compositionBaselineRef.current = compositionKey(
+      compositionBaselineRef.current = groupCompositionKey(
         layersForType,
         compositionTree,
       );
+      compositionStateKeyRef.current = compositionBaselineRef.current;
       setIsCompositionDirty(false);
     } catch (error) {
       console.error("Failed to update group:", error);
@@ -590,9 +609,7 @@ function GroupSettings() {
               <LayerSwitcherDnDComponent
                 embedded
                 groupId={groupId}
-                editingGroup={
-                  group ? { id: group.id, name: group.name } : undefined
-                }
+                editingGroup={editingGroup}
                 layerKind={savedLayerKind}
                 onCompositionChange={handleCompositionChange}
               />

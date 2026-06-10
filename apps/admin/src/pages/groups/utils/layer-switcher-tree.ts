@@ -40,48 +40,91 @@ export function editingGroupTreeId(groupId: string) {
   return `${GROUP_PREFIX}${groupId}`;
 }
 
-export function unwrapEditingGroupContainer(
+/** Remove references to the group being edited from persisted tree data. */
+export function stripEditingGroupFromTree(
+  tree: LayerSwitcherTreeNode[] | undefined,
+  editingGroupId?: string,
+): LayerSwitcherTreeNode[] | undefined {
+  if (!tree?.length || !editingGroupId) {
+    return tree;
+  }
+
+  const unwrapSelf = (
+    nodes: LayerSwitcherTreeNode[],
+  ): LayerSwitcherTreeNode[] => {
+    const result: LayerSwitcherTreeNode[] = [];
+
+    for (const node of nodes) {
+      if (node.type === "group" && node.id === editingGroupId) {
+        if (node.children?.length) {
+          result.push(...unwrapSelf(node.children));
+        }
+        continue;
+      }
+
+      if (node.type === "group") {
+        result.push({
+          ...node,
+          children: unwrapSelf(node.children),
+        });
+        continue;
+      }
+
+      result.push(node);
+    }
+
+    return result;
+  };
+
+  return unwrapSelf(tree);
+}
+
+/** Remove the editing group from in-memory tree items before display or save. */
+export function stripEditingGroupFromItems(
   items: LayerSwitcherTreeItem[],
-  editingGroupId?: string
+  editingGroupId?: string,
 ): LayerSwitcherTreeItem[] {
-  if (!editingGroupId || items.length !== 1) {
+  if (!editingGroupId) {
     return items;
   }
 
-  const root = items[0];
-  if (
-    root.type === "group" &&
-    root.id === editingGroupTreeId(editingGroupId)
-  ) {
-    return root.children ?? [];
-  }
+  const unwrapSelf = (nodes: LayerSwitcherTreeItem[]): LayerSwitcherTreeItem[] => {
+    const result: LayerSwitcherTreeItem[] = [];
 
-  return items;
+    for (const node of nodes) {
+      if (
+        node.type === "group" &&
+        node.id === editingGroupTreeId(editingGroupId)
+      ) {
+        if (node.children?.length) {
+          result.push(...unwrapSelf(node.children));
+        }
+        continue;
+      }
+
+      if (node.type === "group") {
+        result.push({
+          ...node,
+          children: unwrapSelf(node.children ?? []),
+        });
+        continue;
+      }
+
+      result.push(node);
+    }
+
+    return result;
+  };
+
+  return unwrapSelf(items);
 }
 
-export function wrapInEditingGroupContainer(
+/** @deprecated Use stripEditingGroupFromItems */
+export function unwrapEditingGroupContainer(
   items: LayerSwitcherTreeItem[],
-  editingGroup: { id: string; name: string }
+  editingGroupId?: string,
 ): LayerSwitcherTreeItem[] {
-  if (items.length === 1) {
-    const root = items[0];
-    if (
-      root.type === "group" &&
-      root.id === editingGroupTreeId(editingGroup.id)
-    ) {
-      return items;
-    }
-  }
-
-  return [
-    {
-      id: editingGroupTreeId(editingGroup.id),
-      name: editingGroup.name,
-      type: "group",
-      children: items,
-      canHaveChildren: true,
-    },
-  ];
+  return stripEditingGroupFromItems(items, editingGroupId);
 }
 
 export function buildInitialTreeItems(

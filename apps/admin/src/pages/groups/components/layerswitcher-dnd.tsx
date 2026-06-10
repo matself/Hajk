@@ -19,7 +19,6 @@ import {
   TextField,
   List,
   ListItem,
-  Grid,
   Paper,
   Box,
   IconButton,
@@ -47,10 +46,11 @@ import {
   buildNestedGroupTreeItem,
   collectLayerIdsFromTree,
   serializeLayerSwitcherTree,
-  unwrapEditingGroupContainer,
-  wrapInEditingGroupContainer,
+  stripEditingGroupFromItems,
+  stripEditingGroupFromTree,
   type LayerSwitcherTreeItem,
 } from "../utils/layer-switcher-tree";
+import { groupCompositionKey } from "../utils/group-composition";
 import { TreeItemActions } from "../../../components/layerswitcher-dnd/tree-item-actions";
 import { GroupIntoDropTarget } from "../../../components/layerswitcher-dnd/group-into-drop-target";
 import {
@@ -1352,6 +1352,7 @@ export default function LayerSwitcherDnD({
       }
     >(),
   );
+  const lastEmittedCompositionKeyRef = React.useRef<string | null>(null);
 
   const { data: layersData } = useLayers();
   const { data: groupsData } = useGroups();
@@ -1368,18 +1369,20 @@ export default function LayerSwitcherDnD({
         groupId ?? "",
         groups.map((group) => group.id).join("|"),
       ].join("::"),
-    [effectiveInitialLayers, effectiveInitialTree, editingGroup, groupId, groups],
+    [effectiveInitialLayers, effectiveInitialTree, editingGroup?.id, groupId, groups],
   );
 
   useEffect(() => {
-    let initialItems = buildInitialTreeItems(
+    const initialTree = stripEditingGroupFromTree(
       effectiveInitialTree,
+      editingGroup?.id,
+    );
+    let initialItems = buildInitialTreeItems(
+      initialTree,
       effectiveInitialLayers,
       groups,
     ) as LayerSwitcherTreeItem[];
-    if (editingGroup) {
-      initialItems = wrapInEditingGroupContainer(initialItems, editingGroup);
-    }
+    initialItems = stripEditingGroupFromItems(initialItems, editingGroup?.id);
     const treeItems = initialItems as TreeItems<TreeItemData>;
     setItems(treeItems);
     setRitordningItems(
@@ -1391,18 +1394,19 @@ export default function LayerSwitcherDnD({
     if (groupId) {
       groupCompositionCacheRef.current.set(groupId, {
         layers: effectiveInitialLayers,
-        layerSwitcherTree: effectiveInitialTree,
+        layerSwitcherTree: initialTree,
       });
     }
+    lastEmittedCompositionKeyRef.current = null;
   // initialLayerIdsKey encodes effectiveInitialLayers + effectiveInitialTree
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialLayerIdsKey, groups]);
+  }, [initialLayerIdsKey]);
 
   useEffect(() => {
     if (!onCompositionChange) return;
 
     const treeItems = items as LayerSwitcherTreeItem[];
-    const normalizedTree = unwrapEditingGroupContainer(
+    const normalizedTree = stripEditingGroupFromItems(
       treeItems,
       editingGroup?.id,
     );
@@ -1425,25 +1429,32 @@ export default function LayerSwitcherDnD({
       }
     });
 
-    onCompositionChange({
+    const payload = {
       layerSwitcherTree,
       layers: orderedLayerIds.map((layerId, index) => {
         const placement = placementByLayerId.get(layerId);
         return {
           layerId,
-          usage: "FOREGROUND",
+          usage: "FOREGROUND" as const,
           zIndex: zIndexByLayerId.get(layerId) ?? index,
           visibleAtStart: placement?.visibleAtStart,
           options: placement?.placementOptions,
         };
       }),
-    });
+    };
+    const key = groupCompositionKey(payload.layers, payload.layerSwitcherTree);
+    if (lastEmittedCompositionKeyRef.current === key) {
+      return;
+    }
+    lastEmittedCompositionKeyRef.current = key;
+    onCompositionChange(payload);
   }, [
     items,
     ritordningItems,
     onCompositionChange,
     effectiveInitialLayers,
     editingGroup?.id,
+    layers,
   ]);
 
   const sensors = useSensors(
@@ -2944,10 +2955,11 @@ export default function LayerSwitcherDnD({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <Grid
-          container
-          spacing={3}
+        <Box
           sx={{
+            display: "flex",
+            flexDirection: { xs: "column", lg: "row" },
+            gap: 3,
             position: "relative",
             minWidth: 0,
             maxWidth: "100%",
@@ -2957,9 +2969,14 @@ export default function LayerSwitcherDnD({
             alignItems: "stretch",
           }}
         >
-          <Grid
-            size={{ xs: 12, lg: 4 }}
-            sx={{ position: "relative", minWidth: 0, display: "flex" }}
+          <Box
+            sx={{
+              flex: { xs: "1 1 auto", lg: "0 0 33.333%" },
+              maxWidth: { lg: "33.333%" },
+              position: "relative",
+              minWidth: 0,
+              display: "flex",
+            }}
           >
             <Paper variant="outlined" sx={columnPaperSx}>
               <Box sx={columnBodySx}>
@@ -3111,9 +3128,9 @@ export default function LayerSwitcherDnD({
                 )}
               </Box>
             </Paper>
-          </Grid>
+          </Box>
 
-          <Grid size={{ xs: 12, lg: 8 }} sx={{ minWidth: 0, display: "flex" }}>
+          <Box sx={{ flex: { xs: "1 1 auto", lg: "1 1 0" }, minWidth: 0, display: "flex" }}>
             <Paper variant="outlined" sx={columnPaperSx}>
               <Tabs
                 value={rightTab}
@@ -3539,8 +3556,8 @@ export default function LayerSwitcherDnD({
                 )}
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
         <DragOverlay>
           {activeId?.startsWith("source-")
             ? (() => {
