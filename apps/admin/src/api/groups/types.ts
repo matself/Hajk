@@ -1,4 +1,5 @@
 import type { Layer } from "../layers";
+import type { Map } from "../maps";
 
 export interface Group {
   id: string;
@@ -18,6 +19,13 @@ export interface GroupsApiResponse {
   count?: number;
   error: string;
   errorId: string;
+}
+
+export interface GroupMapsApiResponse {
+  maps: Map[];
+  count?: number;
+  error?: string;
+  errorId?: string;
 }
 
 export interface GroupCreateInput {
@@ -74,7 +82,22 @@ export interface GroupLayersApiResponse {
 export interface GroupRole {
   groupId: string;
   roleId: string;
+  role?: {
+    id: string;
+    code: string;
+    title?: string | null;
+  };
 }
+
+export type UpdateGroupVariables = {
+  groupId: string;
+  data: GroupUpdateInput;
+};
+
+export type UpdateGroupLayersVariables = {
+  groupId: string;
+  data: GroupLayersUpdateInput;
+};
 
 export interface GroupRoleUpdateInput {
   roleId: string;

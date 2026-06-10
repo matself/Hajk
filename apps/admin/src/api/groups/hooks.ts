@@ -3,6 +3,7 @@ import {
   UseQueryResult,
   useMutation,
   useQueryClient,
+  UseMutationResult,
 } from "@tanstack/react-query";
 import {
   getGroups,
@@ -16,14 +17,13 @@ import {
 } from "./requests";
 import {
   Group,
+  GroupCreateInput,
   GroupLayersApiResponse,
-  GroupLayersUpdateInput,
-  GroupUpdateInput,
+  UpdateGroupLayersVariables,
+  UpdateGroupVariables,
 } from "./types";
 import { Map } from "../maps";
 
-// A React Query hook to fetch groups
-// This hook uses the `getGroups` function from the groups `requests` module
 export const useGroups = (): UseQueryResult<Group[]> => {
   return useQuery({
     queryKey: ["groups"],
@@ -31,8 +31,6 @@ export const useGroups = (): UseQueryResult<Group[]> => {
   });
 };
 
-// A React Query hook to fetch a group by id
-// This hook uses the `getGroupById` function from the groups `requests` module
 export const useGroupById = (groupId: string): UseQueryResult<Group> => {
   return useQuery({
     queryKey: ["groups", groupId],
@@ -41,10 +39,8 @@ export const useGroupById = (groupId: string): UseQueryResult<Group> => {
   });
 };
 
-// A React Query hook to fetch layers by group id
-// This hook uses the `getLayersByGroupId` function from the groups `requests` module
 export const useLayersByGroupId = (
-  groupId: string
+  groupId: string,
 ): UseQueryResult<GroupLayersApiResponse> => {
   return useQuery({
     queryKey: ["layersByGroupId", groupId],
@@ -53,8 +49,6 @@ export const useLayersByGroupId = (
   });
 };
 
-// A React Query hook to fetch maps by group id
-// This hook uses the `getMapsByGroupId` function from the groups `requests` module
 export const useMapsByGroupId = (groupId: string): UseQueryResult<Map[]> => {
   return useQuery({
     queryKey: ["mapsByGroupId", groupId],
@@ -63,15 +57,19 @@ export const useMapsByGroupId = (groupId: string): UseQueryResult<Map[]> => {
   });
 };
 
-export const useCreateGroup = () => {
+export const useCreateGroup = (): UseMutationResult<
+  Group,
+  Error,
+  GroupCreateInput
+> => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Group, Error, GroupCreateInput>({
     mutationFn: createGroup,
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
-      if (data?.id) {
-        queryClient.setQueryData(["groups", data.id], data);
+      if (data.id) {
+        queryClient.setQueryData<Group>(["groups", data.id], data);
       }
     },
     onError: (error) => {
@@ -80,19 +78,17 @@ export const useCreateGroup = () => {
   });
 };
 
-export const useUpdateGroup = () => {
+export const useUpdateGroup = (): UseMutationResult<
+  Group,
+  Error,
+  UpdateGroupVariables
+> => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      groupId,
-      data,
-    }: {
-      groupId: string;
-      data: GroupUpdateInput;
-    }) => updateGroup(groupId, data),
+  return useMutation<Group, Error, UpdateGroupVariables>({
+    mutationFn: ({ groupId, data }) => updateGroup(groupId, data),
     onSuccess: (data, { groupId }) => {
-      queryClient.setQueryData(["groups", groupId], data);
+      queryClient.setQueryData<Group>(["groups", groupId], data);
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
       void queryClient.invalidateQueries({
         queryKey: ["mapsByGroupId", groupId],
@@ -104,18 +100,17 @@ export const useUpdateGroup = () => {
   });
 };
 
-export const useUpdateGroupLayers = () => {
+export const useUpdateGroupLayers = (): UseMutationResult<
+  Group,
+  Error,
+  UpdateGroupLayersVariables
+> => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      groupId,
-      data,
-    }: {
-      groupId: string;
-      data: GroupLayersUpdateInput;
-    }) => updateGroupLayers(groupId, data),
-    onSuccess: (_, { groupId }) => {
+  return useMutation<Group, Error, UpdateGroupLayersVariables>({
+    mutationFn: ({ groupId, data }) => updateGroupLayers(groupId, data),
+    onSuccess: (data, { groupId }) => {
+      queryClient.setQueryData<Group>(["groups", groupId], data);
       void queryClient.invalidateQueries({
         queryKey: ["layersByGroupId", groupId],
       });
@@ -127,11 +122,11 @@ export const useUpdateGroupLayers = () => {
   });
 };
 
-export const useDeleteGroup = () => {
+export const useDeleteGroup = (): UseMutationResult<void, Error, string> => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (groupId: string) => deleteGroup(groupId),
+  return useMutation<void, Error, string>({
+    mutationFn: deleteGroup,
     onSuccess: (_, groupId) => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.removeQueries({ queryKey: ["groups", groupId] });

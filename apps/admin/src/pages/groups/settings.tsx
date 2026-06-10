@@ -55,7 +55,11 @@ import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
 import UsedInMapsPanel from "../../components/used-in-maps-panel";
 import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
-import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
+import {
+  FieldLabelAbove,
+  InlineLabelWithHelp,
+  SelectWithHelp,
+} from "../../components/form-components/field-label-with-help";
 import { getDeleteGroupErrorMessage, getUpdateGroupErrorMessage, applyGroupFormValidationErrors } from "./utils/group-errors";
 import { groupCompositionKey } from "./utils/group-composition";
 import { stripEditingGroupFromTree } from "./utils/layer-switcher-tree";
@@ -108,7 +112,7 @@ function GroupSettings() {
   const { data: mapsData, isLoading: isLoadingMaps } = useMapsByGroupId(
     groupId ?? "",
   );
-  const { data: rolesData } = useRoles();
+  const { data: rolesData, isLoading: isLoadingRoles } = useRoles();
   const groupLayers = groupLayersData?.layers ?? EMPTY_GROUP_LAYERS;
   const savedLayerSwitcherTree = useMemo(
     () =>
@@ -253,7 +257,10 @@ function GroupSettings() {
     [],
   );
 
-  const handleUpdateGroup = async (groupData: GroupUpdateInput) => {
+  const handleUpdateGroup = async (
+    groupData: GroupUpdateInput,
+    roleIds: string[] = selectedRoleIds,
+  ) => {
     try {
       const targetLayerKind: LayerKind =
         groupData.type === GroupType.SEARCH ? "search" : "display";
@@ -271,7 +278,7 @@ function GroupSettings() {
         internalName: groupData.internalName?.trim(),
         type: groupData.type,
         locked: groupData.locked ?? false,
-        restrictedToRoles: selectedRoleIds.map((roleId) => ({ roleId })),
+        restrictedToRoles: roleIds.map((roleId) => ({ roleId })),
       };
       const layersPayload: GroupLayersUpdateInput = {
         layers: layersForType,
@@ -362,7 +369,10 @@ function GroupSettings() {
         type: data.type as GroupType | undefined,
         locked: (data.locked as boolean | undefined) ?? false,
       };
-      void handleUpdateGroup(payload);
+      const roleIds = Array.isArray(data.roleIds)
+        ? (data.roleIds as string[])
+        : [];
+      void handleUpdateGroup(payload, roleIds);
     })(e);
   };
 
@@ -484,25 +494,6 @@ function GroupSettings() {
                 </FormFieldRow>
                 <FormFieldRow>
                   <Controller
-                    name="locked"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={Boolean(field.value)}
-                            onChange={(event) =>
-                              field.onChange(event.target.checked)
-                            }
-                          />
-                        }
-                        label={t("map.locked")}
-                      />
-                    )}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <Controller
                     name="type"
                     control={control}
                     rules={{ required: `${t("common.required")}` }}
@@ -528,6 +519,34 @@ function GroupSettings() {
                     )}
                   />
                 </FormFieldRow>
+              </FormFieldGrid>
+            </FormPanel>
+            <FormPanel title={t("groups.rolesAndLocking")}>
+              <FormFieldGrid>
+                <FormFieldRow>
+                  <Controller
+                    name="locked"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={Boolean(field.value)}
+                            onChange={(event) =>
+                              field.onChange(event.target.checked)
+                            }
+                          />
+                        }
+                        label={
+                          <InlineLabelWithHelp
+                            label={t("groups.locked")}
+                            help={t("groups.lockedHelp")}
+                          />
+                        }
+                      />
+                    )}
+                  />
+                </FormFieldRow>
                 <FormFieldRow>
                   <Controller
                     name="roleIds"
@@ -541,36 +560,49 @@ function GroupSettings() {
                       );
 
                       return (
-                        <Autocomplete<Role, true, false, false>
-                          multiple
-                          options={roles}
-                          value={selectedRoles}
-                          getOptionLabel={(option) =>
-                            option.title || option.code
-                          }
-                          isOptionEqualToValue={(option, value) =>
-                            option.id === value.id
-                          }
-                          onChange={(_, selected) =>
-                            field.onChange(selected.map((role) => role.id))
-                          }
-                          renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                              <Chip
-                                label={option.title || option.code}
-                                {...getTagProps({ index })}
-                                key={option.id}
+                        <Box>
+                          <FieldLabelAbove
+                            htmlFor="group-restricted-roles"
+                            label={t("groups.restrictedToRoles")}
+                            help={t("groups.restrictedToRolesHelp")}
+                          />
+                          <Autocomplete<Role, true, false, false>
+                            id="group-restricted-roles"
+                            multiple
+                            options={roles}
+                            value={selectedRoles}
+                            loading={isLoadingRoles}
+                            disabled={isLoadingRoles}
+                            getOptionLabel={(option) =>
+                              option.title || option.code
+                            }
+                            isOptionEqualToValue={(option, value) =>
+                              option.id === value.id
+                            }
+                            onChange={(_, selected) =>
+                              field.onChange(selected.map((role) => role.id))
+                            }
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => (
+                                <Chip
+                                  label={option.title || option.code}
+                                  {...getTagProps({ index })}
+                                  key={option.id}
+                                />
+                              ))
+                            }
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                placeholder={
+                                  isLoadingRoles
+                                    ? t("common.loading")
+                                    : undefined
+                                }
                               />
-                            ))
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label={t("groups.restrictedToRoles")}
-                              helperText={t("groups.restrictedToRolesHelp")}
-                            />
-                          )}
-                        />
+                            )}
+                          />
+                        </Box>
                       );
                     }}
                   />

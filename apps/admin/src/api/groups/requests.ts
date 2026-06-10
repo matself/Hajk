@@ -2,31 +2,18 @@ import {
   Group,
   GroupsApiResponse,
   GroupCreateInput,
+  GroupLayersApiResponse,
   GroupLayersUpdateInput,
+  GroupMapsApiResponse,
   GroupUpdateInput,
 } from "./types";
-import { GroupLayersApiResponse } from "./types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
-import { GlobalMapsApiResponse } from "../tools";
 import { Map } from "../maps";
 import { generateRandomName } from "../generated/names";
 
 /**
- * This module provides API request functions to interact with the backend
- * services for fetching data related to groups, layers, and maps.
- *
- * - The `getGroups` function retrieves a list of all groups.
- * - The `getGroupById` function fetches details of a specific group by its ID.
- * - The `getLayersByGroupId` function retrieves all layers associated with a given group ID.
- * - The `getMapsByGroupId` function fetches all maps linked to a specific group ID.
- * - The `createGroup` function creates a new group.
- * - The `updateGroup` function updates group metadata and nested relations.
- * - The `updateGroupLayers` function updates a group's layer order and tree.
- * - The `deleteGroup` function deletes a group.
- *
- * These functions utilize a custom Axios instance and throw appropriate error messages for failures.
- *
- * All functions return a Promise with the expected data format or throw an error in case of failure.
+ * API request functions for groups (GET/PATCH/DELETE /groups, nested layers/maps).
+ * Create and update mutations return the full persisted {@link Group} entity from the API.
  */
 
 export const getGroups = async (): Promise<Group[]> => {
@@ -95,10 +82,11 @@ export const getLayersByGroupId = async (
     }
   }
 };
+
 export const getMapsByGroupId = async (groupId: string): Promise<Map[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<GlobalMapsApiResponse>(
+    const response = await internalApiClient.get<GroupMapsApiResponse>(
       `/groups/${groupId}/maps`,
     );
 
@@ -123,11 +111,12 @@ export const createGroup = async (
   newGroup: GroupCreateInput,
 ): Promise<Group> => {
   const internalApiClient = getApiClient();
-  if (!newGroup.name) {
-    newGroup.name = generateRandomName();
+  const payload = { ...newGroup };
+  if (!payload.name) {
+    payload.name = generateRandomName();
   }
   try {
-    const response = await internalApiClient.post<Group>("/groups", newGroup);
+    const response = await internalApiClient.post<Group>("/groups", payload);
     if (!response.data) {
       throw new Error("No group data found");
     }
@@ -159,9 +148,7 @@ export const updateGroupLayers = async (
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to update group layers. ErrorId: ${axiosError.response.data.errorId}.`,
-      );
+      throw axiosError;
     } else {
       throw new Error("Failed to update group layers");
     }
@@ -185,9 +172,7 @@ export const updateGroup = async (
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to update group. ErrorId: ${axiosError.response.data.errorId}.`,
-      );
+      throw axiosError;
     } else {
       throw new Error("Failed to update group");
     }
