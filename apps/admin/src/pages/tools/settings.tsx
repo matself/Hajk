@@ -59,7 +59,7 @@ export default function ToolSettings() {
     // Strip attachments where both name and link are blank
     if (Array.isArray(options.pdfLinks)) {
       options.pdfLinks = (
-        options.pdfLinks as Array<{ name: string; link: string }>
+        options.pdfLinks as { name: string; link: string }[]
       ).filter((a) => a.name.trim() !== "" || a.link.trim() !== "");
     }
 

@@ -3,14 +3,14 @@ import type { Layer } from "../../../api/layers";
 
 export type { LayerSwitcherTreeNode };
 
-export type LayerSwitcherTreeItem = {
+export interface LayerSwitcherTreeItem {
   id: string;
   name: string;
   type: "group" | "layer";
   children?: LayerSwitcherTreeItem[];
   canHaveChildren?: boolean;
   collapsed?: boolean;
-};
+}
 
 const LAYER_PREFIX = "layer-";
 const GROUP_PREFIX = "group-";

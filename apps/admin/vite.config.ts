@@ -12,4 +12,12 @@ export default defineConfig({
   server: {
     port: 3001,
   },
+  test: {
+    environment: "happy-dom",
+    globals: true,
+    include: ["src/**/__tests__/**/*.test.ts", "src/**/__tests__/**/*.test.tsx"],
+    alias: {
+      "@/": "/src/",
+    },
+  },
 });

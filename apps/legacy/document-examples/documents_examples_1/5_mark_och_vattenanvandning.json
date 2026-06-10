@@ -1,0 +1,68 @@
+{
+  "chapters": [
+    {
+      "header": "Mark- och vattenanvändning",
+      "headerIdentifier": "5_mark_och_vattenanvandning",
+      "html": "<p>I mark- och vattenanvändningskartan med tillhörande beskrivningar redovisas den avsedda användningen av mark- och vattenområden. Ytorna omfattas av en specifik mark- eller vattenanvändning. Användningen uttrycker kommunens långsiktiga viljeriktning för området och anger den huvudsakliga markanvändningen. I vissa fall innebär mark- och vattenanvändningskartan en förändring av befintlig markanvändning.</p>\n<p>I detta textavsnitt ges övergripande beskrivningar av de olika kategorierna i mark- och vattenanvändningskartan. Kartan kan tändas i kartfönstret. Klicka på en yta i kartan för att se kommunens områdesspecifika ställningstaganden och beskrivningar. Här anges ställningstaganden om markens lämplighet för olika former av användning och beskrivningar av hänsyn som kan behöva tas. Utvecklingsinriktningens prioriteringar och tyngdpunkter för utvecklingen har legat till grund för avvägningar och utpekanden i mark- och vattenanvändningskartan.</p>\n<p>I de delar av kommunen dit den samlade bebyggelseutvecklingen prioriteras omfattas områdena av fördjupade översiktsplaner eller särskilda fördjupningsområden inom översiktsplanen. Mer information om dessa ges nedan. För övriga landsbygdsområden är vägledningen mindre detaljerad, och prövning av ny bebyggelse sker med utgångspunkt i platsens förutsättningar.</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/#m=map_1&amp;x=166312.72861325176&amp;y=6338409.232020274&amp;z=1&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer\" data-maplink=\"https://oversiktsplan-utv.varberg.se/#m=map_1&amp;x=166312.72861325176&amp;y=6338409.232020274&amp;z=1&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer\">Visa MARK- OCH VATTENANVÄNDNINGSKARTAN</a></p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Mark_och_vattenanvandningskarta_april_2026.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Mark_och_vattenanvandningskarta_april_2026.pdf\">Visa MARK- OCH VATTENANVÄNDNINGSKARTAN som pdf</a></p>",
+      "keywords": [
+        "Markanvändning",
+        "Bostäder",
+        "Bebyggelse"
+      ],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Skalnivåer",
+          "headerIdentifier": "Skalnivåer",
+          "html": "<p>Informationen i markanvändningskartan är lägesbestämd. Samtidigt ska innehållet i kartan tillämpas och tolkas på rätt skalnivå. Markanvändningskartan visas därför enbart inom ett visst skalintervall och till en viss \"inzoomningsnivå\".&nbsp;</p>\n<p>Kartan har två olika inzoomningsnivåer. För kommunen i stort ligger inzoomningsnivån på skala 1:50 000 medan det för nio områden – Stråvalla/Löftaskog, Sunnvära verksamhetsområde, Bua, Tångaberg, Lindberg, Tofta, Hunnestad, Gödestad och Himle – går att zooma in till skala 1:10 000. Så vid inzoomning lägre än skala 1:50 000 visas enbart dessa områden.</p>\n<p>Översiktsplanens mark- och vattenanvändningskarta innehåller geografisk vägledning som ska tillämpas tillsammans med tillhörande information och vägledning i text. Översiktsplanen medger inte tolkningar av gränser som är mer exakta än den lägsta skalnivå som markanvändningskartan visas på.</p>",
+          "keywords": [
+            "skala"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Fördjupningsområden",
+          "headerIdentifier": "Fördjupningsområden",
+          "html": "<p>Inom ovan nämnda områden – Stråvalla/Löftaskog, Sunnvära verksamhetsområde, Bua, Tångaberg, Lindberg, Tofta, Hunnestad, Gödestad och Himle – så är markanvändningskartan och tillhörande vägledning i översiktsplanen något mer fördjupad än i andra delar. Här anges områden där översiktsplanen möjliggör för utbyggnad genom ändrad markanvändning.</p>\n<p>Övergripande vägledning kring hur kommunen anser att dessa områden bör utvecklas ges också i följande avsnitt.</p>\n<p><a href=\"5_3_Fordjupningsomraden\" data-header-identifier=\"5_3_Fordjupningsomraden\" data-document=\"5_3_Fordjupningsomraden\">Läs mer i avsnitt om Fördjupningsområdena i översiktsplanen</a></p>",
+          "keywords": [
+            "Stråvalla",
+            "Löftaskog",
+            "Tångaberg",
+            "Sunnvära",
+            "Himle",
+            "Hunnestad",
+            "Gödestad",
+            "Lindberg",
+            "Tofta"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Fördjupade översiktsplaner",
+          "headerIdentifier": "Fördjupade översiktsplaner",
+          "html": "<p>Till flera geografiska områden i kommunen har fördjupade översiktsplaner tagits fram, där en mer detaljerad avsedd mark- och vattenanvändning redovisas.&nbsp;FÖP:arna innehåller egna markanvändningskartor med tillhörande vägledning. I den här planens mark- och vattenanvändningskarta anges bara enstaka tillägg gällande viss transportinfrastruktur (utredningsområde - väg), energiproduktion (utredningsområde vindkraft) och materialutvinning, för de geografiska områden som omfattas av FÖP:ar.</p>\n<p>Hur de fördjupade översiktsplanerna hänger ihop med översiktsplanen kan du läsa mer om i följande avsnitt.</p>\n<p><a href=\"8_Planeringsunderlag\" data-header-identifier=\"8_1_FOP_kontra_OP\" data-document=\"8_Planeringsunderlag\">Läs mer i avsnitt om de fördjupade översiktsplanerna</a></p>",
+          "keywords": [
+            "FÖP",
+            "Fördjupad",
+            "fördjupade översiktsplaner",
+            "Väröbacka",
+            "Skällinge",
+            "Rolfstorp",
+            "Kungsäter",
+            "Tvååker",
+            "Varbergs stad",
+            "staden",
+            "stad"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Mark- och vattenanvändning"
+}

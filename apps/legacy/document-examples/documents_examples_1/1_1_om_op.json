@@ -1,0 +1,24 @@
+{
+  "chapters": [
+    {
+      "header": "Vad är en översiktsplan?",
+      "headerIdentifier": "1_1_om_OP",
+      "html": "<figure><img src=\"/Upload/20_Siluettklippt.png\" alt=\"\" data-image-width=\"550px\" data-image-height=\"136px\" data-image-popup=\"\"/></figure>\n<p>Varje kommun ska ha en aktuell översiktsplan. I översiktsplanen beskriver kommunen sin syn på hur den fysiska miljön ska utvecklas på lång sikt. Översiktsplanen är vägledande för hur mark- och vattenområden ska utvecklas och anger grunddragen för användning av mark och bebyggelse i hela kommunen. Den ger också vägledning i hur den redan byggda miljön ska användas, utvecklas och bevaras.</p>\n<p>Ett sätt att hålla översiktsplanen aktuell är att ändra den för en del av kommunen där planeringsbehoven är särskilt stora eller där ändringar från den kommunövergripande översiktsplanen behöver göras. En fördjupad översiktsplan ersätter då den kommunövergripande översiktsplanen för detta geografiska område.</p>\n<p>En översiktsplan är inte juridiskt bindande, till skillnad från en detaljplan. Den ger heller inga rättigheter eller skyldigheter till vare sig myndigheter eller enskilda. I planen vägs och prioriteras framför allt allmänna intressen mot varandra. Enskilda intressen vägs huvudsakligen in i efterföljande skeden, vid detaljplanering och bygglovsprövning.</p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Översiktsplanens olika delar",
+          "headerIdentifier": "Översiktsplanens olika delar",
+          "html": "<figure><img src=\"/Upload/processbild3_Rityta 1.png\" alt=\"En skiss som visar att översiktsplanen kan delas in i tre delar: utgångspunkter, planförslag och utvärdering.\" data-image-width=\"550px\" data-image-height=\"348px\" data-caption=\"\" data-source=\"\" data-image-popup=\"\"/></figure>\n<p>Illustrationen ovan visar hur översiktsplanens olika delar hänger ihop.&nbsp;</p>\n<p>Globala mål, Varbergs förutsättningar och politiskt beslutade planeringsinriktningar har legat till grund för arbetet med översiktsplanen.</p>\n<p>Utifrån det har ett planförslag tagits fram. Översiktsplanen består av en utvecklingsinriktning, som beskriver de övergripande strukturerna och de långsiktiga intentionerna för bebyggelseutveckling, grönstruktur och kommunikationer i kommunen. Det är en långsiktig utvecklingsinriktning, med sikte på år 2050. Planen består också av en mark- och vattenanvändningskarta. Tillsammans med mark-och vattenanvändningskartan ges vägledning i översiktsplanen kring hur allmänna intressen och värden ska tillgodoses vid planering och byggande inom kommunen. I översiktsplanen finns olika ställningstaganden som anger hur kommunen avser att tillgodose intressen kopplat till exempelvis bostäder, offentlig service och klimat i planeringen.</p>\n<p>Kontinuerligt under framtagandet av planförslaget har det gjorts bedömningar av förslagets miljöpåverkan, påverkan på riksintressena och de ekologiska, ekonomiska och sociala hållbarhetsperspektiven, samt konsekvenser för genomförande. Bedömningar av förslagets miljöpåverkan anges i tillhörande miljökonsekvensbedömning. Arbetet har strävat efter att planen ska främja en hållbar utveckling.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Vad är en översiktsplan?"
+}

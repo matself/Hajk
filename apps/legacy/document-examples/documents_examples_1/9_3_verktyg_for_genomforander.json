@@ -1,0 +1,62 @@
+{
+  "chapters": [
+    {
+      "header": "Verktyg för genomförande",
+      "headerIdentifier": "9_3_verktyg_for_genomforande",
+      "html": "<p>Kommunens viktigaste verktyg för genomförandet av översiktsplanen är dels den fysiska planeringen genom fördjupningar av översiktsplanen, planprogram, detaljplaner och bygglov, dels markägandet och markpolitiken. Samordningen av olika typer av investeringar kopplade till samhällsutvecklingen är också ett viktigt verktyg.</p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Fysisk planering",
+          "headerIdentifier": "Fysisk planering",
+          "html": "<p>För den fysiska planeringen är planeringen på områdesnivån viktig. I en del fall räcker den kommunövergripande översiktsplanen eller de fördjupade översiktsplanerna som underlag för att starta en detaljplan. Vid större utbyggnadsområden är ett planprogram en lämplig planeringsform för att studera, utreda och ha dialoger kring markanvändning och lokal infrastruktur och grönstruktur. Det är viktigt att i dessa arbeten fånga upp och beakta alla väsentliga funktioner som kräver utrymme, och se till att dessa tas omhand i efterföljande detaljplanering. Det gäller inte minst de kommunala behoven i form av förskolor och skolor, offentliga rum och parker, idrottsplatser, bibliotek med mera. Det gäller även att se till att det finns utrymme för kommersiell service i lämpliga lägen.</p>\n<p>Planeringsarbetena samordnas med kommunens långsiktiga investeringsplanering vad avser framför allt infrastruktur, men även till exempel utbyggnad av offentlig plats, lokaler för skola, kultur och idrott.</p>\n<p>Initiativ till planläggning tas av den aktör som har för avsikt att exploatera marken. Det kan vara en markägare eller en exploatör. Kommunen kan initiera planläggning för den kommunägda marken.</p>",
+          "keywords": [
+            "utbyggnadsplan"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Exploateringsavtal",
+          "headerIdentifier": "Exploateringsavtal",
+          "html": "<p>I samband med detaljplanering för ny bebyggelse, på mark som ägs av annan fastighetsägare än kommunen, tecknas exploateringsavtal mellan kommunen och fastighetsägaren/exploatören. Exploateringsavtal tecknas om det behövs för att säkerställa genomförandet av detaljplanen.</p>\n<p>Genom exploateringsavtal bestäms hur kostnaderna för åtgärder inom allmän platsmark fördelas. Med allmän plats menas en gata, en väg, en park, ett torg eller ett annan yta som enligt detaljplan är avsett för ett gemensamt behov. Exploateringsavtal kan i vissa fall omfatta bidrag till åtgärder eller anläggningar som ligger utanför den enskilda detaljplanen, som är nödvändiga för att detaljplanen ska kunna genomföras.</p>\n<p>Det kan avse en etappvis utbyggnad av kommunala investeringar eller en medfinansieringsersättning av kommunens kostnad för bidrag till byggande av en väg eller järnväg som staten eller regionen ansvarar för. De områden som är aktuella för exploateringsbidrag eller medfinansiering finns beskrivna i aktuell kommunal riktlinje.</p>",
+          "keywords": [
+            "avtal"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Utbyggnad av gång- och cykelstråk",
+          "headerIdentifier": "Utbyggnad av gång- och cykelstråk",
+          "html": "<p>Utbyggnad av gång- och cykelstråk är kopplat till markägarförhållanden och huvudmannaskap. Trafikverket ansvarar för utbyggnad av gång- och cykelstråk utmed det statliga vägnätet, medan kommunen ansvarar för utbyggnad utmed det kommunala vägnätet. En stor andel av gatorna inne i samhällena är enskilda och sköts av vägföreningar. Lågtrafikerade vägar bör i första hand nyttjas för gång- och cykel och kompletteras med de delar som saknas för att tillsammans bilda ett sammanhängande gång- och cykelsystem. Delar av cykelstråken kan med fördel anläggas i samband med exploatering av bostadsområden.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Huvudmannaskap",
+          "headerIdentifier": "Huvudmannaskap",
+          "html": "<p>Kommunen har ett stort ansvar för att hålla ett utbud av offentlig service i kommunens serviceorter. När det gäller offentliga platser är det starkt kopplat till huvudmannaskapet. Vid detaljplanläggning kan både kommunalt och enskilt huvudmannaskap användas.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Markägande och markpolitik",
+          "headerIdentifier": "Markägande och markpolitik",
+          "html": "<p>Kommunen kan genom strategiska mark- och fastighetsförvärv utveckla sitt markinnehav över tid, för att sedan underlätta genomförandet av olika projekt, inte minst bostäder. Att kommunen kan erbjuda mark för olika former av näringslivsändamål underlättar för företagsetableringar.</p>\n<p>Genom markanvisningar kan kommunen påverka vad som byggs på den kommunägda mark som ska säljas. Kommunen kan också ställa krav på att den som bygger lever upp till olika former av åtaganden vad avser social hållbarhet och ekologisk hållbarhet.</p>\n<p>En markanvisning sker på kommunalt ägd mark som kommunen ser som möjlig att utveckla och bygga med bostäder och verksamheter. Kommunen ställer då krav på hur en sådan utveckling kan se ut och säljer eller upplåter sedan marken. Exploatörer och byggaktörer kan därefter anmäla sitt intresse för att bygga på marken.</p>\n<p>I kommunens markanvisningsplan, som årligen aktualiseras och antas av kommunstyrelsen, anges de kommunala fastigheter som avses att utvecklas inom de närmaste fem åren.</p>\n<p>I översiktsplanens avsnitt om \"Bebyggelse och offentlig service\" anges vissa ställningstaganden avseende markpolitik.</p>\n<p><a href=\"4_1_bostader_och_offentlig_service\" data-header-identifier=\"4_1_2_markpolitik\" data-document=\"4_1_bostader_och_offentlig_service\">Gå till avsnittet BEBYGGELSE OCH OFFENTLIG SERVICE</a></p>",
+          "keywords": [
+            "mark"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Verktyg för genomförande "
+}

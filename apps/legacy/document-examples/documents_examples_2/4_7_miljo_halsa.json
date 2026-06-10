@@ -1,0 +1,228 @@
+{
+  "chapters": [
+    {
+      "header": "Miljö, hälsa, risk och säkerhet",
+      "headerIdentifier": "4_7_miljo_halsa",
+      "html": "<p>Hälsa och säkerhet är centrala frågor för planering av mark- och vattenområden enligt lagstiftning i såväl Plan- och bygglagen (PBL) som Miljöbalken (MB). Mark- och vattenområden ska användas för det eller de ändamål som områdena är mest lämpade för med hänsyn till beskaffenhet, läge och behov. Hänsyn ska tas till en från allmän synpunkt god hushållning. Bebyggelse och byggnadsverk ska även lokaliseras till lämplig mark utifrån människors hälsa och säkerhet, jord-, berg- och vattenförhållanden, samt där det är möjligt att minimera risker för olyckor och förebygga vatten- och luftföroreningar samt bullerstörningar. Avseende luft, vatten och buller finns nationella miljökvalitetsnormer (MKN) vilka behandlas inom ramen för miljökonsekvensbeskrivningen för FÖP Väröbacka.</p>\n<p>I detta avsnitt redogörs för de främsta underlagen avseende miljö, hälsa, risk och säkerhetsfrågor.</p>\n<figure><img src=\"/Upload/Södra_Vbg_km.PNG\" alt=\"Flygfoto snett uppifrån som visar det öppna landskapet ut mot Klosterfjorden och Södras anläggning i Värö. Delar av jordbruksmarkerna används som upplag för timmer.\" data-image-width=\"550px\" data-image-height=\"319px\" data-image-position=\"left\" data-image-popup=\"\"/></figure>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Buller och vibrationer ",
+          "headerIdentifier": "4_7_1_buller_och_vibrationer",
+          "html": "<p>Buller har en negativ inverkan på hälsan och hantering av buller i samhällsplaneringen regleras både i PBL och MB. Sedan 2015 finns även bullerförordningen kopplad till MB, vilken reglerar nivåer för bullervärden vid nyproduktion och ombyggnad. De främsta bullerkällorna i planområdet är Västkustbanan och Varbergsvägen vilka båda passerar genom Väröbacka i nordsydlig riktning. På lite avstånd finns E6 och ett flertal verksamheter med omgivningspåverkan. Även övriga vägnätet avger buller.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Västkustbanan",
+              "headerIdentifier": "4_7_1_1_vastkustbanan",
+              "html": "<p>En av planens kanske viktigaste förutsättningar är Västkustbanan och det planerade tågstoppet i Väröbacka. Mot bakgrund av etableringen av stationen är det motiverat att lokalisera utbyggnad av samhället utmed järnvägen, samtidigt som det förutsätter ett aktivt arbete med ljudmiljön. Byggnation av bostäder inom utbyggnadsområden som angränsar till järnvägen förutsätter uppförande av bullerskärm eller vall samt byggnation med tyst sida enligt trafikbullerförordningens riktvärden. Lösningar studeras i senare planskede.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Trafikbuller",
+              "headerIdentifier": "4_7_1_2_trafikbuller",
+              "html": "<p>Varbergsvägen är den väg som har störst bullerpåverkan i planområdet. Vägen har statligt huvudmannaskap med en årsdygnstrafik (ÅDT) på cirka 5 000 fordon (år 2016) och en hastighetsbegränsning på 80 km/h. Idag används vägen framför allt för genomfartstrafik, medan den på sikt kommer få mer karaktär av en bygata kantad av bebyggelse och aktiviteter. Utformningen och hastighetsbegränsning kopplat till vägen kommer vara avgörande för körstil och därmed bullerutbredning från vägen. Samtidigt kan trafikvolymerna antas öka till följd av det stora tillskott av boende och pendlare som rör sig i Väröbacka. Över tid kan andelen eldrivna fordon antas öka markant, vilket får stor effekt på bullernivåerna vid låga hastigheter då motorljudet är det dominerande för bullernivåerna. Vid högre hastigheter blir däckljuden istället dominerande för bullerutbredning oavsett drivmedel.</p>\n<p>Utöver Varbergsvägen är det framför allt väg 848 (ÅDT 3 000, år 2012) och väg 850 (ÅDT 4 500, år 2012) som har betydande trafikmängder att ta hänsyn till. På dessa nivåer och hastigheter kan det antas att kommande detaljplanearbete behöver utreda bullerfrågan inom 50–100 meter från vägens mitt. Vad gäller E6 finns viss bullerpåverkan på planområdets östra delar, där utformningen kan behöva anpassas efter bullersituationen.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer%2Clayerswitcher&amp;gl=%7B%221416%22%3A%22op_rlv_jvg_buller%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer%2Clayerswitcher&amp;gl=%7B%221416%22%3A%22op_rlv_jvg_buller%22%7D\">Visa BULLERKARTLÄGGNING i kartan</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Vibrationer",
+              "headerIdentifier": "4_7_1_3_vibrationer",
+              "html": "<p>Västkustbanan är den främsta källan till vibrationer i Väröbacka. Det finns inte några lagstiftade riktvärden för vibrationer och därför tillämpas ett riktvärde för vibrationer vid spårbunden trafik som Trafikverket och Naturvårdsverket har beslutat om på 0,4 mm/s vägd RMS (Root Mean Square-vibration). Värdet avser den nivå som ska eftersträvas i permanentbostäder, fritidsbostäder och vårdlokaler nattetid. Trafikverket tillämpar detta riktvärde även på vibrationer från vägtrafik. Inriktningen är att i första hand eftersträva riktvärdet vid byggnation av ny järnväg eller väg. Att åtgärda vibrationer i befintlig miljö är mycket svårt och kostsamt, eftersom de mest effektiva åtgärderna görs i grundläggning under väg och järnväg. Trafikverket överväger åtgärder i befintlig miljö först vid nivåer som överstiger 0,7 mm/s vägd RMS i bostadsrum nattetid vid minst fem tillfällen per årsmedelnatt.</p>\n<p>Vibrationer sprider sig olika långt i olika material. I den leriga marken i norra Väröbacka sprids vibrationer längre än i mark av sand-grus som är fallet i södra Väröbacka och Limabacka. Olika transporter genererar även olika mycket vibrationer. Järnvägen alstrar mer vibrationer än vägtrafiken, och de tunga godstransporterna har större påverkan än snabbtågen. Trafikverket utreder vibrationer i samband med ny- och ombyggnadsprojekt samt när boende inkommer med klagomål.</p>\n<p>Vibrationsutredningar kan även förekomma vid kartläggningar av järnvägssträckor med betydande godstrafik nattetid. Ny bebyggelse ska förhålla sig till stomljud och vibrationer från Västkustbanan vid detaljplaneläggning. Åtgärder kan bli aktuella avseende grundläggning och materialval vid byggnation i utsatta lägen. Eftersom etablering av en station i Väröbacka inte omfattar nybyggnation av järnväg finns inga planer på åtgärder avseende vibrationer vid järnvägen.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Ställningstaganden för buller och vibrationer",
+              "headerIdentifier": "4_7_1_4_stallningstaganden_buller_vibrationer",
+              "html": "<ul>\n  <li>Buller ska i första hand hanteras i anslutning till källan då det ger störst eﬀekt. I andra hand görs lokala anpassningar av byggnader eller platser i bullerdämpande material eller med tyst sida.</li>\n  <li>Bullerskärmar ska byggas på båda sidor om järnvägen för att dämpa bullerpåverkan från Västkustbanan.</li>\n  <li>Varbergsvägens ska utformas för lugnare körbeteende. Detta för att dämpa bullerutbredningen trots att trafiken kommer att öka.</li>\n  <li>I detaljplaneskedet ska bebyggelsens utformning anpassas utifrån bullersituation så att en hälsosam ljudmiljö uppnås och lagar och förordningar efterlevs. Generellt eftersträvas en bullersituation som lever upp till bullerförordningens (2015:216) 3–5 §.</li>\n  <li>Bebyggelsen intill järnvägen behöver uppföras i en sluten bebyggelsestruktur som verkar för en minskad bullerutbredning. I denna bebyggelse anses det nödvändigt att använda bullerförordningens avsteg avseende tyst sida.</li>\n  <li>Behov av bullerutredning ska alltid analyseras vid byggnation inom 100 meter från större vägar i planområdet, men kan bli aktuell även längre från bullerkällan. Vid byggnation i planområdets östra del behöver bullerutbredningen från E6:an tas i beaktning.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Läs mer",
+              "headerIdentifier": "4_7_1_5_las_mer",
+              "html": "<p><a href=\"8_1_utredningar_och_analyser\" data-header-identifier=\"8_1_7_Bullerutredning\" data-document=\"8_1_utredningar_och_analyser\">Bullerutredning för FÖP Väröbacka</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Farligt gods ",
+          "headerIdentifier": "4_7_2_farligt_gods",
+          "html": "<p>Farligt gods är ett samlingsbegrepp för transporter av ämnen och produkter som kan skada människor, djur, miljö och egendom i händelse av olycka eller sabotage. För att minimera risken för skada används olika stora riskavstånd för etablering av olika känsliga funktioner intill farligt godsleder. Generellt sett är det inte bara riskfrågan som förhindrar bebyggelse intill leder med farligt gods då även buller och luftkvalité innebär begränsningar för byggnation.</p>\n<p>Området närmast väg eller järnväg med farligt gods ska hållas fri från bebyggelse för att räddningstjänst ska kunna angöra en plats i tillfälle av olycka. Önskvärt är även att undvika kollisioner med byggnader i händelse av olycka. Längre från riskkällan kan mindre känsliga markanvändningar anläggas så som parkering, lager eller kontor och först därefter känsliga markanvändningar för stadigvarande vistelse, så som bostäder, förskolor och skolor samt särskilda boenden.&nbsp;</p>\n<p>Riskbilden skiljer sig åt mellan olika platser och typer av risk vilket påverkar behovet av skyddsavstånd och åtgärder. Vid planläggning i anslutning till transportleder för farligt gods finns en utredningszon. Utredningszonen innebär att riskfrågan och säkerhetshöjande åtgärder behöver detaljstuderas, och ska inte ses som ett bebyggelsefritt område.</p>\n<p>Västkustbanan som passerar genom planområdet samt E6 öster om planområdet är primärleder för farligt gods. Anslutande vägnät mellan primärled för farligt gods och slutdestination är sekundärled för farligt gods. I planområdet är Industrivägen främsta sekundärleden, men vissa transporter har även slutdestination inne i planområdet och ett fåtal transporter går årligen till Ringhals kärnkraftverk. Skyddsåtgärder avseende farligt gods transporter fastställs i detaljplaneskedet.</p>\n<p>Länsstyrelsen i Halland har tagit fram <strong>Riktlinjer: Avstånd och säkerhetshöjande åtgärder kring transportleder för farligt gods i Hallands län</strong>.<em> </em>Riktlinjerna förordar avstånd som den främsta säkerhetsåtgärden, men anger även möjliga avsteg som kan vara aktuella vid införande av specifika åtgärder. Med rätt utformade säkerhetsåtgärder kan man enligt riktlinjer bygga redan 20 meter från en primärled för farligt gods, och etablera tätortsbebyggelse 30 meter från primärled. För småhus anges 50 meters säkerhetsavstånd. Av riktlinjerna framkommer dock att dess principer inte är direkt applicerbara på områden med mycket hög personintensitet. Exakta volymer för vad det innebär anges inte men en fördjupad riskanalys för FÖP Väröbacka fastställer att risknivåerna på individnivå utifrån farligt gods transporter i vägnätet är acceptabla. Däremot anges att Västkustbanan och Industrispåret medför större risker på individnivå och att riktlinjer enligt Länsstyrelsen i Halland bör följas. Exakta utformningskrav definieras i senare planeringsskede.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_tfg_vag%2Cop_rlv_tfg_jarnvag%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_tfg_vag%2Cop_rlv_tfg_jarnvag%22%7D\">Visa TRANSPORTLEDER FÖR FARLIGT GODS i kartan</a></p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_jvg_riskomrade%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_jvg_riskomrade%22%7D\">Visa RISKOMRÅDE FRÅN JÄRNVÄG i kartan</a></p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden för farligt gods",
+              "headerIdentifier": "4_7_2_1_stallningstaganden_farligt_gods",
+              "html": "<ul>\n  <li>En riskanalys med förslag på lämpliga åtgärder ska tas fram för byggnation inom utredningszonen från transportleder för farligt gods. Riskanalys görs som del av arbete med detaljplan.</li>\n  <li>Bebyggelse och anläggningar intill led för farligt gods ska utformas för att minimera spridning av risk och buller och skapa hälsofrämjande stadsmiljöer. Verksamheter och parkeringsplatser etableras med fördel i området närmast intill Västkustbanan.</li>\n  <li>Västkustbanan klassas som primärled för farligt gods. Intill Västkustbanan och industrispåret ska Länsstyrelsen i Hallands generella riktlinjer tillämpas. Exakta åtgärder deﬁnieras i senare planeringsskede:\n    <ul>\n      <li>Det bebyggelsefria området intill järnvägen ska vara 20 meter brett i syfte att minimera risken för skador samt säkra tillgång till spårområdet i händelse av olycka eller underhåll.</li>\n      <li>I stationsnära lägen och centrala delar av Väröbacka kan parkeringshus, verksamhets- och industrilokaler anläggas 20 meter från järnvägen, förutsatt att särskilda riskreducerande åtgärder genomförs.</li>\n      <li>Tätortsbebyggelse kan anläggas 30 meter från farligt gods-led, och småhus 50 meter från, förutsatt att särskilda riskreducerande åtgärder genomförs.</li>\n    </ul>\n  </li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Läs mer",
+              "headerIdentifier": "4_7_2_2_las_mer",
+              "html": "<p><a href=\"8_1_utredningar_och_analyser\" data-header-identifier=\"8_1_6_Riskutredning\" data-document=\"8_1_utredningar_och_analyser\">Riskutredning för FÖP Väröbacka</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Strålsäkerhet ",
+          "headerIdentifier": "4_7_3_stralsakerhet",
+          "html": "<p>Människan utsätts ständigt för joniserande strålning, oftast från naturliga källor. Alla jordarter och atmosfären utstrålar ständigt en liten mängd strålning. Mängden av radonhaltiga ämnen i jordarten, dess kornstorlek mer mera påverkar hur mycket strålning de utsöndrar. Det är först i högre halter strålningen blir farlig för människan. För inomhusluften finns ett gränsvärde på 200 Becquerel per kubikmeter (Bq/m3) för när stadigvarande exponering blir skadlig för hälsan. I inomhusmiljö kommer radioaktivitet huvudsakligen från byggnadsmaterial, berggrund eller grundvatten.</p>\n<p>På Väröhalvön ligger Ringhals kärnkraftverk vilket i en mycket kontrollerad process utvinner energi genom att klyva det radioaktiva ämnet uran. Anläggningens beredskapsplaner påverkar planområdet.</p>\n<p>Kraftledningar och elanläggningar utsöndrar en elektromagnetisk strålning och förknippas med andra elsäkerhetsrelaterade risker. Vid planering av ny bebyggelse i anslutning till dessa anläggningar behöver därför hänsyn tas till rekommenderade skyddsavstånd.&nbsp;</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ringhals kärnkraftverk",
+              "headerIdentifier": "4_7_3_1_ringhals_karnkraftverk",
+              "html": "<p>Ringhals kärnkraftverk omgärdas av en inre och en yttre beredskapszon som är fastställd av länsstyrelsen i Halland. Området inom 5 kilometer från anläggningen tillhör den inre zonen och området mellan 5–25 kilometer från anläggningen tillhör den yttre beredskapszonen. Beredskaps- och planeringszonerna avgränsas av vägar och andra naturliga gränser, vilket gör att avstånden inte är exakta. Utöver beredskapszonerna finns även en planeringszon. Planeringszonen sträcker sig ungefär 100 kilometer från kärnkraftverket. Länsstyrelsen har, tillsammans med andra myndigheter, tydliga förhållningssätt för att skydda allmänheten vid en olycka genom att exempelvis utrymma till en annan plats eller uppmana allmänheten att stanna inomhus och ta jodtabletter.</p>\n<p>De delar av Väröbacka och Limabacka som ligger väster om järnvägen tillhör den inre beredskapszonen och övriga samhället den yttre beredskapszonen. I beredskapszonerna finns det förhandsutdelade varningsmottagare, jodtabletter och information till allmänheten.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160891&amp;y=6347051&amp;z=0&amp;l=1rdy1j%2C1416%2C1401&amp;p=&amp;gl=%7B%221416%22%3A%22op_rlv_ringhalsinrezon%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160891&amp;y=6347051&amp;z=0&amp;l=1rdy1j%2C1416%2C1401&amp;p=&amp;gl=%7B%221416%22%3A%22op_rlv_ringhalsinrezon%22%7D\">Visa INRE BEREDSKAPSZON FÖR RINGHALS KÄRNKRAFTVERK i kartan</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Radon",
+              "headerIdentifier": "4_7_3_2_radon",
+              "html": "<p>Radon är en osynlig och luktfri gas som bildas när det radioaktiva grundämnet radium sönderfaller. Uran och radium förekommer i varierande omfattning i alla bergarter och ingår även i material som är gjorda av dessa material. Radon i bostäder kan komma från marken, byggnadsmaterial och vatten. Idag byggs det inte med material med betydande radonhalter och därmed är markradon den främsta grundförutsättningen att undersöka vid nybyggnation.&nbsp;</p>\n<p>I planområdet är det framför allt i norra Väröbacka i ett stråk mellan kyrkan, järnvägen och Lilla Även i öst-västlig riktning samt på höjden av det större sammanhängande skogs- och naturområdet i planområdets södra delar, som det förekommer något förhöjda värden av strålning. Detta behöver studeras vidare i den efterföljande planeringen.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=&amp;gl=%7B%221416%22%3A%22gammastralning_sgu%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=&amp;gl=%7B%221416%22%3A%22gammastralning_sgu%22%7D\">Visa OMRÅDEN MED UPPMÄTTA RADONGASHALTER i kartan</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Ställningstaganden för strålsäkerhet",
+              "headerIdentifier": "4_7_3_3_stallningstaganden_stralsakerhet",
+              "html": "<ul>\n  <li>Strålsäkerhetsmyndighetens och Boverkets rekommendationer ska följas i planeringen.</li>\n  <li>Där bebyggelse anläggs på mark med förhöjda radonvärden ska byggnader uppföras så att radoninträngning minimeras.</li>\n  <li>Erforderligt avstånd ska hållas till kraftledningar och elcentraler och utreds i detaljplaneskedet.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Förorenad mark",
+          "headerIdentifier": "4_7_4_fororenad_mark",
+          "html": "<p>Förorenad mark är framför allt en viktig faktor att utreda i samband med förändrad markanvändning på en plats där det finns misstanke om föroreningar. Giftiga ämnen och vätskor kan få stora konsekvenser på hälsan hos djur och människor. Flyktiga ämnen eller föroreningar som på annat sätt förflyttar sig kan dessutom få stor spridning om de inte identifieras och saneras i tid.</p>\n<p>I planeringssammanhang finns olika riktvärden att utgå från vid etablering av känslig, eller mindre känslig, markanvändning. Som känslig markanvändning räknas bostäder, skola och förskola med mera och som mindre känslig markanvändning räknas kontor, industri och dylikt. Vid planering av ett område där det förekommer risk för förorenad mark behöver utredningar göras för vidare bedömning om markens lämplighet.</p>\n<p>I Väröbacka finns en gammal deponi med riskklass tre och ett tiotal identifierade punkter med risk för förorenad mark, eller känd plats med förorenad mark. Huvudsakligen handlar förekomsterna om tidigare verksamheter med drivmedelshantering, bilverkstäder, betong- och cementverksamhet samt olika former av avfallshantering. Merparten av dessa punkter är identifierade utan att vidare utredning av föroreningsgrad eller åtgärd utförts. Vidare utredning och eventuell åtgärd förutsätts i dessa fall inom kommande detaljplaneprocess. I några fall har viss åtgärd utförts så att marken är godkänd för mindre känslig markanvändning, så som kontorsändamål eller annan industriell verksamhet. Ska bostäder etableras på dessa platser förutsätts att det utreds vidare om behov finns av ytterligare åtgärder.</p>\n<p>Det finns risk för förorenad mark i anslutning till järnvägsspåret och spåret kan generellt bidra med diffus föroreningsspridning till sin närhet. Föroreningarna består av olika typer av ämnen och metaller som bland annat härstammar från impregnering av slipers. Utöver detta så kan bekämpningsmedel ha använts på banvallarna för att hålla vegetationen borta. Mer detaljerade utredningar behöver göras i efterföljande planeringsskeden.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Miljöfarlig verksamhet och omgivningspåverkan ",
+          "headerIdentifier": "4_7_5_miljofarlig_verksamhet",
+          "html": "<p>Miljöfarlig verksamhet är all användning av mark, byggnader eller anläggningar som kan medföra störningar på människors hälsa eller miljön. Regler för miljöfarlig verksamhet finns i miljöbalken. Verksamheter som bedriver miljöfarlig verksamhet delas in i tre olika kategorier (A-, B- eller C-anläggningar) som antingen behöver särskilda miljötillstånd från mark- och miljödomstolen, länsstyrelsen eller är anmälningspliktiga till kommunen.</p>\n<p>I planområdets närhet ligger tre tillståndspliktiga miljöfarliga verksamheter (omfattas av Sevesolagen) och inom planområdet finns tre anmälningspliktiga verksamheter. De anmälningspliktiga verksamheterna ligger både centralt i Väröbacka samt i det sydöstra delen av planområdet. Dessa verksamheter har försiktighetsmått att följa avseende buller och ibland gränsvärden för hur stora volymer av olika materia deras verksamhet får hantera eller utvinna på årsbasis. De stora tillståndspliktiga verksamheterna (Sevesoanläggningar) i planområdets närhet är Ringhals kärnkraftverk, Svenska kraftnäts gasturbiner AB och Södra Skogsägarna i Värö.</p>\n<p>Vid byggnation av bostäder intill miljöfarlig verksamhet behöver särskilda riskavstånd tillämpas. Exakta värden och utformningskrav deﬁnieras i senare planeringsskede men initialt anger riskutredningen följande värden:</p>\n<ul>\n  <li>Drivmedelsstationer 25 meter</li>\n  <li>Lahalls reservkraftverk 200 meter</li>\n  <li>Södra cell 500 meter</li>\n</ul>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ljus, buller och lukt",
+              "headerIdentifier": "4_7_5_1_ljus_buller_och_lukt",
+              "html": "<p>Omgivningspåverkan från ovan beskrivna verksamheter innefattar utöver riskfaktorer även störningar i form av ljus, buller och ibland lukt. Buller regleras genom försiktighetsmått som verksamheterna ska förhålla sig till för att begränsa sin omgivningspåverkan. För lukt och ljus finns inga generella riktvärden och aktuella verksamheter har inte heller fått några försiktighetsmått att förhålla sig till. Vissa åtgärder har trots det implementerats av verksamhetsutövare för att begränsa exempelvis luktspridning i närområdet. I de fall där klagomål inkommer till kommunen, eller där det anses angeläget för etablering av ny markanvändning i området, kan försiktighetsmått avseende lukt eller ljus övervägas. Försiktighetsmått behöver i så fall fastställas av kommunen utifrån en bedömning av olägenheter för människors hälsa enligt miljöbalken.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Djurhållning",
+              "headerIdentifier": "4_7_5_2",
+              "html": "<p>Djurhållning har en påverkan på omgivningen. De tydligaste olägenheterna är relaterade till lukt, flugor, damning, höga ljud från tekniska anläggningar och djur samt skarpt ljus. I området finns några gårdar med djurhållning och/eller växtodling.</p>\n<p>För hästgårdar så finns en befarad hälsorisk i och med spridning av allergen. Allergenen påverkas av antalet djur. Enligt Boverket visar forskning att 15-20 procent av Sveriges befolkning lider av pälsallergi och 7-10 procent av hästallergi.</p>\n<p>Varbergs kommun har tagit fram riktlinjer för hästhållning i anslutning till bostäder. De anger följande skyddsavstånd mellan planering av bostadsområden respektive offentlig verksamhet och hästanläggning:</p>\n<ul>\n  <li>200-500 meter till större befintlig hästhållning, skillnader beror bland annat på verksamhetens storlek, topografi med mera.</li>\n  <li>200 meter till befintlig enskild hästgård.</li>\n  <li>50 meter till hagar och ridstigar.</li>\n</ul>\n<p>Ytterligare riktlinjer finns för byggnation av enskilda bostadshus. För fullständig information läs riktlinjerna.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Geotekniska förhållanden  ",
+          "headerIdentifier": "4_7_6_geotekniska_forhallanden",
+          "html": "<p>Inom planområdet förekommer idag befintlig bebyggelse av bostäder, jordbruksfastigheter och industrier, skogsmark, igenväxt naturmark samt öppen odlings- och betesmark. Genom området rinner två mindre vattendrag, Stora och Lilla Även. Marken i norra området är generellt plan men sluttar lätt från nordöst mot sydväst. I mellersta delen förekommer ett område med höjdryggar som ligger i nordvästlig-sydöstlig riktning. Nordväst och sydöst om planområdet angränsar bergsområden med mindre höjdpartier. I sydväst är området generellt plant, med enstaka höjdområden. Lägst marknivåer förekommer i anslutning till Viskan.</p>\n<p>Inom planområdet har det gjorts en översiktlig bedömning över rådande stabilitetsförhållanden och där områden identifierats inom vilka det finns risk för ras, skred och erosion. Risk för jordskred är generellt kopplade till områden med lösare finkorniga jordar och där marken sluttar mer än 1:10. Dessa områden är begränsade inom aktuellt utredningsområde och förekommer främst i anslutning till vattendrag och intill Västkustbanan.</p>\n<p>Inom området klassad som <strong>lösmark </strong>bedöms det generellt att lättare byggnader (byggnader i 1 plan och enbostadshus) kan grundläggas utan några grundförstärkningsåtgärder under förutsättning att markuppfyllnader undviks. Aktuella åtgärder vid grundläggning av tyngre byggnader inom dessa områden kan exempelvis vara pålning, urgrävning av lösa jordlager (vid begränsad mäktighet) samt så kallad kompensationsgrundläggning. Kompensationsgrundläggning innebär att ytliga jordlager grävs ur och ersätts med något lättare material (lättklinker) som exempelvis skumglas och leca. Omfattning av åtgärden styrs av storleken på tillförd last, alltså omfattning av planerad byggnation, markuppfyllnader samt jordlagrens egenskaper. I anslutning till områden klassade som <strong>fastmark </strong>ökar möjligheten till att byggbarheten generellt kan vara något bättre. Val av förstärkningsmetod samt omfattning utreds i samband med att en geoteknisk undersökning utförs.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_geo_kansligtomraderasskred%2Cop_rlv_geo_kansligtomradestrandnara%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_geo_kansligtomraderasskred%2Cop_rlv_geo_kansligtomradestrandnara%22%7D\">Visa GEOTEKNISKT KÄNSLIGA OMRÅDEN i kartan</a></p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden för geoteknik",
+              "headerIdentifier": "4_7_6_1_stallningstaganden_geoteknik",
+              "html": "<ul>\n  <li>Fördjupad geoteknisk utredning ska tas fram där det är erforderligt i samband med detaljplanering av utbyggnadsområden.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Läs mer",
+              "headerIdentifier": "4_7_6_2_las_mer",
+              "html": "<p><a href=\"8_1_utredningar_och_analyser\" data-header-identifier=\"8_1_9_geoteknisk_utredning\" data-document=\"8_1_utredningar_och_analyser\">Geoteknisk utredning för FÖP Väröbacka</a></p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Säkerhet och beredskap",
+          "headerIdentifier": "4_7_7_sakerhet_o_beredskap",
+          "html": "<p>Kommunen ansvarar för att säkerställa människors hälsa och trygghet, samt att förebygga risker och skapa ett robust samhälle i samband med planering och utveckling. Vissa risker och negativa konsekvenser kan förebyggas och undvikas genom att ställa tydliga krav på planerade och pågående byggnationsprojekt. Åtgärder kan också inkludera anpassningar i planeringen för att undvika olämpliga platser där risker är höga.</p>\n<p>Samhällsplanering och beredskapsplanering behöver ha en nära koppling till varandra. Anledningen till detta är att samhällets förmåga att möta fredstida störningar är grundläggande för möjligheten att verka under kriser och i krig. Risker samt civil- och beredskapsfrågor behöver tas upp i planläggning och lovgivning, så att samhällets grundläggande motståndskraft mot risker och samhällsstörningar blir så god som möjligt. Kommunen ska enligt lag placera och utforma bebyggelse så att samhället blir robust, det vill säga ta hänsyn till olycksperspektivet, civil beredskapsperspektivet och totalförsvarets behov. Det bör bland annat göras utifrån kommunens RSA (risk- och sårbarhetsanalys) samt totalförsvarsplanering.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Totalförsvar",
+              "headerIdentifier": "4_7_7_1_totalförsvar",
+              "html": "<p>Totalförsvar är den verksamhet som behövs för att förbereda Sverige för krig och består av militärt och civilt försvar. Civilt försvar handlar om hela samhällets motståndskraft och omfattar myndigheter, kommuner och regioner, enskilda och företag. Det civila försvaret ska även bidra till att stärka samhällets förmåga att förebygga och hantera svåra påfrestningar på samhället i fredstid (krisberedskap).</p>\n<p>Genom den fysiska planeringen kan kommunen vidta följande åtgärder i syfte att förhindra och begränsa eventuella skador eller konsekvenser till följd av ett väpnat angrepp:</p>\n<ul>\n  <li>undvika placering av känslig bebyggelse i nära anslutning till särskilt utsatta objekt eller områden</li>\n  <li>planera samhället så att särskilt utsatta objekt inte placeras i närheten av områden som är svåra att utrymma</li>\n  <li>beakta bebyggelse som riskerar att utsättas för hot – till exempel genom reglering av användningsområde och egenskapsbestämmelse i detaljplan.</li>\n</ul>\n<p>I Väröbacka föreslås överlag ingen ny känslig bebyggelse i närheten av särskilt utsatta objekt eller områden. Vid placering av bostäder intill järnvägen behöver hänsyn tas till rekommenderade skyddsavstånd, vilket behöver studeras mer detaljerat i efterföljande detaljplaneskeden. Ny kommunal service, i form av skola, förskolor och äldreboenden, föreslås i huvudsak utanför den inre beredskapszonen för Ringhals kärnkraftverk, med goda förutsättningar för utrymning.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Skydd av civilbefolkningen",
+              "headerIdentifier": "4_7_7_2_skydd_civilbefolkningen",
+              "html": "<p>Samhället måste fungera även vid samhällsstörningar som olyckor, kriser eller krig. I första hand är det viktigt att skydda samhällsviktiga verksamheter. Med samhällsviktig verksamhet avses verksamhet, tjänst eller infrastruktur som upprätthåller eller säkerställer grundläggande behov, värden eller säkerhet.</p>\n<p>För att skydda och rädda civilbefolkningens liv, enskild egendom och civil allmän egendom ska kommunen vid planläggning, lovgivning och övriga byggnationer särskilt beakta:</p>\n<ul>\n  <li>risker kring olika typer av strategiska målpunkter</li>\n  <li>planering för storskalig utrymning</li>\n  <li>skyddsrum och skyddade utrymmen</li>\n  <li>placering av utomhusvarningar där det finns behov av sådana</li>\n  <li>övriga behov för räddningstjänsten under höjd beredskap.</li>\n</ul>\n<p>Vid storskalig utrymning är det viktigt att beakta kapacitet på utrymnings- och utryckningsvägar samt för alternativa vägar. Planförslaget för Väröbacka möjliggör ett utvecklat vägsystem för flera olika trafikslag. Med möjlighet att leda trafik via nya stråk i samhället kan vägar som riskerar att översvämmas vid extrema väderförhållanden undvikas och tillsammans med fler möjligheter att korsa järnvägen skapas ett mer robust trafiksystem och förbättrade förutsättningar för utrymning. Etablering av en ny tågstation kan också bidra till en snabbare utrymning av Väröhalvön i stort.</p>\n<p>Skyddsrum ska kunna ge skydd åt människor vid behov. I de fall Varbergs kommun är fastighetsägare till skyddsrummet ansvarar kommunen för att iordningställa och underhålla detta. Det skyddsrum som redan finns etablerat i Väröbacka ska finnas kvar. Behov av ytterligare skyddsrum eller andra skyddade utrymmen får utredas vidare framöver.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Kärnenergiberedskap",
+              "headerIdentifier": "4_7_7_3_karnenergiberedskap",
+              "html": "<p>Befolkningen ska kunna utrymma från särskilt farliga områden eller objekt som kan tänkas utsättas för angrepp eller olycka. Geografiskt ligger Väröbacka både inom den inre och yttre beredskapszonen för Ringhals kärnkraftverk. För mer information om beredskapszonerna, se avsnittet om strålsäkerhet.</p>\n<p>För att säkerställa bästa möjliga beredskap vid händelse av kärnteknisk olycka behöver nära samverkan ske med ansvariga aktörer. Det kan handla om att beakta kapacitet på utrymningsvägar, utryckningsvägar för blåljusfunktioner samt placering av verksamheter med svårutrymda personer (så som till exempel skolor och vårdboenden) och skyddade utrymmen.</p>\n<p>Förslag till utvecklad infrastruktur, av både väg och järnväg, bidrar till förbättrade förutsättningar för utrymning och utryckning på Väröhalvön.&nbsp;</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Samlade risker",
+          "headerIdentifier": "4_7_8_samlade_risker",
+          "html": "<p>Via länken nedan ges en samlad bild över de riskfaktorer som kan behöva hanteras i den fortsatta planeringen. När flera riskrelaterade händelser uppstår samtidigt kan detta leda till kumulativa effekter. Läs mer om kumulativa effekter i den strategiska miljöbedömningen.&nbsp;</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1421%2C1422%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_geo_kansligtomraderasskred%2Cop_rlv_geo_kansligtomradestrandnara%2Cop_rlv_jvg_riskomrade%2Cop_rlv_gammaldeponi%2Cop_rlv_tfg_vag%2Cop_rlv_tfg_jarnvag%2COP_RLV_Sevesoa%22%7D\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1416%2C1421%2C1422%2C1401&amp;p=documentviewer&amp;gl=%7B%221416%22%3A%22op_rlv_geo_kansligtomraderasskred%2Cop_rlv_geo_kansligtomradestrandnara%2Cop_rlv_jvg_riskomrade%2Cop_rlv_gammaldeponi%2Cop_rlv_tfg_vag%2Cop_rlv_tfg_jarnvag%2COP_RLV_Sevesoa%22%7D\">Visa SAMLAD RISKHÄNSYN i kartan</a></p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Miljö, hälsa, risk och säkerhet"
+}

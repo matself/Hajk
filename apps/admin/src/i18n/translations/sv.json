@@ -890,6 +890,112 @@
         }
       }
     },
+    "dhRichTextEditor": {
+      "placeholder": {
+        "editor": "Börja skriva här…",
+        "textSection": "Skriv text här…"
+      },
+      "toolbar": {
+        "bold": "Fet (Ctrl+B)",
+        "italic": "Kursiv (Ctrl+I)",
+        "underline": "Understrykning (Ctrl+U)",
+        "strikethrough": "Genomstruken",
+        "bulletList": "Punktlista",
+        "orderedList": "Numrerad lista",
+        "editLink": "Redigera länk",
+        "insertLink": "Infoga länk",
+        "insertImage": "Infoga bild",
+        "insertVideo": "Infoga video",
+        "insertAudio": "Infoga ljud",
+        "insertIframe": "Infoga iframe",
+        "textSection": "Infoga/redigera faktaruta",
+        "spellcheckOn": "Aktivera stavningskontroll",
+        "spellcheckOff": "Inaktivera stavningskontroll"
+      },
+      "link": {
+        "title": "Länk",
+        "linkTypeLabel": "Länktyp",
+        "types": {
+          "web": "Webblänk",
+          "document": "Dokumentlänk",
+          "map": "Kartlänk",
+          "hover": "Svävartext (tooltip)"
+        },
+        "url": "URL",
+        "urlPlaceholder": "https://...",
+        "folder": "Mapp",
+        "noFolder": "Välj en mapp",
+        "document": "Dokument",
+        "noDocument": "Välj ett dokument",
+        "chapterId": "Kapitel",
+        "noChapter": "Inget kapitel",
+        "chapterIdHelper": "Valfritt — länka till ett specifikt kapitel i det valda dokumentet",
+        "noMapContext": "Dokumentlänkar kräver en kartkontext. Öppna editorn från dokumenthanteraren.",
+        "mapLink": "Kartlänk (URL)",
+        "mapLinkHelper": "URL till kartvy, t.ex. kopierad från kartan",
+        "tooltipText": "Tooltip-text",
+        "tooltipPlaceholder": "Förklaringstext som visas vid hover...",
+        "tooltipHelper": "Texten visas som tooltip när användaren hovrar",
+        "remove": "Ta bort länk"
+      },
+      "media": {
+        "insertTitle": "Infoga media",
+        "editTitle": "Redigera media",
+        "edit": "Redigera media",
+        "types": {
+          "image": "Bild",
+          "video": "Video",
+          "audio": "Ljud"
+        },
+        "srcUrl": "{{type}}-URL / sökväg",
+        "audioUrl": "Ljud-URL",
+        "altText": "Alt-text",
+        "width": "Bredd (px)",
+        "height": "Höjd (px)",
+        "caption": "Bildtext / caption",
+        "source": "Källa / source",
+        "openInPopup": "Öppna i popup",
+        "position": "Position",
+        "positions": {
+          "left": "Vänster",
+          "center": "Centrerad",
+          "right": "Höger",
+          "floatLeft": "Flytande vänster",
+          "floatRight": "Flytande höger"
+        },
+        "audioPlaceholder": "Ljud…",
+        "uploadPathPlaceholder": "/Upload/..."
+      },
+      "textSection": {
+        "title": "Faktaruta-inställningar",
+        "colorWarning": "Obs: Anpassade färger kan påverka mörkt/ljust läge",
+        "backgroundColor": "Bakgrundsfärg",
+        "backgroundColorPlaceholder": "T.ex. #FAF2BF",
+        "dividerColor": "Kantfärg",
+        "dividerColorPlaceholder": "T.ex. #E5F1F0",
+        "accordion": "Hopfällbar faktaruta",
+        "accordionTitle": "Accordion-titel",
+        "accordionTitlePlaceholder": "Titel...",
+        "remove": "Ta bort faktaruta"
+      },
+      "iframe": {
+        "defaultTitle": "Iframe",
+        "embeddedTitle": "inbäddad",
+        "edit": "Redigera iframe",
+        "title": "Iframe-inbäddning",
+        "src": "URL",
+        "iframeTitle": "Titel",
+        "width": "Bredd",
+        "height": "Höjd",
+        "withoutPx": "Utan px",
+        "position": "Position",
+        "positions": {
+          "left": "Vänster",
+          "center": "Centrerad",
+          "right": "Höger"
+        }
+      }
+    },
     "layerSwitcherDnd.search": "Ange adress, fastighet...",
     "layerSwitcherDnd.tools": "Kartverktyg"
   }

@@ -1,0 +1,23 @@
+{
+  "chapters": [
+    {
+      "header": "Kunskapsunderlag för översiktsplanen",
+      "headerIdentifier": "7_1_1_Kunskapsunderlag",
+      "html": "<p>Kommunen har tagit hänsyn till en mängd olika förutsättningar, kunskaps- och planeringsunderlag vid framtagandet av översiktsplanen. I en särskild bilaga till översiktsplanen ges en samlad beskrivning av relevanta planeringsförutsättningar och kunskap (se nedan).</p>\n<p>Inför arbetet med att ta fram översiktsplanen togs också ett antal särskilda utredningar fram.</p>\n<p><a href=\"7_2_utredningar_och_analyser\" data-header-identifier=\"\" data-document=\"7_2_utredningar_och_analyser\">Läs mer om SÄRSKILDA UTREDNINGAR OCH ANALYSER här</a></p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/KunskapsunderlagÖP_2023-25.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/KunskapsunderlagÖP_2023-25.pdf\">Läs dokumentet KUNSKAPSUNDERLAG FÖR ÖVERSIKTSPLAN här</a></p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": []
+    },
+    {
+      "header": "Kunskap i efterföljande skeden",
+      "headerIdentifier": "Kunskap i efterföljande skeden",
+      "html": "<p>Det är viktigt att kommunen fortsatt arbetar proaktivt och kontinuerligt med att ta fram aktuella kunskaps- och planeringsunderlag.</p>\n<p>Det är också viktigt att det i framtida planering, i prövningar om bygglov och förhandsbesked tas hänsyn till relevanta kunskapsunderlag. Här behöver även kunskapsunderlag och vägledningar från andra källor beaktas. Inte minst underlag och vägledningar som Länsstyrelsen, Boverket och andra statliga myndigheter tagit fram. Vid detaljplanläggning och bygglov ställer kommunen också krav på att exploatörer inhämtar ytterligare kunskap när det behövs för att tillskapa goda livsmiljöer och uppfylla gällande lagkrav.</p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [],
+      "expanded": false
+    }
+  ],
+  "map": "map_1",
+  "title": "Planeringsunderlag"
+}

@@ -1,0 +1,24 @@
+{
+  "chapters": [
+    {
+      "header": "Vad är en fördjupad översiktsplan?",
+      "headerIdentifier": "1_1_1_vad_ar_en_fordjupad_oversiktsplan",
+      "html": "<figure><img src=\"/Upload/1_inledning/1_Framsida.png\" alt=\"Illustration som visar slags visionsbild för framtidens Väröbacka. På bilden finns ett tåg, olika typer av bebyggelse, djur och natur samt människor som samtalar, promenerar och cyklar samt barn som leker.\" data-image-width=\"550px\" data-image-height=\"432px\" data-caption=\"\" data-image-popup=\"\"/></figure>\n<p>Varje kommun ska ha en aktuell översiktsplan. I översiktsplanen beskriver kommunen sin syn på hur den fysiska miljön ska utvecklas på lång sikt. Översiktsplanen är vägledande för hur mark- och vattenområden ska utvecklas och anger grunddragen för användning av mark och bebyggelse i hela kommunen. Den ger också vägledning i hur den redan byggda miljön ska användas, utvecklas och bevaras.</p>\n<p>Ett sätt att hålla översiktsplanen aktuell är att ändra den för en del av kommunen där planeringsbehoven är särskilt stora, eller där ändringar från den kommunövergripande översiktsplanen behöver göras. En <strong>fördjupad översiktsplan </strong>ersätter då den kommunövergripande översiktsplanen för just detta geografiska område.</p>\n<p>Lagstiftningen är lika för en kommunövergripande översiktsplan (ÖP) och en fördjupad översiktsplan (FÖP). En fördjupad översiktsplan är inte juridiskt bindande, till skillnad från en detaljplan. Den ger heller inga rättigheter eller skyldigheter till vare sig myndigheter eller enskilda. I planen vägs och prioriteras allmänna intressen mot varandra. Enskilda intressen vägs in först i detaljplaneringen eller direkt i bygglovsprövningen.</p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Den fördjupade översiktsplanen är en viktigt grund",
+          "headerIdentifier": "1_1_2_den_fordjupade_oversiktsplanen_ar_en_viktig_grund",
+          "html": "<p>Kommunen planerar, tillsammans med Trafikverket och Region Halland, för en ny tågstation i Värö. Med ett nytt stopp på Västkustbanan skapas ökad regional tillgänglighet och förändrade förutsättningar för utveckling i kommunens norra delar. Det möjliggör för en stor och omfattande samhällsutveckling i Väröbacka och omkringliggande orter, med nya bostäder, arbetsplatser och service i stationsnära lägen.</p>\n<p>Vid en så omfattande samhällsutveckling av Väröbacka finns behov av aktuella och vägledande styrdokument så att all utveckling inom orten sker mot samma långsiktiga och hållbara mål.</p>\n<p>Den fördjupade översiktsplanen för Väröbacka är både ett strategiskt dokument, som under lång tid ska styra utvecklingen i området, och ett dokument som ska vara vägledande för konkreta beslut om byggande och olika tillståndsärenden.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Vad är en FÖP?"
+}

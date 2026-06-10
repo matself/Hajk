@@ -81,7 +81,7 @@ export function DocumentsTree({
     // Only documents can be dragged
     if (dragNodes.some((n) => n.data.kind === "folder")) return true;
     // Must drop into a folder
-    if (!parentNode || parentNode.data.kind !== "folder") return true;
+    if (parentNode?.data.kind !== "folder") return true;
     return false;
   }
 

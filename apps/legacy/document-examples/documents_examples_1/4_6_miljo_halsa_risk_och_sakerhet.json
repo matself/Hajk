@@ -1,0 +1,211 @@
+{
+  "chapters": [
+    {
+      "header": "Miljö, hälsa, risk och säkerhet",
+      "headerIdentifier": "4_6_miljo_halsa_risk_och_sakerhet",
+      "html": "<p>Hälsa och säkerhet är centrala frågor för planering av mark- och vattenområden enligt lagstiftning i såväl Plan- och bygglagen (PBL) som Miljöbalken (MB). Mark- och vattenområden ska användas för det eller de ändamål som områdena är mest lämpade för med hänsyn till beskaffenhet, läge och behov. Bebyggelse och byggnadsverk ska även lokaliseras till lämplig mark utifrån människors hälsa och säkerhet, jord-, berg- och vattenförhållanden. Där det är möjligt ska risker för olyckor minimeras och vatten- och luftföroreningar samt bullerstörningar förebyggas.</p>\n<blockquote data-divider-color=\"#FAF2BF\" data-background-color=\"#FAF2BF\" data-text-section=\"\" data-accordion=\"true\" data-accordion-title=\"Klimatrelaterade risker och planeringsunderlag\">I avsnittet <em>Klimatpåverkan och klimatanpassning</em><strong> </strong>beskrivs kommunens ställningstaganden i fråga om hur kommunen vid planering och byggande ska ta hänsyn till klimatrelaterade risker.<br>\n<br>\n<a href=\"4_7_klimatpavarken_och_klimatanpassning\" data-header-identifier=\"\" data-document=\"4_7_klimatpavarken_och_klimatanpassning\">Gå till avsnittet KLIMATPÅVERKAN OCH KLIMATANPASSNING</a><br>\n<br>\nI avsnittet <em>Planeringsunderlag</em> finns kartläggningar och nulägesbeskrivningar gällande flera olika aspekter som rör miljö, hälsa, risk och säkerhet i kommunen med relevans för den fysiska planeringen.<br>\n<br>\n<a href=\"7_1_planeringsunderlag\" data-header-identifier=\"\" data-document=\"7_1_planeringsunderlag\">Gå till avsnittet PLANERINGSUNDERLAG</a></blockquote>\n<figure><img src=\"/Upload/4_6_miljo.jpg\" alt=\"Kossor som betar i en hage med lantbruk i bakgrunden. \" data-image-width=\"550px\" data-image-height=\"366px\" data-caption=\"En god bebyggelseplanering på landsbygden sker i samklang med den omkringliggande miljön och med hänsynstagande till omkringliggande gårdar med djurhållning. \" data-source=\"\" data-image-popup=\"\"/></figure>",
+      "keywords": [
+        "hälsa",
+        "säkerhet",
+        "föroreningar"
+      ],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Buller, vibrationer och luftkvalitet",
+          "headerIdentifier": "4_6_2_buller_och_vibrationer",
+          "html": "<p>Vid planläggning av bostäder, skolor och förskolor är det viktigt att bullersituationen beaktas. Höga ljudnivåer och buller skapar stress och påverkar hälsa och välbefinnande negativt hos både barn och vuxna. Den dominerande bullerkällan i Varbergs kommun är väg- och järnvägstrafik.&nbsp;Utöver väg- och spårtrafikbuller kan det också röra sig om ljudstörningar från industrier eller andra verksamheter.</p>\n<p>Vägtrafiken står för det enskilt största bidraget till höga halter av luftföroreningar i stad och tätort. I stad och tätort kan utformningen av bebyggelse, växtlighet och andra företeelser i närområdet ha inverkan på omsättningen av luft i ett område. Luftflödet kan styras genom medveten planering och tillägg i befintlig struktur.</p>",
+          "keywords": [
+            "buller",
+            "luft"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_2_1_stallningstaganden",
+              "html": "<ul>\n  <li>Undersök bullersituation och utred omgivningspåverkan noga vid planering och lovgivning som leder till väsentligt ökad trafik, störande verksamheter eller annat som leder till ökat buller<strong>.</strong></li>\n  <li>Buller ska i första hand hanteras i anslutning till källan då det ger störst eﬀekt. I andra hand görs lokala anpassningar.</li>\n  <li>Beakta vid planläggning och bygglov att bebyggelsens utformning ger förutsättningar för en så god ljudmiljö som möjligt. Placering och byggnadsutformning bör prioriteras framför lokala bullerskyddsåtgärder, såsom lokala bullerskydd på balkonger och uteplatser eller speciallösningar såsom inglasning av balkonger och specialfönster.</li>\n  <li>Planera för tillgång till goda ljudmiljöer, med särskilt fokus på barns utemiljö.</li>\n  <li>Beakta att miljökvalitetsnormer för luftkvalitet följs vid planering och lovgivning.</li>\n</ul>",
+              "keywords": [
+                "mkn",
+                "luft"
+              ],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Farligt gods",
+          "headerIdentifier": "4_6_5_farligt_gods_m.m.",
+          "html": "<p>Farligt gods är ett samlingsbegrepp för transporter av ämnen och produkter som kan skada människor, djur, miljö och egendom i händelse av olycka eller sabotage. I Varbergs kommun finns flera riksintresseanspråk för kommunikationer på väg, järnväg samt Ringhals och Varbergs hamnar. Flera av dessa utgör transportleder för farligt gods.</p>\n<p>För att minimera risken för skada används olika stora riskavstånd för olika typer av bebyggelse intill farligt godsleder. Riskbilden skiljer sig åt mellan olika platser och typer av risk, vilket påverkar behovet av skyddsavstånd och åtgärder. Vid planläggning i anslutning till transportleder för farligt gods finns en utredningszon.</p>",
+          "keywords": [
+            "farligt gods",
+            "gods",
+            "transporter"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_5_1_stallningstaganden",
+              "html": "<ul>\n  <li>Ta fram en riskanalys med förslag på lämpliga åtgärder för byggnation inom utredningszonen från transportleder för farligt gods. Riskanalys görs som del av arbete med detaljplan.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Strålsäkerhet och radon",
+          "headerIdentifier": "4_6_3_stralsakerhet",
+          "html": "<p>Radon är en osynlig och luktfri gas som bildas när det radioaktiva grundämnet radium sönderfaller. Radon i bostäder kan komma från marken, byggnadsmaterial och vatten. Idag byggs inte med material med betydande radonhalter och därmed är markradon den främsta grundförutsättningen att undersöka vid nybyggnation.</p>\n<p>På Väröhalvön ligger Ringhals kärnkraftverk, vilket i en mycket kontrollerad process utvinner energi genom att klyva det radioaktiva ämnet uran. Anläggningens beredskapsplaner påverkar kommunen.</p>\n<p>Kraftledningar och elanläggningar förknippas med vissa elsäkerhetsrelaterade risker. Skyddsavstånden varierar utifrån ledningens karaktär och bedömda risker. Bostäder, skolor och förskolor bör inte placeras för nära elanläggningar som ger förhöjda magnetfält.</p>",
+          "keywords": [
+            "radon"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_3_2_stallningstaganden",
+              "html": "<ul>\n  <li>Där bebyggelse anläggs på normalradonmark ska byggnader uppföras så att radoninträngning minimeras.</li>\n  <li>Säkerställ att erforderligt avstånd hålls till kraftledningar och elcentraler vid planering och bygglov.</li>\n</ul>",
+              "keywords": [
+                "ledning"
+              ],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Förorenad mark",
+          "headerIdentifier": "4_6_1_fororenad_mark",
+          "html": "<p>Förorenad mark är en viktig faktor att identifiera och utreda i samband med förändrad markanvändning på en plats där det finns misstanke om föroreningar. Giftiga ämnen och vätskor kan få stora konsekvenser på hälsan hos djur och människor. Flyktiga ämnen eller föroreningar som på annat sätt förflyttar sig kan dessutom få stor spridning om de inte identifieras och saneras i tid.</p>\n<p>I planeringssammanhang finns olika riktvärden att utgå från vid etablering av känslig, eller mindre känslig, markanvändning. Som känslig markanvändning räknas bostäder, skola och förskola med mera och som mindre känslig markanvändning räknas kontor, industri och dylikt.</p>\n<p>I Varbergs kommun finns potentiellt förorenad mark på många platser vid exempelvis gamla industriverksamheter och deponier.</p>",
+          "keywords": [
+            "förorenad mark",
+            "föroreningar"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_1_1_stallningstaganden",
+              "html": "<ul>\n  <li>Gör en riskbedömning, identifiera och ta hänsyn till markföroreningar i ett tidigt skede av planeringen.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Miljöfarliga och störande verksamheter",
+          "headerIdentifier": "4_6_4_miljofarlig_verksamhet",
+          "html": "<p>Miljöfarlig och störande verksamhet är all användning av mark, byggnader eller anläggningar som kan medföra störningar för människors hälsa eller miljön. Regler för miljöfarlig verksamhet finns i miljöbalken. Till störande verksamhet räknas förutom industrier även bland annat täkter, avfallshanteringsanläggningar, avloppsreningsverk och djurhållande jordbruk. Vissa av dessa anläggningar innebär risker för hälsan genom till exempel buller och utsläpp av ämnen. Andra har mer karaktären av störningar.</p>\n<p>Täkt innefattar brytning och bearbetning av bland annat berg, naturgrus, torv och andra jordarter. Bergmaterial från täkter är viktigt för bostadsbyggande och en fungerande infrastruktur, och behovet bedöms vara stort även i framtiden. Samtidigt medför täktverksamhet negativ miljö- och klimatpåverkan.</p>\n<p>Djurhållning har påverkan på omgivningen i form av exempelvis lukt och damm. För hästgårdar finns en befarad hälsorisk i och med spridning av allergen.</p>",
+          "keywords": [
+            "häst",
+            "hästhållning",
+            "täkter",
+            "djurhållning",
+            "djur",
+            "miljöfarlig",
+            "störande verksamhet"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_4_1_stallningstaganden",
+              "html": "<ul>\n  <li>Placera i första hand bostäder så att pågående miljöfarliga verksamheter inte riskerar restriktioner i efterhand.</li>\n  <li>Ta hänsyn till verksamheternas påverkan på omgivningen och lokalisera störande verksamheter dit de inte har negativ påverkan på människor, djur och stadslivet.</li>\n  <li>Ta hänsyn till att djurhållning har andra förutsättningar i eller invid tätort än på landsbygden där lantbruk är dominerande markanvändning.</li>\n  <li>Vid behov av utökning av täktverksamhet är det i första hand de redan etablerade täkterna som är aktuella för prövning.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Brandsäkerhet ",
+          "headerIdentifier": "4_6_5_brandsakerhet ",
+          "html": "<p>Brandskydd är de förebyggande insatser man vidtar för att skydda människor, byggnader och material från brand och rök. Räddningstjänsten ansvarar bland annat för kommunens skyldighet att förebygga och skydda mot olyckor. Vid planering av ny bebyggelse är det viktigt att ta hänsyn till byggnadstekniska aspekter, men också till möjligheterna för räddningstjänst och ambulans att angöra platsen och genomföra en snabb, säker och effektiv insats.</p>\n<p>Körtidsanalyser över räddningstjänstens operativa förmåga för Varbergs kommun finns tillgängligt. Körtidsanalyser finns dels för inledande förmåga, vilket betyder att minst en första insatsperson och ett fordon anländer till utryckningsplats, samt för basförmåga, vilket innebär bemanning på minst tre personer med tillhörande räddningsenhet. Ankomsttider för inledande förmåga vid normalberedskap är under 20 minuter för hela kommunen.</p>",
+          "keywords": [
+            "brand"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "Ställningstaganden",
+              "html": "<ul>\n  <li>Beakta brandvattenförsörjning och möjlighet till räddningsinsats vid detaljplanering och bygglov.</li>\n  <li>Planera bebyggelse i områden, som ligger utanför normal insatstid på 10 minuter, så att utrymning kan ske utan medverkan från räddningstjänsten.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Samhällsskydd och beredskap",
+          "headerIdentifier": "4_6_6_samhallsskydd",
+          "html": "<p>Samhällsplaneringen har en viktig roll i att utveckla och stödja samhällets beredskap mot samhällsstörningar, kris och krig. Kommunen ansvarar för att säkerställa människors hälsa och trygghet, samt att förebygga risker och skapa ett robust samhälle i samband med planering och utveckling.</p>\n<p>Riskhänsyn i fysisk planering innebär att riskfaktorer som exempelvis samhällsviktig verksamhet, hamnar, farleder, riksintressen och skyddsobjekt beaktas vid beslut om mark- och vattenanvändning. Det kan också handla om att tidigt avsätta mark utifrån totalförsvarets behov och att värna civilbefolkningens skydd.</p>\n<p>För att samhället ska bli mer robust och motståndskraftigt mot hot och störningar är det viktigt att riskhanteringsfrågorna kommer in tidigt i planeringsprocesserna och att frågorna hanteras i samverkan med flera olika aktörer. Vissa risker och negativa konsekvenser kan förebyggas och undvikas genom att ställa tydliga krav på planerade och pågående byggnationer eller genom att undvika placering på platser med höga risker. Vid nya exploateringar är det viktigt att ta hänsyn till samhällsviktiga verksamheter och närheten till kärnteknisk anläggning. För Ringhals finns beredskapszoner som är viktiga att beakta.</p>\n<p>Samhällsplanering och beredskapsplanering behöver samordnas, eftersom förmågan att hantera fredstida störningar är en förutsättning för att klara kriser och krig. Risker samt civil- och beredskapsfrågor ska därför beaktas i planläggning och lovgivning för att stärka samhällets motståndskraft. Kommunen ska enligt lag placera och utforma bebyggelse så att samhället blir robust, det vill säga ta hänsyn till olycksperspektivet, civil beredskapsperspektivet och totalförsvarets behov. Det bör bland annat göras utifrån kommunens RSA (risk- och sårbarhetsanalys) samt totalförsvarsplanering.</p>",
+          "keywords": [
+            "samhällsskydd",
+            "beredskap"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Totalförsvar",
+              "headerIdentifier": "Totalförsvar",
+              "html": "<p>Totalförsvar är den verksamhet som behövs för att förbereda Sverige för krig och består av militärt och civilt försvar. Civilt försvar handlar om hela samhällets motståndskraft och omfattar myndigheter, kommuner och regioner, enskilda och företag. Det civila försvaret ska även bidra till att stärka samhällets förmåga att förebygga och hantera svåra påfrestningar på samhället i fredstid – krisberedskap.</p>\n<p>Genom den fysiska planeringen kan kommunen vidta åtgärder för att förhindra och begränsa skador eller konsekvenser till följd av ett väpnat angrepp. Detta kan exempelvis ske genom att undvika placering av känslig bebyggelse i nära anslutning till särskilt utsatta objekt eller områden samt genom att planera bebyggelsen så att dessa objekt inte lokaliseras i närheten av platser som är svåra att utrymma. Bebyggelse som riskerar att utsättas för hot kan också, i vissa fall, behöva regleras med särskilda skyddsbestämmelser i detaljplan.</p>",
+              "keywords": [
+                "försvar",
+                "kris"
+              ],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Kärnenergiberedskap",
+              "headerIdentifier": "Kärnenergiberedskap",
+              "html": "<p>I anslutning till Ringhals har risker identifierats som vid särskilda händelser kan kräva utrymning. Det befintliga vägnätet möjliggör utrymning i dagsläget men uppvisar samtidigt sårbarheter, framför allt kopplade till översvämningsrisker vid skyfall och högvatten.</p>\n<p>För att säkerställa en robust och välfungerande utrymningsförmåga krävs nära samverkan mellan kommunen och andra berörda aktörer, såsom Länsstyrelsen och Trafikverket. Kommunen ansvarar för att mark- och vattenanvändningen planeras så att framtida utrymningar inte försvåras, att ny bebyggelse lokaliseras på lämpliga platser samt att förutsättningar finns för att evakuera Väröhalvön vid en eventuell olycka.</p>\n<p>Kommunen är medveten om de identifierade riskerna och arbetar aktivt för att stärka utrymningsförmågan på Väröhalvön.</p>",
+              "keywords": [
+                "kärnkraft",
+                "beredskap",
+                "utrymning"
+              ],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Flygsäkerhet",
+              "headerIdentifier": "Flygsäkerhet",
+              "html": "<p>Hela landets yta är samrådsområde med Försvarsmakten för objekt högre än 20 meter utanför tätort och högre än 45 meter inom tätort.</p>\n<p>Alla objekt som är högre än 20 meter över mark eller vattenytan ska remitteras till Luftfartsverket. Detta gäller oavsett position på svenskt territorium. Befinner sig objektet till havs eller i insjö ska även Kustbevakningen i Karlskrona remitteras.</p>\n<p>Delar av Varbergs kommun berörs av MSA-område för Göteborg-Landvetter respektive Halmstads flygplats. Ett MSA-område (minimum safety altitude) utgör den yta inom vilket det finns fastställda höjder för högsta tillåtna objekt som kan tillkomma i området runt en flygplats.</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=178235.35022827075&amp;y=6335078.244870432&amp;z=1&amp;l=mq9hzr%2C1422%2C1412&amp;p=&amp;gl=%7B%221422%22%3A%22op_rlv_akt_flygplatsmsaytor%22%7D\" data-maplink=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=178235.35022827075&amp;y=6335078.244870432&amp;z=1&amp;l=mq9hzr%2C1422%2C1412&amp;p=&amp;gl=%7B%221422%22%3A%22op_rlv_akt_flygplatsmsaytor%22%7D\">Visa MSA-områden i kartan</a></p>",
+              "keywords": [
+                "flyg",
+                "msa"
+              ],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_6_6_1_Stallningstaganden",
+              "html": "<ul>\n  <li>Se till att den fysiska planeringen beaktar intressen kopplade till totalförsvaret och skydd av civilbefolkningen i samverkan med berörda parter.</li>\n  <li>Samråd med berörd flygplats vid planering, bygglov eller andra prövningar för höga byggnader eller andra objekt (exempelvis master eller vindkraftverk) inom MSA-ytan.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": [],
+              "expanded": true
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Miljö, hälsa, risk och säkerhet"
+}

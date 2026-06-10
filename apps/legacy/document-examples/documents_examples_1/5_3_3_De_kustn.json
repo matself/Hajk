@@ -1,0 +1,62 @@
+{
+  "chapters": [
+    {
+      "header": "Bua",
+      "headerIdentifier": "5_3_8_Bua",
+      "html": "<p>I översiktsplanen föreslås en utveckling av Bua. Se mark- och vattenanvändningskartan för vägledning inom olika delar av området. Här visas de platser som föreslås för ny bebyggelse.</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=156913.20772838578&amp;y=6346204.919854318&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2Cy4xz76%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\" data-maplink=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=156913.20772838578&amp;y=6346204.919854318&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2Cy4xz76%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\">Visa FÖRDJUPNINGSOMRÅDE BUA i mark- och vattenanvändningskartan</a></p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Bua - Beteckningar_compressed.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Bua - Beteckningar_compressed.pdf\">Visa fördjupningsområdet i mark- och vattenanvändningskartan som pdf</a></p>",
+      "keywords": [
+        "Bua"
+      ],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Inriktningar för Buas utveckling",
+          "headerIdentifier": "5_3_8_1_Inriktningar_Bua",
+          "html": "<p>I Bua prioriteras en serviceortsutveckling som innebär en funktionsblandad bebyggelseutveckling, med fler bostäder, tillkommande service, verksamheter, centrumutveckling samt utveckling av grönstrukturer och kommunikationer. Huvuddelen av ny bebyggelse i området tillkommer genom förtätning. Blandad bebyggelse och olika bostadsformer uppmuntras.</p>\n<figure><img src=\"/Upload/Strukturbild_Bua.jpg\" alt=\"\" data-image-width=\"550px\" data-image-height=\"368px\" data-caption=\"Illustrationskarta som visar hur området kan utvecklas. Mark- och vattenanvändningskartan är vägledande.\" data-image-popup=\"\"/></figure>\n<p>Tanken är att serviceorterna Bua och Väröbacka ska komplettera och stärka varandra och erbjuda ett brett serviceutbud.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Grönstruktur",
+              "headerIdentifier": " 5_3_8_1_1_Inriktningar_Bua_Gronstruktur",
+              "html": "<p>I Bua finns höga natur- och friluftslivsvärden knutna till det öppna kusthed- och klipplandskapet i väster, och till det större skogsområdet i anslutning till Kroks mosse. Det västra området, där Kråkstad udde och Skomakarnäsan ingår, finns med i kommunens naturvårdsprogram där de botaniska och geologiska värdena särskilt lyfts fram. Området vid Kråkstad udde ingår i ett projekt som syftar till att restaurera kustnära ljunghed.</p>\n<p>I öster föreslås att grönstråket mellan de gamla betes- och åkermarkerna i Bya by och strandängarna vid Båle bevaras och utvecklas. Grönstråket bildar tillsammans med andra närliggande grönstrukturer ett viktigt spridningssamband för flera olika arter och habitat. Viss bebyggelse föreslås i anslutning till grönstråket, i övrigt bör det lämnas orört för att bibehålla sin funktion som spridningskorridor.</p>\n<p>I skogsområdet i anslutning till Kroks mosse finns motionsspår, vindskydd och välutvecklat stigsystem. Det finns goda förutsättningar att bevara och utveckla dessa värden i takt med att Bua utvecklas. Vid Kråkstad udde finns även en kommunal badplats.</p>\n<p>Förekomsten av lokala naturvärden kan behöva utredas vidare i kommande detaljplanering och lokala anpassningar till naturvärden kan behöva göras.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Planprogram för Bua",
+              "headerIdentifier": " 5_3_8_1_2_Planprogram_Bua",
+              "html": "<p>Parallellt med översiktsplanen pågår ett arbete med att ta fram ett program för detaljplan för centrala Bua. Vidare långsiktiga inriktningar för bebyggelseutvecklingen, grönstruktur och kommunikationer kommer att ges i programmet.</p>\n<figure><img src=\"/Upload/5_Bua_planprogram_illustration_centrum.png\" alt=\"Torg med liv och personer som både strosar och fikar.\" data-image-width=\"550px\" data-image-height=\"358px\" data-caption=\"Buas planprogram kommer klargöra ortens långsiktiga strategiska utveckling.\" data-image-popup=\"\"/></figure>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Särskilda avvägningar",
+          "headerIdentifier": "5_3_8_2_Sarskilda_avvagningar",
+          "html": "<p>Vid den översiktliga planeringen av Bua har olika aspekter och konsekvenser beaktats. Vissa avvägningar har beskrivits ovan. I vägledningen för de olika områdena i markanvändningskartan anges ytterligare ställningstaganden och konsekvenser för respektive område.</p>\n<p>Utbyggnadsområdena berörs i delar av nationella intressen och skyddsregler för jordbruksmark enligt miljöbalken. Samlade avvägningar kopplat till dessa intressen beskrivs nedan.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Jordbruksmark och skogsmark",
+              "headerIdentifier": "5_3_8_2_1_Bua_Jordbruksmark",
+              "html": "<p>Av 2 kap. miljöbalken följer att jord- och skogsbruk är av nationell betydelse och att brukningsvärd jordbruksmark endast får tas i anspråk för bebyggelse eller anläggningar om det behövs för att tillgodose väsentliga samhällsintressen, och detta behov inte kan tillgodoses på ett från allmän synpunkt tillfredsställande sätt genom att annan mark tas i anspråk. Skogsmark som har betydelse för skogsnäringen ska, så långt möjligt, skyddas mot åtgärder som kan påtagligt försvåra ett rationellt skogsbruk. Som underlag för översiktsplanen har en jordbruksmarksutredning tagits fram för att möjliggöra bedömningar och avvägningar i enlighet med lagstiftningens intentioner.</p>\n<p>Merparten av ny byggnation i Bua tillkommer genom förtätning. Planen medger att jordbruksmark i begränsad omfattning tas i anspråk för att utveckla Bua som tätort med ökad service samt för att möjliggöra en bred planberedskap för kommunens framtida behov.</p>\n<p>Utvecklingen av bostäder och service bedöms här vara ett väsentligt samhällsintresse. I planarbetet har andra tänkbara lokaliseringsområden för bebyggelse i Bua studerats. Dessa alternativa bebyggelseområden bedöms som mindre lämpliga ur allmän synpunkt. Utbyggnad i dessa områden bedöms leda till svårigheter att hushålla med mark, risk för negativ påverkan på naturvärden och områden med rekreativa värden, sämre upptagningsområden för lokal service och kollektivtrafik. Det bedöms också vara svårare att anordna teknisk infrastruktur inom de alternativa bebyggelseområden som studerats.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Bua"
+}

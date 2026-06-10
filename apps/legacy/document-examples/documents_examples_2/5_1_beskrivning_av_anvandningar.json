@@ -1,0 +1,80 @@
+{
+  "chapters": [
+    {
+      "header": "Beskrivning av användningar",
+      "headerIdentifier": "5_1_beskrivning_av_anvandningar",
+      "html": "<figure><img src=\"/Upload/MV_teckenförklaring.png\" alt=\"\" data-image-width=\"550px\" data-image-height=\"249px\" data-image-popup=\"\"/></figure>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Bebyggelse",
+          "headerIdentifier": "5_1_1_bebyggelse",
+          "html": "<p>Områden för Bebyggelse har stads- och tätortsmässig karaktär och innehåller många olika servicefunktioner tillsammans med bostäder. Bebyggelsen används i huvudsak för bostäder, kontor, handel eller annan verksamhet som är förenlig med bostäder. Trafik- och parkeringsytor, parker och fritidsanläggningar kan ingå.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1392%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1392%2C1401&amp;p=documentviewer\">Visa BEBYGGELSE i kartan</a></p>\n<p><strong>Bostäder<br>\n</strong>Mark- och vattenanvändning för bostadsbebyggelse med enstaka inslag av servicefunktioner.</p>\n<p><strong>Bostäder, lång sikt<br>\n</strong>Mark- och vattenanvändning för bostadsbebyggelse med enstaka inslag av servicefunktioner. Utveckling på lång sikt.</p>\n<p><strong>Funktionsblandad bebyggelse<br>\n</strong>Mark- och vattenanvändning med en blandning av bostäder, handel, service, kultur, arbetsplatser och verksamheter med mera.</p>\n<p><strong>Funktionsblandad bebyggelse, lång sikt<br>\n</strong>Mark- och vattenanvändning med en blandning av bostäder, handel, service, kultur, arbetsplatser och verksamheter med mera. Utveckling på lång sikt.</p>\n<p><strong>Kommunal service<br>\n</strong>Mark- och vattenanvändning för förskola, fritidshem, skola eller annan jämförlig verksamhet samt för vårdverksamhet som avser människor.</p>\n<p><strong>Besöksanläggning<br>\n</strong>Mark- och vattenanvändning för verksamheter som riktar sig till besökare. Här ingår kulturella och religiösa verksamheter, idrotts- och sportanläggningar med tillhörande byggnader och övriga besöksanläggningar.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Verksamheter och industri",
+          "headerIdentifier": "5_1_2_verksamheter_industri",
+          "html": "<p>Markanvändningen Verksamheter och industri används för områden med verksamheter som inte bör blandas med bostäder. Det kan till exempel vara verksamheter som är ytkrävande, genererar tung trafik eller påverkar omgivningen med buller eller lukt. Här ingår såväl traditionella industriområden som större handelscentrum, sportarenor och annan verksamhet.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1393%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1393%2C1401&amp;p=documentviewer\">Visa VERKSAMHETER OCH INDUSTRI i kartan</a></p>\n<p><strong>Störande verksamheter<br>\n</strong>Mark- och vattenanvändning för verksamheter och industrier som ger upphov till hög omgivningspåverkan.</p>\n<p><strong>Verksamheter</strong><br>\nMark- och vattenanvändning för verksamheter som ger upphov till en begränsad omgivningspåverkan.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Transportinfrastruktur",
+          "headerIdentifier": "5_1_3_Transportinfrastruktur",
+          "html": "<p>Transportinfrastruktur används för det övergripande transportsystemet som behövs för att kunna åstadkomma en hållbar och ändamålsenlig bebyggelsestruktur. Här ingår den fysiska utbredningen för respektive transportsätt.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1394%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1394%2C1401&amp;p=documentviewer\">Visa TRANSPORTINFRASTRUKTUR i kartan</a></p>\n<p><strong>Stationsområde<br>\n</strong>Mark- och vattenanvändning för viktiga anslutningspunkter i kollektivtrafiksystemet exempelvis resecentrum, centralstation eller större hållplatser och stationer. Här ingår även centrumfunktioner.</p>\n<p><strong>Järnväg<br>\n</strong>Mark- och vattenanvändning för person- och godstrafik på järnväg inklusive tillhörande anläggningar samt spårreservat.</p>\n<p><strong>Övergripande väg- och gatunät (alla transportslag)<br>\n</strong>Mark- och vattenanvändning för person- och godstrafik samt för gång-, cykel- och mopedtrafik i det övergripande väg- och gatunätet.</p>\n<p><strong>Lokalgata (alla trafikslag)<br>\n</strong>Mark- och vattenanvändning för person- och godstrafik samt för gång-, cykel- och mopedtrafik i det lokala väg- och gatunätet.</p>\n<p><strong>Gång- och cykelväg (separat)<br>\n</strong>Mark- och vattenanvändning för gång-, cykel- och mopedtrafik.</p>\n<p><strong>Korsningsåtgärd<br>\n</strong>Mark- och vattenanvändning för lämplig korsningsåtgärd i vägsystemet. Det kan till exempel innebära en cirkulationsplats, trafikljus, refug eller annan typ av åtgärd.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Grönområde och park",
+          "headerIdentifier": "5_1_4_gronomrade_park",
+          "html": "<p>I Grönområde och park ingår större parker, grönområden eller anlagda områden för fritidsaktiviteter i eller i nära anslutning till tätorter. Användningen avser grönområde som på grund av dess stora betydelse för ett stort omland bör skiljas ut från övrig bebyggelsemiljö. Det kan vara parker, parkliknande miljöer, naturmark i tätortsmiljö, närrekreationsområden, lekplatser, samt anlagda områden för fritidsaktiviteter som främst äger rum utomhus. Små sjöar och delar av sjö kan ingå.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1397%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1397%2C1401&amp;p=documentviewer\">Visa GRÖNOMRÅDE OCH PARK i kartan</a></p>\n<p><strong>Park<br>\n</strong>Mark- och vattenanvändning för grönområde som helt eller delvis är anlagd och tillhörande anläggningar.</p>\n<p><strong>Grönstråk<br>\n</strong>Mark- och vattenanvändning för ett sammanhängande grönstråk nära tätort med olika funktioner som exempelvis rekreation, hantering av dagvatten och biologisk mångfald.</p>\n<p><strong>Grönstråk, lång sikt<br>\n</strong>Mark- och vattenanvändning för ett sammanhängande grönstråk nära tätort med olika funktioner som exempelvis rekreation, hantering av dagvatten och biologisk mångfald. Utveckling på lång sikt.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Natur och friluftsliv",
+          "headerIdentifier": "5_1_5_Natur_o_friluftsliv",
+          "html": "<p>Natur och friluftsliv innefattar större sammanhängande områden där värden för friluftsliv, natur- och kulturmiljö, biologisk mångfald och ekosystemtjänster är prioriterade och förvaltas med hänsyn till friluftslivet. Områdena ska vara allmänt tillgängliga och kan innehålla övernattningsmöjlighet för det rörliga friluftslivet, skidspår, vandringsleder, motionsslingor med mera. Områden kan ha olika karaktär och användning beroende på årstid.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1398%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1398%2C1401&amp;p=documentviewer\">Visa NATUR OCH FRILUFTSLIV i kartan</a></p>\n<p><strong>Naturområde<br>\n</strong>Mark- och vattenanvändning för ett större naturområde nära tätort med olika funktioner som exempelvis rekreation, hantering av dagvatten och biologisk mångfald. Området är inte anlagt.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Teknisk anläggning",
+          "headerIdentifier": "5_1_6_teknisk_anlaggning",
+          "html": "<p>Mark- och vattenanvändning för tekniskt ändamål som försörjer samhället med till exempel energi, vatten och elektronisk kommunikation. Det är framför allt anläggningar som kräver stora ytor och där användningen behöver ha företräde framför andra användningar för att få ett fungerande system.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategorier.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1395%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1395%2C1401&amp;p=documentviewer\">Visa TEKNISKA ANLÄGGNINGAR i kartan</a></p>\n<p><strong>Energiförsörjning<br>\n</strong>Mark- och vattenanvändning för tillhandahållande och lagring av energi exempelvis kraftledningar och ställverk.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Areell näring",
+          "headerIdentifier": "5_1_7_areell_naring",
+          "html": "<p>Mark- och vattenanvändning för areell näring innebär områden för jordbruk, skogsbruk, rennäring, vattenbruk och yrkesfiske. Områdena kan också planläggas som Landsbygd eller Vatten men ska särskiljas om mark- eller vattenområdet har ett speciellt värde för näringen och ska ha företräde framför andra användningar. Det kan till exempel handla om att ett område för jordbruk behöver vara av en viss storlek för att det ska vara rimligt att bedriva jordbruk.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategori.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1396%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1396%2C1401&amp;p=documentviewer\">Visa AREELL NÄRING i kartan</a></p>\n<p><strong>Jordbruk<br>\n</strong>Mark- och vattenanvändning för jordbruk och djurhållning.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Landsbygd",
+          "headerIdentifier": "5_1_8_landsbygd",
+          "html": "<p>Mark- och vattenanvändning som präglas av ett varierat landskap som kan ha inslag av jordbruk, skogsbruk, mindre samhällen och/eller spridd bebyggelse.</p>\n<p>Användningen preciseras med hjälp av nedanstående underkategori.</p>\n<p><a href=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1399%2C1401&amp;p=documentviewer\" data-maplink=\"https://fordjupad_oversiktsplan_varobacka-utv.varberg.se/?m=map_1&amp;x=160700&amp;y=6347051&amp;z=1&amp;l=1rdy1j%2C1399%2C1401&amp;p=documentviewer\">Visa LANDSBYGD i kartan</a></p>\n<p><strong>Odlingsbygd<br>\n</strong>Mark- och vattenanvändning som präglas av odlingslandskap och betesmarker och där ingen ny sammanhållen bebyggelse tillåts. Mindre kompletterande bebyggelse som tillhör jordbruket och tillhörande verksamheter kan prövas.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Beskrivning av användningar"
+}

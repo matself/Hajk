@@ -1550,7 +1550,7 @@ export default function LayerSwitcherDnD({
         layerSwitcherTree,
         groups,
       );
-      return nested as TreeItem<TreeItemData>;
+      return nested;
     },
     [groups, fetchGroupComposition],
   );

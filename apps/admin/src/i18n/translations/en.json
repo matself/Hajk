@@ -890,6 +890,112 @@
         }
       }
     },
+    "dhRichTextEditor": {
+      "placeholder": {
+        "editor": "Start writing here…",
+        "textSection": "Write text here…"
+      },
+      "toolbar": {
+        "bold": "Bold (Ctrl+B)",
+        "italic": "Italic (Ctrl+I)",
+        "underline": "Underline (Ctrl+U)",
+        "strikethrough": "Strikethrough",
+        "bulletList": "Bullet list",
+        "orderedList": "Numbered list",
+        "editLink": "Edit link",
+        "insertLink": "Insert link",
+        "insertImage": "Insert image",
+        "insertVideo": "Insert video",
+        "insertAudio": "Insert audio",
+        "insertIframe": "Insert iframe",
+        "textSection": "Insert/edit fact box",
+        "spellcheckOn": "Enable spellcheck",
+        "spellcheckOff": "Disable spellcheck"
+      },
+      "link": {
+        "title": "Link",
+        "linkTypeLabel": "Link type",
+        "types": {
+          "web": "Web link",
+          "document": "Document link",
+          "map": "Map link",
+          "hover": "Hover text (tooltip)"
+        },
+        "url": "URL",
+        "urlPlaceholder": "https://...",
+        "folder": "Folder",
+        "noFolder": "Select a folder",
+        "document": "Document",
+        "noDocument": "Select a document",
+        "chapterId": "Chapter",
+        "noChapter": "No chapter",
+        "chapterIdHelper": "Optional — link to a specific chapter in the selected document",
+        "noMapContext": "Document links require a map context. Open the editor from the document handler.",
+        "mapLink": "Map link (URL)",
+        "mapLinkHelper": "URL to map view, e.g. copied from the map",
+        "tooltipText": "Tooltip text",
+        "tooltipPlaceholder": "Explanatory text shown on hover...",
+        "tooltipHelper": "Text shown as a tooltip when the user hovers",
+        "remove": "Remove link"
+      },
+      "media": {
+        "insertTitle": "Insert media",
+        "editTitle": "Edit media",
+        "edit": "Edit media",
+        "types": {
+          "image": "Image",
+          "video": "Video",
+          "audio": "Audio"
+        },
+        "srcUrl": "{{type}} URL / path",
+        "audioUrl": "Audio URL",
+        "altText": "Alt text",
+        "width": "Width (px)",
+        "height": "Height (px)",
+        "caption": "Caption",
+        "source": "Source",
+        "openInPopup": "Open in popup",
+        "position": "Position",
+        "positions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right",
+          "floatLeft": "Float left",
+          "floatRight": "Float right"
+        },
+        "audioPlaceholder": "Audio…",
+        "uploadPathPlaceholder": "/Upload/..."
+      },
+      "textSection": {
+        "title": "Fact box settings",
+        "colorWarning": "Note: Custom colors may affect dark/light mode",
+        "backgroundColor": "Background color",
+        "backgroundColorPlaceholder": "E.g. #FAF2BF",
+        "dividerColor": "Border color",
+        "dividerColorPlaceholder": "E.g. #E5F1F0",
+        "accordion": "Collapsible fact box",
+        "accordionTitle": "Accordion title",
+        "accordionTitlePlaceholder": "Title...",
+        "remove": "Remove fact box"
+      },
+      "iframe": {
+        "defaultTitle": "Iframe",
+        "embeddedTitle": "embedded",
+        "edit": "Edit iframe",
+        "title": "Iframe embed",
+        "src": "URL",
+        "iframeTitle": "Title",
+        "width": "Width",
+        "height": "Height",
+        "withoutPx": "Without px",
+        "position": "Position",
+        "positions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        }
+      }
+    },
     "layerSwitcherDnd.search": "Input address, real estate...",
     "layerSwitcherDnd.tools": "Map tools"
   }

@@ -1,0 +1,50 @@
+{
+  "chapters": [
+    {
+      "header": "Utmaningar",
+      "headerIdentifier": "2_2_utmaningar",
+      "html": "",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Ökad förbrukning av naturresurser, klimatpåverkan och risker med ett förändrat klimat",
+          "headerIdentifier": "2_2_1_",
+          "html": "<p>Världens naturresurser förbrukas idag på ett ohållbart sätt, särskilt stort är problemet i den utvecklade delen av världen. Vår överkonsumtion påverkar naturen och klimatet. Användningen av mark och vatten förändras så att livsmiljöer för växter och djur försvinner. Förlusten av biologisk mångfald är ett av de största globala miljöproblemen idag. Dessutom gör den globala uppvärmningen att arter som bygger upp ekosystemen försvinner.&nbsp;</p>\n<p>Den fysiska planeringen är en viktig pusselbit för att nå ett samhälle där naturresurser används på ett långsiktigt sätt, där redan ianspråktagna resurser i den byggda miljön tas tillvara och där klimatpåverkan är på en acceptabel nivå. Det handlar om att minska resursförbrukningen inom områden som energi, transportsektorn och invånarnas konsumtion.&nbsp;</p>\n<p>Det finns risk för att oväntade och extrema väderhändelser kommer att bli fler och mer vanligt förekommande. Kommunen måste anpassas för att bostäder och infrastruktur ska kunna stå emot klimatrelaterade utmaningar, som till exempel extrem nederbörd, höga flöden, höjd havsnivå och extremt långvariga värmeperioder.</p>",
+          "keywords": [
+            "klimat",
+            "risk",
+            "skyfall",
+            "regn",
+            "torka"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Kommande demografiska förändringar och risk för ökade sociala utmaningar",
+          "headerIdentifier": "2_2_2_",
+          "html": "<p>Kommunen förändras när befolkningen ökar och sammansättningen ändras över tid. Barnfamiljer flyttar in och andelen äldre ökar. Människors sociala och ekonomiska förutsättningar ser olika ut. Det växande Varberg ska vara en socialt hållbart växande kommun - jämlik, trygg och utformad på ett sätt som gör att invånarna mår bra både fysiskt och psykiskt.&nbsp;</p>\n<p>Särskilt viktigt är att samhällsplaneringen görs på ett sätt som minimerar risken för att människor hamnar i ett utanförskap. Det kan handla om var vi utvecklar kommunen, med vilket innehåll och hur vi integrerar det nya med det befintliga. Den fysiska planeringen kan ge förutsättningar för ett nära och enkelt vardagsliv där det finns plats för rörelse och rekreation, liksom delaktighet, möten och social samvaro.</p>\n<p>Att förbättra bostadsutbudet och erbjuda olika prisnivåer är en viktig del av att möta en växande befolknings varierande behov. Att kommunen kan erbjuda olika boendeformer är också viktigt för anpassning efter livets olika skeden.</p>",
+          "keywords": [
+            "segregation",
+            "utanförskap",
+            "trygghet"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Ökande konkurrens om marken – planeringsdilemman",
+          "headerIdentifier": "2_2_3_",
+          "html": "<p>På grund av ovanstående utmaningar och det ökade tryck det innebär att Varberg växer blir anspråken på ytorna allt fler och målkonflikterna tydligare. En hållbar planering behöver utgå från perspektivet att lägga till, omvandla och förädla befintlig bebyggelse och strukturer när kommunen utvecklas, snarare än att exploatera mark som idag inte är bebyggd.</p>\n<p>Möjligheterna att nå målen om en minskad klimatpåverkan påverkas av var och hur nya bebyggelsestrukturer utvecklas.&nbsp;Kommunen behöver värna jordbruksmark och naturområden. Naturområden och bostadsnära grönska behövs för minskad klimatpåverkan och välbefinnande.</p>\n<p>Nya bostäder och arbetsplatser behöver byggas samtidigt som det behövs tillräckligt med plats för samhällsservice. Det finns redan idag i delar av kommunen en brist på samhällsservice, till exempel förskolor och skolor, som behöver byggas ikapp.&nbsp;</p>\n<p>Med befolkningstillväxten tillkommer också behov av ytor för ett attraktivt vardagsliv. Det är en utmaning att säkerställa plats för rekreation och samspel för barn och unga genom tillgång till bra utemiljöer för lek och utevistelse vid bostäder, fritidshem, förskolor och grundskolor. Samtidigt innebär det möjlighet att minska transportbehovet och en jämlik gestaltad livsmiljö om dessa behov kan tillgodoses i närområdet.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Utmaningar"
+}

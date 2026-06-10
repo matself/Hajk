@@ -1,0 +1,54 @@
+{
+  "chapters": [
+    {
+      "header": "Strategisk miljöbedömning",
+      "headerIdentifier": "7_4_Strategisk_miljöbedömning",
+      "html": "<p>Enligt 6 kap. 3 § miljöbalken ska en strategisk miljöbedömning göras när en plan eller ett program kan antas medföra betydande miljöpåverkan. Vanligtvis omfattar en översiktsplan alltid den typen av verksamheter eller åtgärder som kan antas medföra en betydande miljöpåverkan.&nbsp;</p>\n<p>Syftet med en strategisk miljöbedömning är att integrera miljöaspekter i planering och beslutsfattande så att en hållbar utveckling främjas. Resultatet av den strategiska miljöbedömningen redovisas i en miljökonsekvensbeskrivning (MKB).</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/251031_Granskningsversion_MKB_Varberg kommun.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/251031_Granskningsversion_MKB_Varberg kommun.pdf\">Läs MILJÖKONSEKVENSBESKRIVNINGEN i sin helhet här</a></p>\n<figure><img src=\"/Upload/7_4_str._miljobedomning_jordklot.jpg\" alt=\"Foto som visar två händer som håller en liten jordglob.\" data-image-width=\"550px\" data-image-height=\"558px\" data-image-popup=\"\"/></figure>",
+      "keywords": [
+        "miljökonsekvensbeskrivning",
+        "MKB",
+        "hållbarhet"
+      ],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Sammanfattning av planens konsekvenser",
+          "headerIdentifier": "Sammanfattning av planens konsekvenser",
+          "html": "<p>MKB:n har upprättats av Norconsult AB och bygger på granskningsversionen av översiktsplanen. Kommunen har bedömt att MKB:n i huvudsak även har bäring på antagandeversionen av planen. Det bör dock noteras att vissa skillnader finns mellan gransknings- och antagandeversionen av översiktsplanen.</p>\n<p>Här följer en sammanfattning av planens bedömda sammanvägda konsekvenser för miljö samt sociala och ekonomiska hållbarhetsaspekter, utifrån vad som anges i MKB:n.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ekologisk hållbarhet",
+              "headerIdentifier": "Ekologisk hållbarhet",
+              "html": "<p>Planförslaget innebär över lag måttliga ekologiska konsekvenser jämfört med både nuläget och nollalternativet. Skillnaderna ligger främst i synen på markanvändning och förnybar energi.&nbsp;</p>\n<ul>\n  <li>Planförslaget innebär <strong>lokalt</strong> <strong>vissa negativa effekter</strong> på naturmiljön, men dessa balanseras av åtgärder som stärker skyddet. <strong>Vattenmiljön påverkas inte negativt</strong> och kan i vissa fall förbättras.&nbsp;</li>\n  <li>Bristen på tydliga och kraftfulla riktlinjer för utsläppsminskningar, i kombination med begränsningar för ny förnybar energiproduktion, bedöms leda till <strong>stora negativa konsekvenser för klimatet</strong>.&nbsp;</li>\n  <li>Planen stärker <strong>klimatanpassningen</strong> genom minskad översvämningsrisk. Samtidigt medför nybyggnation på jordbruksmark <strong>måttliga negativa konsekvenser för långsiktig markhushållning</strong>.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Social hållbarhet",
+              "headerIdentifier": "Social hållbarhet",
+              "html": "<p>Planförslaget har goda ambitioner inom flera sociala områden, men riktlinjerna är ofta allmänt hållna, vilket skapar osäkerhet kring genomförandet.</p>\n<ul>\n  <li>Planen har positiva ambitioner kring service, ortssamband och inkludering, men <strong>saknar konkreta åtgärder</strong>, vilket gör att effekterna för delaktighet, integration och minskad segregation blir <strong>obetydliga</strong>.</li>\n  <li>Förbättrad kollektivtrafik, tryggare trafikmiljöer och bättre tillgång till offentliga platser och grönområden ger <strong>små positiva effekter</strong> för både jämställdhet och barns vardagsmiljö.</li>\n  <li>Satsningar på grönstruktur, friluftsliv och hänsyn till natur- och kulturmiljöer stärker den gestaltade livsmiljön, men avsaknaden av styrmedel för hållbara resvanor gör att <strong>folkhälsoeffekterna förblir begränsade.</strong></li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Ekonomisk hållbarhet",
+              "headerIdentifier": "Ekonomisk hållbarhet",
+              "html": "<p>Planförslaget bedöms ha övervägande positiva ekonomiska konsekvenser, särskilt för näringslivet.</p>\n<ul>\n  <li>Planförslaget stödjer en <strong>kontrollerad och strategisk</strong> <strong>utbyggnad</strong> där bostäder, service och infrastruktur samordnas, vilket ger <strong>små men positiva effekter</strong> för kommunens ekonomi.</li>\n  <li>Genom att främja både större verksamhetsområden och småskaliga företag stärks <strong>näringslivets mångfald och utvecklingsmöjligheter</strong>.</li>\n  <li>Förbättrad tillgång till service, idrottsytor och hållbara boendemiljöer ger <strong>små positiva effekter för den enskildes ekonomiska och praktiska vardag</strong>.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Strategisk miljöbedömning"
+}

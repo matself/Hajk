@@ -1,0 +1,76 @@
+{
+  "chapters": [
+    {
+      "header": "Gödestad",
+      "headerIdentifier": "5_3_3_Godestad",
+      "html": "<p>I översiktsplanen föreslås en utveckling av Gödestad. Se mark- och vattenanvändningskartan för vägledning inom olika delar av området. Här visas de platser som föreslås för ny bebyggelse.</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=172533.173223019&amp;y=6334978.3918088535&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\" data-maplink=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=172533.173223019&amp;y=6334978.3918088535&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\">Visa FÖRDJUPNINGSOMRÅDE GÖDESTAD i mark- och vattenanvändningskartan</a></p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Gödestad - Beteckningar_compressed.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Gödestad - Beteckningar_compressed.pdf\">Visa fördjupningsområdet i mark- och vattenanvändningskartan som pdf</a></p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Inriktningar för Gödestads utveckling",
+          "headerIdentifier": "5_3_3_1_Inriktningar_Godestad",
+          "html": "<p>Gödestad kan utvecklas som stadsnära ort med hänsyn till befintlig bebyggelse och det omgivande landskapet. Gödestad föreslås att utvecklas successivt med ny bebyggelse, verksamheter och goda livsmiljöer för att bibehålla en levande landsbygd. Den lantliga karaktären bidrar starkt till ortens attraktivitet och ska därför värnas. Detsamma gäller de naturvärden som finns i och omkring Gödestad.</p>\n<figure><img src=\"/Upload/Strukturbild_Gödestad.jpg\" alt=\"\" data-image-width=\"550px\" data-image-height=\"385px\" data-caption=\"Illustrationskarta som visar hur området kan utvecklas. Mark- och vattenanvändningskartan är vägledande.\" data-image-popup=\"\"/></figure>\n<figure><img src=\"/Upload/5_OUS_Godestad.png\" alt=\"Bild på antagen Ortsutvecklingsstrategi för Gödestad.\" data-image-width=\"550px\" data-image-height=\"388px\" data-caption=\"Inriktningarna i översiktsplanen följer den av kommunfullmäktige antagna ortsutvecklingsstrategin för Gödestad.\" data-image-popup=\"\"/></figure>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Bostäder och bebyggelsestruktur",
+              "headerIdentifier": "5_3_3_1_1_Gode_bebyggelsestruktur",
+              "html": "<p>Orten utvecklas med småskalig och blandad bebyggelse, med kompletterande bostads- och upplåtelseformer.</p>\n<p>Ny bebyggelse föreslås i första hand inom utpekade utbyggnadsområden, där inriktningen är att ny bebyggelse ska föregås av detaljplanering. En spridd bebyggelse ska undvikas, bland annat med hänsyn till den värdefulla jordbruksmarken.&nbsp;</p>\n<p>En utbyggnad med bostäder enligt planförslaget i Gödestad förutsätter utbyggnad av kommunalt vatten och avlopp i en hållbar struktur. En hållbar VA-lösning för Gödestad bygger också på en sammanhållen bebyggelsestruktur, och att ny bebyggelse lokaliseras till delar där det bedöms finnas goda möjligheter för utbyggnad av ledningsnätet.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Kommunikationer",
+              "headerIdentifier": "5_3_3_1_2_Gode_Kommunikationer",
+              "html": "<p>Väg 153 genom Gödestad utgör ett av kommunens starkaste stråk för bil- och kollektivtrafik samt en primär led för farligt gods, med höga trafikflöden och bullerstörningar. Avsaknad av säkra passager gör att vägen upplevs som en barriär i samhället.&nbsp;</p>\n<p>Kommunen vill verka för tillkomsten av en säker passage över väg 153 för att skapa förutsättningar för att gå eller cykla till vidare målpunkter söder om vägen, bland annat Göthriks skola. En säker gång- och cykelpassage över väg 153 bör på sikt också kompletteras med vidare separat gång- och cykelväg söderut med anslutning till befintlig gång- och cykelväg mellan Grimetons stationssamhälle och Göthriks skola. Tillsammans med en framtida planering för detta cykelstråk kan det även utredas möjligheten till utbyggnad av bostäder längs stråket.&nbsp;</p>\n<p>Kommunen vill också verka för ett samlat hållplatsläge i Gödestad, genom utveckling av Gödestad kyrka till huvudhållplats, samt i samband med utbyggnad av bostäder planera för ett gång- och cykelstråk mellan hållplatsen Gödestad kyrka och Grimetons stationssamhälle.</p>\n<figure><img src=\"/Upload/5_3_3_Gödestad_gc.png\" alt=\"Schematisk bild över ny GC-väg i Gödestad\" data-image-width=\"550px\" data-image-height=\"330px\" data-caption=\"En säker passage över väg 153 kan främja gång- och cykeltrafiken.\" data-image-popup=\"\"/></figure>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Grönstruktur",
+              "headerIdentifier": "5_3_3_1_3_Gode_Gronstruktur",
+              "html": "<p>I Gödestad finns vacker natur och strövområden i ett landskap som i övrigt domineras av öppna fält. På Källebjär i norr finns motionsspår och på Galgberget i söder finns en välbesökt utsiktsplats och ett rekreationsområde med anlagda stigar.</p>\n<p>I anslutning till befintlig bebyggelse föreslås vissa utbyggnadsområden. Naturområdena bör dock i övrigt lämnas obebyggda. Dessa naturområden är viktiga för biologisk mångfald och bildar tillsammans med andra närliggande grönstrukturer viktiga spridningsnätverk för flera olika arter och habitat.</p>\n<p>Förekomsten av lokala naturvärden kan behöva utredas vidare i kommande detaljplanering och lokala anpassningar till naturvärden kan behöva göras.</p>\n<p>Från Gödestad har man nära till Grimetons världsarv och söder om orten sträcker sig Åkullaleden.</p>\n<p>På orten finns möjlighet för ytterligare utveckling av grönområdena. Genheten föreslås bevaras genom att gångstråk kopplas ihop med stigarna på Källebjär och Galgberget.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Samhällsservice",
+              "headerIdentifier": "5_3_3_1_4_Gode_Service",
+              "html": "<p>Med ett tillskott av nya bostäder i Gödestad skapas ett utökat underlag för service av olika slag. I Gödestad finns en förskola (Ekebo) som ligger mitt i samhället. Gödestad ingår i Göthriks skolas upptagningsområde. Göthriks skola ligger 3 km från Gödestad. I Rolfstorp, Hunnestad, Tvååker och inom Varbergs tätort finns ytterligare offentlig och kommersiell service.</p>\n<p>Längst upp på Ekarevägen finns en kommunal lekplats som utgör en viktig mötesplats.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Särskilda avvägningar",
+          "headerIdentifier": "5_3_3_2_Sarskilda_avvagningar",
+          "html": "<p>Vid den översiktliga planeringen av Gödestad har olika aspekter och konsekvenser beaktats. Vissa avvägningar har beskrivits ovan. I vägledningen för de olika områdena i markanvändningskartan anges ytterligare ställningstaganden och konsekvenser för respektive område.</p>\n<p>Utbyggnadsområdena berörs, i delar, av nationella intressen och skyddsregler för jordbruksmark enligt miljöbalken. Samlade avvägningar kopplat till dessa intressen beskrivs nedan.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Jordbruksmark och skogsmark",
+              "headerIdentifier": "5_3_3_2_1_Gode_Jordbruksmark",
+              "html": "<p>Av 2 kap. miljöbalken följer att jord- och skogsbruk är av nationell betydelse och att brukningsvärd jordbruksmark endast får tas i anspråk för bebyggelse eller anläggningar om det behövs för att tillgodose väsentliga samhällsintressen, och detta behov inte kan tillgodoses på ett från allmän synpunkt tillfredsställande sätt genom att annan mark tas i anspråk. Skogsmark som har betydelse för skogsnäringen ska, så långt möjligt, skyddas mot åtgärder som kan påtagligt försvåra ett rationellt skogsbruk. Som underlag för översiktsplanen har en jordbruksmarksutredning tagits fram för att möjliggöra bedömningar och avvägningar i enlighet med lagstiftningens intentioner.</p>\n<p>Planen medger att jordbruksmark tas i anspråk för att utveckla Gödestad med bostäder och möjliggöra en bred planberedskap för kommunens framtida behov.</p>\n<p>Utvecklingen av bostäder och service bedöms här vara ett väsentligt samhällsintresse. I planarbetet har andra tänkbara lokaliseringsområden för bebyggelse i Gödestad studerats. Dessa alternativa bebyggelseområden har i detta planarbete bedömts som mindre lämpliga ur allmän synpunkt. Utbyggnad i dessa alternativa områden kan leda till svårigheter att hushålla med mark, risk för negativ påverkan på naturvärden och områden med rekreativa värden, sämre upptagningsområden för lokal service och kollektivtrafik. Det bedöms också vara svårare att anordna teknisk infrastruktur inom de alternativa bebyggelseområden som studerats.</p>\n<figure><img src=\"/Upload/5_3_4_Gödestad_kyrka.png\" alt=\"Gödestad kyrka\" data-image-width=\"550px\" data-image-height=\"388px\" data-caption=\"Gödestad kyrka.\" data-source=\"\" data-image-popup=\"\"/></figure>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Gödestad"
+}

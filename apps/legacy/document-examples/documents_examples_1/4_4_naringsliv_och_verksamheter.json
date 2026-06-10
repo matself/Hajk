@@ -1,0 +1,63 @@
+{
+  "chapters": [
+    {
+      "header": "Näringsliv och verksamheter",
+      "headerIdentifier": "4_4_naringsliv_och_verksamheter",
+      "html": "<p>Varbergs kommun har ett näringsliv med en stor variation av företag och verksamheter, där majoriteten är små och medelstora. Ett antal större företag bidrar till stabilitet och sysselsättning i kommunen. De största branscherna i Varberg omfattar bygg, handel och tjänster, jordbruk, livsmedel, energi, vård och omsorg, samt besöksnäring. Denna blandning av företag i olika storlekar och branscher skapar en dynamisk och hållbar lokal ekonomi.</p>\n<p>Varberg ligger i en attraktiv del av Sverige, har ett rikt kulturarv och en stödjande affärsmiljö, vilket gör kommunen till en attraktiv plats för företag och entreprenörer. Kommunens goda kommunikationer, närheten till större städer och hamnen bidrar också till en gynnsam företagsmiljö.</p>\n<p>Kommunen har goda förutsättningar för att växa i framtiden, och det är viktigt att ha en hög beredskap i form av verksamhetsmark för befintliga och framtida verksamheter. Byggnader, platser och anläggningar tas tillvara, utvecklas och anpassas för att fungera för nya funktioner och verksamheter i takt med att samhället och behoven förändras.</p>\n<figure><img src=\"/Upload/4_4_1_narlingsliv.jpg\" alt=\"Bilden visar insidan av en butik (Johnssons gård) med ett bord med konsthantverk i förgrunden och konsumenter i bakgrunden.\" data-image-width=\"550px\" data-image-height=\"366px\" data-image-popup=\"\"/></figure>",
+      "keywords": [
+        "jordbruk",
+        "fiske",
+        "verksamheter",
+        "näringsliv",
+        "ekonomi"
+      ],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Planera för ett växande näringsliv",
+          "headerIdentifier": "4_4_1_",
+          "html": "<p>En hög markberedskap är viktigt för kommunens utvecklingsmöjligheter samtidigt som en effektiv markanvändning är viktig för att hushålla med mark, som är en begränsad tillgång både ur ett ekonomiskt perspektiv och ur hållbarhetssynpunkt.</p>\n<p>Företagens lokalisering kan ha stor betydelse för verksamheten och skiljer sig åt beroende på vilket sorts företag det gäller. Samlokalisering av företag i klustermiljöer kan ge mervärde vid en etablering och skapa intresse för nya etableringar. Möjligheterna för samlokalisering och förtätning inom de befintliga verksamhetsområdena kan skapa utrymme för företag som vill växa och utvecklas.</p>\n<p>Kommunens större verksamhetsområden är lokaliserade längs E6, väg 41, väg 153, och vid infarterna till staden. I serviceorterna är verksamhetsområdena lokaliserade nära samhället. Denna placering ger tillgång till befintlig infrastruktur och främjar hållbara transporter för de anställda.</p>\n<p>Efterfrågan på verksamhetsmark är störst i stadsområdet och längs med de större vägarna, främst E6. För att ge förutsättning för rätt verksamhet att hamna på rätt plats krävs ett varierat utbud av lokaliseringsmöjligheter.</p>\n<p>Handelsetableringar är i huvudsak koncentrerade till Varbergs stadskärna och i kommunens serviceorter. Varbergs kommun har potential att locka fler kunskapsintensiva verksamheter till Varberg med det attraktiva läget och stationens placering centralt i staden. Innerstaden med ett stort utbud av butiker inom detalj- och torghandeln bidrar till stadens attraktivitet.</p>\n<p>Behov finns av fler hotell, vandrarhem och andra boendeanläggningar i staden och i andra delar av kommunen. Genom att bredda utbudet av övernattningsmöjligheter kan Varberg stärka sin ställning som besöksdestination.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "4_4_1_1_stallningstaganden",
+              "html": "<ul>\n  <li>Planlagd mark för verksamheter ska finnas i stadsområdet, i anslutning till de större vägarna och i kommunens serviceorter.</li>\n  <li>Planera för förtätning inom befintliga verksamhetsområden.</li>\n  <li>Lokalisera transportintensiva verksamheter i anslutning till större vägarna och järnväg.</li>\n  <li>Främja en utveckling som stärker handeln i stadskärnan och i serviceorterna.</li>\n  <li>Externetablering av detaljhandel i form av exempelvis externa köpcentra tillåts inte.</li>\n  <li>Främja besöksnäringar för Varbergs starka ställning som besöksdestination.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Främja landsbygdsstödjande verksamheter",
+          "headerIdentifier": "Främja landsbygdsstödjande verksamheter",
+          "html": "<p>Kommunen främjar landsbygdsutveckling och att verksamheter kan ges förutsättningar att tillkomma och utvecklas.&nbsp;</p>\n<p>Landsbygdsstödjande verksamheter kan handla om olika företagsetableringar inom tillverkning eller service. Dessa kan bidra med nya arbetstillfällen och lokal kommersiell service, men kan samtidigt också ge ett förbättrat underlag för utbyggnad av infrastruktur och kommunal service.&nbsp;</p>\n<p>Utveckling av nya landsbygdsstödjande verksamheter kan med fördel ske på platser och på sätt som knyter samman bostadsområden med andra viktiga samhällsfunktioner. Särskilt bra är det om dessa satsningar bidrar till ökad tillgänglighet i vardagen för barn, äldre och andra som bor på landsbygden.</p>",
+          "keywords": [
+            "verksamheter",
+            "landsbygd",
+            "butik",
+            "handel"
+          ],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Ställningstaganden",
+              "headerIdentifier": "Ställningstaganden",
+              "html": "<ul>\n  <li>Främja utveckling av kommersiell service och verksamhetsutveckling på landsbygden.</li>\n  <li>Nya verksamheter på landsbygden bör i första hand lokaliseras där det finns, eller finns potential att stärka, kollektivtrafik samt cykel- och lågtrafikerade vägar.</li>\n</ul>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Näringsliv och verksamheter"
+}

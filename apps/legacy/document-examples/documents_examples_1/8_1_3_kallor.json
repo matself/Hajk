@@ -1,0 +1,41 @@
+{
+  "chapters": [
+    {
+      "header": "Källor",
+      "headerIdentifier": "8_1_3_kallor",
+      "html": "",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Kartor",
+          "headerIdentifier": "8_1_3_1_kartor",
+          "html": "<p>Karttjänsten innehåller lokalt producerad data samt bearbetad data från:</p>\n<ul>\n  <li>Lantmäteriet</li>\n  <li>Trafikverket</li>\n  <li>Naturvårdsverket</li>\n  <li>Länsstyrelsen</li>\n  <li>Boverket</li>\n  <li>och övriga kända datakällor</li>\n</ul>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Foton",
+          "headerIdentifier": "8_1_3_2_foton",
+          "html": "<ul>\n  <li>Foto i \"Näringsliv och verksamheter\": Natalie Greppi</li>\n  <li>Foto i \"Miljö, hälsa, risk och säkerhet\": Simon Lautrup</li>\n  <li>Foto i \"Strategisk miljöbedömning\": PMB Media &amp; Design</li>\n  <li>Övriga foton är tagna av Varbergs kommun</li>\n</ul>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [],
+          "expanded": true
+        },
+        {
+          "header": "Illustrationer",
+          "headerIdentifier": "8_1_3_3",
+          "html": "<ul>\n  <li>Illustration av FN:s globala miljömål: FN:s utvecklingsprogram (UNDP)</li>\n  <li>Övriga illustrationer är framtagna av Varbergs kommun</li>\n</ul>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Källor"
+}

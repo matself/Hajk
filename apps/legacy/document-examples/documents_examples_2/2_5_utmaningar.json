@@ -1,0 +1,48 @@
+{
+  "chapters": [
+    {
+      "header": "Utmaningar",
+      "headerIdentifier": "2_5_1_utmaningar",
+      "html": "",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Att låta Väröbacka växa från stationen ",
+          "headerIdentifier": "2_5_1_1_Att_lata_Varobacka_vaxa_ fran_stationen ",
+          "html": "<p>Samtidigt som stationsetableringen innebär stora möjligheter så utgör järnvägen en stark barriär i samhället och tågtrafiken medför risker och buller. För att skapa ett hållbart stationssamhälle är det av största vikt att göra stationsområdet till en integrerad del av Väröbacka samhälle. För att lyckas med detta behöver stations- och perrongområden få en rumsligt lättorienterad och överblickbar struktur. Centrumbebyggelsen i anslutning till stationsområdet bör vara sammanhängande, tätbebyggd och bidra till en omslutande känsla. Fönster och entréer riktade mot stationsområdet kan skapa en ökad trygghetskänsla och upplevd närhet till de olika funktionerna i området.</p>\n<p>Västkustbanan och Varbergsvägen utgör barriärer genom samhället. Därför är det viktigt med en god planering av bullerskydd och området i anslutning till övrig bebyggelse. Genom en god gestaltning kan skalan brytas ned och bidra till ökad trygghetskänsla. De raka och gena gång- och cykelvägarna genom Väröbacka hjälper också till att bryta ner skalan från de stora infrastrukturanläggningarna.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Ett förändrat klimat med allt mer vatten",
+          "headerIdentifier": "2_5_1_2_Ett_forandrat_klimat_med_allt_mer_vatten",
+          "html": "<p>Ett förändrat klimat innebär två stora utmaningar för Väröbacka vilka båda tydligt präglar markanvändningens utformning: höga havsnivåer och kraftiga skyfall. Båda dessa präglar tydligt markanvändningens utformning.</p>\n<p>Väröbacka, som i stora delar är låglänt, påverkas kraftigt vid höga havsnivåer, i synnerhet i dess sydvästra delar. Områden där det finns lokala lågpunkter och större skyfallsvägar blir mer eller mindre obrukbara i samband med kraftiga regn. Dessa risker behöver hanteras inom planeringen för att inte skapa materiell och mänsklig förödelse när olyckan är framme. Indirekt kan dessa faktorer även påverka markens stabilitet, vilket behöver studeras avseende grundläggning och utformning av bebyggelse.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Stärkta gröna samband och ekosystem ",
+          "headerIdentifier": "2_5_1_3_Starkta_grona_samband_och_ekosystem",
+          "html": "<p>Som ett led i att hantera vatten och skapa en hälsosam tätortsutveckling finns övergripande grönstråk som knyter samman orten från öst till väst och från norr till söder. Dessa stråk får olika utformning i dess olika delar, men ger sammantaget utrymme för att samla dagvatten vid skyfall, bidrar med en kompletterande fauna, kan ta upp vatten och binda jordar samt fungera som spridningskorridorer för växter och djur i området. Dessa gröna samband är en viktig pusselbit för att stärka de lokala ekosystemtjänsterna i Väröbacka, där hantering av vatten är en sådan tjänst.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Att växa på jordbruksmark",
+          "headerIdentifier": "2_5_1_4_Att_vaxa_pa_jordbruksmark",
+          "html": "<p>Väröbacka utgörs i stor utsträckning av jordbruksmark, en värdefull resurs för en hållbar livsmedelsförsörjning. Etableringen av en ny tågstation innebär nya anspråk på marken i området och att en hållbar markanvändning även inrymmer bostads-, verksamhets och centrumfunktioner.</p>\n<p>Även om jordbruksmark lokalt bebyggs, så innebär en större koncentration av bostäder i Väröbacka att annan jordbruksmark i kommunen värnas från byggnation av enstaka eller gruppbyggda områden vilka annars skulle göra stor åverkan på sammanhängande jordbruksarealer och förutsättningar för ett rationellt och effektivt brukande av jorden. Det är av stor vikt att kommunen i och med planläggning av Väröbacka står emot anspråk på annan jordbruksmark i kommunen. Den kommunövergripande översiktsplanen beskriver den övergripande strategin.</p>\n<figure><img src=\"/Upload/Samhälle_jordbruk.JPG\" alt=\"Foto där man ser jordbruksmark tillsammans med befintlig bebyggelse i Väröbacka.ebyg\" data-image-width=\"550px\" data-image-height=\"366px\" data-image-popup=\"\"/></figure>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Utmaningar"
+}

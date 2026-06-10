@@ -1,0 +1,77 @@
+{
+  "chapters": [
+    {
+      "header": "Tofta",
+      "headerIdentifier": "5_3_2_Tofta",
+      "html": "<p>I översiktsplanen föreslås en utveckling av Tofta. Se mark- och vattenanvändningskartan för vägledning inom olika delar av området. Här visas de platser som föreslås för ny bebyggelse.</p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=167328.15683681212&amp;y=6338740.076968945&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2Cy4xz76%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\" data-maplink=\"https://oversiktsplan-utv.varberg.se/?m=map_1&amp;x=167328.15683681212&amp;y=6338740.076968945&amp;z=5&amp;l=1423%2C1450%2C1404%2C1405%2C1406%2C1407%2C1409%2Cy4xz76%2C1410%2C1411%2C1448%2C1437%2C1412&amp;p=documentviewer#m=map_1&amp;x=150000&amp;y=6341002&amp;z=0&amp;l=1423%2C1444%2C1443%2C1445%2C1446%2C1451%2C1412&amp;p=documentviewer%2Clayerswitcher\">Visa FÖRDJUPNINGSOMRÅDE TOFTA i mark- och vattenanvändningskartan</a></p>\n<p><a href=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Tofta - Beteckningar_compressed.pdf\" data-link=\"https://oversiktsplan-utv.varberg.se/Upload/dokument/Fördjupning - Tofta - Beteckningar_compressed.pdf\">Visa fördjupningsområdet i mark- och vattenanvädningskartan som pdf</a></p>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Inriktningar för Toftas utveckling",
+          "headerIdentifier": "5_3_2_2_Inriktningar_Tofta",
+          "html": "<p>Tofta kan utvecklas som stadsnära ort med hänsyn till befintlig bebyggelse och det omgivande landskapet. Tofta kan på sikt utvecklas med olika bostadsformer, samhällsservice och vissa arbetsplatser.</p>\n<figure><img src=\"/Upload/Strukturbild_Tofta.jpg\" alt=\"\" data-image-width=\"550px\" data-image-height=\"475px\" data-caption=\"Illustrationskarta som visar hur området kan utvecklas. Mark- och vattenanvändningskartan är vägledande.\" data-image-popup=\"\"/></figure>\n<p>Målet är att skapa en samlad ort med närhet till tågstationen. Nya bebyggelseområdens närhet till tågstationen möjliggör för ett ökat hållbart resande. Förslaget utgår ifrån att ny bebyggelse ansluter till befintlig bebyggelse centralt på orten, där nya bostadsgator och gångvägar bildar ett sammanhängande nät som binder ihop gammalt och nytt.</p>\n<p>Området närmast tågstationen kan med fördel utvecklas som mötesplats och nod för både transport, service och verksamheter.</p>\n<figure><img src=\"/Upload/5_3_2_Tofta_Kollage-station_2.png\" alt=\"Kollage över Toftas stationsområde\" data-image-width=\"550px\" data-image-height=\"261px\" data-caption=\"Området kring stationsområdet kan med fördel utvecklas.\" data-image-popup=\"\"/></figure>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Bostäder och bebyggelsestruktur",
+              "headerIdentifier": "5_3_2_2_1_Tofta_Bebyggelse",
+              "html": "<p>Ny bebyggelse anpassas till befintlig i fråga om skala, bebyggelsestruktur, antal våningar samt utformning av tak. Vid nybyggnation är dessa aspekter viktiga att förhålla sig till för att bibehålla och värna om Toftas karaktär. Hänsyn bör också tas till hur gatu- och grönstrukturen är utformad vad gäller bland annat tätheten, nivåskillnader och lummig grönska.</p>\n<p>I Tofta föreslås blandade boendeformer. Närmst stationen kan en tätare bebyggelse med flerfamiljshus och radhus placeras. Längre bort från stationen kan det vara lämpligare med en något mindre täthet mellan husen. Detta för att spegla den bebyggelsestruktur som finns i Tofta idag. Vid stationen kan viss centrumverksamhet främjas för att bidra till att utveckla stationsområdet som mötesplats.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": [],
+              "expanded": true
+            },
+            {
+              "header": "Kommunikationer",
+              "headerIdentifier": "5_3_2_2_2_Tofta_Kommunikationer",
+              "html": "<p>Tofta har förutsättningar för goda kommunikationsmöjligheter med både kollektivtrafik och cykel. För att öka resandet med hållbara färdmedel föreslås en ökad turtäthet i kollektivtrafiken och nya gång- och cykelvägar för bättre koppling till Varberg Nord och innerstaden. I utvecklingsförslaget föreslås en ny gång- och cykelväg från Toftavägen, söder om Toftaås, och vidare under E6 till Varberg Nord. Denna kan sedan ansluta till befintlig gång- och cykelväg för vidare resa mot Varbergs innerstad.</p>\n<p>Genheten föreslås bevaras genom utvecklade gång- och cykelstråk inom Tofta, vilka även kopplas ihop med promenad- och cykelslingorna på Skanebjär och Toftaås.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Grönstruktur",
+              "headerIdentifier": "5_3_2_2_3_Tofta_Gronstruktur",
+              "html": "<p>Grönstrukturen i Tofta domineras av de två skogsbeklädda kullarna Skanebjär och Toftaås. Dessa områden har stor betydelse för biologisk mångfald och friluftsliv i ett annars öppet odlingslandskap. I båda skogsområdena finns miljöer som indikerar höga naturvärden, såsom ädellövskog med gamla ekar, rikligt med död ved och rasbranter. Toftaås ingår i kommunens naturvårdsprogram och kullarna är del i ett viktigt spridningsnätverk för arter knutna till ädellövskog.</p>\n<p>I norra delen av Tofta och på en avsats i sluttningen av Skanebjär föreslås viss ny bebyggelse. I övrigt lämnas Skanebjär obebyggt, utifrån dess värde för friluftsliv och biologisk mångfald. Förekomsten av lokala naturvärden kan behöva utredas vidare i kommande detaljplanering och lokala anpassningar till naturvärden kan behöva göras.</p>\n<p>Förslaget är att gång- och cykelkopplingar mellan nya bostadsområden, stationsområdet och ortens grönområden Toftaås och Skanebjär stärks på sikt. Toftaås ligger i nära anslutning till Lindvallens fotbollsplan, dit kopplingar också kan stärkas.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            },
+            {
+              "header": "Samhällsservice",
+              "headerIdentifier": "5_3_2_2_4_Tofta_Samhallsservice",
+              "html": "<p>Med ett tillskott av nya bostäder i Tofta skapas ett utökat underlag för service av olika slag. Stationsområdet och närliggande föreslagna utvecklingsområden kan med fördel utvecklas med olika inslag av lokal service.</p>\n<p>I närliggande Lindberg finns förskola och skola som ges möjlighet att utvecklas.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        },
+        {
+          "header": "Särskilda avvägningar",
+          "headerIdentifier": "5_3_2_2_Sarskilda_avvagningar",
+          "html": "<p>Vid den översiktliga planeringen av Tofta har olika aspekter och konsekvenser beaktats. Vissa avvägningar har beskrivits ovan. I vägledningen för de olika områdena i markanvändningskartan anges ytterligare ställningstaganden och konsekvenser för respektive område.</p>\n<p>Utbyggnadsområdena berörs, i delar, av nationella intressen och skyddsregler för jordbruksmark enligt miljöbalken. Samlade avvägningar kopplat till dessa intressen beskrivs nedan.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": [
+            {
+              "header": "Jordbruksmark och skogsmark",
+              "headerIdentifier": "Jordbruksmark och skogsmark",
+              "html": "<p>Av 2 kap. miljöbalken följer att jord- och skogsbruk är av nationell betydelse och att brukningsvärd jordbruksmark endast får tas i anspråk för bebyggelse eller anläggningar om det behövs för att tillgodose väsentliga samhällsintressen, och detta behov inte kan tillgodoses på ett från allmän synpunkt tillfredsställande sätt genom att annan mark tas i anspråk. Skogsmark som har betydelse för skogsnäringen ska, så långt möjligt, skyddas mot åtgärder som kan påtagligt försvåra ett rationellt skogsbruk. Som underlag för översiktsplanen har en jordbruksmarksutredning tagits fram för att möjliggöra bedömningar och avvägningar i enlighet med lagstiftningens intentioner.</p>\n<p>Planen medger att jordbruksmark tas i anspråk för att utveckla Tofta med bostäder och ökad service samt för att möjliggöra en bred planberedskap för kommunens framtida behov.</p>\n<p>Utvecklingen av bostäder och service bedöms här vara ett väsentligt samhällsintresse. I planarbetet har andra tänkbara lokaliseringsområden för bebyggelse i Tofta studerats. Dessa alternativa bebyggelseområden bedöms som mindre lämpliga ur allmän synpunkt. Utbyggnad i dessa alternativa områden bedöms leda till svårigheter att hushålla med mark, risk för negativ påverkan på naturvärden och områden med rekreativa värden, sämre upptagningsområden för lokal service och kollektivtrafik. Det bedöms också vara svårare att anordna teknisk infrastruktur inom de alternativa bebyggelseområden som studerats.</p>",
+              "keywords": [],
+              "geoObjects": [],
+              "chapters": []
+            }
+          ],
+          "expanded": true
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Tofta"
+}

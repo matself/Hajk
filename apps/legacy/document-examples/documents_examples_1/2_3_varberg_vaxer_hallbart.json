@@ -1,0 +1,64 @@
+{
+  "chapters": [
+    {
+      "header": "Planeringsinriktningar - Varberg växer hållbart",
+      "headerIdentifier": "2_3_planeringsinriktningar Varberg växer hållbart",
+      "html": "<p>Kommunfullmäktige beslutade i september 2022 om fem planeringsinriktningar för ny översiktsplan. Planeringsinriktningarna ligger till grund för planförslaget.</p>\n<p>Kommunen ska planera för en hållbar utveckling där vi tar tillvara kommunens kvaliteter och skapar nya goda livsmiljöer. Samtidigt ska vi begränsa användningen av naturresurser och vara beredda på ett förändrat klimat.</p>\n<p><a href=\"Upload\\dokument\\Planeringsinriktningar_ny översiktsplan_220920.pdf\" data-link=\"Upload\\dokument\\Planeringsinriktningar_ny översiktsplan_220920.pdf\">Läs PLANERINGSINRIKTNINGAR FÖR NY ÖVERSIKTSPLAN här</a></p>\n<figure><img src=\"/Upload/2_3_Planeringsinriktningar.png\" alt=\"En skiss med fem symboler som visar beslutade planeringsinriktningar för den nya översiktsplanen. Hus vid vatten, våg med två vågskålar, hjärta med hand, träd vid vatten och cirkularitet.\" data-image-width=\"550px\" data-image-height=\"320px\" data-image-popup=\"\"/></figure>",
+      "keywords": [],
+      "geoObjects": [],
+      "chapters": [
+        {
+          "header": "Skapa goda livsmiljöer - på landsbygden och i staden",
+          "headerIdentifier": "Skapa goda livsmiljöer - på landsbygden och i staden",
+          "html": "<p>Vi behöver ge förutsättningar för en vardag där rörelse och rekreation får plats, liksom delaktighet, möten och social samvaro. En sådan vardag skapar förutsättningar för god hälsa, jämställdhet och jämlikhet – för ett socialt hållbart samhälle.</p>\n<p>Möjlighet till olika sorters boenden, för olika behov och plånböcker, säkerställer allas tillgång till bostad. Med en variation av bostäder och upplåtelseformer inom ett område bidrar den fysiska planeringen till ett inkluderande samhälle.</p>\n<p>Genom att ge rum för grönska och vatten, ett varierat innehåll, omsorg om kulturvärden och det specifika för platsen skapar vi förutsättningar för en god gestaltad livsmiljö. Det lokala näringslivet och föreningar är viktiga aktörer i samhällsutvecklingen, inte minst i kommunens små orter, och ska ges förutsättningar att utvecklas.</p>",
+          "keywords": [
+            "jämställdhet"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Växa i takt",
+          "headerIdentifier": "Växa i takt",
+          "html": "<p>För att skapa en hållbar utveckling och god samhällsekonomi utvecklar vi i första hand större samlad bebyggelse i anslutning till befintliga orter i kommunen. På så vis skyddar vi värdefull jordbruksmark och naturmiljö samtidigt som ny byggnation bidrar till utveckling och bättre underlag för verksamheter, offentlig service och kollektivtrafik. På landsbygden kan ny samlad bebyggelse tillkomma i mindre skala. Staden fortsätter vara en motor och resurs i samhällsutvecklingen för hela kommunen.</p>\n<p>Utbyggnad av nya bostadsområden behöver gå hand i hand med utbyggnad av exempelvis försörjning av dricksvatten, parker, skolor och kollektivtrafik. Tydlig prioriteringsordning säkerställer en samhällsekonomiskt hållbar utveckling.</p>\n<p>Ny teknik inom vatten och avlopp samt nya mobilitetslösningar kan ge möjlighet till större flexibilitet i den framtida planeringen.</p>",
+          "keywords": [],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Skapa ett fossilfritt och cirkulärt Varberg",
+          "headerIdentifier": "Skapa ett fossilfritt och cirkulärt Varberg",
+          "html": "<p>Behovet av transporter kan minskas med ett nära vardagsliv, nya mobilitetslösningar och smart planering. Genomtänkt placering av tillkommande bebyggelse skapar närhet till service och ett gott underlag för hållbart resande.</p>\n<p>De naturresurser som redan tagits i anspråk i befintliga byggnader och anläggningar nyttjas, anpassas och återbrukas i utvecklingen av kommunen.</p>\n<p>Fortsatt produktion av fossilfri energi och ökad produktion av förnyelsebar energi, liksom ett mångsidigt näringsliv som nyttjar ny teknik och en ökad lokal matproduktion, ger möjlighet att minska det ekologiska fotavtrycket.</p>",
+          "keywords": [
+            "hållbarhet"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Beredd på ett förändrat klimat",
+          "headerIdentifier": "Beredd på ett förändrat klimat",
+          "html": "<p>Ett framtida Varberg behöver vara rustat för att möta de klimatförändringar som väntar, i form av ökande skyfall, översvämningar samt tätare perioder av torka, värmeböljor och extrema väderhändelser. Vi utgår från höjda havsnivåer när vi planerar framtida bebyggelse.</p>\n<p>Ett annat sätt att möta riskerna är att stärka naturens motståndskraft genom utveckling av ekosystemtjänster. Genom en variation av olika naturtyper, naturmiljöer samt kontakt mellan olika naturområden ger vi förutsättningar för temperaturreglering, biologisk mångfald, vattenrening och pollinering. På så sätt kan vi skydda oss mot idag oförutsägbara effekter av ett förändrat klimat och fortsätta resan mot ett ekologiskt hållbart samhälle.</p>",
+          "keywords": [
+            "klimat"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        },
+        {
+          "header": "Utveckla och ta tillvara det som är bra med Varberg",
+          "headerIdentifier": "Utveckla och ta tillvara det som är bra med Varberg",
+          "html": "<p>Befintliga kvaliteter ska vara utgångspunkter och förädlas när Varberg utvecklas för framtiden. Tillkommande bebyggelse och förändrad markanvändning ska ske på ett sätt så att värdena finns kvar för framtida generationer att ta del av.&nbsp;</p>\n<p>Byggnader, platser och anläggningar tas till vara, utvecklas och anpassas så att de fungerar för nya funktioner och verksamheter, i takt med att samhället och behoven förändras.</p>",
+          "keywords": [
+            "karaktär"
+          ],
+          "geoObjects": [],
+          "chapters": []
+        }
+      ],
+      "expanded": true
+    }
+  ],
+  "map": "map_1",
+  "title": "Planeringsinriktningar"
+}
