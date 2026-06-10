@@ -3,7 +3,6 @@ import { useParams, useSearchParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import {
-  Grid,
   TextField,
   useTheme,
   FormControl,
@@ -63,6 +62,7 @@ import { toast } from "react-toastify";
 import { HttpError } from "../../lib/http-error";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
 import FormAccordion from "../../components/form-components/form-accordion";
 import {
   LayerSwitcherDnD,
@@ -508,16 +508,16 @@ export default function MapSettings() {
             noValidate={false}
           >
             <FormPanel title={t("map.baseSettings")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 12 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <TextField
                     label={t("map.projection")}
                     fullWidth
                     defaultValue={map?.options?.projection ?? "EPSG:3006"}
                     {...register("options.projection")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.startZoom")}
                     fullWidth
@@ -525,8 +525,8 @@ export default function MapSettings() {
                     defaultValue={map?.options?.startZoom ?? 1.33}
                     {...register("options.startZoom")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.maxZoom")}
                     fullWidth
@@ -534,8 +534,8 @@ export default function MapSettings() {
                     defaultValue={map?.options?.maxZoom ?? 8}
                     {...register("options.maxZoom")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.minZoom")}
                     fullWidth
@@ -543,8 +543,8 @@ export default function MapSettings() {
                     defaultValue={map?.options?.minZoom ?? 0}
                     {...register("options.minZoom")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.centerCoordinate")}
                     fullWidth
@@ -553,16 +553,16 @@ export default function MapSettings() {
                     }
                     {...register("options.centerCoordinate")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.origin")}
                     fullWidth
                     defaultValue={map?.options?.origin ?? "0,0"}
                     {...register("options.origin")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.extent")}
                     fullWidth
@@ -572,8 +572,8 @@ export default function MapSettings() {
                     }
                     {...register("options.extent")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.resolutions")}
                     fullWidth
@@ -583,21 +583,21 @@ export default function MapSettings() {
                     }
                     {...register("options.resolutions")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.printResolutions")}
                     fullWidth
                     defaultValue={map?.options?.printResolutions ?? ""}
                     {...register("options.printResolutions")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormPanel>
 
             <FormAccordion title={t("map.extraSettings")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -690,45 +690,45 @@ export default function MapSettings() {
                       label={t("map.confirmOnWindowClose")}
                     />
                   </FormGroup>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.logoLight")}
                     fullWidth
                     defaultValue={map?.options?.logoLight ?? "/logoLight.png"}
                     {...register("options.logoLight")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.logoDark")}
                     fullWidth
                     defaultValue={map?.options?.logoDark ?? ""}
                     {...register("options.logoDark")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.legendOptions")}
                     fullWidth
                     defaultValue={map?.options?.legendOptions ?? ""}
                     {...register("options.legendOptions")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.crossOrigin")}
                     fullWidth
                     defaultValue={map?.options?.crossOrigin ?? "anonymous"}
                     {...register("options.crossOrigin")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.extraMapControls")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -821,13 +821,13 @@ export default function MapSettings() {
                       label={t("map.showRecentlyUsedPlugins")}
                     />
                   </FormGroup>
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.interactions")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -965,8 +965,8 @@ export default function MapSettings() {
                       label={t("map.pinchZoom")}
                     />
                   </FormGroup>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.zoomLevelDelta")}
                     fullWidth
@@ -981,13 +981,13 @@ export default function MapSettings() {
                     defaultValue={map?.options?.zoomAnimationDuration ?? ""}
                     {...register("options.zoomAnimationDuration")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.colors")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormControl fullWidth>
                     <InputLabel id="preferredColorScheme-label">
                       {t("map.preferredColorScheme")}
@@ -1017,30 +1017,30 @@ export default function MapSettings() {
                       )}
                     />
                   </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.primaryColor")}
                     fullWidth
                     defaultValue={map?.options?.primaryColor ?? "#333333"}
                     {...register("options.primaryColor")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.secondaryColor")}
                     fullWidth
                     defaultValue={map?.options?.secondaryColor ?? "#ffa000"}
                     {...register("options.secondaryColor")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.sidepanel")}>
-              <Grid container rowSpacing={1.5}>
-                <FormGroup>
-                  <Grid size={12}>
+              <FormFieldGrid>
+                <FormFieldRow>
+                  <FormGroup>
                     <FormControlLabel
                       control={
                         <Controller
@@ -1056,8 +1056,6 @@ export default function MapSettings() {
                       }
                       label={t("map.drawerStatic")}
                     />
-                  </Grid>
-                  <Grid size={12}>
                     <FormControlLabel
                       control={
                         <Controller
@@ -1073,8 +1071,6 @@ export default function MapSettings() {
                       }
                       label={t("map.drawerVisible")}
                     />
-                  </Grid>
-                  <Grid size={12}>
                     <FormControlLabel
                       control={
                         <Controller
@@ -1090,8 +1086,6 @@ export default function MapSettings() {
                       }
                       label={t("map.drawerVisibleMobile")}
                     />
-                  </Grid>
-                  <Grid size={12}>
                     <FormControlLabel
                       control={
                         <Controller
@@ -1107,26 +1101,25 @@ export default function MapSettings() {
                       }
                       label={t("map.drawerPermanent")}
                     />
-                  </Grid>
-                </FormGroup>
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
+                  </FormGroup>
+                </FormFieldRow>
+                <FormFieldRow>
                 <TextField
                   label={t("map.drawerContent")}
                   fullWidth
                   defaultValue={map?.options?.drawerContent ?? "plugins"}
                   {...register("options.drawerContent")}
                 />
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
+              </FormFieldRow>
+              <FormFieldRow>
                 <TextField
                   label={t("map.drawerTitle")}
                   fullWidth
                   defaultValue={map?.options?.drawerTitle ?? "Kartverktyg"}
                   {...register("options.drawerTitle")}
                 />
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
+              </FormFieldRow>
+              <FormFieldRow>
                 <TextField
                   label={t("map.drawerButtonTitle")}
                   fullWidth
@@ -1135,8 +1128,8 @@ export default function MapSettings() {
                   }
                   {...register("options.drawerButtonTitle")}
                 />
-              </Grid>
-              <Grid size={{ xs: 12, md: 10 }}>
+              </FormFieldRow>
+              <FormFieldRow>
                 <FormControl fullWidth>
                   <InputLabel id="drawerButtonIcon-label">
                     {t("map.drawerButtonIcon")}
@@ -1157,12 +1150,13 @@ export default function MapSettings() {
                     )}
                   />
                 </FormControl>
-              </Grid>
+              </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.cookies")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={{ xs: 12, md: 10 }}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -1210,8 +1204,8 @@ export default function MapSettings() {
                       label={t("map.showCookieNoticeButton")}
                     />
                   </FormGroup>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.cookieLink")}
                     fullWidth
@@ -1221,8 +1215,8 @@ export default function MapSettings() {
                     }
                     {...register("options.cookieLink")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.cookieMessage")}
                     fullWidth
@@ -1234,13 +1228,13 @@ export default function MapSettings() {
                     }
                     {...register("options.cookieMessage")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
 
             <FormAccordion title={t("map.introGuide")}>
-              <Grid container rowSpacing={1.5}>
-                <Grid size={6}>
+              <FormFieldGrid>
+                <FormFieldRow>
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -1273,8 +1267,8 @@ export default function MapSettings() {
                       label={t("map.introductionShowControlButton")}
                     />
                   </FormGroup>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("map.introductionSteps")}
                     fullWidth
@@ -1283,8 +1277,8 @@ export default function MapSettings() {
                     defaultValue={map?.options?.introductionSteps ?? "[]"}
                     {...register("options.introductionSteps")}
                   />
-                </Grid>
-              </Grid>
+                </FormFieldRow>
+              </FormFieldGrid>
             </FormAccordion>
           </FormContainer>
         )}

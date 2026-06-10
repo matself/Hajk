@@ -40,7 +40,7 @@ import {
 } from "@mui/icons-material";
 import { useLayers } from "../../../api/layers";
 import type { Layer, LayerKind } from "../../../api/layers";
-import { Group, useGroups, getLayersByGroupId } from "../../../api/groups";
+import { Group, useGroups, useLayersByGroupId, getLayersByGroupId } from "../../../api/groups";
 import type { LayerSwitcherTreeNode } from "../../../api/groups/types";
 import {
   buildInitialTreeItems,
@@ -48,6 +48,7 @@ import {
   collectLayerIdsFromTree,
   serializeLayerSwitcherTree,
   unwrapEditingGroupContainer,
+  wrapInEditingGroupContainer,
   type LayerSwitcherTreeItem,
 } from "../utils/layer-switcher-tree";
 import { TreeItemActions } from "../../../components/layerswitcher-dnd/tree-item-actions";
@@ -121,6 +122,8 @@ export type GroupPlacementLayer = Layer & {
 };
 
 interface LayerSwitcherDnDProps {
+  /** When set, loads the group's layers and tree from GET /groups/:id/layers. */
+  groupId?: string;
   initialLayers?: GroupPlacementLayer[];
   initialTree?: LayerSwitcherTreeNode[];
   /** The group being edited; layers are shown inside this node in the tree. */
@@ -1292,6 +1295,7 @@ const RitordningDropZone: React.FC<{
 };
 
 export default function LayerSwitcherDnD({
+  groupId,
   initialLayers = [],
   initialTree,
   editingGroup,
@@ -1302,6 +1306,17 @@ export default function LayerSwitcherDnD({
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
   const { t } = useTranslation();
+  const { data: groupLayersData, isLoading: isLoadingGroupLayers } =
+    useLayersByGroupId(groupId ?? "");
+  const effectiveInitialLayers = useMemo(() => {
+    const source = groupId ? (groupLayersData?.layers ?? []) : initialLayers;
+    return layerKind
+      ? source.filter((layer) => layer.layerKind === layerKind)
+      : source;
+  }, [groupId, groupLayersData?.layers, initialLayers, layerKind]);
+  const effectiveInitialTree = groupId
+    ? groupLayersData?.layerSwitcherTree
+    : initialTree;
   const [leftTab, setLeftTab] = useState(0);
   const [rightTab, setRightTab] = useState(0);
   const [search, setSearch] = useState("");
@@ -1345,30 +1360,41 @@ export default function LayerSwitcherDnD({
   const initialLayerIdsKey = useMemo(
     () =>
       [
-        initialLayers
+        effectiveInitialLayers
           .map((layer) => `${layer.id}:${layer.name}:${layer.drawOrder ?? 0}`)
           .join("|"),
-        JSON.stringify(initialTree ?? []),
+        JSON.stringify(effectiveInitialTree ?? []),
         editingGroup?.id ?? "",
+        groupId ?? "",
         groups.map((group) => group.id).join("|"),
       ].join("::"),
-    [initialLayers, initialTree, editingGroup, groups],
+    [effectiveInitialLayers, effectiveInitialTree, editingGroup, groupId, groups],
   );
 
   useEffect(() => {
-    const initialItems = buildInitialTreeItems(
-      initialTree,
-      initialLayers,
+    let initialItems = buildInitialTreeItems(
+      effectiveInitialTree,
+      effectiveInitialLayers,
       groups,
-    ) as TreeItems<TreeItemData>;
-    setItems(initialItems);
+    ) as LayerSwitcherTreeItem[];
+    if (editingGroup) {
+      initialItems = wrapInEditingGroupContainer(initialItems, editingGroup);
+    }
+    const treeItems = initialItems as TreeItems<TreeItemData>;
+    setItems(treeItems);
     setRitordningItems(
-      [...initialLayers]
+      [...effectiveInitialLayers]
         .sort((a, b) => (a.drawOrder ?? 0) - (b.drawOrder ?? 0))
         .map((layer) => layer.id),
     );
-    itemsBeforeChangeRef.current = initialItems;
-  // initialLayerIdsKey encodes initialLayers + initialTree
+    itemsBeforeChangeRef.current = treeItems;
+    if (groupId) {
+      groupCompositionCacheRef.current.set(groupId, {
+        layers: effectiveInitialLayers,
+        layerSwitcherTree: effectiveInitialTree,
+      });
+    }
+  // initialLayerIdsKey encodes effectiveInitialLayers + effectiveInitialTree
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLayerIdsKey, groups]);
 
@@ -1389,8 +1415,15 @@ export default function LayerSwitcherDnD({
       drawOrder.map((layerId, index) => [layerId, index]),
     );
     const placementByLayerId = new Map(
-      initialLayers.map((layer) => [layer.id, layer]),
+      effectiveInitialLayers.map((layer) => [layer.id, layer]),
     );
+    orderedLayerIds.forEach((layerId) => {
+      if (placementByLayerId.has(layerId)) return;
+      const catalogLayer = layers.find((layer) => layer.id === layerId);
+      if (catalogLayer) {
+        placementByLayerId.set(layerId, catalogLayer);
+      }
+    });
 
     onCompositionChange({
       layerSwitcherTree,
@@ -1409,7 +1442,7 @@ export default function LayerSwitcherDnD({
     items,
     ritordningItems,
     onCompositionChange,
-    initialLayers,
+    effectiveInitialLayers,
     editingGroup?.id,
   ]);
 
@@ -3592,7 +3625,25 @@ export default function LayerSwitcherDnD({
   );
 
   if (embedded) {
+    if (groupId && isLoadingGroupLayers) {
+      return (
+        <Box sx={{ py: 2 }}>
+          <Typography>{t("common.loading")}</Typography>
+        </Box>
+      );
+    }
     return <Box sx={panelShellSx}>{layerOrderContent}</Box>;
+  }
+
+  if (groupId && isLoadingGroupLayers) {
+    return (
+      <Paper sx={panelShellSx}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          {t("common.layerSwitcherOrder")}
+        </Typography>
+        <Typography>{t("common.loading")}</Typography>
+      </Paper>
+    );
   }
 
   return (

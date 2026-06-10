@@ -4,6 +4,7 @@ import { Grid } from "@mui/material";
 import {
   Autocomplete,
   Alert,
+  Box,
   Button,
   CircularProgress,
   TextField,
@@ -21,8 +22,6 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { Trans, useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
-import { isAxiosError } from "axios";
 import type { GridRenderCellParams } from "@mui/x-data-grid";
 import Page from "../../../layouts/root/components/page";
 import {
@@ -41,44 +40,13 @@ import { SquareSpinnerComponent } from "../../../components/progress/square-prog
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
-import { ApiValidationDetail } from "../../../lib/internal-api-client";
-import { getDeleteGroupErrorMessage } from "../utils/group-errors";
+import { getCreateGroupErrorMessage, getDeleteGroupErrorMessage } from "../utils/group-errors";
 
 interface GroupCreateForm {
   name: string;
   internalName?: string;
   type: GroupType | "";
   layerIds: string[];
-}
-
-interface GroupCreateErrorBody {
-  errorId?: string;
-  error?: string;
-  details?: ApiValidationDetail[] | string;
-}
-
-function getCreateGroupErrorMessage(error: unknown, t: TFunction): string {
-  if (!isAxiosError<GroupCreateErrorBody>(error) || !error.response) {
-    return t("groups.createGroupFailed");
-  }
-
-  const data = error.response.data;
-  if (Array.isArray(data?.details)) {
-    const messages = data.details.map((d) => d.message).filter(Boolean);
-    if (messages.length > 0) {
-      return messages.join(" · ");
-    }
-  }
-
-  if (typeof data?.details === "string" && data.details.trim()) {
-    return data.details.trim();
-  }
-
-  if (typeof data?.error === "string" && data.error.trim()) {
-    return data.error.trim();
-  }
-
-  return t("groups.createGroupFailed");
 }
 
 interface GroupsListProps {
@@ -407,17 +375,15 @@ export default function GroupsList({
         <SquareSpinnerComponent />
       ) : (
         <>
-          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <TextField
-                fullWidth
-                label={t("groups.search")}
-                variant="outlined"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-            </Grid>
-          </Grid>
+          <Box sx={{ mb: 2, width: { xs: "100%", sm: "50%", md: "33%" } }}>
+            <TextField
+              fullWidth
+              label={t("groups.search")}
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </Box>
 
           <Grid size={12}>
             <StyledDataGrid<Group>

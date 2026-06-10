@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Grid } from "@mui/material";
-import { Button, TextField, useTheme } from "@mui/material";
+import { Button, Box, TextField, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
 import { useMaps, Map, useCreateMap, MapMutation } from "../../../api/maps";
@@ -249,17 +249,15 @@ export default function MapsList({
         <SquareSpinnerComponent />
       ) : (
         <>
-          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <TextField
-                fullWidth
-                label={t("map.searchTitle")}
-                variant="outlined"
-                value={searchString}
-                onChange={handleSearchChange}
-              />
-            </Grid>
-          </Grid>
+          <Box sx={{ mb: 2, width: { xs: "100%", sm: "50%", md: "33%" } }}>
+            <TextField
+              fullWidth
+              label={t("map.searchTitle")}
+              variant="outlined"
+              value={searchString}
+              onChange={handleSearchChange}
+            />
+          </Box>
 
           <Grid size={12}>
             <StyledDataGrid<Map>

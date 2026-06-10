@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormGroup,
@@ -11,6 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormContainer from "../../../components/form-components/form-container";
 import { useTranslation } from "react-i18next";
@@ -57,8 +57,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
   return (
     <FormContainer>
       <FormPanel title={t("common.information")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.displayName"
               control={control}
@@ -71,8 +71,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormGroup>
               <Controller
                 name="options.active"
@@ -92,8 +92,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormGroup>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.customTitleForMap"
               control={control}
@@ -106,8 +106,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.description"
               control={control}
@@ -122,8 +122,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.instruction"
               control={control}
@@ -138,8 +138,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStart"
               control={control}
@@ -156,13 +156,13 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       <FormAccordion title={t("tools.windowSettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="window-placement" shrink>
                 {t("tools.windowPlacement")}
@@ -184,8 +184,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.windowWidth"
               control={control}
@@ -198,8 +198,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="window-height" shrink>
                 {t("tools.windowHeight")}
@@ -221,8 +221,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.windowSetWindowHeight"
               control={control}
@@ -235,13 +235,13 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.generalSettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.access"
               control={control}
@@ -250,8 +250,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 <TextField label={t("tools.access")} fullWidth {...field} />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.allowHtml"
               control={control}
@@ -268,8 +268,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.useNewInfoClick"
               control={control}
@@ -286,8 +286,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.allowMoreCharacters"
               control={control}
@@ -304,8 +304,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.markFeatures"
               control={control}
@@ -322,8 +322,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.urlVerificationActive"
               control={control}
@@ -340,13 +340,13 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.linksApperance")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="linkColor" shrink>
                 {t("tools.linkColor")}
@@ -369,8 +369,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="underlined" shrink>
                 {t("tools.underlined")}
@@ -393,13 +393,13 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.iconsAndMarkers")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.imageUrl"
               control={control}
@@ -408,9 +408,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 <TextField label={t("tools.imageUrl")} fullWidth {...field} />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.iconOffsetX"
               control={control}
@@ -424,9 +424,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.iconOffsetY"
               control={control}
@@ -440,9 +440,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.iconScale"
               control={control}
@@ -456,9 +456,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.borderWidth"
               control={control}
@@ -472,9 +472,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="borderColor" shrink>
                 {t("tools.borderColor")}
@@ -493,9 +493,9 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="fillColor" shrink>
                 {t("tools.fillColor")}
@@ -514,8 +514,8 @@ export default function InfoClickRenderer({ tool }: InfoClickRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </FormContainer>
   );

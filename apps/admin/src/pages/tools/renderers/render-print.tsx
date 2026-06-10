@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormControlLabel,
@@ -11,6 +10,7 @@ import {
 } from "@mui/material";
 
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormAccordion from "../../../components/form-components/form-accordion";
 
 import { Control, Controller, FieldValues, useForm } from "react-hook-form";
@@ -43,8 +43,8 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
          BASIC INFORMATION
       ───────────────────────────────────────────── */}
       <FormPanel title={t("common.information")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.active"
               control={control}
@@ -61,9 +61,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="options.instruction"
               control={control}
@@ -83,9 +83,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStart"
               control={control}
@@ -102,16 +102,16 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       {/* ─────────────────────────────────────────────
          WINDOW SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.windowSettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.index"
               control={control}
@@ -125,9 +125,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel>{t("tools.windowPlacement")}</InputLabel>
               <Controller
@@ -142,9 +142,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.width"
               control={control}
@@ -157,9 +157,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.height"
               control={control}
@@ -172,16 +172,16 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* ─────────────────────────────────────────────
          IMAGE PROCESSING SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.imageProcessing")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControlLabel
               control={
                 <Controller
@@ -198,9 +198,9 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
               }
               label={t("tools.useCustomTileLoaders")}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.maxTileSize"
               control={control}
@@ -214,15 +214,15 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* ─────────────────────────────────────────────
          PRINT METADATA
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printMetadata")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {[
             ["copyright", "tools.copyright"],
             ["disclaimer", "tools.disclaimer"],
@@ -234,7 +234,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
             ["logo", "tools.logo"],
             ["northArrow", "tools.northArrow"],
           ].map(([key, label]) => (
-            <Grid size={{ xs: 12, md: 10 }} key={key}>
+            <FormFieldRow key={key}>
               <Controller
                 name={`options.${key}`}
                 control={control}
@@ -243,16 +243,16 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                   <TextField label={t(label)} fullWidth {...field} />
                 )}
               />
-            </Grid>
+            </FormFieldRow>
           ))}
-        </Grid>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* ─────────────────────────────────────────────
          PRINT TOGGLES
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printToggles")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {[
             ["includeLogo", "tools.includeLogo"],
             ["includeNorthArrow", "tools.includeNorthArrow"],
@@ -260,7 +260,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
             ["includeQrCode", "tools.includeQrCode"],
             ["includeImageBorder", "tools.includeImageBorder"],
           ].map(([key, label]) => (
-            <Grid size={{ xs: 12, md: 10 }} key={key}>
+            <FormFieldRow key={key}>
               <Controller
                 name={`options.${key}`}
                 control={control}
@@ -277,7 +277,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                   />
                 )}
               />
-            </Grid>
+            </FormFieldRow>
           ))}
           {[
             ["logoPlacement", "tools.logoPlacement"],
@@ -285,7 +285,7 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
             ["scaleBarPlacement", "tools.scaleBarPlacement"],
             ["qrCodePlacement", "tools.qrCodePlacement"],
           ].map(([key, label]) => (
-            <Grid size={{ xs: 12, md: 10 }} key={key}>
+            <FormFieldRow key={key}>
               <FormControl fullWidth>
                 <InputLabel>{t(label)}</InputLabel>
                 <Controller
@@ -308,18 +308,17 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                   )}
                 />
               </FormControl>
-            </Grid>
+            </FormFieldRow>
           ))}
-        </Grid>
-        <Grid container rowSpacing={1.5}></Grid>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* ─────────────────────────────────────────────
          PRINT COLORS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.printColors")} defaultExpanded>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <InputLabel>{t("tools.mapBackgroundColor")}</InputLabel>
             <Controller
               name="options.mapTextColor"
@@ -334,8 +333,8 @@ export default function PrintToolRenderer({ tool }: PrintToolRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </>
   );

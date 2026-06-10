@@ -41,12 +41,11 @@ import {
   useServiceCapabilities,
 } from "../../api/services";
 import { getDeleteServiceErrorMessage } from "../../api/services/error-messages";
-import { Grid } from "@mui/material";
 import {
   SelectWithHelp,
   TextFieldWithHelp,
 } from "../../components/form-components/field-label-with-help";
-import FormFieldGrid from "../../components/form-components/form-field-grid";
+import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
 
 const StyledTabButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "isActive",
@@ -512,7 +511,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 12 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="common.name"
                         helpKey="services.help.name"
@@ -526,7 +525,7 @@ export default function ServiceSettings() {
                             ?.message
                         }
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["common.serviceType"]}
@@ -535,7 +534,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="common.serviceType"
                         helpKey="services.help.type"
@@ -543,7 +542,7 @@ export default function ServiceSettings() {
                         slotProps={{ input: { readOnly: true } }}
                         {...register("type")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.description"]}
@@ -552,7 +551,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="services.description"
                         helpKey="services.help.comment"
@@ -561,7 +560,7 @@ export default function ServiceSettings() {
                         rows={3}
                         {...register("comment")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>
@@ -595,7 +594,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="serverType"
                         control={control}
@@ -616,7 +615,7 @@ export default function ServiceSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.url"]}
@@ -624,7 +623,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="services.url"
                         helpKey="services.help.url"
@@ -648,7 +647,7 @@ export default function ServiceSettings() {
                           },
                         }}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.workspace"]}
@@ -657,7 +656,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="workspace"
                         control={control}
@@ -677,7 +676,7 @@ export default function ServiceSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>
@@ -721,14 +720,14 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 12 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="services.getMapUrl"
                         helpKey="services.help.getMapUrl"
                         fullWidth
                         {...register("getMapUrl")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.version"]}
@@ -736,7 +735,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="version"
                         control={control}
@@ -757,7 +756,7 @@ export default function ServiceSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.imageFormats"]}
@@ -766,7 +765,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="imageFormat"
                         control={control}
@@ -785,7 +784,7 @@ export default function ServiceSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.coordinateSystem"]}
@@ -794,7 +793,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="projection.code"
                         control={control}
@@ -821,7 +820,7 @@ export default function ServiceSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>
@@ -853,14 +852,14 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="services.owner"
                         helpKey="services.help.metadataOwner"
                         fullWidth
                         {...register("metadata.owner")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["services.layerDescription"]}
@@ -869,7 +868,7 @@ export default function ServiceSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="services.layerDescription"
                         helpKey="services.help.metadataDescription"
@@ -878,7 +877,7 @@ export default function ServiceSettings() {
                         rows={3}
                         {...register("metadata.description")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>

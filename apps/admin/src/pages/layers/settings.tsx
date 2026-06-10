@@ -9,7 +9,6 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Grid,
   TextField,
   useTheme,
   MenuItem,
@@ -95,7 +94,7 @@ import {
   SelectWithHelp,
   TextFieldWithHelp,
 } from "../../components/form-components/field-label-with-help";
-import FormFieldGrid from "../../components/form-components/form-field-grid";
+import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
 import SearchablePanel from "../../components/form-components/searchable-panel";
 import { SettingsSearchField } from "../../components/form-components/searchable-field";
 import { useSettingsSearchLabels } from "../../hooks/use-settings-search-labels";
@@ -1221,7 +1220,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={12}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="common.name"
                         helpKey="layers.help.name"
@@ -1235,7 +1234,7 @@ export default function LayerSettings() {
                             ?.message
                         }
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.common.service"]}
@@ -1244,7 +1243,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="serviceId"
                         control={control}
@@ -1263,9 +1262,9 @@ export default function LayerSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                     {service && (
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <Alert
                           severity="info"
                           variant="outlined"
@@ -1281,7 +1280,7 @@ export default function LayerSettings() {
                             })}
                           </Typography>
                         </Alert>
-                      </Grid>
+                      </FormFieldRow>
                     )}
                   </SettingsSearchField>
                   <SettingsSearchField
@@ -1291,14 +1290,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.internalName"
                         helpKey="layers.help.internalName"
                         fullWidth
                         {...register("internalName")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.copyRight"]}
@@ -1306,14 +1305,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.copyRight"
                         helpKey="layers.help.attribution"
                         fullWidth
                         {...register("metadata.attribution")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["map.description"]}
@@ -1322,7 +1321,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="map.description"
                         helpKey="layers.help.description"
@@ -1331,7 +1330,7 @@ export default function LayerSettings() {
                         rows={3}
                         {...register("description")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.keyword"]}
@@ -1340,14 +1339,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.keyword"
                         helpKey="layers.help.keyword"
                         fullWidth
                         {...register("options.keyword")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.category"]}
@@ -1356,14 +1355,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.category"
                         helpKey="layers.help.category"
                         fullWidth
                         {...register("options.category")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>
@@ -1391,7 +1390,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <Controller
                         name="roleId"
                         control={control}
@@ -1410,7 +1409,7 @@ export default function LayerSettings() {
                           </SelectWithHelp>
                         )}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                 </FormFieldGrid>
               </FormPanel>
@@ -1449,7 +1448,7 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("services.settings.request")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={[
                         "layers.hidpi",
@@ -1467,7 +1466,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <Controller
                             name="hidpi"
@@ -1550,7 +1549,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     {watchSingleTile ? (
                       <SettingsSearchField
@@ -1561,7 +1560,7 @@ export default function LayerSettings() {
                           showSettingsSearchUi ? getValues() : undefined
                         }
                       >
-                        <Grid size={{ xs: 12, md: 10 }}>
+                        <FormFieldRow>
                           <TextFieldWithHelp
                             labelKey="layers.customRatio"
                             helpKey="layers.help.customRatio"
@@ -1572,10 +1571,10 @@ export default function LayerSettings() {
                             }}
                             {...register("customRatio")}
                           />
-                        </Grid>
+                        </FormFieldRow>
                       </SettingsSearchField>
                     ) : null}
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -1598,7 +1597,7 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.customDpi")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["layers.useCustomDpiList"]}
                       fields={["useCustomDpiList"]}
@@ -1606,7 +1605,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <FormControlLabel
                             control={
@@ -1631,7 +1630,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     {useCustomDpiList && (
                       <SettingsSearchField
@@ -1651,9 +1650,9 @@ export default function LayerSettings() {
                           showSettingsSearchUi ? getValues() : undefined
                         }
                       >
-                        <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                        <FormFieldGrid>
                           {customDpiList.map((item, index) => (
-                            <Grid size={12} key={index}>
+                            <FormFieldRow key={index}>
                               <Box
                                 sx={{
                                   display: "flex",
@@ -1698,9 +1697,9 @@ export default function LayerSettings() {
                                   <DeleteIcon />
                                 </IconButton>
                               </Box>
-                            </Grid>
+                            </FormFieldRow>
                           ))}
-                          <Grid size={12}>
+                          <FormFieldRow>
                             <Button
                               variant="outlined"
                               startIcon={<AddIcon />}
@@ -1708,11 +1707,11 @@ export default function LayerSettings() {
                             >
                               {t("layers.addDpiRow")}
                             </Button>
-                          </Grid>
-                        </Grid>
+                          </FormFieldRow>
+                        </FormFieldGrid>
                       </SettingsSearchField>
                     )}
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -1745,7 +1744,7 @@ export default function LayerSettings() {
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("layers.settings")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                <FormFieldGrid>
                   {settingsVisibility.showDisplayRequestOptions && (
                     <SettingsSearchField
                       labelKeys={["layers.style"]}
@@ -1753,7 +1752,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <Controller
                           name="style"
                           control={control}
@@ -1777,7 +1776,7 @@ export default function LayerSettings() {
                             </SelectWithHelp>
                           )}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                   )}
                   <SettingsSearchField
@@ -1787,14 +1786,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid
-                      size={{
-                        xs: 12,
-                        md: settingsVisibility.showDisplayRequestOptions
-                          ? 10
-                          : 12,
-                      }}
-                    >
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.opacity"
                         helpKey="layers.help.opacity"
@@ -1818,7 +1810,7 @@ export default function LayerSettings() {
                             ?.message
                         }
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.minZoom"]}
@@ -1826,7 +1818,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.minZoom"
                         helpKey="layers.help.minZoom"
@@ -1838,7 +1830,7 @@ export default function LayerSettings() {
                         helperText={t("layers.zoomNegativeOneHint")}
                         {...register("minZoom")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.maxZoom"]}
@@ -1846,7 +1838,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.maxZoom"
                         helpKey="layers.help.maxZoom"
@@ -1858,7 +1850,7 @@ export default function LayerSettings() {
                         helperText={t("layers.zoomNegativeOneHint")}
                         {...register("maxZoom")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.zIndex"]}
@@ -1866,7 +1858,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.zIndex"
                         helpKey="layers.help.zIndex"
@@ -1877,7 +1869,7 @@ export default function LayerSettings() {
                         }}
                         {...register("zIndex")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.legendOptions"]}
@@ -1886,21 +1878,21 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.legendOptions"
                         helpKey="layers.help.legendOptions"
                         fullWidth
                         {...register("legendOptions")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.minMaxZoomAlertOnToggleOnly"]}
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={12}>
+                    <FormFieldRow>
                       <FormGroup>
                         <Controller
                           name="minMaxZoomAlertOnToggleOnly"
@@ -1923,9 +1915,9 @@ export default function LayerSettings() {
                           )}
                         />
                       </FormGroup>
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
-                </Grid>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
 
@@ -1951,7 +1943,7 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.timeSlider")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["layers.timeSliderVisible"]}
                       fields={["timeSliderVisible"]}
@@ -1959,7 +1951,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <Controller
                             name="timeSliderVisible"
@@ -1982,7 +1974,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.timeSliderStart"]}
@@ -1990,14 +1982,14 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.timeSliderStart"
                           helpKey="layers.help.timeSliderStart"
                           fullWidth
                           {...register("timeSliderStart")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.timeSliderEnd"]}
@@ -2005,16 +1997,16 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.timeSliderEnd"
                           helpKey="layers.help.timeSliderEnd"
                           fullWidth
                           {...register("timeSliderEnd")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -2036,7 +2028,7 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.layerSwitcher")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["layers.hideExpandArrow"]}
                       fields={["hideExpandArrow"]}
@@ -2044,7 +2036,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <Controller
                             name="hideExpandArrow"
@@ -2067,9 +2059,9 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -2114,7 +2106,7 @@ export default function LayerSettings() {
               searchTerm={settingsSearchTerm}
             >
               <FormPanel title={t("layers.metadataTab")}>
-                <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                <FormFieldGrid>
                   <SettingsSearchField
                     labelKeys={[
                       "layers.showMetadata",
@@ -2128,7 +2120,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={12}>
+                    <FormFieldRow>
                       <FormGroup>
                         <Controller
                           name="showMetadata"
@@ -2171,7 +2163,7 @@ export default function LayerSettings() {
                           )}
                         />
                       </FormGroup>
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.metadata.title"]}
@@ -2179,14 +2171,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.metadata.title"
                         helpKey="layers.help.metadataTitle"
                         fullWidth
                         {...register("metadata.title")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.metadata.owner"]}
@@ -2194,14 +2186,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.metadata.owner"
                         helpKey="layers.help.metadataOwner"
                         fullWidth
                         {...register("metadata.owner")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.metadata.description"]}
@@ -2209,7 +2201,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.metadata.description"
                         helpKey="layers.help.metadataDescription"
@@ -2218,7 +2210,7 @@ export default function LayerSettings() {
                         rows={6}
                         {...register("metadata.description")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.metadata.urlTitle"]}
@@ -2226,14 +2218,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.metadata.urlTitle"
                         helpKey="layers.help.metadataUrlTitle"
                         fullWidth
                         {...register("metadata.urlTitle")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.metadata.url"]}
@@ -2241,14 +2233,14 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.metadata.url"
                         helpKey="layers.help.metadataUrl"
                         fullWidth
                         {...register("metadata.url")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
                   <SettingsSearchField
                     labelKeys={["layers.layerDisplayDescription"]}
@@ -2256,7 +2248,7 @@ export default function LayerSettings() {
                     searchTerm={settingsSearchTerm}
                     allValues={showSettingsSearchUi ? getValues() : undefined}
                   >
-                    <Grid size={{ xs: 12, md: 10 }}>
+                    <FormFieldRow>
                       <TextFieldWithHelp
                         labelKey="layers.layerDisplayDescription"
                         helpKey="layers.help.layerDisplayDescription"
@@ -2265,9 +2257,9 @@ export default function LayerSettings() {
                         rows={3}
                         {...register("options.layerDisplayDescription")}
                       />
-                    </Grid>
+                    </FormFieldRow>
                   </SettingsSearchField>
-                </Grid>
+                </FormFieldGrid>
               </FormPanel>
             </SearchablePanel>
           </Box>
@@ -2306,7 +2298,7 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("common.infoclick")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["common.infoclick"]}
                       fields={["infoClickActive"]}
@@ -2314,7 +2306,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <Controller
                             name="infoClickActive"
@@ -2337,7 +2329,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.infobox"]}
@@ -2345,7 +2337,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.infobox"
                           helpKey="layers.help.infobox"
@@ -2354,7 +2346,7 @@ export default function LayerSettings() {
                           rows={3}
                           {...register("infoClickSettings.definition")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.infoClickIcon"]}
@@ -2363,14 +2355,14 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.infoClickIcon"
                           helpKey="layers.help.infoClickIcon"
                           fullWidth
                           {...register("infoClickSettings.icon")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.sortByAttribute"]}
@@ -2379,14 +2371,14 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.sortByAttribute"
                           helpKey="layers.help.sortByAttribute"
                           fullWidth
                           {...register("infoClickSettings.sortProperty")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.infoClickFormat"]}
@@ -2394,7 +2386,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <Controller
                           name="infoClickSettings.format"
                           control={control}
@@ -2416,7 +2408,7 @@ export default function LayerSettings() {
                             </SelectWithHelp>
                           )}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.infoClickSortMethod"]}
@@ -2424,7 +2416,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <Controller
                           name="infoClickSettings.sortMethod"
                           control={control}
@@ -2443,9 +2435,9 @@ export default function LayerSettings() {
                             </SelectWithHelp>
                           )}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -2474,21 +2466,21 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.settings.displayFields")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["layers.primaryDisplayFields"]}
                       fields={["searchSettings.primaryDisplayFields"]}
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.primaryDisplayFields"
                           helpKey="layers.help.primaryDisplayFields"
                           fullWidth
                           {...register("searchSettings.primaryDisplayFields")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.secondaryDisplayFields"]}
@@ -2496,14 +2488,14 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.secondaryDisplayFields"
                           helpKey="layers.help.secondaryDisplayFields"
                           fullWidth
                           {...register("searchSettings.secondaryDisplayFields")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.shortDisplayFields"]}
@@ -2511,16 +2503,16 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.shortDisplayFields"
                           helpKey="layers.help.shortDisplayFields"
                           fullWidth
                           {...register("searchSettings.shortDisplayFields")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}
@@ -2559,14 +2551,14 @@ export default function LayerSettings() {
                 searchTerm={settingsSearchTerm}
               >
                 <FormPanel title={t("layers.settings.searchSettings")}>
-                  <Grid container rowSpacing={1.5} columnSpacing={1.5}>
+                  <FormFieldGrid>
                     <SettingsSearchField
                       labelKeys={["layers.searchSettings.active"]}
                       fields={["searchSettings.active"]}
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={12}>
+                      <FormFieldRow>
                         <FormGroup>
                           <Controller
                             name="searchSettings.active"
@@ -2589,7 +2581,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </FormGroup>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.searchSettings.url"]}
@@ -2597,7 +2589,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.searchSettings.url"
                           helpKey="layers.help.searchUrl"
@@ -2616,7 +2608,7 @@ export default function LayerSettings() {
                           }
                           {...register("searchSettings.url")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.searchSettings.searchFields"]}
@@ -2624,7 +2616,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.searchSettings.searchFields"
                           helpKey="layers.help.searchFields"
@@ -2632,7 +2624,7 @@ export default function LayerSettings() {
                           helperText={t("layers.searchFieldsHelp")}
                           {...register("searchSettings.searchFields")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.searchSettings.outputFormat"]}
@@ -2640,7 +2632,7 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <Box>
                           <FieldLabelAbove
                             htmlFor="searchSettings-outputFormat"
@@ -2670,7 +2662,7 @@ export default function LayerSettings() {
                             )}
                           />
                         </Box>
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
                     <SettingsSearchField
                       labelKeys={["layers.searchSettings.geometryField"]}
@@ -2678,16 +2670,16 @@ export default function LayerSettings() {
                       searchTerm={settingsSearchTerm}
                       allValues={showSettingsSearchUi ? getValues() : undefined}
                     >
-                      <Grid size={{ xs: 12, md: 10 }}>
+                      <FormFieldRow>
                         <TextFieldWithHelp
                           labelKey="layers.searchSettings.geometryField"
                           helpKey="layers.help.geometryField"
                           fullWidth
                           {...register("searchSettings.geometryField")}
                         />
-                      </Grid>
+                      </FormFieldRow>
                     </SettingsSearchField>
-                  </Grid>
+                  </FormFieldGrid>
                 </FormPanel>
               </SearchablePanel>
             )}

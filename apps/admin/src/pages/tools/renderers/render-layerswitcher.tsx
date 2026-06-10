@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormGroup,
@@ -11,6 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormContainer from "../../../components/form-components/form-container";
 import { useTranslation } from "react-i18next";
@@ -60,8 +60,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
     <FormContainer>
       {/* Basic Information Panel */}
       <FormPanel title={t("common.information")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.title"
               control={control}
@@ -74,8 +74,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormGroup>
               <Controller
                 name="options.active"
@@ -95,8 +95,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 )}
               />
             </FormGroup>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.description"
               control={control}
@@ -111,14 +111,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       {/* Window Settings */}
       <FormAccordion title={t("tools.windowSettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="target-label" shrink>
                 {t("tools.target")}
@@ -142,8 +142,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="position-label" shrink>
                 {t("tools.position")}
@@ -165,8 +165,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.width"
               control={control}
@@ -180,8 +180,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.height"
               control={control}
@@ -190,14 +190,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 <TextField label={t("tools.height")} fullWidth {...field} />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Layer Manager Settings */}
       <FormAccordion title={t("tools.displaySettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStart"
               control={control}
@@ -214,8 +214,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStartMobile"
               control={control}
@@ -232,8 +232,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.showBreadcrumbs"
               control={control}
@@ -250,8 +250,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.showDrawOrderView"
               control={control}
@@ -268,8 +268,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.showFilter"
               control={control}
@@ -286,8 +286,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.showQuickAccess"
               control={control}
@@ -304,8 +304,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.legendForceTransparency"
               control={control}
@@ -326,8 +326,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.legendTryHiDPI"
               control={control}
@@ -344,8 +344,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.enableTransparencySlider"
               control={control}
@@ -366,8 +366,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.cqlFilterVisible"
               control={control}
@@ -384,14 +384,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Draw Order Tab Settings */}
       <FormAccordion title={t("tools.drawOrderViewInfoText")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.enableSystemLayersSwitch"
               control={control}
@@ -412,8 +412,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.lockDrawOrderBaselayer"
               control={control}
@@ -430,8 +430,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.drawOrderViewInfoText"
               control={control}
@@ -446,14 +446,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Quick Access Settings */}
       <FormAccordion title={t("tools.showQuickAccess")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.enableQuickAccessPresets"
               control={control}
@@ -474,8 +474,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.quickAccessTopicsInfoText"
               control={control}
@@ -490,8 +490,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.enableUserQuickAccessFavorites"
               control={control}
@@ -512,8 +512,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.userQuickAccessFavoritesInfoText"
               control={control}
@@ -532,14 +532,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Map Settings */}
       <FormAccordion title={t("tools.themeMapHeaderCaption")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.dropdownThemeMaps"
               control={control}
@@ -556,8 +556,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.themeMapHeaderCaption"
               control={control}
@@ -570,14 +570,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Zoom Alert Settings */}
       <FormAccordion title={t("tools.otherSettings")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.minMaxZoomAlertOnToggleOnly"
               control={control}
@@ -598,14 +598,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Background Layer Settings */}
       <FormAccordion title={t("tools.backgroundSwitcherBlack")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.backgroundSwitcherBlack"
               control={control}
@@ -622,8 +622,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.backgroundSwitcherWhite"
               control={control}
@@ -640,8 +640,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.enableOSM"
               control={control}
@@ -658,8 +658,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.OSMVisibleAtStart"
               control={control}
@@ -676,8 +676,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.renderSpecialBackgroundsAtBottom"
               control={control}
@@ -698,14 +698,14 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       {/* Instruction Text */}
       <FormAccordion title={t("tools.instruction")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.instruction"
               control={control}
@@ -720,8 +720,8 @@ export default function LayerSwitcherRenderer({ tool }: { tool: Tool }) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </FormContainer>
   );

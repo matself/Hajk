@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormControlLabel,
@@ -12,6 +11,7 @@ import {
 
 import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import { useTranslation } from "react-i18next";
 import { Tool } from "../../../api/tools";
@@ -41,9 +41,9 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
           BASIC SETTINGS
       ───────────────────────────────────────────── */}
       <FormPanel title={t("common.information")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Aktiverad */}
-          <Grid size={{ xs: 12, md: 12 }}>
+          <FormFieldRow>
             <Controller
               name="options.active"
               control={control}
@@ -60,8 +60,8 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStart"
               control={control}
@@ -78,10 +78,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Instruktion */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.instruction"
               control={control}
@@ -101,10 +101,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Tillträde */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.access"
               control={control}
@@ -113,17 +113,17 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 <TextField label={t("tools.access")} fullWidth {...field} />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       {/* ─────────────────────────────────────────────
           WINDOW SETTINGS
       ───────────────────────────────────────────── */}
       <FormAccordion title={t("tools.windowSettings")} defaultExpanded>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Sorteringsordning */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.index"
               control={control}
@@ -137,10 +137,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Verktygsplacering */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel>{t("tools.toolPlacement")}</InputLabel>
               <Controller
@@ -158,10 +158,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterplacering */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel>{t("tools.windowPlacement")}</InputLabel>
               <Controller
@@ -176,10 +176,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterbredd */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.width"
               control={control}
@@ -192,10 +192,10 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterhöjd */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.height"
               control={control}
@@ -208,8 +208,8 @@ export default function SketchRenderer({ tool }: SketchRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </>
   );

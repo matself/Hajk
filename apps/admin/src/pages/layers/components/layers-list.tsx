@@ -50,6 +50,11 @@ import LayerKindBadge from "./layer-kind-badge";
 import { LayerCategory, normalizeLayerCategory } from "../layer-category";
 import ServiceStatusIndicator from "../../services/components/service-status-indicator";
 import StyledDataGrid from "../../../components/data-grid";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 import { CapabilityRow, CreateLayerGrid } from "./create-layer-grid";
 
 interface LayersListProps {
@@ -652,8 +657,8 @@ export default function LayersList({
             )}
           </DialogWrapper>
 
-          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <ListFilterRow>
+            <ListFilterSearch>
               <TextField
                 fullWidth
                 label={t("layers.searchTitle")}
@@ -661,8 +666,8 @@ export default function LayersList({
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            </ListFilterSearch>
+            <ListFilterField>
               <FormControl fullWidth variant="outlined">
                 <InputLabel id="service-url-filter-label">
                   {t("common.service")}
@@ -683,8 +688,8 @@ export default function LayersList({
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
+            </ListFilterField>
+          </ListFilterRow>
 
           <Grid size={12}>
             <StyledDataGrid<LayersGridRow>

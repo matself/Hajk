@@ -128,7 +128,7 @@ export default function ToolsList({
         <Typography variant="h6">{t("common.loading")}</Typography>
       ) : (
         <>
-          <Grid size={12} container sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, width: { xs: "100%", sm: "50%", md: "33%" } }}>
             <TextField
               fullWidth
               label={t("tools.searchTitle")}
@@ -136,7 +136,7 @@ export default function ToolsList({
               value={searchTerm}
               onChange={handleSearchChange}
             />
-          </Grid>
+          </Box>
 
           <Grid size={12}>
             <StyledDataGrid

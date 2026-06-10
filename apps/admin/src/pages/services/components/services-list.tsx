@@ -20,6 +20,11 @@ import {
   MenuItem as MuiMenuItem,
 } from "@mui/material";
 import CreateButton from "../../../components/create-button";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
@@ -484,8 +489,8 @@ export default function ServicesList({
               </Grid>
             </DialogWrapper>
 
-            <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <ListFilterRow>
+              <ListFilterSearch>
                 <TextField
                   fullWidth
                   label={t("layers.searchTitle")}
@@ -493,8 +498,8 @@ export default function ServicesList({
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
-              </Grid>
-              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+              </ListFilterSearch>
+              <ListFilterField>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="type-filter-label">
                     {t("services.filterByType")}
@@ -515,8 +520,8 @@ export default function ServicesList({
                     )}
                   </Select>
                 </FormControl>
-              </Grid>
-              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+              </ListFilterField>
+              <ListFilterField>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="status-filter-label">
                     {t("services.filterByStatus")}
@@ -539,8 +544,8 @@ export default function ServicesList({
                     </MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-            </Grid>
+              </ListFilterField>
+            </ListFilterRow>
             <Grid size={12}>
               <StyledDataGrid<Service>
                 storageKey="services"

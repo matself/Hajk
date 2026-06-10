@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormControlLabel,
@@ -12,6 +11,7 @@ import {
 } from "@mui/material";
 import { Controller, useForm, FieldValues, Control } from "react-hook-form";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import { useTranslation } from "react-i18next";
 import { Tool } from "../../../api/tools";
@@ -56,8 +56,8 @@ export default function AnchorToolRenderer({
     <>
       {/* BASIC INFO */}
       <FormPanel title={t("common.information")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="active"
               control={control}
@@ -73,9 +73,9 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="index"
               control={control}
@@ -88,9 +88,9 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.target"
               control={control}
@@ -111,14 +111,14 @@ export default function AnchorToolRenderer({
                 </FormControl>
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       {/* SETTINGS */}
       <FormAccordion title={t("tools.settings")} defaultExpanded>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="options.visibleAtStart"
               control={control}
@@ -134,9 +134,9 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={12}>
+          <FormFieldRow>
             <Controller
               name="options.allowCreatingCleanUrls"
               control={control}
@@ -152,9 +152,9 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={12}>
+          <FormFieldRow>
             <Controller
               name="options.instruction"
               control={control}
@@ -169,9 +169,9 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={12}>
+          <FormFieldRow>
             <Controller
               name="options.visibleForGroups"
               control={control}
@@ -188,8 +188,8 @@ export default function AnchorToolRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </>
   );
