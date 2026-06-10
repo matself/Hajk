@@ -135,6 +135,39 @@ export function buildInitialTreeItems(
   return deserializeLayerSwitcherTree(tree, layers, groups);
 }
 
+export function buildFlatGroupReferenceItem(group: {
+  id: string;
+  name: string;
+}): LayerSwitcherTreeItem {
+  return {
+    id: `${GROUP_PREFIX}${group.id}`,
+    name: group.name,
+    type: "group",
+    canHaveChildren: false,
+    collapsed: true,
+  };
+}
+
+/** Groups in Lagerordning are closed references — no nested children in the admin UI. */
+export function flattenGroupReferencesInItems(
+  items: LayerSwitcherTreeItem[],
+): LayerSwitcherTreeItem[] {
+  return items.map((item) =>
+    item.type === "group"
+      ? {
+          ...item,
+          children: undefined,
+          canHaveChildren: false,
+          collapsed: true,
+        }
+      : {
+          ...item,
+          canHaveChildren: false,
+          children: undefined,
+        },
+  );
+}
+
 export function buildNestedGroupTreeItem(
   group: { id: string; name: string },
   groupLayers: Layer[],
