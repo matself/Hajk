@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -78,13 +78,22 @@ export function LinkDialog({
     folderName,
     folders
   );
+  const activeFolderName = useMemo(() => {
+    if (folderName) return folderName;
+    if (folders.length === 1) return folders[0].name;
+    if (initial?.documentName?.trim() && effectiveFolder) {
+      return effectiveFolder;
+    }
+    return "";
+  }, [folderName, folders, initial?.documentName, effectiveFolder]);
+
   const { data: documents = [], isLoading: docsLoading } = useDocuments(
     mapName,
-    folderName || undefined
+    activeFolderName || undefined
   );
   const { data: selectedDoc, isLoading: docLoading } = useDocument(
     mapName,
-    folderName || undefined,
+    activeFolderName || undefined,
     documentName || undefined
   );
 
@@ -97,17 +106,6 @@ export function LinkDialog({
   const chapterInList = chapters.some(
     (ch) => ch.headerIdentifier === headerIdentifier
   );
-
-  useEffect(() => {
-    if (folderName || folders.length !== 1) return;
-    setFolderName(folders[0].name);
-  }, [folderName, folders]);
-
-  useEffect(() => {
-    if (!initial?.documentName?.trim() || folderName) return;
-    if (!effectiveFolder) return;
-    setFolderName(effectiveFolder);
-  }, [initial?.documentName, folderName, effectiveFolder]);
 
   function handleConfirm() {
     onConfirm({
@@ -126,7 +124,8 @@ export function LinkDialog({
         return href.trim().length > 0;
       case "document":
         return (
-          folderName.trim().length > 0 && documentName.trim().length > 0
+          activeFolderName.trim().length > 0 &&
+          documentName.trim().length > 0
         );
       case "map":
         return maplink.trim().length > 0;
@@ -187,7 +186,7 @@ export function LinkDialog({
                       <Select
                         autoFocus
                         label={t("dhRichTextEditor.link.folder")}
-                        value={folderName}
+                        value={activeFolderName}
                         onChange={(e) => {
                           setFolderName(e.target.value);
                           setDocumentName("");
@@ -213,7 +212,7 @@ export function LinkDialog({
                   <FormControl
                     size="small"
                     fullWidth
-                    disabled={!folderName || isResolving || docsLoading}
+                    disabled={!activeFolderName || isResolving || docsLoading}
                   >
                     <InputLabel>
                       {t("dhRichTextEditor.link.document")}

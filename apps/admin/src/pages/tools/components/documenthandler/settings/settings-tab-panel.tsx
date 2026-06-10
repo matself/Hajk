@@ -24,7 +24,7 @@ import {
   useWatch,
   UseFormSetValue,
 } from "react-hook-form";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getDocuments, useFolders } from "@/api/documents";
 import FormAccordion from "@/components/form-components/form-accordion";
@@ -83,10 +83,13 @@ export function SettingsTabPanel({
   const hasFactBoxColors = !!(bgColor || dividerColor);
   const [factBoxColorsEnabled, setFactBoxColorsEnabled] =
     useState(hasFactBoxColors);
+  const [prevHasFactBoxColors, setPrevHasFactBoxColors] =
+    useState(hasFactBoxColors);
 
-  useEffect(() => {
+  if (hasFactBoxColors !== prevHasFactBoxColors) {
+    setPrevHasFactBoxColors(hasFactBoxColors);
     setFactBoxColorsEnabled(hasFactBoxColors);
-  }, [hasFactBoxColors]);
+  }
 
   const handleFactBoxToggle = (_: React.SyntheticEvent, checked: boolean) => {
     setFactBoxColorsEnabled(checked);

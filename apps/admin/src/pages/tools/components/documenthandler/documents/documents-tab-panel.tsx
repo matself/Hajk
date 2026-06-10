@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -57,13 +57,21 @@ export function DocumentsTabPanel({
   // Tracks which node is highlighted in the tree (drives New document target)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [prevRouteDocument, setPrevRouteDocument] = useState({
+    folderName,
+    documentId,
+  });
+  if (
+    folderName !== prevRouteDocument.folderName ||
+    documentId !== prevRouteDocument.documentId
+  ) {
+    setPrevRouteDocument({ folderName, documentId });
     if (documentId && folderName) {
       setSelectedFolder(folderName);
       setSelectedDocName(documentId);
       setEditorOpen(true);
     }
-  }, [documentId, folderName]);
+  }
 
   // Dialog state
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
