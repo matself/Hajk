@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { Grid } from "@mui/material";
+import Grid2 from "@mui/material/Grid2";
 import { Button, Box, TextField, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Page from "../../../layouts/root/components/page";
@@ -211,8 +211,8 @@ export default function MapsList({
           </>
         }
       >
-        <Grid container spacing={2}>
-          <Grid size={12}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={12}>
             <TextField
               label={t("map.name")}
               fullWidth
@@ -222,8 +222,8 @@ export default function MapsList({
               error={!!errors.name}
               helperText={errors.name?.message}
             />
-          </Grid>
-          <Grid size={12}>
+          </Grid2>
+          <Grid2 size={12}>
             <TextField
               label={t("map.title")}
               fullWidth
@@ -231,8 +231,8 @@ export default function MapsList({
               error={!!errors.options?.title}
               helperText={errors.options?.title?.message}
             />
-          </Grid>
-          <Grid size={12}>
+          </Grid2>
+          <Grid2 size={12}>
             <TextField
               label={t("map.description")}
               fullWidth
@@ -242,8 +242,8 @@ export default function MapsList({
               error={!!errors.options?.description}
               helperText={errors.options?.description?.message}
             />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </DialogWrapper>
       {isLoading ? (
         <SquareSpinnerComponent />
@@ -259,7 +259,7 @@ export default function MapsList({
             />
           </Box>
 
-          <Grid size={12}>
+          <Grid2 size={12}>
             <StyledDataGrid<Map>
               storageKey="maps"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -273,7 +273,7 @@ export default function MapsList({
               columns={columns}
               loading={isLoading}
             />
-          </Grid>
+          </Grid2>
         </>
       )}
     </Page>

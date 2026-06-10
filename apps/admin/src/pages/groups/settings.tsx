@@ -275,7 +275,8 @@ function GroupSettings() {
       };
       const layersPayload: GroupLayersUpdateInput = {
         layers: layersForType,
-        layerSwitcherTree: compositionTree,
+        layerSwitcherTree:
+          stripEditingGroupFromTree(compositionTree, groupIdValue) ?? [],
       };
       const updatedGroup = await updateGroup({
         groupId: groupIdValue,

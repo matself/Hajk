@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Grid from "@mui/material/Grid";
+import Grid2 from "@mui/material/Grid2";
 import {
   Box,
   Button,
@@ -587,8 +587,8 @@ export default function LayersList({
             }
           >
             {createStep === "details" ? (
-              <Grid container spacing={2}>
-                <Grid size={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <TextField
                     label={t("common.name")}
                     fullWidth
@@ -598,8 +598,8 @@ export default function LayersList({
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <FormControl fullWidth>
                     <InputLabel id="serviceId-label">
                       {t("common.service")}
@@ -624,9 +624,9 @@ export default function LayersList({
                       )}
                     />
                   </FormControl>
-                </Grid>
+                </Grid2>
                 {selectedService && (
-                  <Grid size={12}>
+                  <Grid2 size={12}>
                     <Typography variant="body2" color="text.secondary">
                       {t("layers.createDialog.serviceDefaults", {
                         url: selectedService.url,
@@ -635,9 +635,9 @@ export default function LayersList({
                         projection: selectedService.projection?.code ?? "—",
                       })}
                     </Typography>
-                  </Grid>
+                  </Grid2>
                 )}
-              </Grid>
+              </Grid2>
             ) : (
               <CreateLayerGrid
                 capabilitiesSearchTerm={capabilitiesSearchTerm}
@@ -691,7 +691,7 @@ export default function LayersList({
             </ListFilterField>
           </ListFilterRow>
 
-          <Grid size={12}>
+          <Grid2 size={12}>
             <StyledDataGrid<LayersGridRow>
               storageKey="layers"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -910,7 +910,7 @@ export default function LayersList({
                 </Typography>
               )}
             </DialogWrapper>
-          </Grid>
+          </Grid2>
         </Page>
       )}
     </>

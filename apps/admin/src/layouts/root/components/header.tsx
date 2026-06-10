@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import Grid2 from "@mui/material/Grid2";
 import { Link, useLocation, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Box, Paper, useTheme } from "@mui/material";
@@ -138,7 +138,7 @@ export default function Header() {
       }}
       square
     >
-      <Grid
+      <Grid2
         container
         size={12}
         direction={"row"}
@@ -149,7 +149,7 @@ export default function Header() {
           alignItems: "center",
         }}
       >
-        <Grid
+        <Grid2
           size={{ xs: 12 }}
           container
           sx={{
@@ -203,8 +203,8 @@ export default function Header() {
           >
             {breadcrumbLinks}
           </Box>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Paper>
   );
 }

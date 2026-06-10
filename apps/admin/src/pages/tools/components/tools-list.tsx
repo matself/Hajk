@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid";
 import { Box, Chip, TextField, Tooltip, Typography } from "@mui/material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { useTranslation } from "react-i18next";
@@ -138,7 +137,7 @@ export default function ToolsList({
             />
           </Box>
 
-          <Grid size={12}>
+          <Box sx={{ width: "100%", minWidth: 0 }}>
             <StyledDataGrid
               storageKey="tools"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -190,7 +189,7 @@ export default function ToolsList({
                 }
               }}
             />
-          </Grid>
+          </Box>
         </>
       )}
     </Page>

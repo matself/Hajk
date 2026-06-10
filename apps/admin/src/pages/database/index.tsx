@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import Page from "../../layouts/root/components/page";
@@ -12,20 +12,25 @@ export default function DatabasePage() {
 
   return (
     <Page title={t("database.title")}>
-      <Grid container spacing={3}>
-        <Grid size={12}>
-          <DatabaseStatusCard />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <DatabaseExportCard />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <DatabaseImportCard />
-        </Grid>
-        <Grid size={12}>
-          <DatabaseExportsList />
-        </Grid>
-      </Grid>
+      <Stack spacing={3} sx={{ width: "100%" }}>
+        <DatabaseStatusCard />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 3,
+            alignItems: "stretch",
+          }}
+        >
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <DatabaseExportCard />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <DatabaseImportCard />
+          </Box>
+        </Box>
+        <DatabaseExportsList />
+      </Stack>
     </Page>
   );
 }

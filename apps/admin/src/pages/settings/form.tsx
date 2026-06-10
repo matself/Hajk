@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { FieldValues, useForm, Controller } from "react-hook-form";
 import {
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -10,6 +9,9 @@ import {
 import { useTranslation } from "react-i18next";
 import FormContainer from "../../components/form-components/form-container";
 import FormAccordion from "../../components/form-components/form-accordion";
+import FormFieldGrid, {
+  FormFieldRow,
+} from "../../components/form-components/form-field-grid";
 
 interface SettingsFormValues extends FieldValues {
   availableCoordinateSystem: string;
@@ -46,8 +48,8 @@ export default function SettingsForm() {
       }}
     >
       <FormAccordion title={t("settings.common.title")}>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 6 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="available-coord-label" shrink>
                 {t("settings.available.coordinateSystem")}
@@ -69,8 +71,8 @@ export default function SettingsForm() {
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="preselected-coord-label" shrink>
                 {t("settings.preSelected.coordinateSystem")}
@@ -92,8 +94,8 @@ export default function SettingsForm() {
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("settings.service.title")} />

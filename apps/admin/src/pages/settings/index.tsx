@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { Stack } from "@mui/material";
 import Page from "../../layouts/root/components/page";
-import { Grid } from "@mui/material";
 import ThemeSwitcher from "../../components/theme-switcher";
 import LanguageSwitcher from "../../components/language-switcher";
 import SettingsForm from "./form";
@@ -9,12 +9,10 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   return (
     <Page title={t("common.settings")}>
-      <Grid container spacing={2} size={12}>
-        <Grid size={12}>
-          <LanguageSwitcher />
-        </Grid>
+      <Stack spacing={2} sx={{ width: "100%", mb: 2 }}>
+        <LanguageSwitcher />
         <ThemeSwitcher />
-      </Grid>
+      </Stack>
       <SettingsForm />
     </Page>
   );

@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 import Page from "../../layouts/root/components/page";
@@ -10,14 +10,10 @@ export default function UsersPage() {
 
   return (
     <Page title={t("common.users")}>
-      <Grid container spacing={2}>
-        <Grid size={12}>
-          <UserTable />
-        </Grid>
-        <Grid size={12}>
-          <CreateUserForm />
-        </Grid>
-      </Grid>
+      <Stack spacing={2} sx={{ width: "100%" }}>
+        <UserTable />
+        <CreateUserForm />
+      </Stack>
     </Page>
   );
 }

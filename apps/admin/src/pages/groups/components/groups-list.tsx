@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { Grid } from "@mui/material";
+import Grid2 from "@mui/material/Grid2";
 import {
   Autocomplete,
   Alert,
@@ -275,8 +275,8 @@ export default function GroupsList({
           </>
         }
       >
-        <Grid container spacing={2}>
-          <Grid size={12}>
+        <Grid2 container spacing={2}>
+          <Grid2 size={12}>
             <TextField
               label={t("common.name")}
               fullWidth
@@ -286,15 +286,15 @@ export default function GroupsList({
               error={!!errors.name}
               helperText={errors.name?.message}
             />
-          </Grid>
-          <Grid size={12}>
+          </Grid2>
+          <Grid2 size={12}>
             <TextField
               label={t("groups.internalName")}
               fullWidth
               {...register("internalName")}
             />
-          </Grid>
-          <Grid size={12}>
+          </Grid2>
+          <Grid2 size={12}>
             <FormControl fullWidth error={!!errors.type}>
               <InputLabel id="type-label">{t("groups.type")}</InputLabel>
               <Controller
@@ -325,8 +325,8 @@ export default function GroupsList({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={12}>
+          </Grid2>
+          <Grid2 size={12}>
             <Controller
               name="layerIds"
               control={control}
@@ -368,8 +368,8 @@ export default function GroupsList({
                 );
               }}
             />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </DialogWrapper>
       {isLoading ? (
         <SquareSpinnerComponent />
@@ -385,7 +385,7 @@ export default function GroupsList({
             />
           </Box>
 
-          <Grid size={12}>
+          <Grid2 size={12}>
             <StyledDataGrid<Group>
               storageKey="groups"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -525,7 +525,7 @@ export default function GroupsList({
                 disabled={isDeletingGroup}
               />
             </DialogWrapper>
-          </Grid>
+          </Grid2>
         </>
       )}
     </Page>
