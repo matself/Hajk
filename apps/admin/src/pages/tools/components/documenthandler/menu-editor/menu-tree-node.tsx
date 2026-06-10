@@ -10,7 +10,7 @@ import {
 import {
   DragIndicator,
   Delete as DeleteIcon,
-  AddCircleOutline as AddChildIcon,
+  AddCircleOutlined as AddChildIcon,
   Warning as WarningIcon,
   Description as DocumentIcon,
   Map as MapIcon,

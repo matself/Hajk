@@ -146,31 +146,33 @@ export function MenuItemProperties({
           onChange={(e) =>
             patch({ icon: { ...d.icon, materialUiIconName: e.target.value } })
           }
-          InputProps={{
-            startAdornment: d.icon.materialUiIconName ? (
-              <InputAdornment position="start">
-                <Icon sx={{ fontSize: 18 }}>{d.icon.materialUiIconName}</Icon>
-              </InputAdornment>
-            ) : undefined,
-            endAdornment: (
-              <InputAdornment position="end">
-                <Tooltip title={t("tools.documenthandler.browseIcons")}>
-                  <IconButton
-                    size="small"
-                    edge="end"
-                    onClick={() =>
-                      window.open(
-                        "https://fonts.google.com/icons",
-                        "_blank",
-                        "noopener,noreferrer"
-                      )
-                    }
-                  >
-                    <OpenInNewIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Tooltip>
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: d.icon.materialUiIconName ? (
+                <InputAdornment position="start">
+                  <Icon sx={{ fontSize: 18 }}>{d.icon.materialUiIconName}</Icon>
+                </InputAdornment>
+              ) : undefined,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title={t("tools.documenthandler.browseIcons")}>
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      onClick={() =>
+                        window.open(
+                          "https://fonts.google.com/icons",
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                    >
+                      <OpenInNewIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            },
           }}
         />
         <FormControl size="small" sx={{ minWidth: 100 }}>

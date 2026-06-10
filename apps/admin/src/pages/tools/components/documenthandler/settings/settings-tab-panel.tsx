@@ -3,7 +3,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
-  Grid2 as Grid,
+  Grid,
   Icon,
   IconButton,
   InputAdornment,
@@ -161,31 +161,33 @@ export function SettingsTabPanel({
                     fullWidth
                     {...field}
                     value={iconName}
-                    InputProps={{
-                      startAdornment: iconName ? (
-                        <InputAdornment position="start">
-                          <Icon sx={{ fontSize: 18 }}>{iconName}</Icon>
-                        </InputAdornment>
-                      ) : undefined,
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title={t("tools.documenthandler.browseIcons")}>
-                            <IconButton
-                              size="small"
-                              edge="end"
-                              onClick={() =>
-                                window.open(
-                                  "https://fonts.google.com/icons",
-                                  "_blank",
-                                  "noopener,noreferrer"
-                                )
-                              }
-                            >
-                              <OpenInNewIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        startAdornment: iconName ? (
+                          <InputAdornment position="start">
+                            <Icon sx={{ fontSize: 18 }}>{iconName}</Icon>
+                          </InputAdornment>
+                        ) : undefined,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title={t("tools.documenthandler.browseIcons")}>
+                              <IconButton
+                                size="small"
+                                edge="end"
+                                onClick={() =>
+                                  window.open(
+                                    "https://fonts.google.com/icons",
+                                    "_blank",
+                                    "noopener,noreferrer"
+                                  )
+                                }
+                              >
+                                <OpenInNewIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 );

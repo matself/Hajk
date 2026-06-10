@@ -130,7 +130,11 @@ export function DocumentEditorDialog({
                 }}
                 error={!!contentError}
                 helperText={contentError}
-                inputProps={{ style: { fontFamily: "monospace", fontSize: 12 } }}
+                slotProps={{
+                  htmlInput: {
+                    style: { fontFamily: "monospace", fontSize: 12 },
+                  },
+                }}
                 sx={{ mt: 0.5 }}
               />
             </Box>

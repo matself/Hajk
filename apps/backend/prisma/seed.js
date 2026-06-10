@@ -885,8 +885,10 @@ async function seedDocuments() {
     const folderSlug = uniqueSlug(slugify(folderTitle), existingSlugs);
     existingSlugs.add(folderSlug);
 
-    const folder = await prisma.documentFolder.create({
-      data: {
+    const folder = await prisma.documentFolder.upsert({
+      where: { mapName_name: { mapName, name: folderSlug } },
+      update: {},
+      create: {
         name: folderSlug,
         title: folderTitle,
         mapName,
@@ -894,6 +896,7 @@ async function seedDocuments() {
         lastSavedDate: new Date(),
       },
     });
+    console.log(`  → Folder "${folderTitle}" (${folderSlug}) in map "${mapName}"`);
     docSlugsByFolder.set(folder.id, new Set());
     return folder;
   }
@@ -959,6 +962,7 @@ async function seedDocuments() {
         const docTitle = doc.title || entry.name.replace(".json", "");
         const content = { chapters: doc.chapters ?? [] };
         await createDocument(mapName, generalFolder.id, docTitle, content);
+        console.log(`    • "${docTitle}" → General`);
         totalDocs++;
       }
     }
@@ -999,6 +1003,7 @@ async function seedDocuments() {
         const docTitle = doc.title || entry.name.replace(".json", "");
         const content = { chapters: doc.chapters ?? [] };
         await createDocument(mapName, folder.id, docTitle, content);
+        console.log(`    • "${docTitle}" → ${subDir.name}`);
         totalDocs++;
       }
     }

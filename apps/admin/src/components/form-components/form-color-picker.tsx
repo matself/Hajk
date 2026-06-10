@@ -41,24 +41,26 @@ export default function FormColorPicker({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Box
-                ref={swatchRef}
-                onClick={() => !disabled && setOpen((v) => !v)}
-                sx={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: "4px",
-                  backgroundColor: value || "transparent",
-                  border: value ? "none" : "1px dashed rgba(0,0,0,0.3)",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  opacity: disabled ? 0.5 : 1,
-                }}
-              />
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Box
+                  ref={swatchRef}
+                  onClick={() => !disabled && setOpen((v) => !v)}
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: "4px",
+                    backgroundColor: value || "transparent",
+                    border: value ? "none" : "1px dashed rgba(0,0,0,0.3)",
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1,
+                  }}
+                />
+              </InputAdornment>
+            ),
+          },
         }}
       />
       <Popover
