@@ -585,6 +585,7 @@
     "groups.createGroupFailed": "Failed to create group.",
     "groups.updateGroupSuccess": "Group {{name}} updated!",
     "groups.updateGroupFailed": "Failed to update group {{name}}.",
+    "groups.deleteGroupButton": "Delete group",
     "groups.deleteGroupSuccess": "Group {{name}} deleted!",
     "groups.deleteGroupFailed": "Failed to delete group {{name}}.",
     "groups.deleteGroupConfirmTitle": "Confirm group deletion",

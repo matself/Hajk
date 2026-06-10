@@ -319,6 +319,12 @@ function GroupSettings() {
     }
   };
 
+  const handleDeleteClick = () => {
+    if (isDeletingGroup) return;
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleCloseDeleteDialog = () => {
     if (isDeletingGroup) return;
     setIsDeleteDialogOpen(false);
@@ -335,6 +341,7 @@ function GroupSettings() {
         theme: palette.mode,
         hideProgressBar: true,
       });
+      handleCloseDeleteDialog();
       void navigate("/groups");
     } catch (error) {
       console.error("Deletion failed:", error);
@@ -391,7 +398,7 @@ function GroupSettings() {
               variant="outlined"
               color="error"
               startIcon={<DeleteOutlineIcon />}
-              onClick={() => setIsDeleteDialogOpen(true)}
+              onClick={handleDeleteClick}
               disabled={isDeletingGroup}
               sx={{
                 mt: 2,
@@ -400,7 +407,7 @@ function GroupSettings() {
                 borderStyle: "dashed",
               }}
             >
-              {t("common.delete")}
+              {t("groups.deleteGroupButton")}
             </Button>
           </Box>
         }
@@ -660,6 +667,9 @@ function GroupSettings() {
             components={{ strong: <strong /> }}
           />
         </Typography>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          {t("groups.deleteGroupWarning")}
+        </Alert>
         <TextField
           fullWidth
           autoComplete="off"

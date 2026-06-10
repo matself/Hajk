@@ -584,6 +584,7 @@
     "groups.createGroupFailed": "Misslyckades att skapa gruppen.",
     "groups.updateGroupSuccess": "Gruppen {{name}} har uppdaterats!",
     "groups.updateGroupFailed": "Misslyckades att uppdatera gruppen {{name}}.",
+    "groups.deleteGroupButton": "Ta bort grupp",
     "groups.deleteGroupSuccess": "Gruppen {{name}} är nu borttagen!",
     "groups.deleteGroupFailed": "Misslyckades att ta bort gruppen {{name}}.",
     "groups.deleteGroupConfirmTitle": "Bekräfta borttagning av grupp",
