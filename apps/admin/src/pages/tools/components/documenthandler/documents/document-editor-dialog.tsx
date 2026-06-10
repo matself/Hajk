@@ -200,6 +200,7 @@ export function DocumentEditorDialog({
             {isRichText && tab === "editor" && activeDocument && (
               <Box sx={{ flex: 1, overflow: "hidden", position: "relative" }}>
                 <ChapterEditorPanel
+                  key={activeDocument.id}
                   document={activeDocument}
                   mapName={mapName}
                   folderName={folderName ?? ""}

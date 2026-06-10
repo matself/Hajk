@@ -4,7 +4,11 @@ import type { NodeViewProps } from "@tiptap/react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Edit as EditIcon } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { MediaDialog } from "../dialogs/media-dialog";
+import {
+  AudioDialog,
+  ImageDialog,
+  VideoDialog,
+} from "../dialogs/media-dialog";
 import type { MediaFigureAttrs } from "../extensions/media-figure";
 
 interface MediaFigureViewProps extends NodeViewProps {
@@ -12,6 +16,12 @@ interface MediaFigureViewProps extends NodeViewProps {
   videoList?: string[];
   audioList?: string[];
 }
+
+const EDIT_TOOLTIP_KEYS = {
+  image: "dhRichTextEditor.media.editImage",
+  video: "dhRichTextEditor.media.editVideo",
+  audio: "dhRichTextEditor.media.editAudio",
+} as const;
 
 export function MediaFigureView({
   node,
@@ -35,6 +45,17 @@ export function MediaFigureView({
     updateAttributes(newAttrs);
     setDialogOpen(false);
   }
+
+  const dialogProps = {
+    open: dialogOpen,
+    initial: attrs,
+    onConfirm: handleConfirm,
+    onCancel: () => setDialogOpen(false),
+    onDelete: () => {
+      deleteNode();
+      setDialogOpen(false);
+    },
+  };
 
   return (
     <NodeViewWrapper>
@@ -70,7 +91,7 @@ export function MediaFigureView({
             </span>
           </Box>
         ) : (
-            <img
+          <img
             src={attrs.src || "data:,"}
             alt={attrs.alt}
             style={previewStyle}
@@ -89,7 +110,7 @@ export function MediaFigureView({
           </Box>
         )}
 
-        <Tooltip title={t("dhRichTextEditor.media.edit")}>
+        <Tooltip title={t(EDIT_TOOLTIP_KEYS[attrs.mediaType])}>
           <IconButton
             className="media-edit-btn"
             size="small"
@@ -109,19 +130,15 @@ export function MediaFigureView({
         </Tooltip>
       </Box>
 
-      <MediaDialog
-        open={dialogOpen}
-        initial={attrs}
-        imageList={imageList}
-        videoList={videoList}
-        audioList={audioList}
-        onConfirm={handleConfirm}
-        onCancel={() => setDialogOpen(false)}
-        onDelete={() => {
-          deleteNode();
-          setDialogOpen(false);
-        }}
-      />
+      {attrs.mediaType === "image" && (
+        <ImageDialog {...dialogProps} srcList={imageList} />
+      )}
+      {attrs.mediaType === "video" && (
+        <VideoDialog {...dialogProps} srcList={videoList} />
+      )}
+      {attrs.mediaType === "audio" && (
+        <AudioDialog {...dialogProps} srcList={audioList} />
+      )}
     </NodeViewWrapper>
   );
 }

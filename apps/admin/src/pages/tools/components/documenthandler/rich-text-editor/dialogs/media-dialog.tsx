@@ -13,7 +13,6 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -22,32 +21,72 @@ import type { MediaFigureAttrs, MediaType } from "../extensions/media-figure";
 
 interface MediaDialogProps {
   open: boolean;
+  mediaType: MediaType;
   initial?: Partial<MediaFigureAttrs>;
-  imageList?: string[];
-  videoList?: string[];
-  audioList?: string[];
+  srcList?: string[];
   onConfirm: (attrs: MediaFigureAttrs) => void;
   onCancel: () => void;
   onDelete?: () => void;
 }
 
-const MEDIA_TYPES: MediaType[] = ["image", "video", "audio"];
 const POSITIONS = ["left", "center", "right", "floatLeft", "floatRight"] as const;
 
-export function MediaDialog({
+const INSERT_TITLE_KEYS: Record<MediaType, string> = {
+  image: "dhRichTextEditor.media.insertImageTitle",
+  video: "dhRichTextEditor.media.insertVideoTitle",
+  audio: "dhRichTextEditor.media.insertAudioTitle",
+};
+
+const EDIT_TITLE_KEYS: Record<MediaType, string> = {
+  image: "dhRichTextEditor.media.editImageTitle",
+  video: "dhRichTextEditor.media.editVideoTitle",
+  audio: "dhRichTextEditor.media.editAudioTitle",
+};
+
+function PositionField({
+  position,
+  onChange,
+}: {
+  position: string;
+  onChange: (value: string) => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <FormControl>
+      <FormLabel>
+        <Typography variant="body2">
+          {t("dhRichTextEditor.media.position")}
+        </Typography>
+      </FormLabel>
+      <RadioGroup
+        row
+        value={position}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {POSITIONS.map((val) => (
+          <FormControlLabel
+            key={val}
+            value={val}
+            control={<Radio size="small" />}
+            label={t(`dhRichTextEditor.media.positions.${val}`)}
+          />
+        ))}
+      </RadioGroup>
+    </FormControl>
+  );
+}
+
+function MediaDialog({
   open,
+  mediaType,
   initial,
-  imageList = [],
-  videoList = [],
-  audioList = [],
+  srcList = [],
   onConfirm,
   onCancel,
   onDelete,
 }: MediaDialogProps) {
   const { t } = useTranslation();
-  const [mediaType, setMediaType] = useState<MediaType>(
-    initial?.mediaType ?? "image"
-  );
   const [src, setSrc] = useState(initial?.src ?? "");
   const [alt, setAlt] = useState(initial?.alt ?? "");
   const [width, setWidth] = useState<string>(
@@ -60,7 +99,6 @@ export function MediaDialog({
   const [source, setSource] = useState(initial?.source ?? "");
   const [popup, setPopup] = useState(initial?.popup ?? false);
   const [position, setPosition] = useState(initial?.position ?? "left");
-  // Compute aspect ratio from initial dimensions for locked resizing
   const aspectRatio =
     initial?.width && initial?.height ? initial.width / initial.height : null;
 
@@ -85,46 +123,28 @@ export function MediaDialog({
       src,
       alt,
       mediaType,
-      width: width ? parseInt(width, 10) || null : null,
-      height: height ? parseInt(height, 10) || null : null,
+      width:
+        mediaType !== "audio" && width ? parseInt(width, 10) || null : null,
+      height:
+        mediaType !== "audio" && height ? parseInt(height, 10) || null : null,
       caption,
       source,
-      popup,
+      popup: mediaType === "image" ? popup : false,
       position,
     });
   }
 
-  const srcList =
-    mediaType === "video"
-      ? videoList
-      : mediaType === "audio"
-      ? audioList
-      : imageList;
-
   const typeLabel = t(`dhRichTextEditor.media.types.${mediaType}`);
+  const isEditing = Boolean(initial?.src);
+  const titleKey = isEditing
+    ? EDIT_TITLE_KEYS[mediaType]
+    : INSERT_TITLE_KEYS[mediaType];
 
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {initial?.src
-          ? t("dhRichTextEditor.media.editTitle")
-          : t("dhRichTextEditor.media.insertTitle")}
-      </DialogTitle>
+      <DialogTitle>{t(titleKey)}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
-          <FormControl size="small" fullWidth>
-            <Select<MediaType>
-              value={mediaType}
-              onChange={(e) => setMediaType(e.target.value)}
-            >
-              {MEDIA_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {t(`dhRichTextEditor.media.types.${type}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
           <TextField
             autoFocus
             label={
@@ -147,15 +167,13 @@ export function MediaDialog({
               ))}
           </TextField>
 
-          {mediaType !== "audio" && (
-            <TextField
-              label={t("dhRichTextEditor.media.altText")}
-              value={alt}
-              onChange={(e) => setAlt(e.target.value)}
-              size="small"
-              fullWidth
-            />
-          )}
+          <TextField
+            label={t("dhRichTextEditor.media.altText")}
+            value={alt}
+            onChange={(e) => setAlt(e.target.value)}
+            size="small"
+            fullWidth
+          />
 
           {mediaType !== "audio" && (
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -195,40 +213,18 @@ export function MediaDialog({
           />
 
           {mediaType === "image" && (
-            <>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={popup}
-                    onChange={(e) => setPopup(e.target.checked)}
-                  />
-                }
-                label={t("dhRichTextEditor.media.openInPopup")}
-              />
-
-              <FormControl>
-                <FormLabel>
-                  <Typography variant="body2">
-                    {t("dhRichTextEditor.media.position")}
-                  </Typography>
-                </FormLabel>
-                <RadioGroup
-                  row
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                >
-                  {POSITIONS.map((val) => (
-                    <FormControlLabel
-                      key={val}
-                      value={val}
-                      control={<Radio size="small" />}
-                      label={t(`dhRichTextEditor.media.positions.${val}`)}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={popup}
+                  onChange={(e) => setPopup(e.target.checked)}
+                />
+              }
+              label={t("dhRichTextEditor.media.openInPopup")}
+            />
           )}
+
+          <PositionField position={position} onChange={setPosition} />
         </Box>
       </DialogContent>
       <DialogActions>
@@ -248,4 +244,18 @@ export function MediaDialog({
       </DialogActions>
     </Dialog>
   );
+}
+
+type TypedMediaDialogProps = Omit<MediaDialogProps, "mediaType">;
+
+export function ImageDialog(props: TypedMediaDialogProps) {
+  return <MediaDialog {...props} mediaType="image" />;
+}
+
+export function VideoDialog(props: TypedMediaDialogProps) {
+  return <MediaDialog {...props} mediaType="video" />;
+}
+
+export function AudioDialog(props: TypedMediaDialogProps) {
+  return <MediaDialog {...props} mediaType="audio" />;
 }

@@ -26,7 +26,11 @@ import {
 import { useTranslation } from "react-i18next";
 import { applyEditorSpellcheck } from "./spellcheck-preference";
 import { LinkDialog } from "./dialogs/link-dialog";
-import { MediaDialog } from "./dialogs/media-dialog";
+import {
+  AudioDialog,
+  ImageDialog,
+  VideoDialog,
+} from "./dialogs/media-dialog";
 import { TextSectionDialog } from "./dialogs/text-section-dialog";
 import type { HajkLinkAttrs } from "./extensions/hajk-link";
 import type { MediaFigureAttrs, MediaType } from "./extensions/media-figure";
@@ -164,11 +168,18 @@ export function RichTextToolbar({
       .focus()
       .insertContent({
         type: "mediaFigure",
-        attrs: { ...attrs, mediaType: pendingMediaType },
+        attrs,
       })
       .run();
     setMediaDialogOpen(false);
   }
+
+  const mediaDialogProps = {
+    key: mediaDialogKey,
+    open: mediaDialogOpen,
+    onConfirm: handleMediaConfirm,
+    onCancel: () => setMediaDialogOpen(false),
+  };
 
   function handleIframeInsert() {
     editor
@@ -394,16 +405,15 @@ export function RichTextToolbar({
         }
       />
 
-      <MediaDialog
-        key={mediaDialogKey}
-        open={mediaDialogOpen}
-        initial={{ mediaType: pendingMediaType }}
-        imageList={imageList}
-        videoList={videoList}
-        audioList={audioList}
-        onConfirm={handleMediaConfirm}
-        onCancel={() => setMediaDialogOpen(false)}
-      />
+      {pendingMediaType === "image" && (
+        <ImageDialog {...mediaDialogProps} srcList={imageList} />
+      )}
+      {pendingMediaType === "video" && (
+        <VideoDialog {...mediaDialogProps} srcList={videoList} />
+      )}
+      {pendingMediaType === "audio" && (
+        <AudioDialog {...mediaDialogProps} srcList={audioList} />
+      )}
     </>
   );
 }
