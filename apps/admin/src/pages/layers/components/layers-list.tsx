@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Grid from "@mui/material/Grid";
+import Grid2 from "@mui/material/Grid2";
 import {
   Box,
   Button,
@@ -50,6 +50,11 @@ import LayerKindBadge from "./layer-kind-badge";
 import { LayerCategory, normalizeLayerCategory } from "../layer-category";
 import ServiceStatusIndicator from "../../services/components/service-status-indicator";
 import StyledDataGrid from "../../../components/data-grid";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 import { CapabilityRow, CreateLayerGrid } from "./create-layer-grid";
 
 interface LayersListProps {
@@ -582,8 +587,8 @@ export default function LayersList({
             }
           >
             {createStep === "details" ? (
-              <Grid container spacing={2}>
-                <Grid size={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <TextField
                     label={t("common.name")}
                     fullWidth
@@ -593,8 +598,8 @@ export default function LayersList({
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <FormControl fullWidth>
                     <InputLabel id="serviceId-label">
                       {t("common.service")}
@@ -619,9 +624,9 @@ export default function LayersList({
                       )}
                     />
                   </FormControl>
-                </Grid>
+                </Grid2>
                 {selectedService && (
-                  <Grid size={12}>
+                  <Grid2 size={12}>
                     <Typography variant="body2" color="text.secondary">
                       {t("layers.createDialog.serviceDefaults", {
                         url: selectedService.url,
@@ -630,9 +635,9 @@ export default function LayersList({
                         projection: selectedService.projection?.code ?? "—",
                       })}
                     </Typography>
-                  </Grid>
+                  </Grid2>
                 )}
-              </Grid>
+              </Grid2>
             ) : (
               <CreateLayerGrid
                 capabilitiesSearchTerm={capabilitiesSearchTerm}
@@ -652,8 +657,8 @@ export default function LayersList({
             )}
           </DialogWrapper>
 
-          <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <ListFilterRow>
+            <ListFilterSearch>
               <TextField
                 fullWidth
                 label={t("layers.searchTitle")}
@@ -661,8 +666,8 @@ export default function LayersList({
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            </ListFilterSearch>
+            <ListFilterField>
               <FormControl fullWidth variant="outlined">
                 <InputLabel id="service-url-filter-label">
                   {t("common.service")}
@@ -683,10 +688,10 @@ export default function LayersList({
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
+            </ListFilterField>
+          </ListFilterRow>
 
-          <Grid size={12}>
+          <Grid2 size={12}>
             <StyledDataGrid<LayersGridRow>
               storageKey="layers"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -905,7 +910,7 @@ export default function LayersList({
                 </Typography>
               )}
             </DialogWrapper>
-          </Grid>
+          </Grid2>
         </Page>
       )}
     </>

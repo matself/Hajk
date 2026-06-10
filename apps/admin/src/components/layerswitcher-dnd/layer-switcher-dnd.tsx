@@ -6,8 +6,8 @@ import {
   Typography,
   TextField,
   List,
-  Grid,
   Paper,
+  Box,
 } from "@mui/material";
 import { DragIndicator } from "@mui/icons-material";
 import {
@@ -195,8 +195,21 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <Grid container spacing={3}>
-          <Grid size={4} sx={{ minWidth: 0 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", lg: "row" },
+            gap: 3,
+            alignItems: "stretch",
+          }}
+        >
+          <Box
+            sx={{
+              flex: { xs: "1 1 auto", lg: "0 0 33.333%" },
+              maxWidth: { lg: "33.333%" },
+              minWidth: 0,
+            }}
+          >
             <Paper
               sx={{
                 p: 2,
@@ -250,9 +263,9 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
                   ))}
               </List>
             </Paper>
-          </Grid>
+          </Box>
 
-          <Grid size={8}>
+          <Box sx={{ flex: { xs: "1 1 auto", lg: "1 1 0" }, minWidth: 0 }}>
             <Paper
               sx={{
                 p: 2,
@@ -275,8 +288,8 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
                 />
               ))}
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <DragOverlay>
           {activeDrag && (

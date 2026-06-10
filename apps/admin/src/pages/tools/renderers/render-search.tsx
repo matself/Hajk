@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { Grid, Switch } from "@mui/material";
+import { Switch } from "@mui/material";
 import { TextField, FormControlLabel, Checkbox } from "@mui/material";
 import { useForm, Controller, FieldValues, Control } from "react-hook-form";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import { useTranslation } from "react-i18next";
@@ -94,9 +95,9 @@ export default function SearchRenderer({
   return (
     <>
       <FormPanel title={t("tools.search.generalSettings")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Infotext */}
-          <Grid size={{ xs: 12, md: 12 }}>
+          <FormFieldRow>
             <Controller
               name="searchInfoText"
               control={control}
@@ -109,10 +110,10 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Max hits */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="maxHitsPerDataset"
               control={control}
@@ -125,10 +126,10 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Delay */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="autoSearchDelay"
               control={control}
@@ -141,10 +142,10 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Checkboxes */}
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="showInfoWhenExceeded"
               control={control}
@@ -155,9 +156,9 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="disableAutocomplete"
               control={control}
@@ -168,8 +169,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="disableAutoCombinations"
               control={control}
@@ -180,8 +181,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="wildcardBeforeSearch"
               control={control}
@@ -192,8 +193,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="autofocusSearch"
               control={control}
@@ -204,14 +205,14 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       <FormAccordion title={t("tools.search.spatialSettings")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Spatial search checkboxes */}
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="enablePolygonSearch"
               control={control}
@@ -222,9 +223,9 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="enableRadiusSearch"
               control={control}
@@ -235,9 +236,9 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="enableAreaSearch"
               control={control}
@@ -248,9 +249,9 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
-          <Grid size={{ xs: 12 }}>
+          <FormFieldRow>
             <Controller
               name="searchWithinView"
               control={control}
@@ -261,10 +262,10 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
-        <Grid container columns={12} rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+        </FormFieldGrid>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="strokeColor" shrink>
                 {t("tools.strokeColor")}
@@ -283,8 +284,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="strokeOpacity" shrink>
                 {t("tools.strokeOpacity")}
@@ -303,18 +304,13 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.userSettings.title")}>
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="searchVisibleLayers"
               control={control}
@@ -325,8 +321,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="preSelected"
               control={control}
@@ -337,16 +333,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="wildcardBefore"
               control={control}
@@ -357,28 +345,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <Controller
-              name="preSelected"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch {...field} checked={!!field.value} />}
-                  label={t("tools.search.userSettings.preSelected")}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="wildcardAfter"
               control={control}
@@ -389,28 +357,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <Controller
-              name="preSelected"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch {...field} checked={!!field.value} />}
-                  label={t("tools.search.userSettings.preSelected")}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="caseSensitive"
               control={control}
@@ -421,28 +369,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <Controller
-              name="preSelected"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch {...field} checked={!!field.value} />}
-                  label={t("tools.search.userSettings.preSelected")}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="requireFullObject"
               control={control}
@@ -453,28 +381,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <Controller
-              name="preSelected"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch {...field} checked={!!field.value} />}
-                  label={t("tools.search.userSettings.preSelected")}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          columns={12}
-          sx={{ alignItems: "center" }}
-          rowSpacing={1.5}
-        >
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="showResultLabel"
               control={control}
@@ -485,20 +393,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <Controller
-              name="preSelected"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Switch {...field} checked={!!field.value} />}
-                  label={t("tools.search.userSettings.preSelected")}
-                />
-              )}
-            />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion
@@ -506,8 +402,8 @@ export default function SearchRenderer({
           defaultValue: "Alternativ för visning av resultat",
         })}
       >
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12 }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <Controller
               name="autoShowAllResultsOnMap"
               control={control}
@@ -520,8 +416,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="allowResultFiltering"
               control={control}
@@ -534,8 +430,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="allowResultSorting"
               control={control}
@@ -548,8 +444,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="allowQuickClearSelection"
               control={control}
@@ -562,8 +458,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="allowDownloadResults"
               control={control}
@@ -576,8 +472,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="showPreviewOnHover"
               control={control}
@@ -590,8 +486,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="collectSelectedResults"
               control={control}
@@ -604,8 +500,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="showPrevNextButtons"
               control={control}
@@ -618,8 +514,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="maxZoomLevel"
               control={control}
@@ -635,14 +531,14 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.hitIconandResultsInMap")}>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Hit icon */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="hitIcon"
               control={control}
@@ -656,8 +552,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="iconDisplacementX"
               control={control}
@@ -671,8 +567,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="iconDisplacementY"
               control={control}
@@ -686,8 +582,8 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-          <Grid size={{ xs: 12, md: 10 }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Controller
               name="iconScale"
               control={control}
@@ -701,13 +597,13 @@ export default function SearchRenderer({
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.standardAppearance")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: "auto" }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="standardResultsMarkedFillColor" shrink>
                 {t("tools.search.standardResultsMarkedFillColor")}
@@ -726,8 +622,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="standardResultsMarkedFrameColor" shrink>
                 {t("tools.search.standardResultsMarkedFrameColor")}
@@ -746,13 +642,13 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
 
       <FormAccordion title={t("tools.search.markedResultsAppearance")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: "auto" }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="markedResultsTextFillColor" shrink>
                 {t("tools.search.markedResultsTextFillColor")}
@@ -771,8 +667,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="markedResultsTextFrameColor" shrink>
                 {t("tools.search.markedResultsTextFrameColor")}
@@ -791,8 +687,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="markedResultsMarkedFillColor" shrink>
                 {t("tools.search.markedResultsMarkedFillColor")}
@@ -811,8 +707,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="markedResultsMarkedFrameColor" shrink>
                 {t("tools.search.markedResultsMarkedFrameColor")}
@@ -831,13 +727,13 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
       {/* Utseende för det aktiva ("highlightade") resultatet */}
       <FormAccordion title={t("tools.search.activeResultAppearance")}>
-        <Grid container rowSpacing={1.5}>
-          <Grid size={{ xs: 12, md: "auto" }}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="activeResultTextFillColor" shrink>
                 {t("tools.search.activeResultTextFillColor")}
@@ -856,8 +752,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="activeResultTextFrameColor" shrink>
                 {t("tools.search.activeResultTextFrameColor")}
@@ -876,8 +772,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="activeResultMarkedFillColor" shrink>
                 {t("tools.search.activeResultMarkedFillColor")}
@@ -896,8 +792,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: "auto" }}>
+          </FormFieldRow>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel id="activeResultMarkedFrameColor" shrink>
                 {t("tools.search.activeResultMarkedFrameColor")}
@@ -916,8 +812,8 @@ export default function SearchRenderer({
                 )}
               />
             </FormControl>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
       {/* <FormPanel title={t("tools.search.availableLayers")}>
         {layer && (

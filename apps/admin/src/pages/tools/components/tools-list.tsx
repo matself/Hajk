@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import Grid from "@mui/material/Grid";
 import { Box, Chip, TextField, Tooltip, Typography } from "@mui/material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { useTranslation } from "react-i18next";
@@ -128,7 +127,7 @@ export default function ToolsList({
         <Typography variant="h6">{t("common.loading")}</Typography>
       ) : (
         <>
-          <Grid size={12} container sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, width: { xs: "100%", sm: "50%", md: "33%" } }}>
             <TextField
               fullWidth
               label={t("tools.searchTitle")}
@@ -136,9 +135,9 @@ export default function ToolsList({
               value={searchTerm}
               onChange={handleSearchChange}
             />
-          </Grid>
+          </Box>
 
-          <Grid size={12}>
+          <Box sx={{ width: "100%", minWidth: 0 }}>
             <StyledDataGrid
               storageKey="tools"
               customSx={{ height: "calc(100vh - 320px)" }}
@@ -190,7 +189,7 @@ export default function ToolsList({
                 }
               }}
             />
-          </Grid>
+          </Box>
         </>
       )}
     </Page>

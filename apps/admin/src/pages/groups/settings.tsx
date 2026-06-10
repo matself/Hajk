@@ -17,7 +17,6 @@ import {
   styled,
   useTheme,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
@@ -55,20 +54,11 @@ import DialogWrapper from "../../components/flexible-dialog";
 import FormContainer from "../../components/form-components/form-container";
 import FormPanel from "../../components/form-components/form-panel";
 import UsedInMapsPanel from "../../components/used-in-maps-panel";
-import FormFieldGrid from "../../components/form-components/form-field-grid";
+import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
 import { SelectWithHelp } from "../../components/form-components/field-label-with-help";
-import { getDeleteGroupErrorMessage } from "./utils/group-errors";
-
-const compositionKey = (
-  layers: GroupLayerCreateInput[],
-  tree: LayerSwitcherTreeNode[] = []
-) =>
-  [
-    layers
-      .map((layer) => `${layer.layerId}:${layer.usage}:${layer.zIndex ?? 0}`)
-      .join("|"),
-    JSON.stringify(tree),
-  ].join("::");
+import { getDeleteGroupErrorMessage, getUpdateGroupErrorMessage, applyGroupFormValidationErrors } from "./utils/group-errors";
+import { groupCompositionKey } from "./utils/group-composition";
+import { stripEditingGroupFromTree } from "./utils/layer-switcher-tree";
 
 const EMPTY_GROUP_LAYERS: GroupLayer[] = [];
 const EMPTY_MAPS: Map[] = [];
@@ -120,7 +110,14 @@ function GroupSettings() {
   );
   const { data: rolesData } = useRoles();
   const groupLayers = groupLayersData?.layers ?? EMPTY_GROUP_LAYERS;
-  const savedLayerSwitcherTree = groupLayersData?.layerSwitcherTree;
+  const savedLayerSwitcherTree = useMemo(
+    () =>
+      stripEditingGroupFromTree(
+        groupLayersData?.layerSwitcherTree,
+        groupId,
+      ),
+    [groupLayersData?.layerSwitcherTree, groupId],
+  );
   const maps = mapsData ?? EMPTY_MAPS;
   const roles = rolesData ?? EMPTY_ROLES;
   const { palette } = useTheme();
@@ -138,6 +135,9 @@ function GroupSettings() {
   >([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const compositionBaselineRef = useRef<string | null>(null);
+  const compositionStateKeyRef = useRef<string>("");
+  const [isCompositionDirty, setIsCompositionDirty] = useState(false);
 
   const {
     register,
@@ -145,6 +145,8 @@ function GroupSettings() {
     control,
     reset,
     watch,
+    setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
@@ -173,14 +175,17 @@ function GroupSettings() {
     [initialDndLayers],
   );
   const initialCompositionKey = useMemo(
-    () => compositionKey(initialComposition, savedLayerSwitcherTree ?? []),
-    [initialComposition, savedLayerSwitcherTree],
+    () => groupCompositionKey(initialComposition),
+    [initialComposition],
   );
-  const currentCompositionKey = useMemo(
-    () => compositionKey(compositionLayers, compositionTree),
-    [compositionLayers, compositionTree],
+  const savedLayerSwitcherTreeKey = useMemo(
+    () => JSON.stringify(savedLayerSwitcherTree ?? []),
+    [savedLayerSwitcherTree],
   );
-  const isCompositionDirty = currentCompositionKey !== initialCompositionKey;
+  const editingGroup = useMemo(
+    () => (group ? { id: group.id, name: group.name } : undefined),
+    [group?.id, group?.name],
+  );
   const isSaveDirty = isDirty || isCompositionDirty;
   const selectedRoleIds =
     (watch("roleIds") as string[] | undefined) ??
@@ -192,19 +197,26 @@ function GroupSettings() {
   useEffect(() => {
     if (!group) return;
 
-    reset({
-      name: group.name ?? "",
-      internalName: group.internalName ?? "",
-      type: group.type ?? GroupType.LAYER,
-      locked: group.locked ?? false,
-      roleIds: group.restrictedToRoles?.map((role) => role.roleId) ?? [],
-    });
-  }, [group, reset]);
+    reset(
+      {
+        name: group.name ?? "",
+        internalName: group.internalName ?? "",
+        type: group.type ?? GroupType.LAYER,
+        locked: group.locked ?? false,
+        roleIds: group.restrictedToRoles?.map((role) => role.roleId) ?? [],
+      },
+      { keepDirty: false },
+    );
+    clearErrors();
+  }, [group, reset, clearErrors]);
 
   useEffect(() => {
+    compositionBaselineRef.current = null;
+    compositionStateKeyRef.current = initialCompositionKey;
+    setIsCompositionDirty(false);
     setCompositionLayers(initialComposition);
     setCompositionTree(savedLayerSwitcherTree ?? []);
-  }, [initialComposition, savedLayerSwitcherTree]);
+  }, [initialCompositionKey, savedLayerSwitcherTreeKey, initialComposition, savedLayerSwitcherTree]);
 
   const handleExternalSubmit = () => {
     if (formRef.current) {
@@ -214,16 +226,29 @@ function GroupSettings() {
 
   const handleCompositionChange = useCallback(
     (composition: LayerSwitcherComposition) => {
-      setCompositionLayers(
-        composition.layers.map((layer) => ({
-          layerId: layer.layerId,
-          usage: layer.usage,
-          zIndex: layer.zIndex,
-          visibleAtStart: layer.visibleAtStart,
-          options: layer.options,
-        })),
-      );
-      setCompositionTree(composition.layerSwitcherTree);
+      const layers = composition.layers.map((layer) => ({
+        layerId: layer.layerId,
+        usage: layer.usage,
+        zIndex: layer.zIndex,
+        visibleAtStart: layer.visibleAtStart,
+        options: layer.options,
+      }));
+      const tree = composition.layerSwitcherTree;
+      const key = groupCompositionKey(layers, tree);
+
+      if (key === compositionStateKeyRef.current) {
+        return;
+      }
+      compositionStateKeyRef.current = key;
+
+      setCompositionLayers(layers);
+      setCompositionTree(tree);
+
+      if (compositionBaselineRef.current === null) {
+        compositionBaselineRef.current = key;
+        return;
+      }
+      setIsCompositionDirty(key !== compositionBaselineRef.current);
     },
     [],
   );
@@ -250,7 +275,8 @@ function GroupSettings() {
       };
       const layersPayload: GroupLayersUpdateInput = {
         layers: layersForType,
-        layerSwitcherTree: compositionTree,
+        layerSwitcherTree:
+          stripEditingGroupFromTree(compositionTree, groupIdValue) ?? [],
       };
       const updatedGroup = await updateGroup({
         groupId: groupIdValue,
@@ -265,16 +291,27 @@ function GroupSettings() {
         theme: palette.mode,
         hideProgressBar: true,
       });
-      reset({
-        name: updatedGroup.name ?? "",
-        internalName: updatedGroup.internalName ?? "",
-        type: updatedGroup.type ?? GroupType.LAYER,
-        locked: updatedGroup.locked ?? false,
-        roleIds: updatedGroup.restrictedToRoles?.map((role) => role.roleId) ?? [],
-      });
+      reset(
+        {
+          name: updatedGroup.name ?? "",
+          internalName: updatedGroup.internalName ?? "",
+          type: updatedGroup.type ?? GroupType.LAYER,
+          locked: updatedGroup.locked ?? false,
+          roleIds:
+            updatedGroup.restrictedToRoles?.map((role) => role.roleId) ?? [],
+        },
+        { keepDirty: false },
+      );
+      compositionBaselineRef.current = groupCompositionKey(
+        layersForType,
+        compositionTree,
+      );
+      compositionStateKeyRef.current = compositionBaselineRef.current;
+      setIsCompositionDirty(false);
     } catch (error) {
       console.error("Failed to update group:", error);
-      toast.error(t("groups.updateGroupFailed", { name: group?.name }), {
+      applyGroupFormValidationErrors(error, setError);
+      toast.error(getUpdateGroupErrorMessage(error, t, group?.name), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -415,7 +452,7 @@ function GroupSettings() {
           >
             <FormPanel title={t("common.information")}>
               <FormFieldGrid>
-                <Grid size={12}>
+                <FormFieldRow>
                   <TextField
                     label={t("common.name")}
                     fullWidth
@@ -429,16 +466,16 @@ function GroupSettings() {
                         ?.message
                     }
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <TextField
                     label={t("groups.internalName")}
                     fullWidth
                     variant="outlined"
                     {...register("internalName")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <Controller
                     name="locked"
                     control={control}
@@ -456,18 +493,20 @@ function GroupSettings() {
                       />
                     )}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <Controller
                     name="type"
                     control={control}
                     rules={{ required: `${t("common.required")}` }}
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <SelectWithHelp
                         labelKey="groups.type"
                         helpKey="groups.type"
                         {...field}
                         value={(field.value as string) ?? ""}
+                        error={Boolean(fieldState.error)}
+                        helperText={fieldState.error?.message}
                       >
                         {Object.keys(GroupType).map((key) => {
                           const value =
@@ -481,8 +520,8 @@ function GroupSettings() {
                       </SelectWithHelp>
                     )}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </FormFieldRow>
+                <FormFieldRow>
                   <Controller
                     name="roleIds"
                     control={control}
@@ -528,7 +567,7 @@ function GroupSettings() {
                       );
                     }}
                   />
-                </Grid>
+                </FormFieldRow>
               </FormFieldGrid>
             </FormPanel>
             <UsedInMapsPanel
@@ -570,11 +609,8 @@ function GroupSettings() {
               )}
               <LayerSwitcherDnDComponent
                 embedded
-                initialLayers={initialDndLayers}
-                initialTree={savedLayerSwitcherTree}
-                editingGroup={
-                  group ? { id: group.id, name: group.name } : undefined
-                }
+                groupId={groupId}
+                editingGroup={editingGroup}
                 layerKind={savedLayerKind}
                 onCompositionChange={handleCompositionChange}
               />

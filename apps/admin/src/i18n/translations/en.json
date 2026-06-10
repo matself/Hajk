@@ -82,7 +82,7 @@
     "common.noLayersAvailable": "No layers available",
     "common.noGroupsAvailable": "No groups available",
     "common.layerSwitcherHierarchyTree": "Layerswitcher hierarchy tree",
-    "common.layerSwitcherHierarchyTreeDescription": "Drag items from the left panel to build your layerswitcher hierarchy. Groups can contain layers and other groups. You can also drag items within the tree to reorder them.",
+    "common.layerSwitcherHierarchyTreeDescription": "Drag items from the left panel to build your layer order. Layers and group references are shown as a flat list — groups stay collapsed and cannot contain new layers here. Reorder items by dragging within the tree.",
     "common.dragLayersAndGroups": "Drag layers and groups here to create a hierarchy",
     "common.groupDropAction": "Placement at group",
     "common.groupDropQuestion": "How would you like to place \"{{dragged}}\" relative to \"{{target}}\"?",

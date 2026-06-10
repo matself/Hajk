@@ -23,6 +23,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 
 export interface CapabilityRow {
   id: number;
@@ -192,35 +197,39 @@ export function CreateLayerGrid({
           mb: 1,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2, flex: 1, mt: 1 }}>
-          <TextField
-            sx={{ width: "100%", maxWidth: "400px" }}
-            label={t("common.search")}
-            variant="outlined"
-            value={capabilitiesSearchTerm}
-            onChange={(e) => onCapabilitiesSearchTermChange(e.target.value)}
-            slotProps={{ input: { endAdornment: <SearchIcon /> } }}
-          />
+        <ListFilterRow sx={{ flex: 1, mt: 1, mb: 0 }}>
+          <ListFilterSearch>
+            <TextField
+              fullWidth
+              label={t("common.search")}
+              variant="outlined"
+              value={capabilitiesSearchTerm}
+              onChange={(e) => onCapabilitiesSearchTermChange(e.target.value)}
+              slotProps={{ input: { endAdornment: <SearchIcon /> } }}
+            />
+          </ListFilterSearch>
           {workspaces.length > 0 && (
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel>{t("services.workspace")}</InputLabel>
-              <Select
-                label={t("services.workspace")}
-                value={selectedWorkspace}
-                onChange={(e) =>
-                  onSelectedWorkspaceChange(String(e.target.value))
-                }
-              >
-                <MenuItem value="">{t("common.all")}</MenuItem>
-                {workspaces.map((ws) => (
-                  <MenuItem key={ws} value={ws}>
-                    {ws}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <ListFilterField>
+              <FormControl fullWidth>
+                <InputLabel>{t("services.workspace")}</InputLabel>
+                <Select
+                  label={t("services.workspace")}
+                  value={selectedWorkspace}
+                  onChange={(e) =>
+                    onSelectedWorkspaceChange(String(e.target.value))
+                  }
+                >
+                  <MenuItem value="">{t("common.all")}</MenuItem>
+                  {workspaces.map((ws) => (
+                    <MenuItem key={ws} value={ws}>
+                      {ws}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </ListFilterField>
           )}
-        </Box>
+        </ListFilterRow>
         <IconButton onClick={onClose} aria-label="close" sx={{ mt: 1 }}>
           <CloseIcon />
         </IconButton>

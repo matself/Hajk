@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Grid2 from "@mui/material/Grid2";
 import {
   Dialog,
   DialogTitle,
@@ -13,7 +14,6 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Grid,
   Box,
   Divider,
   Typography,
@@ -299,8 +299,8 @@ export default function LayerInfoClickModal({
 
           <Box sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
             {activeTab === "infobox" ? (
-              <Grid container spacing={2}>
-                <Grid size={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <Box>
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       {fieldLabel("layers.infobox", "layers.help.infobox")}
@@ -394,12 +394,12 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </Box>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             ) : (
-              <Grid container spacing={2}>
+              <Grid2 container spacing={2}>
                 {/* General Settings */}
-                <Grid size={12}>
+                <Grid2 size={12}>
                   <TextFieldWithHelp
                     sx={{ mt: 1 }}
                     labelKey="layers.displayName"
@@ -407,8 +407,8 @@ export default function LayerInfoClickModal({
                     fullWidth
                     {...register("caption")}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <Box
                     sx={{
                       display: "flex",
@@ -443,8 +443,8 @@ export default function LayerInfoClickModal({
                       {t("layers.uploadFile")}
                     </Button>
                   </Box>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <Box
                     sx={{
                       display: "flex",
@@ -479,8 +479,8 @@ export default function LayerInfoClickModal({
                       {t("layers.uploadFile")}
                     </Button>
                   </Box>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <FormControl fullWidth>
                     <InputLabel id="style-label" shrink>
                       {fieldLabel("layers.style", "layers.help.style")}
@@ -509,17 +509,17 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </FormControl>
-                </Grid>
+                </Grid2>
 
                 {/* Infoklick Section */}
-                <Grid size={12}>
+                <Grid2 size={12}>
                   <Divider sx={{ my: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       {t("common.infoclick")}
                     </Typography>
                   </Divider>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <FormGroup>
                     <Controller
                       name="queryable"
@@ -540,8 +540,8 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </FormGroup>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextFieldWithHelp
                     labelKey="layers.infoClickIcon"
                     helpKey="layers.help.infoClickIcon"
@@ -549,17 +549,17 @@ export default function LayerInfoClickModal({
                     {...register("infoclickIcon")}
                     helperText={t("layers.infoClickIconHelp")}
                   />
-                </Grid>
+                </Grid2>
 
                 {/* Infoklick och sökning Section */}
-                <Grid size={12}>
+                <Grid2 size={12}>
                   <Divider sx={{ my: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       {t("layers.infoClickAndSearch")}
                     </Typography>
                   </Divider>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextFieldWithHelp
                     labelKey="layers.displayFieldInResultList"
                     helpKey="layers.help.primaryDisplayFields"
@@ -567,8 +567,8 @@ export default function LayerInfoClickModal({
                     {...register("searchDisplayName")}
                     helperText={t("layers.displayFieldInResultListHelp")}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextFieldWithHelp
                     labelKey="layers.secondaryDisplayFieldInResultList"
                     helpKey="layers.help.secondaryDisplayFields"
@@ -578,8 +578,8 @@ export default function LayerInfoClickModal({
                       "layers.secondaryDisplayFieldInResultListHelp",
                     )}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextFieldWithHelp
                     labelKey="layers.shortDisplayField"
                     helpKey="layers.help.shortDisplayFields"
@@ -587,25 +587,25 @@ export default function LayerInfoClickModal({
                     {...register("searchShortDisplayName")}
                     helperText={t("layers.shortDisplayFieldHelp")}
                   />
-                </Grid>
+                </Grid2>
 
                 {/* Sökning Section */}
-                <Grid size={12}>
+                <Grid2 size={12}>
                   <Divider sx={{ my: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       {t("layers.search")}
                     </Typography>
                   </Divider>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.url"
                     helpKey="layers.help.searchUrl"
                     fullWidth
                     {...register("searchUrl")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchFields"
                     helpKey="layers.help.searchFields"
@@ -613,34 +613,34 @@ export default function LayerInfoClickModal({
                     {...register("searchPropertyName")}
                     helperText={t("layers.searchFieldsHelp")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.outputFormat"
                     helpKey="layers.help.searchOutputFormat"
                     fullWidth
                     {...register("searchOutputFormat")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.searchSettings.geometryField"
                     helpKey="layers.help.geometryField"
                     fullWidth
                     {...register("searchGeometryField")}
                   />
-                </Grid>
+                </Grid2>
 
                 {/* Infoklick Sort Settings */}
-                <Grid size={{ xs: 12, md: 10 }}>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <TextFieldWithHelp
                     labelKey="layers.sortByAttribute"
                     helpKey="layers.help.sortByAttribute"
                     fullWidth
                     {...register("sortProperty")}
                   />
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="format-label" shrink>
                       {fieldLabel(
@@ -670,8 +670,8 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, md: 10 }}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 10 }}>
                   <FormControl fullWidth>
                     <InputLabel id="sortMethod-label" shrink>
                       {fieldLabel(
@@ -701,8 +701,8 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </FormControl>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <FormGroup>
                     <Controller
                       name="sortDescending"
@@ -723,8 +723,8 @@ export default function LayerInfoClickModal({
                       )}
                     />
                   </FormGroup>
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             )}
           </Box>
         </DialogContent>

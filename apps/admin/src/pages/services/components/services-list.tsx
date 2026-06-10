@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
-import { Grid } from "@mui/material";
+import Grid2 from "@mui/material/Grid2";
 import {
   Button,
   TextField,
@@ -20,6 +20,11 @@ import {
   MenuItem as MuiMenuItem,
 } from "@mui/material";
 import CreateButton from "../../../components/create-button";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
@@ -373,8 +378,8 @@ export default function ServicesList({
                 </>
               }
             >
-              <Grid container spacing={2}>
-                <Grid size={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -382,8 +387,8 @@ export default function ServicesList({
                   >
                     {t("services.dialog.subtitle")}
                   </Typography>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextField
                     required
                     label={t("common.name")}
@@ -396,8 +401,8 @@ export default function ServicesList({
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <TextField
                     label={t("services.dialog.urlField")}
                     fullWidth
@@ -413,8 +418,8 @@ export default function ServicesList({
                       {t("services.dialog.urlDuplicateWarning")}
                     </Alert>
                   ) : null}
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <Controller
                     name="type"
                     control={control}
@@ -448,8 +453,8 @@ export default function ServicesList({
                       </FormControl>
                     )}
                   />
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                   <Controller
                     name="serverType"
                     control={control}
@@ -480,12 +485,12 @@ export default function ServicesList({
                       </FormControl>
                     )}
                   />
-                </Grid>
-              </Grid>
+                </Grid2>
+              </Grid2>
             </DialogWrapper>
 
-            <Grid size={12} container spacing={2} sx={{ mb: 2 }}>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <ListFilterRow>
+              <ListFilterSearch>
                 <TextField
                   fullWidth
                   label={t("layers.searchTitle")}
@@ -493,8 +498,8 @@ export default function ServicesList({
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
-              </Grid>
-              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+              </ListFilterSearch>
+              <ListFilterField>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="type-filter-label">
                     {t("services.filterByType")}
@@ -515,8 +520,8 @@ export default function ServicesList({
                     )}
                   </Select>
                 </FormControl>
-              </Grid>
-              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+              </ListFilterField>
+              <ListFilterField>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel id="status-filter-label">
                     {t("services.filterByStatus")}
@@ -539,9 +544,9 @@ export default function ServicesList({
                     </MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-            </Grid>
-            <Grid size={12}>
+              </ListFilterField>
+            </ListFilterRow>
+            <Grid2 size={12}>
               <StyledDataGrid<Service>
                 storageKey="services"
                 customSx={{ height: "calc(100vh - 320px)" }}
@@ -710,7 +715,7 @@ export default function ServicesList({
                   disabled={isDeletingService}
                 />
               </DialogWrapper>
-            </Grid>
+            </Grid2>
           </Page>
         </>
       )}

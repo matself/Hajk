@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
+import Grid2 from "@mui/material/Grid2";
 import Page from "../layouts/root/components/page";
 import {
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -119,65 +119,65 @@ export default function IndexPage() {
 
   return (
     <Page title={t("common.home")}>
-      <Grid component="div" container spacing={2}>
+      <Grid2 component="div" container spacing={2}>
         {/* Row 1: Stat cards */}
-        <Grid component="div" size={12}>
-          <Grid component="div" container spacing={2}>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid2 component="div" size={12}>
+          <Grid2 component="div" container spacing={2}>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("common.maps")}
                 count={maps?.length ?? 0}
                 to="/maps"
                 loading={mapsLoading}
               />
-            </Grid>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("navBar.servicesAndLayers.serviceDefinitions")}
                 count={services?.length ?? 0}
                 to="/services"
                 loading={servicesLoading}
               />
-            </Grid>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("common.layers")}
                 count={layers?.length ?? 0}
                 to="/search-layers"
                 loading={layersLoading}
               />
-            </Grid>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("common.layerGroups")}
                 count={groups?.length ?? 0}
                 to="/groups"
                 loading={groupsLoading}
               />
-            </Grid>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("common.tools")}
                 count={tools?.length ?? 0}
                 to="/tools"
                 loading={toolsLoading}
               />
-            </Grid>
-            <Grid component="div" size={{ xs: 12, sm: 6, md: 4 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, sm: 6, md: 4 }}>
               <StatCard
                 title={t("common.users")}
                 count={users?.length ?? 0}
                 to="/users"
                 loading={usersLoading}
               />
-            </Grid>
-          </Grid>
-        </Grid>
+            </Grid2>
+          </Grid2>
+        </Grid2>
 
         {/* Row 2: Entity Distribution + Entity Counts */}
-        <Grid component="div" size={12}>
-          <Grid component="div" container spacing={2}>
-            <Grid component="div" size={{ xs: 12, md: 6 }}>
+        <Grid2 component="div" size={12}>
+          <Grid2 component="div" container spacing={2}>
+            <Grid2 component="div" size={{ xs: 12, md: 6 }}>
               <ChartCard title="Entity Distribution" chartCardHeight="200px">
                 {isLoading ? (
                   <Skeleton variant="rectangular" width="100%" />
@@ -210,8 +210,8 @@ export default function IndexPage() {
                   </Box>
                 )}
               </ChartCard>
-            </Grid>
-            <Grid component="div" size={{ xs: 12, md: 6 }}>
+            </Grid2>
+            <Grid2 component="div" size={{ xs: 12, md: 6 }}>
               <ChartCard title="Entity Counts" chartCardHeight="200px">
                 {isLoading ? (
                   <Skeleton variant="rectangular" width="100%" />
@@ -223,12 +223,12 @@ export default function IndexPage() {
                   />
                 )}
               </ChartCard>
-            </Grid>
-          </Grid>
-        </Grid>
+            </Grid2>
+          </Grid2>
+        </Grid2>
 
         {/* Row 3: Growth Trends */}
-        <Grid component="div" size={12}>
+        <Grid2 component="div" size={12}>
           <ChartCard
             title="Growth Trends (Last 6 Months)"
             chartCardHeight="500px"
@@ -272,8 +272,8 @@ export default function IndexPage() {
               />
             )}
           </ChartCard>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Page>
   );
 }

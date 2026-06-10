@@ -80,7 +80,7 @@
     "common.noLayersAvailable": "Inga lager tillgängliga",
     "common.noGroupsAvailable": "Inga grupper tillgängliga",
     "common.layerSwitcherHierarchyTree": "Lagerordningsträd",
-    "common.layerSwitcherHierarchyTreeDescription": "Dra objekt från vänster panel för att bygga ditt lagerordningsträd. Grupper kan innehålla lager och andra grupper. Du kan också dra objekt inom trädet för att ordna dem.",
+    "common.layerSwitcherHierarchyTreeDescription": "Dra objekt från vänster panel för att bygga lagerordningen. Lager och grupp-referenser visas som en platt lista — grupper förblir stängda och kan inte innehålla nya lager här. Ordna om genom att dra inom listan.",
     "common.dragLayersAndGroups": "Dra lager och grupper här för att skapa en hierarki",
     "common.groupDropAction": "Placering vid grupp",
     "common.searchSettings": "Sök i inställningar",

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { Stack } from "@mui/material";
 import Page from "../../layouts/root/components/page";
-import { Grid } from "@mui/material";
 import ThemeSwitcher from "../../components/theme-switcher";
 import LanguageSwitcher from "../../components/language-switcher";
 import DefaultMapSwitcher from "../../components/default-map-switcher";
@@ -10,15 +10,11 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   return (
     <Page title={t("common.settings")}>
-      <Grid container spacing={2} size={12}>
-        <Grid size={12}>
-          <LanguageSwitcher />
-        </Grid>
-        <Grid size={12}>
-          <DefaultMapSwitcher />
-        </Grid>
+      <Stack spacing={2} sx={{ width: "100%", mb: 2 }}>
+        <LanguageSwitcher />
+        <DefaultMapSwitcher />
         <ThemeSwitcher />
-      </Grid>
+      </Stack>
       <SettingsForm />
     </Page>
   );

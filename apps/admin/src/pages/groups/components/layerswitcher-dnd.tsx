@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useReducer,
+  useLayoutEffect,
+} from "react";
 import {
   SimpleTreeItemWrapper,
   SortableTree,
@@ -13,7 +19,6 @@ import {
   TextField,
   List,
   ListItem,
-  Grid,
   Paper,
   Box,
   IconButton,
@@ -34,17 +39,21 @@ import {
 } from "@mui/icons-material";
 import { useLayers } from "../../../api/layers";
 import type { Layer, LayerKind } from "../../../api/layers";
-import { Group, useGroups, getLayersByGroupId } from "../../../api/groups";
+import { Group, useGroups, useLayersByGroupId } from "../../../api/groups";
 import type { LayerSwitcherTreeNode } from "../../../api/groups/types";
 import {
   buildInitialTreeItems,
-  buildNestedGroupTreeItem,
+  flattenGroupReferencesInItems,
+  buildFlatGroupReferenceItem,
   collectLayerIdsFromTree,
   serializeLayerSwitcherTree,
-  unwrapEditingGroupContainer,
+  stripEditingGroupFromItems,
+  stripEditingGroupFromTree,
   type LayerSwitcherTreeItem,
 } from "../utils/layer-switcher-tree";
+import { groupCompositionKey } from "../utils/group-composition";
 import { TreeItemActions } from "../../../components/layerswitcher-dnd/tree-item-actions";
+import { GroupIntoDropTarget } from "../../../components/layerswitcher-dnd/group-into-drop-target";
 import {
   DND_DRAG_HANDLE_SX,
   DND_ITEM_TITLE_SX,
@@ -54,11 +63,24 @@ import {
   flattenTreeItemIds,
   getDropLineSx,
   getReorderDropPosition,
+  getTreeItemGridColumns,
+  isPointerOverGroupIntoTarget,
+  isPointerOverGroupSiblingDropZone,
+  getTreeItemRowElementId,
+  lastTreeDragPointerRef,
+  parseGroupIntoDropId,
+  subscribeTreeDrag,
   treeDragActiveIdRef,
+  treeGroupDropIntentRef,
+  treeIntoDropHandlerRef,
+  treeSiblingEdgeDropHandlerRef,
+  treePointerXRef,
+  treePointerYRef,
   useTrackTreeDragActiveId,
 } from "../../../components/layerswitcher-dnd/utils";
 import useAppStateStore from "../../../store/use-app-state-store";
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   DragStartEvent,
@@ -71,6 +93,7 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  type CollisionDetection,
 } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
 
@@ -100,6 +123,8 @@ export type GroupPlacementLayer = Layer & {
 };
 
 interface LayerSwitcherDnDProps {
+  /** When set, loads the group's layers and tree from GET /groups/:id/layers. */
+  groupId?: string;
   initialLayers?: GroupPlacementLayer[];
   initialTree?: LayerSwitcherTreeNode[];
   /** The group being edited; layers are shown inside this node in the tree. */
@@ -112,6 +137,9 @@ interface LayerSwitcherDnDProps {
 
 const EMPTY_LAYERS: Layer[] = [];
 const EMPTY_GROUPS: Group[] = [];
+
+/** Groups in Lagerordning are flat references — collapsed, no nesting in the admin UI. */
+const FLAT_GROUP_REFERENCES = true;
 
 const DraggableSourceItem: React.FC<{
   item: { id: string; name: string };
@@ -168,6 +196,34 @@ const DraggableSourceItem: React.FC<{
   );
 };
 
+const getItemParentGroupId = (
+  treeItems: TreeItems<TreeItemData>,
+  itemId: string,
+): string | null => {
+  for (const item of treeItems) {
+    if (item.children?.some((child) => child.id.toString() === itemId)) {
+      return item.id.toString();
+    }
+    if (item.children?.length) {
+      const found = getItemParentGroupId(item.children, itemId);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+};
+
+const getDragParentGroupId = (
+  treeItems: TreeItems<TreeItemData>,
+  dragId: string,
+): string | null => {
+  if (dragId.startsWith("source-")) {
+    return null;
+  }
+  return getItemParentGroupId(treeItems, dragId);
+};
+
 const TreeItemComponent = React.forwardRef<
   HTMLDivElement,
   TreeItemComponentProps<TreeItemData> & {
@@ -178,10 +234,20 @@ const TreeItemComponent = React.forwardRef<
     canMoveDown?: boolean;
     rootNumber?: number;
     flattenedTreeIds?: string[];
+    treeItems?: TreeItems<TreeItemData>;
+    draggingItemId?: string | null;
+    activeDragParentGroupId?: string | null;
+    pointerDragTick?: number;
+    isDraggedFromInsideGroup?: (
+      groupId: string,
+      draggedId: string,
+    ) => boolean;
   }
 >((props, ref) => {
   const {
     item,
+    clone,
+    ghost,
     isOver,
     onMoveUp,
     onMoveDown,
@@ -191,11 +257,17 @@ const TreeItemComponent = React.forwardRef<
     depth,
     rootNumber,
     flattenedTreeIds = [],
+    treeItems = [],
+    draggingItemId = null,
+    activeDragParentGroupId,
+    pointerDragTick = 0,
+    isDraggedFromInsideGroup: isDraggedFromInsideGroupProp,
   } = props;
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
   const isGroup = item.type === "group";
   const isTopLevelGroup = isGroup && depth === 0 && rootNumber != null;
+  const itemId = item.id.toString();
 
   const { t } = useTranslation();
   const handleRemove = React.useCallback(() => {
@@ -206,19 +278,128 @@ const TreeItemComponent = React.forwardRef<
 
   useTrackTreeDragActiveId();
 
-  const activeDragId = treeDragActiveIdRef.current;
-  const isDropIntoGroup =
+  const activeDragId = draggingItemId ?? treeDragActiveIdRef.current;
+
+  const isExternalGroupDrag =
     isGroup &&
-    isOver &&
     !!activeDragId &&
-    activeDragId !== item.id.toString();
-  const isReorderTarget = isOver && !isDropIntoGroup;
+    activeDragId !== itemId &&
+    (isDraggedFromInsideGroupProp
+      ? !isDraggedFromInsideGroupProp(itemId, activeDragId)
+      : true);
+
+  const itemParentGroupId = getItemParentGroupId(treeItems, itemId);
+  const isInactiveDropTarget =
+    itemParentGroupId != null &&
+    activeDragParentGroupId !== undefined &&
+    activeDragParentGroupId !== itemParentGroupId;
+
+  const pointerOverIntoTarget = useMemo(() => {
+    if (!isExternalGroupDrag) {
+      return false;
+    }
+    void pointerDragTick;
+    return isPointerOverGroupIntoTarget(itemId);
+  }, [isExternalGroupDrag, pointerDragTick, itemId]);
+
+  const isInternalParentGroupDrag =
+    isGroup &&
+    !!activeDragId &&
+    getItemParentGroupId(treeItems, activeDragId) === itemId;
+
+  const draggedFromParentGroupId = activeDragId
+    ? getItemParentGroupId(treeItems, activeDragId)
+    : null;
+
+  const parentDragOutZoneActive = useMemo(() => {
+    if (!draggedFromParentGroupId) {
+      return false;
+    }
+    void pointerDragTick;
+    return (
+      isPointerOverGroupSiblingDropZone(draggedFromParentGroupId, "above") ||
+      isPointerOverGroupSiblingDropZone(draggedFromParentGroupId, "below")
+    );
+  }, [draggedFromParentGroupId, pointerDragTick]);
+
+  const isSiblingReorderCandidate =
+    isOver && !isInactiveDropTarget && !pointerOverIntoTarget;
+  const showRowSiblingReorder =
+    isSiblingReorderCandidate &&
+    !isInternalParentGroupDrag &&
+    !parentDragOutZoneActive;
   const reorderDropPosition = getReorderDropPosition(
-    item.id.toString(),
-    treeDragActiveIdRef.current,
+    itemId,
+    activeDragId,
     flattenedTreeIds,
-    isReorderTarget,
+    showRowSiblingReorder,
   );
+
+  const dragOutAboveZone = useMemo(() => {
+    if (!isInternalParentGroupDrag) {
+      return false;
+    }
+    void pointerDragTick;
+    return isPointerOverGroupSiblingDropZone(itemId, "above");
+  }, [isInternalParentGroupDrag, itemId, pointerDragTick]);
+
+  const dragOutBelowZone = useMemo(() => {
+    if (!isInternalParentGroupDrag) {
+      return false;
+    }
+    void pointerDragTick;
+    return isPointerOverGroupSiblingDropZone(itemId, "below");
+  }, [isInternalParentGroupDrag, itemId, pointerDragTick]);
+
+  const showDropLines = !clone && !ghost;
+
+  const showAboveDropLine =
+    showDropLines &&
+    ((showRowSiblingReorder && reorderDropPosition === "above") ||
+      dragOutAboveZone);
+  const showBelowDropLine =
+    showDropLines &&
+    ((showRowSiblingReorder && reorderDropPosition === "below") ||
+      dragOutBelowZone);
+
+  const rowElementId = showDropLines ? getTreeItemRowElementId(itemId) : undefined;
+
+  useLayoutEffect(() => {
+    if (!isGroup) {
+      return;
+    }
+
+    if (isExternalGroupDrag && pointerOverIntoTarget) {
+      treeGroupDropIntentRef.current = { groupId: itemId, intent: "into" };
+      return;
+    }
+
+    if (dragOutAboveZone) {
+      treeGroupDropIntentRef.current = { groupId: itemId, intent: "above" };
+      return;
+    }
+
+    if (dragOutBelowZone) {
+      treeGroupDropIntentRef.current = { groupId: itemId, intent: "below" };
+      return;
+    }
+
+    if (showRowSiblingReorder && reorderDropPosition) {
+      treeGroupDropIntentRef.current = {
+        groupId: itemId,
+        intent: reorderDropPosition,
+      };
+    }
+  }, [
+    isGroup,
+    isExternalGroupDrag,
+    itemId,
+    pointerOverIntoTarget,
+    reorderDropPosition,
+    showRowSiblingReorder,
+    dragOutAboveZone,
+    dragOutBelowZone,
+  ]);
 
   return (
     <SimpleTreeItemWrapper
@@ -228,66 +409,59 @@ const TreeItemComponent = React.forwardRef<
       showDragHandle={false}
       style={{ ...props.style, position: "relative" }}
     >
-      {isTopLevelGroup && (
+      <Box
+        id={rowElementId}
+        sx={{ position: "relative", width: "100%", minWidth: 0 }}
+      >
+        {isTopLevelGroup && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: 3,
+              top: 2,
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 700,
+              backgroundColor: isDarkMode
+                ? "rgba(66,165,245,0.25)"
+                : "rgba(25,118,210,0.12)",
+              border: `1px solid ${
+                isDarkMode ? "rgba(66,165,245,0.7)" : "rgba(25,118,210,0.7)"
+              }`,
+              color: isDarkMode ? "#90caf9" : "#1976d2",
+              pointerEvents: "none",
+              zIndex: 20,
+            }}
+          >
+            {rootNumber}
+          </Box>
+        )}
+
+        {showAboveDropLine && <Box sx={getDropLineSx(isDarkMode, "top")} />}
+
         <Box
           sx={{
-            position: "absolute",
-            left: 3,
-            top: 2,
-            width: 22,
-            height: 22,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 12,
-            fontWeight: 700,
-            backgroundColor: isDarkMode
-              ? "rgba(66,165,245,0.25)"
-              : "rgba(25,118,210,0.12)",
-            border: `1px solid ${
-              isDarkMode ? "rgba(66,165,245,0.7)" : "rgba(25,118,210,0.7)"
-            }`,
-            color: isDarkMode ? "#90caf9" : "#1976d2",
-            pointerEvents: "none",
-            zIndex: 20,
+            ...DND_TREE_ITEM_CARD_SX,
+            gridTemplateColumns: getTreeItemGridColumns({
+              showIntoDropTarget: isExternalGroupDrag,
+            }),
+            mb: 0.25,
+            ml: 1,
+            backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
+            border: "1px solid #ddd",
+            transition: "opacity 0.2s ease",
+            opacity: isInactiveDropTarget ? 0.4 : 1,
+            "& > *": {
+              position: "relative",
+              zIndex: 2,
+            },
           }}
         >
-          {rootNumber}
-        </Box>
-      )}
-
-      {reorderDropPosition === "above" && (
-        <Box sx={getDropLineSx(isDarkMode, "top")} />
-      )}
-
-      <Box
-        sx={{
-          ...DND_TREE_ITEM_CARD_SX,
-          mb: 0.25,
-          ml: 1,
-          backgroundColor: isDarkMode ? "#1a1a1a" : "#fff",
-          border: "1px solid #ddd",
-          transition: "all 0.2s ease",
-          ...(isDropIntoGroup
-            ? {
-                backgroundColor: isDarkMode
-                  ? "rgba(102, 187, 106, 0.2)"
-                  : "rgba(76, 175, 80, 0.14)",
-                border: `2px dashed ${isDarkMode ? "#66bb6a" : "#43a047"}`,
-                boxShadow: `inset 0 0 0 1px ${
-                  isDarkMode
-                    ? "rgba(102, 187, 106, 0.45)"
-                    : "rgba(67, 160, 71, 0.35)"
-                }`,
-              }
-            : {}),
-          "& > *": {
-            position: "relative",
-            zIndex: 2,
-          },
-        }}
-      >
         <Box
           {...(props.handleProps as Record<string, unknown>)}
           sx={{
@@ -312,25 +486,39 @@ const TreeItemComponent = React.forwardRef<
           {item.name ?? ""}
         </Typography>
 
+        {FLAT_GROUP_REFERENCES ? null : isExternalGroupDrag ? (
+          <GroupIntoDropTarget
+            groupId={itemId}
+            elementId={`group-into-el-${itemId}`}
+            enabled={isExternalGroupDrag}
+            isActive={pointerOverIntoTarget}
+            isDarkMode={isDarkMode}
+            title={t("common.addToGroup")}
+          />
+        ) : null}
+
         <TreeItemActions
           onMoveUp={onMoveUp}
           onMoveDown={onMoveDown}
-          onAdd={isGroup ? onAdd : undefined}
+          onAdd={
+            !FLAT_GROUP_REFERENCES && isGroup ? onAdd : undefined
+          }
           onRemove={props.onRemove ? handleRemove : undefined}
           canMoveUp={canMoveUp}
           canMoveDown={canMoveDown}
-          showAddSlot
+          showAddSlot={!FLAT_GROUP_REFERENCES}
           isDarkMode={isDarkMode}
           moveUpTitle={t("common.moveUp")}
           moveDownTitle={t("common.moveDown")}
           addTitle={t("common.addToGroup")}
           removeTitle={t("common.delete")}
         />
-      </Box>
+        </Box>
 
-      {reorderDropPosition === "below" && (
-        <Box sx={{ ...getDropLineSx(isDarkMode, "bottom"), bottom: -2 }} />
-      )}
+        {showBelowDropLine && (
+          <Box sx={getDropLineSx(isDarkMode, "bottom")} />
+        )}
+      </Box>
     </SimpleTreeItemWrapper>
   );
 });
@@ -412,21 +600,209 @@ const expandGroupInTree = (
 const enforceLayerRules = (
   treeItems: TreeItems<TreeItemData>,
 ): TreeItems<TreeItemData> => {
-  return treeItems.map((item) => {
-    const updatedItem: TreeItem<TreeItemData> = {
-      ...item,
-      // Layers cannot have children
-      canHaveChildren: item.type === "group",
-      children:
-        item.type === "layer"
+  const normalized = treeItems.map((item) => ({
+    ...item,
+    canHaveChildren: item.type === "group" && !FLAT_GROUP_REFERENCES,
+    children:
+      item.type === "layer"
+        ? undefined
+        : FLAT_GROUP_REFERENCES
           ? undefined
           : item.children
             ? enforceLayerRules(item.children)
             : item.children,
-    };
-    return updatedItem;
-  });
+    ...(item.type === "group" && FLAT_GROUP_REFERENCES
+      ? { collapsed: true }
+      : {}),
+  }));
+
+  return FLAT_GROUP_REFERENCES
+    ? (flattenGroupReferencesInItems(
+        normalized as LayerSwitcherTreeItem[],
+      ) as TreeItems<TreeItemData>)
+    : normalized;
 };
+
+const isDraggedFromInsideGroup = (
+  treeItems: TreeItems<TreeItemData>,
+  groupId: string,
+  draggedId: string,
+): boolean =>
+  getItemParentGroupId(treeItems, draggedId) === groupId ||
+  isDescendantInTree(treeItems, groupId, draggedId);
+
+const shouldDisableInGroupDropTarget = (
+  treeItems: TreeItems<TreeItemData>,
+  activeId: string,
+  overId: string,
+): boolean => {
+  if (activeId === overId) {
+    return false;
+  }
+  // Allow hovering the parent group row when dragging its direct child (drag-out).
+  if (getItemParentGroupId(treeItems, activeId) === overId) {
+    return false;
+  }
+  const overParentGroupId = getItemParentGroupId(treeItems, overId);
+  if (!overParentGroupId) {
+    return false;
+  }
+  return getDragParentGroupId(treeItems, activeId) !== overParentGroupId;
+};
+
+const createInGroupAwareCollisionDetection = (
+  treeItems: TreeItems<TreeItemData>,
+): CollisionDetection => {
+  return (args) => {
+    const collisions = closestCenter(args);
+    const pointer = {
+      x: args.pointerCoordinates?.x ?? treePointerXRef.current,
+      y: args.pointerCoordinates?.y ?? treePointerYRef.current,
+    };
+
+    const pointerOverIntoHits = collisions.filter((collision) => {
+      const intoGroupId = parseGroupIntoDropId(collision.id.toString());
+      return (
+        intoGroupId != null && isPointerOverGroupIntoTarget(intoGroupId, pointer)
+      );
+    });
+    if (pointerOverIntoHits.length > 0) {
+      return pointerOverIntoHits;
+    }
+
+    const activeId = args.active.id.toString();
+    const allowed = collisions.filter((collision) => {
+      const collisionId = collision.id.toString();
+      if (collisionId.startsWith("group-into-")) {
+        return false;
+      }
+      return !shouldDisableInGroupDropTarget(treeItems, activeId, collisionId);
+    });
+
+    if (allowed.length > 0) {
+      return allowed;
+    }
+
+    const redirected = new Map<string | number, (typeof collisions)[number]>();
+    for (const collision of collisions) {
+      const overId = collision.id.toString();
+      if (!shouldDisableInGroupDropTarget(treeItems, activeId, overId)) {
+        continue;
+      }
+      const parentGroupId = getItemParentGroupId(treeItems, overId);
+      if (parentGroupId && !redirected.has(parentGroupId)) {
+        redirected.set(parentGroupId, { id: parentGroupId });
+      }
+    }
+
+    return [...redirected.values()];
+  };
+};
+
+const findAndRemoveTreeItem = (
+  treeItems: TreeItems<TreeItemData>,
+  itemId: string,
+): {
+  item: TreeItem<TreeItemData> | null;
+  updatedItems: TreeItems<TreeItemData>;
+} => {
+  for (let i = 0; i < treeItems.length; i++) {
+    if (treeItems[i].id.toString() === itemId) {
+      return {
+        item: treeItems[i],
+        updatedItems: treeItems.filter((_, index) => index !== i),
+      };
+    }
+  }
+
+  let foundItem: TreeItem<TreeItemData> | null = null;
+  const updatedItems = treeItems.map((item) => {
+    if (foundItem) {
+      return item;
+    }
+    if (item.children) {
+      const result = findAndRemoveTreeItem(item.children, itemId);
+      if (result.item) {
+        foundItem = result.item;
+        return { ...item, children: result.updatedItems };
+      }
+    }
+    return item;
+  });
+
+  return { item: foundItem, updatedItems };
+};
+
+const insertItemAsGroupSibling = (
+  treeItems: TreeItems<TreeItemData>,
+  newItem: TreeItem<TreeItemData>,
+  targetGroupId: string,
+  position: "above" | "below",
+): TreeItems<TreeItemData> => {
+  const insertAtGroup = (
+    nodes: TreeItems<TreeItemData>,
+  ): TreeItems<TreeItemData> | null => {
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id.toString() === targetGroupId) {
+        const next = [...nodes];
+        next.splice(position === "above" ? i : i + 1, 0, newItem);
+        return next;
+      }
+      if (nodes[i].children?.length) {
+        const updatedChildren = insertAtGroup(nodes[i].children!);
+        if (updatedChildren) {
+          const next = [...nodes];
+          next[i] = { ...nodes[i], children: updatedChildren };
+          return next;
+        }
+      }
+    }
+    return null;
+  };
+
+  const result = insertAtGroup(treeItems);
+  return enforceLayerRules(result ?? treeItems);
+};
+
+const relocateDraggedItemAsGroupSibling = (
+  treeItems: TreeItems<TreeItemData>,
+  draggedItemId: string,
+  targetGroupId: string,
+  position: "above" | "below",
+): TreeItems<TreeItemData> => {
+  const { item, updatedItems } = findAndRemoveTreeItem(
+    treeItems,
+    draggedItemId,
+  );
+  if (!item) {
+    return treeItems;
+  }
+  return insertItemAsGroupSibling(updatedItems, item, targetGroupId, position);
+};
+
+const insertItemIntoGroup = (
+  treeItems: TreeItems<TreeItemData>,
+  newItem: TreeItem<TreeItemData>,
+  groupId: string,
+): TreeItems<TreeItemData> =>
+  enforceLayerRules(
+    treeItems.map((item) => {
+      if (item.id.toString() === groupId && item.type === "group") {
+        return {
+          ...item,
+          collapsed: false,
+          children: [...(item.children ?? []), newItem],
+        };
+      }
+      if (item.children?.length) {
+        return {
+          ...item,
+          children: insertItemIntoGroup(item.children, newItem, groupId),
+        };
+      }
+      return item;
+    }),
+  );
 
 export type GroupDropPlacement = "above" | "below" | "insert";
 
@@ -932,6 +1308,7 @@ const RitordningDropZone: React.FC<{
 };
 
 export default function LayerSwitcherDnD({
+  groupId,
   initialLayers = [],
   initialTree,
   editingGroup,
@@ -942,6 +1319,17 @@ export default function LayerSwitcherDnD({
   const themeMode = useAppStateStore((state) => state.themeMode);
   const isDarkMode = themeMode === "dark";
   const { t } = useTranslation();
+  const { data: groupLayersData, isLoading: isLoadingGroupLayers } =
+    useLayersByGroupId(groupId ?? "");
+  const effectiveInitialLayers = useMemo(() => {
+    const source = groupId ? (groupLayersData?.layers ?? []) : initialLayers;
+    return layerKind
+      ? source.filter((layer) => layer.layerKind === layerKind)
+      : source;
+  }, [groupId, groupLayersData?.layers, initialLayers, layerKind]);
+  const effectiveInitialTree = groupId
+    ? groupLayersData?.layerSwitcherTree
+    : initialTree;
   const [leftTab, setLeftTab] = useState(0);
   const [rightTab, setRightTab] = useState(0);
   const [search, setSearch] = useState("");
@@ -977,6 +1365,7 @@ export default function LayerSwitcherDnD({
       }
     >(),
   );
+  const lastEmittedCompositionKeyRef = React.useRef<string | null>(null);
 
   const { data: layersData } = useLayers();
   const { data: groupsData } = useGroups();
@@ -985,37 +1374,54 @@ export default function LayerSwitcherDnD({
   const initialLayerIdsKey = useMemo(
     () =>
       [
-        initialLayers
+        effectiveInitialLayers
           .map((layer) => `${layer.id}:${layer.name}:${layer.drawOrder ?? 0}`)
           .join("|"),
-        JSON.stringify(initialTree ?? []),
+        JSON.stringify(effectiveInitialTree ?? []),
         editingGroup?.id ?? "",
+        groupId ?? "",
         groups.map((group) => group.id).join("|"),
       ].join("::"),
-    [initialLayers, initialTree, editingGroup, groups],
+    [effectiveInitialLayers, effectiveInitialTree, editingGroup?.id, groupId, groups],
   );
 
   useEffect(() => {
-    const initialItems = buildInitialTreeItems(
+    const initialTree = stripEditingGroupFromTree(
+      effectiveInitialTree,
+      editingGroup?.id,
+    );
+    let initialItems = buildInitialTreeItems(
       initialTree,
-      initialLayers,
+      effectiveInitialLayers,
       groups,
-      editingGroup,
-    ) as TreeItems<TreeItemData>;
-    setItems(initialItems);
+    ) as LayerSwitcherTreeItem[];
+    initialItems = stripEditingGroupFromItems(initialItems, editingGroup?.id);
+    const treeItems = enforceLayerRules(
+      initialItems as TreeItems<TreeItemData>,
+    );
+    setItems(treeItems);
     setRitordningItems(
-      [...initialLayers]
+      [...effectiveInitialLayers]
         .sort((a, b) => (a.drawOrder ?? 0) - (b.drawOrder ?? 0))
         .map((layer) => layer.id),
     );
-    itemsBeforeChangeRef.current = initialItems;
-  }, [initialLayerIdsKey, groups]);
+    itemsBeforeChangeRef.current = treeItems;
+    if (groupId) {
+      groupCompositionCacheRef.current.set(groupId, {
+        layers: effectiveInitialLayers,
+        layerSwitcherTree: initialTree,
+      });
+    }
+    lastEmittedCompositionKeyRef.current = null;
+  // initialLayerIdsKey encodes effectiveInitialLayers + effectiveInitialTree
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLayerIdsKey]);
 
   useEffect(() => {
     if (!onCompositionChange) return;
 
     const treeItems = items as LayerSwitcherTreeItem[];
-    const normalizedTree = unwrapEditingGroupContainer(
+    const normalizedTree = stripEditingGroupFromItems(
       treeItems,
       editingGroup?.id,
     );
@@ -1028,28 +1434,42 @@ export default function LayerSwitcherDnD({
       drawOrder.map((layerId, index) => [layerId, index]),
     );
     const placementByLayerId = new Map(
-      initialLayers.map((layer) => [layer.id, layer]),
+      effectiveInitialLayers.map((layer) => [layer.id, layer]),
     );
+    orderedLayerIds.forEach((layerId) => {
+      if (placementByLayerId.has(layerId)) return;
+      const catalogLayer = layers.find((layer) => layer.id === layerId);
+      if (catalogLayer) {
+        placementByLayerId.set(layerId, catalogLayer);
+      }
+    });
 
-    onCompositionChange({
+    const payload = {
       layerSwitcherTree,
       layers: orderedLayerIds.map((layerId, index) => {
         const placement = placementByLayerId.get(layerId);
         return {
           layerId,
-          usage: "FOREGROUND",
+          usage: "FOREGROUND" as const,
           zIndex: zIndexByLayerId.get(layerId) ?? index,
           visibleAtStart: placement?.visibleAtStart,
           options: placement?.placementOptions,
         };
       }),
-    });
+    };
+    const key = groupCompositionKey(payload.layers, payload.layerSwitcherTree);
+    if (lastEmittedCompositionKeyRef.current === key) {
+      return;
+    }
+    lastEmittedCompositionKeyRef.current = key;
+    onCompositionChange(payload);
   }, [
     items,
     ritordningItems,
     onCompositionChange,
-    initialLayers,
+    effectiveInitialLayers,
     editingGroup?.id,
+    layers,
   ]);
 
   const sensors = useSensors(
@@ -1152,6 +1572,148 @@ export default function LayerSwitcherDnD({
 
   const flattenedTreeIds = useMemo(() => flattenTreeItemIds(items), [items]);
 
+  const [treeDragTick, bumpTreeDragState] = useReducer(
+    (tick: number) => tick + 1,
+    0,
+  );
+  const [pointerDragTick, bumpPointerDrag] = useReducer(
+    (tick: number) => tick + 1,
+    0,
+  );
+
+  useEffect(() => subscribeTreeDrag(bumpTreeDragState), []);
+
+  const treeCollisionDetection = useMemo(
+    () => createInGroupAwareCollisionDetection(items),
+    [items],
+  );
+
+  const draggingItemId = useMemo(() => {
+    void treeDragTick;
+    void pointerDragTick;
+    if (treeDragActiveIdRef.current) {
+      return treeDragActiveIdRef.current;
+    }
+    if (
+      activeId?.startsWith("source-") ||
+      activeId?.startsWith("layer-") ||
+      activeId?.startsWith("group-")
+    ) {
+      return activeId;
+    }
+    return null;
+  }, [activeId, treeDragTick, pointerDragTick]);
+
+  const activeDragParentGroupId = useMemo(() => {
+    void treeDragTick;
+    void pointerDragTick;
+    if (!draggingItemId) {
+      return undefined;
+    }
+    return getDragParentGroupId(items, draggingItemId);
+  }, [draggingItemId, items, treeDragTick, pointerDragTick]);
+
+  const checkDraggedFromInsideGroup = useMemo(
+    () => (groupId: string, draggedId: string) =>
+      isDraggedFromInsideGroup(items, groupId, draggedId),
+    [items],
+  );
+
+  useEffect(() => {
+    treeIntoDropHandlerRef.current = (activeId, groupId) => {
+      if (FLAT_GROUP_REFERENCES) {
+        return;
+      }
+
+      const currentItems = itemsBeforeChangeRef.current;
+
+      if (isDraggedFromInsideGroup(currentItems, groupId, activeId)) {
+        return;
+      }
+
+      const draggedItem = findTreeItem(currentItems, activeId);
+      if (!draggedItem) {
+        return;
+      }
+
+      if (
+        draggedItem.type === "group" &&
+        isDescendantInTree(currentItems, activeId, groupId)
+      ) {
+        return;
+      }
+
+      if (draggedItem.type === "group") {
+        const targetGroup = findTreeItem(currentItems, groupId);
+        setPendingGroupDrop({
+          draggedItemId: activeId,
+          draggedItemName: draggedItem.name,
+          targetGroupId: groupId,
+          targetGroupName: targetGroup?.name ?? "",
+          isFromSource: false,
+        });
+        setGroupDropDialogOpen(true);
+        return;
+      }
+
+      isProcessingGroupDropRef.current = true;
+      const { item, updatedItems } = findAndRemoveTreeItem(
+        currentItems,
+        activeId,
+      );
+      if (!item) {
+        isProcessingGroupDropRef.current = false;
+        return;
+      }
+
+      const updated = expandGroupInTree(
+        insertItemIntoGroup(updatedItems, item, groupId),
+        groupId,
+      );
+      setItems(updated);
+      itemsBeforeChangeRef.current = updated;
+    };
+
+    treeSiblingEdgeDropHandlerRef.current = (activeId, pointer) => {
+      const currentItems = itemsBeforeChangeRef.current;
+      const parentGroupId = getItemParentGroupId(currentItems, activeId);
+      if (!parentGroupId) {
+        return;
+      }
+
+      const aboveZone = isPointerOverGroupSiblingDropZone(
+        parentGroupId,
+        "above",
+        pointer,
+      );
+      const belowZone = isPointerOverGroupSiblingDropZone(
+        parentGroupId,
+        "below",
+        pointer,
+      );
+      if (!aboveZone && !belowZone) {
+        return;
+      }
+
+      const edge = aboveZone ? "above" : "below";
+      isProcessingGroupDropRef.current = true;
+      const fixed = relocateDraggedItemAsGroupSibling(
+        currentItems,
+        activeId,
+        parentGroupId,
+        edge,
+      );
+      setItems(fixed);
+      itemsBeforeChangeRef.current = fixed;
+      treeGroupDropIntentRef.current = null;
+    };
+
+    return () => {
+      treeIntoDropHandlerRef.current = null;
+      treeSiblingEdgeDropHandlerRef.current = null;
+    };
+  }, []);
+
   const handleDragStart = (event: DragStartEvent) => {
     const activeIdStr = event.active.id.toString();
     setActiveId(activeIdStr);
@@ -1159,11 +1721,23 @@ export default function LayerSwitcherDnD({
 
     if (event.activatorEvent instanceof MouseEvent) {
       pointerYRef.current = event.activatorEvent.clientY;
+      treePointerYRef.current = event.activatorEvent.clientY;
+      treePointerXRef.current = event.activatorEvent.clientX;
+      lastTreeDragPointerRef.current = {
+        x: event.activatorEvent.clientX,
+        y: event.activatorEvent.clientY,
+      };
     } else if (
       event.activatorEvent instanceof TouchEvent &&
       event.activatorEvent.touches.length > 0
     ) {
       pointerYRef.current = event.activatorEvent.touches[0].clientY;
+      treePointerYRef.current = event.activatorEvent.touches[0].clientY;
+      treePointerXRef.current = event.activatorEvent.touches[0].clientX;
+      lastTreeDragPointerRef.current = {
+        x: event.activatorEvent.touches[0].clientX,
+        y: event.activatorEvent.touches[0].clientY,
+      };
     }
 
     // Store current items state before any changes
@@ -1171,18 +1745,27 @@ export default function LayerSwitcherDnD({
   };
 
   useEffect(() => {
-    if (!activeId) {
+    if (!activeId && !treeDragActiveIdRef.current) {
       pointerYRef.current = null;
+      treePointerYRef.current = null;
+      treePointerXRef.current = null;
       return;
     }
 
     const trackPointer = (event: PointerEvent) => {
       pointerYRef.current = event.clientY;
+      treePointerYRef.current = event.clientY;
+      treePointerXRef.current = event.clientX;
+      lastTreeDragPointerRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      bumpPointerDrag();
     };
 
-    window.addEventListener("pointermove", trackPointer);
+    window.addEventListener("pointermove", trackPointer, { passive: true });
     return () => window.removeEventListener("pointermove", trackPointer);
-  }, [activeId]);
+  }, [activeId, treeDragTick]);
 
   const handleDragOver = (event: DragOverEvent) => {
     if (!event.over) {
@@ -1514,50 +2097,30 @@ export default function LayerSwitcherDnD({
     targetGroupName: string;
     isFromSource: boolean;
   }) => {
+    if (FLAT_GROUP_REFERENCES) {
+      return;
+    }
     setPendingGroupDrop(drop);
     setGroupDropDialogOpen(true);
   };
 
-  const fetchGroupComposition = React.useCallback(
-    async (groupId: string) => {
-      const cached = groupCompositionCacheRef.current.get(groupId);
-      if (cached) return cached;
-
-      const response = await getLayersByGroupId(groupId);
-      const groupLayers = (response.layers ?? []).filter(
-        (layer) => !layerKind || layer.layerKind === layerKind,
-      );
-      const composition = {
-        layers: groupLayers,
-        layerSwitcherTree: response.layerSwitcherTree,
-      };
-      groupCompositionCacheRef.current.set(groupId, composition);
-      return composition;
-    },
-    [layerKind],
-  );
-
   const buildGroupTreeItem = React.useCallback(
-    async (groupId: string): Promise<TreeItem<TreeItemData> | null> => {
+    (groupId: string): TreeItem<TreeItemData> | null => {
       const sourceGroup = groups.find((group) => group.id === groupId);
       if (!sourceGroup) return null;
 
-      const { layers: groupLayers, layerSwitcherTree } =
-        await fetchGroupComposition(groupId);
-      const nested = buildNestedGroupTreeItem(
-        sourceGroup,
-        groupLayers,
-        layerSwitcherTree,
-        groups,
-      );
-      return nested;
+      if (FLAT_GROUP_REFERENCES) {
+        return buildFlatGroupReferenceItem(sourceGroup) as TreeItem<TreeItemData>;
+      }
+
+      return null;
     },
-    [groups, fetchGroupComposition],
+    [groups],
   );
 
-  const buildTreeItemFromSourceId = async (
+  const buildTreeItemFromSourceId = (
     sourceItemId: string,
-  ): Promise<TreeItem<TreeItemData> | null> => {
+  ): TreeItem<TreeItemData> | null => {
     const parsed = parseTreeItemId(sourceItemId);
     if (!parsed) return null;
 
@@ -1576,6 +2139,9 @@ export default function LayerSwitcherDnD({
   };
 
   const handleAddToGroup = (groupId: string) => {
+    if (FLAT_GROUP_REFERENCES) {
+      return;
+    }
     setTargetGroupId(groupId);
     setAddDialogOpen(true);
   };
@@ -1584,12 +2150,11 @@ export default function LayerSwitcherDnD({
     selectedLayerIds: string[],
     selectedGroupIds: string[],
   ) => {
-    if (!targetGroupId) return;
+    if (FLAT_GROUP_REFERENCES || !targetGroupId) return;
 
-    void (async () => {
-      const newGroupItems = (
-        await Promise.all(selectedGroupIds.map((id) => buildGroupTreeItem(id)))
-      ).filter((item): item is TreeItem<TreeItemData> => item !== null);
+      const newGroupItems = selectedGroupIds
+        .map((id) => buildGroupTreeItem(id))
+        .filter((item): item is TreeItem<TreeItemData> => item !== null);
 
       setItems((prevItems) => {
         const addToGroup = (
@@ -1633,7 +2198,6 @@ export default function LayerSwitcherDnD({
       });
 
       setTargetGroupId(null);
-    })();
   };
 
   const handleGroupDropAction = (action: GroupDropPlacement) => {
@@ -1656,40 +2220,37 @@ export default function LayerSwitcherDnD({
 
     if (action === "insert") {
       if (isFromSource) {
-        void buildTreeItemFromSourceId(draggedItemId).then((newItem) => {
-          if (!newItem) return;
+        const newItem = buildTreeItemFromSourceId(draggedItemId);
+        if (!newItem) return;
 
-          setItems((prevItems) => {
-            const addToGroup = (
-              treeItems: TreeItems<TreeItemData>,
-              groupId: string,
-              itemToAdd: TreeItem<TreeItemData>,
-            ): TreeItems<TreeItemData> => {
-              return treeItems.map((item) => {
-                if (item.id.toString() === groupId && item.type === "group") {
-                  return {
-                    ...item,
-                    children: [...(item.children ?? []), itemToAdd],
-                  };
-                }
-                if (item.children) {
-                  return {
-                    ...item,
-                    children: addToGroup(item.children, groupId, itemToAdd),
-                  };
-                }
-                return item;
-              });
-            };
-            const updated = expandGroupInTree(
-              enforceLayerRules(
-                addToGroup(prevItems, targetGroupId, newItem),
-              ),
-              targetGroupId,
-            );
-            itemsBeforeChangeRef.current = updated;
-            return updated;
-          });
+        setItems((prevItems) => {
+          const addToGroup = (
+            treeItems: TreeItems<TreeItemData>,
+            groupId: string,
+            itemToAdd: TreeItem<TreeItemData>,
+          ): TreeItems<TreeItemData> => {
+            return treeItems.map((item) => {
+              if (item.id.toString() === groupId && item.type === "group") {
+                return {
+                  ...item,
+                  children: [...(item.children ?? []), itemToAdd],
+                };
+              }
+              if (item.children) {
+                return {
+                  ...item,
+                  children: addToGroup(item.children, groupId, itemToAdd),
+                };
+              }
+              return item;
+            });
+          };
+          const updated = expandGroupInTree(
+            enforceLayerRules(addToGroup(prevItems, targetGroupId, newItem)),
+            targetGroupId,
+          );
+          itemsBeforeChangeRef.current = updated;
+          return updated;
         });
       } else {
         // Handle existing group in tree
@@ -1825,59 +2386,56 @@ export default function LayerSwitcherDnD({
         let updatedItemsAfterRemove = prevItems;
 
         if (isFromSource) {
-          void buildTreeItemFromSourceId(draggedItemId).then((resolvedItem) => {
-            if (!resolvedItem) return;
+          const resolvedItem = buildTreeItemFromSourceId(draggedItemId);
+          if (!resolvedItem) {
+            return prevItems;
+          }
 
-            setItems((currentItems) => {
-              const targetPosAfter = findItemParent(
-                currentItems,
-                targetGroupId,
-              );
-              if (!targetPosAfter) return currentItems;
+          const targetPosAfter = findItemParent(prevItems, targetGroupId);
+          if (!targetPosAfter) {
+            return prevItems;
+          }
 
-              const siblings: TreeItems<TreeItemData> =
-                targetPosAfter.parent?.children ?? currentItems;
+          const siblings: TreeItems<TreeItemData> =
+            targetPosAfter.parent?.children ?? prevItems;
 
-              const insertIndex =
-                action === "below"
-                  ? targetPosAfter.index + 1
-                  : targetPosAfter.index;
+          const insertIndex =
+            action === "below"
+              ? targetPosAfter.index + 1
+              : targetPosAfter.index;
 
-              const newSiblings = [...siblings];
-              newSiblings.splice(insertIndex, 0, resolvedItem);
+          const newSiblings = [...siblings];
+          newSiblings.splice(insertIndex, 0, resolvedItem);
 
-              if (targetPosAfter.parent) {
-                const parentId = targetPosAfter.parent.id.toString();
+          if (targetPosAfter.parent) {
+            const parentId = targetPosAfter.parent.id.toString();
 
-                const updateChildren = (
-                  treeItems: TreeItems<TreeItemData>,
-                ): TreeItems<TreeItemData> => {
-                  return treeItems.map((item) => {
-                    if (item.id.toString() === parentId) {
-                      return { ...item, children: newSiblings };
-                    }
-                    if (item.children) {
-                      return {
-                        ...item,
-                        children: updateChildren(item.children),
-                      };
-                    }
-                    return item;
-                  });
-                };
+            const updateChildren = (
+              treeItems: TreeItems<TreeItemData>,
+            ): TreeItems<TreeItemData> => {
+              return treeItems.map((item) => {
+                if (item.id.toString() === parentId) {
+                  return { ...item, children: newSiblings };
+                }
+                if (item.children) {
+                  return {
+                    ...item,
+                    children: updateChildren(item.children),
+                  };
+                }
+                return item;
+              });
+            };
 
-                const updated = updateChildren(currentItems);
-                const enforced = enforceLayerRules(updated);
-                itemsBeforeChangeRef.current = enforced;
-                return enforced;
-              }
+            const updated = updateChildren(prevItems);
+            const enforced = enforceLayerRules(updated);
+            itemsBeforeChangeRef.current = enforced;
+            return enforced;
+          }
 
-              const enforced = enforceLayerRules(newSiblings);
-              itemsBeforeChangeRef.current = enforced;
-              return enforced;
-            });
-          });
-          return prevItems;
+          const enforced = enforceLayerRules(newSiblings);
+          itemsBeforeChangeRef.current = enforced;
+          return enforced;
         } else {
           const result = findAndRemoveItem(prevItems, draggedItemId);
           draggedItem = result.item;
@@ -2052,13 +2610,36 @@ export default function LayerSwitcherDnD({
       if (parts.length < 3) return;
       const type = parts[1] as "group" | "layer";
       const id = parts.slice(2).join("-");
+      const dropIntent = treeGroupDropIntentRef.current;
 
-      const addItemToTree = (newItem: TreeItem<TreeItemData>) => {
-        if (over.id !== "tree-drop-zone") {
-          const targetId = over.id.toString();
-          const targetItem = findItemInTree(items, targetId);
+      const applySourceDropOnGroup = (
+        newItem: TreeItem<TreeItemData>,
+        targetId: string,
+        targetItem: TreeItem<TreeItemData>,
+      ) => {
+        treeGroupDropIntentRef.current = null;
 
-          if (targetItem?.type === "group") {
+        if (FLAT_GROUP_REFERENCES) {
+          const siblingPosition =
+            dropIntent?.groupId === targetId &&
+            (dropIntent.intent === "above" || dropIntent.intent === "below")
+              ? dropIntent.intent
+              : "below";
+          setItems((prevItems) =>
+            enforceLayerRules(
+              insertItemAsGroupSibling(
+                prevItems,
+                newItem,
+                targetId,
+                siblingPosition,
+              ),
+            ),
+          );
+          return;
+        }
+
+        if (dropIntent?.groupId === targetId && dropIntent.intent === "into") {
+          if (newItem.type === "group") {
             openGroupTargetDropDialog({
               draggedItemId: newItem.id.toString(),
               draggedItemName: newItem.name,
@@ -2066,6 +2647,63 @@ export default function LayerSwitcherDnD({
               targetGroupName: targetItem.name,
               isFromSource: true,
             });
+            return;
+          }
+          setItems((prevItems) =>
+            insertItemIntoGroup(prevItems, newItem, targetId),
+          );
+          return;
+        }
+
+        if (
+          dropIntent?.groupId === targetId &&
+          (dropIntent.intent === "above" || dropIntent.intent === "below")
+        ) {
+          const siblingPosition = dropIntent.intent;
+          setItems((prevItems) =>
+            insertItemAsGroupSibling(
+              prevItems,
+              newItem,
+              targetId,
+              siblingPosition,
+            ),
+          );
+          return;
+        }
+
+        openGroupTargetDropDialog({
+          draggedItemId: newItem.id.toString(),
+          draggedItemName: newItem.name,
+          targetGroupId: targetId,
+          targetGroupName: targetItem.name,
+          isFromSource: true,
+        });
+      };
+
+      const addItemToTree = (newItem: TreeItem<TreeItemData>) => {
+        if (
+          dropIntent &&
+          (dropIntent.intent === "into" ||
+            dropIntent.intent === "above" ||
+            dropIntent.intent === "below")
+        ) {
+          const intentTarget = findItemInTree(items, dropIntent.groupId);
+          if (intentTarget?.type === "group") {
+            applySourceDropOnGroup(
+              newItem,
+              dropIntent.groupId,
+              intentTarget,
+            );
+            return;
+          }
+        }
+
+        if (over.id !== "tree-drop-zone") {
+          const targetId = over.id.toString();
+          const targetItem = findItemInTree(items, targetId);
+
+          if (targetItem?.type === "group") {
+            applySourceDropOnGroup(newItem, targetId, targetItem);
             return;
           }
 
@@ -2087,10 +2725,10 @@ export default function LayerSwitcherDnD({
         return;
       }
 
-      void buildGroupTreeItem(id).then((newItem) => {
-        if (!newItem) return;
-        addItemToTree(newItem);
-      });
+      const newGroupItem = buildGroupTreeItem(id);
+      if (newGroupItem) {
+        addItemToTree(newGroupItem);
+      }
     } else {
       // Handle existing item in tree being dragged
       const draggedItemId = active.id.toString();
@@ -2105,6 +2743,34 @@ export default function LayerSwitcherDnD({
             draggedItem.type === "group" &&
             isDescendantInTree(items, draggedItemId, targetId)
           ) {
+            return;
+          }
+
+          if (FLAT_GROUP_REFERENCES) {
+            const dropIntent = treeGroupDropIntentRef.current;
+            treeGroupDropIntentRef.current = null;
+            const siblingPosition =
+              dropIntent?.groupId === targetId &&
+              (dropIntent.intent === "above" || dropIntent.intent === "below")
+                ? dropIntent.intent
+                : "below";
+            const { item, updatedItems } = findAndRemoveTreeItem(
+              items,
+              draggedItemId,
+            );
+            if (!item) {
+              return;
+            }
+            setItems(
+              enforceLayerRules(
+                insertItemAsGroupSibling(
+                  updatedItems,
+                  item,
+                  targetId,
+                  siblingPosition,
+                ),
+              ),
+            );
             return;
           }
 
@@ -2165,9 +2831,8 @@ export default function LayerSwitcherDnD({
           if (item) {
             const rootItem: TreeItem<TreeItemData> = {
               ...item,
-              children:
-                item.type === "group" ? (item.children ?? []) : undefined,
-              canHaveChildren: item.type === "group",
+              children: undefined,
+              canHaveChildren: false,
             };
             return enforceLayerRules([...updatedItems, rootItem]);
           }
@@ -2332,10 +2997,11 @@ export default function LayerSwitcherDnD({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <Grid
-          container
-          spacing={3}
+        <Box
           sx={{
+            display: "flex",
+            flexDirection: { xs: "column", lg: "row" },
+            gap: 3,
             position: "relative",
             minWidth: 0,
             maxWidth: "100%",
@@ -2345,9 +3011,14 @@ export default function LayerSwitcherDnD({
             alignItems: "stretch",
           }}
         >
-          <Grid
-            size={{ xs: 12, lg: 4 }}
-            sx={{ position: "relative", minWidth: 0, display: "flex" }}
+          <Box
+            sx={{
+              flex: { xs: "1 1 auto", lg: "0 0 33.333%" },
+              maxWidth: { lg: "33.333%" },
+              position: "relative",
+              minWidth: 0,
+              display: "flex",
+            }}
           >
             <Paper variant="outlined" sx={columnPaperSx}>
               <Box sx={columnBodySx}>
@@ -2389,16 +3060,16 @@ export default function LayerSwitcherDnD({
                         }
                       }}
                     >
-                    <List
-                      sx={{
-                        position: "relative",
-                        width: "100%",
-                        minWidth: 0,
-                        overflow: "hidden",
-                        p: 1,
-                      }}
-                    >
-                      {leftTab === 0
+                      <List
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          minWidth: 0,
+                          overflow: "hidden",
+                          p: 1,
+                        }}
+                      >
+                        {leftTab === 0
                           ? filteredLayersLagerordning.map((layer) => (
                               <DraggableSourceItem
                                 key={layer.id}
@@ -2477,7 +3148,7 @@ export default function LayerSwitcherDnD({
                           p: 1,
                         }}
                       >
-                      {filteredLayersRitordning.map((layer) => (
+                        {filteredLayersRitordning.map((layer) => (
                           <DraggableSourceItem
                             key={layer.id}
                             item={layer}
@@ -2499,9 +3170,9 @@ export default function LayerSwitcherDnD({
                 )}
               </Box>
             </Paper>
-          </Grid>
+          </Box>
 
-          <Grid size={{ xs: 12, lg: 8 }} sx={{ minWidth: 0, display: "flex" }}>
+          <Box sx={{ flex: { xs: "1 1 auto", lg: "1 1 0" }, minWidth: 0, display: "flex" }}>
             <Paper variant="outlined" sx={columnPaperSx}>
               <Tabs
                 value={rightTab}
@@ -2567,6 +3238,9 @@ export default function LayerSwitcherDnD({
                           <Box sx={sortableTreeSx}>
                             <SortableTree
                               items={items}
+                              dndContextProps={{
+                                collisionDetection: treeCollisionDetection,
+                              }}
                               onItemsChanged={(newItems, reason) => {
                                 const nextItems = enforceLayerRules(newItems);
 
@@ -2578,7 +3252,7 @@ export default function LayerSwitcherDnD({
                                 // Skip dialog detection if we're processing a group drop action
                                 // (prevents dialog from reappearing after successful insert)
                                 if (isProcessingGroupDropRef.current) {
-                                  applyItemsUpdate();
+                                  isProcessingGroupDropRef.current = false;
                                   return;
                                 }
 
@@ -2597,25 +3271,213 @@ export default function LayerSwitcherDnD({
                                   return;
                                 }
 
-                                const { draggedItem, droppedToParent, draggedFromParent } =
-                                  reason;
+                                const {
+                                  draggedItem,
+                                  droppedToParent,
+                                  draggedFromParent,
+                                } = reason;
+                                const draggedId = draggedItem.id.toString();
                                 const targetGroupId =
                                   droppedToParent?.id?.toString() ?? null;
                                 const fromParentId =
                                   draggedFromParent?.id?.toString() ?? null;
+                                const oldItems = itemsBeforeChangeRef.current;
+                                const dropIntent = treeGroupDropIntentRef.current;
+                                treeGroupDropIntentRef.current = null;
 
-                                if (
+                                if (FLAT_GROUP_REFERENCES) {
+                                  const siblingTarget =
+                                    (dropIntent &&
+                                    (dropIntent.intent === "above" ||
+                                      dropIntent.intent === "below")
+                                      ? dropIntent.groupId
+                                      : null) ??
+                                    (droppedToParent?.type === "group"
+                                      ? targetGroupId
+                                      : null);
+
+                                  if (
+                                    siblingTarget &&
+                                    draggedId !== siblingTarget &&
+                                    (dropIntent?.intent === "into" ||
+                                      droppedToParent?.type === "group")
+                                  ) {
+                                    const siblingPosition =
+                                      dropIntent?.groupId === siblingTarget &&
+                                      (dropIntent.intent === "above" ||
+                                        dropIntent.intent === "below")
+                                        ? dropIntent.intent
+                                        : "below";
+                                    isProcessingGroupDropRef.current = true;
+                                    const fixed = enforceLayerRules(
+                                      relocateDraggedItemAsGroupSibling(
+                                        oldItems,
+                                        draggedId,
+                                        siblingTarget,
+                                        siblingPosition,
+                                      ),
+                                    );
+                                    setItems(fixed);
+                                    itemsBeforeChangeRef.current = fixed;
+                                    return;
+                                  }
+                                }
+
+                                const intoTargetGroupId =
+                                  dropIntent?.intent === "into"
+                                    ? dropIntent.groupId
+                                    : targetGroupId;
+
+                                const draggedParentGroupId =
+                                  getItemParentGroupId(oldItems, draggedId);
+
+                                if (draggedParentGroupId) {
+                                  const dropPointer = lastTreeDragPointerRef.current;
+                                  const dragOutAbove =
+                                    isPointerOverGroupSiblingDropZone(
+                                      draggedParentGroupId,
+                                      "above",
+                                      dropPointer,
+                                    );
+                                  const dragOutBelow =
+                                    !dragOutAbove &&
+                                    isPointerOverGroupSiblingDropZone(
+                                      draggedParentGroupId,
+                                      "below",
+                                      dropPointer,
+                                    );
+                                  if (dragOutAbove || dragOutBelow) {
+                                    isProcessingGroupDropRef.current = true;
+                                    const fixed =
+                                      relocateDraggedItemAsGroupSibling(
+                                        oldItems,
+                                        draggedId,
+                                        draggedParentGroupId,
+                                        dragOutAbove ? "above" : "below",
+                                      );
+                                    setItems(fixed);
+                                    itemsBeforeChangeRef.current = fixed;
+                                    return;
+                                  }
+                                }
+
+                                const isExternalGroupDrop =
                                   droppedToParent?.type === "group" &&
                                   targetGroupId &&
-                                  targetGroupId !== fromParentId
-                                ) {
-                                  const oldItems = itemsBeforeChangeRef.current;
+                                  draggedId !== targetGroupId &&
+                                  !isDraggedFromInsideGroup(
+                                    oldItems,
+                                    targetGroupId,
+                                    draggedId,
+                                  );
 
+                                const siblingTargetGroupId =
+                                  dropIntent?.groupId ?? targetGroupId;
+
+                                const siblingDropIntent =
+                                  dropIntent &&
+                                  (dropIntent.intent === "above" ||
+                                    dropIntent.intent === "below")
+                                    ? dropIntent.intent
+                                    : null;
+
+                                const isDragOutSiblingDrop =
+                                  siblingDropIntent !== null &&
+                                  siblingTargetGroupId != null &&
+                                  draggedId !== siblingTargetGroupId &&
+                                  draggedParentGroupId === siblingTargetGroupId;
+
+                                const isExternalSiblingDrop =
+                                  isExternalGroupDrop &&
+                                  siblingDropIntent !== null &&
+                                  siblingTargetGroupId != null &&
+                                  dropIntent?.groupId === targetGroupId;
+
+                                if (
+                                  (isDragOutSiblingDrop ||
+                                    isExternalSiblingDrop) &&
+                                  siblingDropIntent &&
+                                  siblingTargetGroupId
+                                ) {
+                                  const siblingBaseItems =
+                                    draggedParentGroupId ===
+                                    siblingTargetGroupId
+                                      ? oldItems
+                                      : nextItems;
+                                  const fixed = relocateDraggedItemAsGroupSibling(
+                                    siblingBaseItems,
+                                    draggedId,
+                                    siblingTargetGroupId,
+                                    siblingDropIntent,
+                                  );
+                                  setItems(fixed);
+                                  itemsBeforeChangeRef.current = fixed;
+                                  return;
+                                }
+
+                                if (
+                                  !FLAT_GROUP_REFERENCES &&
+                                  dropIntent?.intent === "into" &&
+                                  intoTargetGroupId &&
+                                  intoTargetGroupId !== fromParentId &&
+                                  draggedId !== intoTargetGroupId
+                                ) {
                                   if (
                                     draggedItem.type === "group" &&
                                     isDescendantInTree(
                                       oldItems,
-                                      draggedItem.id.toString(),
+                                      draggedId,
+                                      intoTargetGroupId,
+                                    )
+                                  ) {
+                                    return;
+                                  }
+
+                                  if (draggedItem.type === "group") {
+                                    setPendingGroupDrop({
+                                      draggedItemId: draggedId,
+                                      draggedItemName: draggedItem.name,
+                                      targetGroupId: intoTargetGroupId,
+                                      targetGroupName:
+                                        findTreeItem(
+                                          oldItems,
+                                          intoTargetGroupId,
+                                        )?.name ?? "",
+                                      isFromSource: false,
+                                    });
+                                    setGroupDropDialogOpen(true);
+                                    return;
+                                  }
+
+                                  const { item, updatedItems } =
+                                    findAndRemoveTreeItem(oldItems, draggedId);
+                                  if (!item) {
+                                    return;
+                                  }
+                                  const updated = expandGroupInTree(
+                                    insertItemIntoGroup(
+                                      updatedItems,
+                                      item,
+                                      intoTargetGroupId,
+                                    ),
+                                    intoTargetGroupId,
+                                  );
+                                  setItems(updated);
+                                  itemsBeforeChangeRef.current = updated;
+                                  return;
+                                }
+
+                                if (
+                                  !FLAT_GROUP_REFERENCES &&
+                                  droppedToParent?.type === "group" &&
+                                  targetGroupId &&
+                                  targetGroupId !== fromParentId
+                                ) {
+                                  if (
+                                    draggedItem.type === "group" &&
+                                    isDescendantInTree(
+                                      oldItems,
+                                      draggedId,
                                       targetGroupId,
                                     )
                                   ) {
@@ -2624,7 +3486,7 @@ export default function LayerSwitcherDnD({
 
                                   if (draggedItem.type === "group") {
                                     setPendingGroupDrop({
-                                      draggedItemId: draggedItem.id.toString(),
+                                      draggedItemId: draggedId,
                                       draggedItemName: draggedItem.name,
                                       targetGroupId,
                                       targetGroupName: droppedToParent.name,
@@ -2652,6 +3514,15 @@ export default function LayerSwitcherDnD({
                                 return (
                                   <TreeItemComponent
                                     {...treeItemProps}
+                                    treeItems={items}
+                                    draggingItemId={draggingItemId}
+                                    activeDragParentGroupId={
+                                      activeDragParentGroupId
+                                    }
+                                    pointerDragTick={pointerDragTick}
+                                    isDraggedFromInsideGroup={
+                                      checkDraggedFromInsideGroup
+                                    }
                                     flattenedTreeIds={flattenedTreeIds}
                                     rootNumber={rootNumberByAnyItemId[itemId]}
                                     onMoveUp={() => handleMoveUp(itemId)}
@@ -2767,8 +3638,8 @@ export default function LayerSwitcherDnD({
                 )}
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
         <DragOverlay>
           {activeId?.startsWith("source-")
             ? (() => {
@@ -2801,7 +3672,12 @@ export default function LayerSwitcherDnD({
                     }}
                   >
                     <DragIndicator
-                      sx={{ mr: 1, mt: 0.25, color: "text.secondary", flexShrink: 0 }}
+                      sx={{
+                        mr: 1,
+                        mt: 0.25,
+                        color: "text.secondary",
+                        flexShrink: 0,
+                      }}
                     />
                     <Typography
                       variant="body2"
@@ -2848,7 +3724,25 @@ export default function LayerSwitcherDnD({
   );
 
   if (embedded) {
+    if (groupId && isLoadingGroupLayers) {
+      return (
+        <Box sx={{ py: 2 }}>
+          <Typography>{t("common.loading")}</Typography>
+        </Box>
+      );
+    }
     return <Box sx={panelShellSx}>{layerOrderContent}</Box>;
+  }
+
+  if (groupId && isLoadingGroupLayers) {
+    return (
+      <Paper sx={panelShellSx}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          {t("common.layerSwitcherOrder")}
+        </Typography>
+        <Typography>{t("common.loading")}</Typography>
+      </Paper>
+    );
   }
 
   return (

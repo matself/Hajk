@@ -1,4 +1,3 @@
-import { Grid } from "@mui/material";
 import {
   TextField,
   FormControl,
@@ -12,6 +11,7 @@ import {
 import { Control, Controller, FieldValues, useForm } from "react-hook-form";
 import FormAccordion from "../../../components/form-components/form-accordion";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, { FormFieldRow } from "../../../components/form-components/form-field-grid";
 import { useTranslation } from "react-i18next";
 import { Tool } from "../../../api/tools";
 
@@ -38,7 +38,7 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
     <>
       <FormPanel title={t("common.information")}>
         {/* Aktiverad */}
-        <Grid size={{ xs: 12, md: 12 }}>
+        <FormFieldRow>
           <Controller
             name="options.active"
             control={control}
@@ -55,12 +55,12 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
               />
             )}
           />
-        </Grid>
+        </FormFieldRow>
       </FormPanel>
       <FormAccordion title={t("tools.windowSettings")} defaultExpanded>
-        <Grid container rowSpacing={1.5}>
+        <FormFieldGrid>
           {/* Sorteringsordning */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.index"
               control={control}
@@ -74,10 +74,10 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Verktygsplacering */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel>{t("tools.toolPlacement")}</InputLabel>
               <Controller
@@ -95,10 +95,10 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterplacering */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <FormControl fullWidth>
               <InputLabel>{t("tools.windowPlacement")}</InputLabel>
               <Controller
@@ -113,10 +113,10 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
                 )}
               />
             </FormControl>
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterbredd */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.width"
               control={control}
@@ -129,10 +129,10 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
                 />
               )}
             />
-          </Grid>
+          </FormFieldRow>
 
           {/* Fönsterhöjd */}
-          <Grid size={{ xs: 12, md: 10 }}>
+          <FormFieldRow>
             <Controller
               name="options.height"
               control={control}
@@ -145,8 +145,8 @@ export default function MeasureRenderer({ tool }: MeasureRendererProps) {
                 />
               )}
             />
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormAccordion>
     </>
   );

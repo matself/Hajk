@@ -3,6 +3,7 @@ import { useId } from "react";
 import {
   Box,
   FormControl,
+  FormHelperText,
   Select,
   TextField,
   type SelectProps,
@@ -82,6 +83,7 @@ export function TextFieldWithHelp({
 type SelectWithHelpProps = Omit<SelectProps, "label" | "labelId"> & {
   labelKey: string;
   helpKey: string;
+  helperText?: string;
   children: ReactNode;
 };
 
@@ -91,6 +93,7 @@ export function SelectWithHelp({
   helpKey,
   id: idProp,
   error,
+  helperText,
   children,
   fullWidth = true,
   ...selectProps
@@ -115,6 +118,9 @@ export function SelectWithHelp({
         <Select id={id} {...selectProps}>
           {children}
         </Select>
+        {helperText ? (
+          <FormHelperText error={error}>{helperText}</FormHelperText>
+        ) : null}
       </FormControl>
     </Box>
   );

@@ -9,7 +9,6 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -29,6 +28,9 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchDescribeFeatureType } from "../../../api/services/describe-feature-type";
 import DialogWrapper from "../../../components/flexible-dialog";
 import FormPanel from "../../../components/form-components/form-panel";
+import FormFieldGrid, {
+  FormFieldRow,
+} from "../../../components/form-components/form-field-grid";
 import { TextFieldWithHelp } from "../../../components/form-components/field-label-with-help";
 import {
   EditingFieldRow,
@@ -298,8 +300,8 @@ export default function EditingLayerSettings({
   return (
     <>
       <FormPanel title={t("layers.editing.geometrySection")}>
-        <Grid container rowSpacing={2}>
-          <Grid size={12}>
+        <FormFieldGrid>
+          <FormFieldRow>
             <TextFieldWithHelp
               labelKey="layers.searchSettings.geometryField"
               helpKey="layers.help.editingGeometryField"
@@ -309,8 +311,8 @@ export default function EditingLayerSettings({
                 onGeometryFieldChange(e.target.value)
               }
             />
-          </Grid>
-          <Grid size={12}>
+          </FormFieldRow>
+          <FormFieldRow>
             <Typography variant="subtitle2" gutterBottom>
               {t("layers.editing.geometryTypes")}
             </Typography>
@@ -468,8 +470,8 @@ export default function EditingLayerSettings({
                 )}
               />
             </FormGroup>
-          </Grid>
-        </Grid>
+          </FormFieldRow>
+        </FormFieldGrid>
       </FormPanel>
 
       <FormPanel title={t("layers.editing.editableFields")}>
