@@ -1,4 +1,4 @@
-import Grid2 from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import {
   Typography,
   TextField,
@@ -87,11 +87,11 @@ export default function FormComponentsExamplePage() {
           noValidate={false}
         >
           <FormPanel title="Example Panel">
-            <Grid2 container spacing={2}>
-              <Grid2 size={12}>
+            <Grid container spacing={2}>
+              <Grid size={12}>
                 <Typography sx={{ mb: 1 }}>A nice piece of content</Typography>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Controller
                   name="text1"
                   control={control}
@@ -116,8 +116,8 @@ export default function FormComponentsExamplePage() {
                     />
                   )}
                 />
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Controller
                   name="text2"
                   control={control}
@@ -130,8 +130,8 @@ export default function FormComponentsExamplePage() {
                     />
                   )}
                 />
-              </Grid2>
-              <Grid2 size={12}>
+              </Grid>
+              <Grid size={12}>
                 <Controller
                   name="text3"
                   control={control}
@@ -145,13 +145,13 @@ export default function FormComponentsExamplePage() {
                     />
                   )}
                 />
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </FormPanel>
 
           <FormAccordion title="Example Accordion">
-            <Grid2 container spacing={2}>
-              <Grid2 size={12}>
+            <Grid container spacing={2}>
+              <Grid size={12}>
                 <Typography sx={{ mb: 1 }}>
                   This is an example accordion content.
                 </Typography>
@@ -159,8 +159,8 @@ export default function FormComponentsExamplePage() {
                   Accordions are great for organizing related content that can
                   be collapsed and expanded.
                 </Typography>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Controller
                   name="text4"
                   control={control}
@@ -173,8 +173,8 @@ export default function FormComponentsExamplePage() {
                     />
                   )}
                 />
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Controller
                   name="text5"
                   control={control}
@@ -187,13 +187,13 @@ export default function FormComponentsExamplePage() {
                     />
                   )}
                 />
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </FormAccordion>
 
           <FormPanel title="Example Selects">
-            <Grid2 container spacing={2}>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel id="example-select-1-label" shrink>
                     Example Select 1
@@ -217,8 +217,8 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormControl>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel id="example-select-2-label" shrink>
                     Example Select 2
@@ -238,13 +238,13 @@ export default function FormComponentsExamplePage() {
                     <MenuItem value={"C"}>Option C</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </FormPanel>
 
           <FormPanel title="Example Sliders">
-            <Grid2 container spacing={2}>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <Controller
                     name="sliderValue"
@@ -261,8 +261,8 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormControl>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <Controller
                     name="sliderValue2"
@@ -279,13 +279,13 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormControl>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </FormPanel>
 
           <FormPanel title="Switches, Checkboxes & Radios">
-            <Grid2 container spacing={2}>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormGroup>
                   <Controller
                     name="switchOne"
@@ -318,8 +318,8 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormGroup>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormGroup>
                   <Controller
                     name="checkOne"
@@ -352,8 +352,8 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormGroup>
-              </Grid2>
-              <Grid2 size={12}>
+              </Grid>
+              <Grid size={12}>
                 <FormControl>
                   <FormLabel id="example-radiogroup-label">
                     Preferred contact
@@ -387,11 +387,11 @@ export default function FormComponentsExamplePage() {
                     )}
                   />
                 </FormControl>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </FormPanel>
           <FormPanel title="Example Color Picker">
-            <Grid2 size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <Controller
                   name="colorValue"
@@ -404,7 +404,7 @@ export default function FormComponentsExamplePage() {
                   )}
                 />
               </FormControl>
-            </Grid2>
+            </Grid>
           </FormPanel>
         </FormContainer>
       </FormActionPanel>

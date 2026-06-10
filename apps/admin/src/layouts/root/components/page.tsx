@@ -1,6 +1,6 @@
 import { VerticalAlignTop as ScrollToTopIcon } from "@mui/icons-material";
 import { Box, Typography, IconButton, useTheme } from "@mui/material";
-import Grid2 from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
@@ -58,22 +58,22 @@ const Page = (props: Props) => {
         width: "100%",
       }}
     >
-      <Grid2 container spacing={2} sx={{ mb: "1.8rem", mt: "0.625rem" }}>
-        <Grid2 container size="auto">
+      <Grid container spacing={2} sx={{ mb: "1.8rem", mt: "0.625rem" }}>
+        <Grid container size="auto">
           <Typography variant="h1">{props.title}</Typography>
-        </Grid2>
-        <Grid2
+        </Grid>
+        <Grid
           container
           size="grow"
           sx={{ alignItems: "center", justifyContent: "end" }}
         >
           {props.actionButtons}
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
       {props.children}
 
-      <Grid2 container spacing={2} sx={{ mb: "1.8rem", mt: "0.625rem" }}></Grid2>
+      <Grid container spacing={2} sx={{ mb: "1.8rem", mt: "0.625rem" }}></Grid>
 
       <Box
         sx={{
