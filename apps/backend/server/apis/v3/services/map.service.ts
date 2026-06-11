@@ -103,7 +103,8 @@ class MapService {
       // TODO: Tools, Layers and Groups must also be filtered by `roles`.
       include: {
         projections: true,
-        tools: { include: { tool: true } },
+        // Soft-deleted tools must not reach the client map config.
+        tools: { where: { tool: { deletedAt: null } }, include: { tool: true } },
         layers: {
           include: layerInstanceIncludeAll,
         },
@@ -204,7 +205,8 @@ class MapService {
 
   async getToolsForMap(mapName: string) {
     return await prisma.toolsOnMaps.findMany({
-      where: { mapName },
+      // Soft-deleted tools keep their placements but are hidden everywhere.
+      where: { mapName, tool: { deletedAt: null } },
       include: { tool: true },
       orderBy: { index: "asc" },
     });
@@ -215,7 +217,11 @@ class MapService {
     tools: { toolId: number; index: number; target: string }[]
   ) {
     await prisma.$transaction([
-      prisma.toolsOnMaps.deleteMany({ where: { mapName } }),
+      // Only replace placements for active tools — soft-deleted tools keep
+      // theirs so a restored tool reappears on its maps.
+      prisma.toolsOnMaps.deleteMany({
+        where: { mapName, tool: { deletedAt: null } },
+      }),
       ...(tools.length > 0
         ? [
             prisma.toolsOnMaps.createMany({

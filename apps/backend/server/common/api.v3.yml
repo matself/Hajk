@@ -379,9 +379,88 @@ paths:
         - Client-accessible
       responses:
         200:
-          description: Return the list of tools
+          description: Return the list of tools (soft-deleted tools are excluded)
         500:
           description: Internal server error
+    post:
+      tags:
+        - Admin only
+      requestBody:
+        description: New tool instance
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: Plugin type, must exist in ToolType
+                  example: infoclick
+                title:
+                  type: string
+                  description: Instance name
+                  example: Infoklick standard
+                options:
+                  type: object
+              required:
+                - type
+      responses:
+        201:
+          description: Tool created
+        400:
+          description: Invalid request (e.g. unknown tool type)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tools/types:
+    get:
+      tags:
+        - Admin only
+      responses:
+        200:
+          description: Return the list of available tool types
+  /tools/{id}:
+    patch:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          description: ID of the tool instance
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Fields to update
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                title:
+                  type: string
+                options:
+                  type: object
+      responses:
+        200:
+          description: Tool updated
+    delete:
+      tags:
+        - Admin only
+      description: Soft delete — the tool is hidden but kept in the database with its map placements
+      parameters:
+        - name: id
+          in: path
+          description: ID of the tool instance
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Tool deleted (soft)
   /tools/{toolName}/maps:
     get:
       tags:

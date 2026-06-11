@@ -6,6 +6,7 @@ import restrictAdmin from "../../middlewares/restrict.admin.ts";
 export default express
   .Router()
   .get("/", ToolsController.getTools)
+  .get("/types", ToolsController.getToolTypes)
   .post("/", ToolsController.createTool)
   .patch("/:id", ToolsController.updateTool)
   .delete("/:id", ToolsController.deleteTool)

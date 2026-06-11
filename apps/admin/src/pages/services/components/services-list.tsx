@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router";
-import Grid2 from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import {
   Button,
   TextField,
@@ -378,8 +378,8 @@ export default function ServicesList({
                 </>
               }
             >
-              <Grid2 container spacing={2}>
-                <Grid2 size={12}>
+              <Grid container spacing={2}>
+                <Grid size={12}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -387,8 +387,8 @@ export default function ServicesList({
                   >
                     {t("services.dialog.subtitle")}
                   </Typography>
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid size={12}>
                   <TextField
                     required
                     label={t("common.name")}
@@ -401,8 +401,8 @@ export default function ServicesList({
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid size={12}>
                   <TextField
                     label={t("services.dialog.urlField")}
                     fullWidth
@@ -418,8 +418,8 @@ export default function ServicesList({
                       {t("services.dialog.urlDuplicateWarning")}
                     </Alert>
                   ) : null}
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid size={12}>
                   <Controller
                     name="type"
                     control={control}
@@ -453,8 +453,8 @@ export default function ServicesList({
                       </FormControl>
                     )}
                   />
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid size={12}>
                   <Controller
                     name="serverType"
                     control={control}
@@ -485,8 +485,8 @@ export default function ServicesList({
                       </FormControl>
                     )}
                   />
-                </Grid2>
-              </Grid2>
+                </Grid>
+              </Grid>
             </DialogWrapper>
 
             <ListFilterRow>
@@ -546,7 +546,7 @@ export default function ServicesList({
                 </FormControl>
               </ListFilterField>
             </ListFilterRow>
-            <Grid2 size={12}>
+            <Grid size={12}>
               <StyledDataGrid<Service>
                 storageKey="services"
                 customSx={{ height: "calc(100vh - 320px)" }}
@@ -715,7 +715,7 @@ export default function ServicesList({
                   disabled={isDeletingService}
                 />
               </DialogWrapper>
-            </Grid2>
+            </Grid>
           </Page>
         </>
       )}
