@@ -2,6 +2,9 @@ import { Prisma } from "@prisma/client";
 
 import log4js from "log4js";
 import prisma from "../../../common/prisma.ts";
+import { HajkError } from "../../../common/classes.ts";
+import HttpStatusCodes from "../../../common/http-status-codes.ts";
+import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 
 const logger = log4js.getLogger("service.v3.tool");
 
@@ -12,13 +15,27 @@ class ToolService {
 
   async getTools() {
     return await prisma.tool.findMany({
+      where: { deletedAt: null },
       orderBy: { type: "asc" },
-      include: { maps: { select: { mapName: true } } },
+      include: {
+        maps: {
+          // Only count actual placements — target null means the tool is
+          // connected to the map but not placed in any zone.
+          where: { target: { not: null } },
+          select: { mapName: true },
+        },
+      },
     });
   }
 
+  async getToolTypes() {
+    return await prisma.toolType.findMany({ orderBy: { type: "asc" } });
+  }
+
   async isToolTypeValid(toolType: string) {
-    return await prisma.tool.findFirstOrThrow({ where: { type: toolType } });
+    return await prisma.toolType.findFirstOrThrow({
+      where: { type: toolType },
+    });
   }
 
   async getMapsWithTool(toolName: string) {
@@ -27,8 +44,10 @@ class ToolService {
       where: {
         tools: {
           some: {
+            target: { not: null },
             tool: {
               type: toolName,
+              deletedAt: null,
             },
           },
         },
@@ -38,7 +57,19 @@ class ToolService {
     return maps;
   }
 
-  async createTool(data: Prisma.ToolCreateInput, userId?: string) {
+  async createTool(data: Prisma.ToolUncheckedCreateInput, userId?: string) {
+    const toolType = await prisma.toolType.findUnique({
+      where: { type: data.type },
+    });
+
+    if (!toolType) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        `Tool type "${data.type}" does not exist.`,
+        HajkStatusCodes.UNKNOWN_TOOL_TYPE
+      );
+    }
+
     return await prisma.tool.create({
       data: {
         ...data,
@@ -61,9 +92,16 @@ class ToolService {
     });
   }
 
-  async deleteTool(id: number) {
-    return await prisma.tool.delete({
+  // Soft delete — the row is kept (with its ToolsOnMaps placements) so the
+  // tool can be restored with its full configuration.
+  async deleteTool(id: number, userId?: string) {
+    return await prisma.tool.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+        lastSavedBy: userId,
+        lastSavedDate: new Date(),
+      },
     });
   }
 }

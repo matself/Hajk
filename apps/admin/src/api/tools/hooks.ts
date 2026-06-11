@@ -4,8 +4,15 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { getTools, getMapsByToolName, updateTool } from "./requests";
-import { Tool, ToolUpdateInput } from "./types";
+import {
+  getTools,
+  getToolTypes,
+  getMapsByToolName,
+  createTool,
+  updateTool,
+  deleteTool,
+} from "./requests";
+import { Tool, ToolType, ToolCreateInput, ToolUpdateInput } from "./types";
 import { Map } from "../maps";
 
 // React Query hook to fetch tools
@@ -26,6 +33,25 @@ export const useMapsByToolName = (toolName: string): UseQueryResult<Map[]> => {
   });
 };
 
+// React Query hook to fetch available tool types
+export const useToolTypes = (): UseQueryResult<ToolType[]> => {
+  return useQuery({
+    queryKey: ["toolTypes"],
+    queryFn: getToolTypes,
+  });
+};
+
+// React Query mutation hook to create a tool instance
+export const useCreateTool = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ToolCreateInput) => createTool(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["tools"] });
+    },
+  });
+};
+
 // React Query mutation hook to update a tool
 export const useUpdateTool = () => {
   const queryClient = useQueryClient();
@@ -34,6 +60,19 @@ export const useUpdateTool = () => {
       updateTool(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["tools"] });
+    },
+  });
+};
+
+// React Query mutation hook to delete (soft) a tool instance
+export const useDeleteTool = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTool(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["tools"] });
+      // The tool may be placed on maps — refresh all per-map tool queries.
+      void queryClient.invalidateQueries({ queryKey: ["toolsByMap"] });
     },
   });
 };

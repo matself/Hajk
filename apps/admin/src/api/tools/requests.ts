@@ -1,7 +1,10 @@
 import {
   Tool,
+  ToolType,
   ToolsApiResponse,
+  ToolTypesApiResponse,
   GlobalMapsApiResponse,
+  ToolCreateInput,
   ToolUpdateInput,
 } from "./types";
 import { Map } from "../maps";
@@ -60,6 +63,63 @@ export const getMapsByToolName = async (toolName: string): Promise<Map[]> => {
       );
     } else {
       throw new Error(`Failed to fetch maps.`);
+    }
+  }
+};
+
+export const getToolTypes = async (): Promise<ToolType[]> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response =
+      await internalApiClient.get<ToolTypesApiResponse>("/tools/types");
+    if (!response.data) {
+      throw new Error("No tool types data found");
+    }
+    return response.data.toolTypes;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to fetch tool types. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to fetch tool types.`);
+    }
+  }
+};
+
+export const createTool = async (data: ToolCreateInput): Promise<Tool> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.post<Tool>("/tools", data);
+    if (!response.data) {
+      throw new Error("No tool data returned");
+    }
+    return response.data;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to create tool. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to create tool.`);
+    }
+  }
+};
+
+export const deleteTool = async (id: string): Promise<void> => {
+  const internalApiClient = getApiClient();
+  try {
+    await internalApiClient.delete(`/tools/${id}`);
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to delete tool. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to delete tool.`);
     }
   }
 };
