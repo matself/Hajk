@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client + Admin: DocumentHandler — Added support for embedding external content via iframes, such as Microsoft Power BI reports, directly in documents.
 - Client: PropertyChecker - There's now a new option, `showToggleAllCheckLayers` that can add a toggle all button to the check layer results view, part of [#1760](https://github.com/hajkmap/Hajk/issues/1760).
 - Client: PropertyChecker - Added a `q_pc` URL parameter that programmatically triggers a property check from a property name or address. It reuses an existing WFS search source (configured via `propertyNameLookupWfsLayerId` and the optional `addressLookupWfsLayerId`) to resolve the value to a geometry, pans the map there, and is written back to the URL hash on map click so results are shareable. Closes [#1827](https://github.com/hajkmap/Hajk/issues/1827).
+- Client + Admin: FmeServer — Support FME Flow REST API v4 alongside v3 with automatic API version detection (v4 preferred, then v3).
+- Client: FmeServer — Render all published parameter types from the FME API (no allowlist); unknown types use a text field fallback.
 
 ### Changed
 

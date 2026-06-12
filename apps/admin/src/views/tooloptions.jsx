@@ -44,14 +44,14 @@ class ToolOptions extends Component {
   componentDidMount() {
     this.props.model.on(
       "change:urlMapConfig",
-      this.onUrlMapConfigChanged.bind(this)
+      this.onUrlMapConfigChanged.bind(this),
     );
   }
 
   componentWillUnmount() {
     this.props.model.off(
       "change:urlMapConfig",
-      this.onUrlMapConfigChanged.bind(this)
+      this.onUrlMapConfigChanged.bind(this),
     );
   }
 
@@ -137,7 +137,11 @@ class ToolOptions extends Component {
   getIndexForTool(tool) {
     var found = false;
     if (Array.isArray(this.props.model.get("toolConfig"))) {
-      found = this.props.model.get("toolConfig").filter((t) => t.type === tool);
+      found = this.props.model
+        .get("toolConfig")
+        .filter(
+          (t) => typeof t.type === "string" && t.type.toLowerCase() === tool,
+        );
     }
 
     if (found[0]) {
@@ -151,8 +155,11 @@ class ToolOptions extends Component {
     var found = false;
     if (Array.isArray(this.props.model.get("toolConfig"))) {
       found =
-        this.props.model.get("toolConfig").filter((t) => t.type === tool)
-          .length > 0;
+        this.props.model
+          .get("toolConfig")
+          .filter(
+            (t) => typeof t.type === "string" && t.type.toLowerCase() === tool,
+          ).length > 0;
     }
     return found ? "fa fa-check-square-o" : "fa fa-square-o";
   }
@@ -204,7 +211,7 @@ class ToolOptions extends Component {
                   ? 0
                   : this.getIndexForTool(a) > this.getIndexForTool(b)
                   ? 1
-                  : -1
+                  : -1,
               )
               .map((key, i) => {
                 var index = this.getIndexForTool(key);
