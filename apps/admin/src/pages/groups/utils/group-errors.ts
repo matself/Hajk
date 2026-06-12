@@ -96,16 +96,7 @@ export function getDeleteGroupErrorMessage(
   t: TFunction,
   groupName?: string,
 ): string {
-  if (isAxiosError<GroupApiErrorBody>(error)) {
-    const message = error.response?.data?.error;
-    if (
-      error.response?.status === 409 &&
-      typeof message === "string" &&
-      message.trim()
-    ) {
-      return message.trim();
-    }
-  }
-
-  return t("groups.deleteGroupFailed", { name: groupName ?? "" });
+  return getApiErrorMessage(error, t, "groups.deleteGroupFailed", {
+    name: groupName ?? "",
+  });
 }

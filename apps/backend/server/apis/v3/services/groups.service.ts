@@ -412,27 +412,49 @@ class GroupsService {
   async deleteGroup(id: string) {
     await this.requireGroup(id);
 
-    const mapUsage = await prisma.groupsOnMaps.findMany({
-      where: { groupId: id },
-      select: { mapName: true },
-      distinct: ["mapName"],
-      orderBy: { mapName: "asc" },
-    });
+    await prisma.$transaction(async (transaction) => {
+      // Collect every GroupsOnMaps placement that must be removed: the group's
+      // own placements plus their entire subtree (children referencing a
+      // deleted placement via parentGroupId), so no orphaned nodes remain.
+      const rootPlacements = await transaction.groupsOnMaps.findMany({
+        where: { groupId: id },
+        select: { id: true },
+      });
 
-    if (mapUsage.length > 0) {
-      const mapNames = mapUsage.map((entry) => entry.mapName).join(", ");
-      throw new HajkError(
-        HttpStatusCodes.CONFLICT,
-        `Group cannot be deleted because it is used in map(s): ${mapNames}.`,
-        HajkStatusCodes.GROUP_DELETE_BLOCKED_BY_REFERENCES
+      const placementIdsToDelete = new Set<string>(
+        rootPlacements.map((placement) => placement.id)
       );
-    }
 
-    await prisma.$transaction([
-      prisma.layerInstance.deleteMany({ where: { groupId: id } }),
-      prisma.roleOnGroup.deleteMany({ where: { groupId: id } }),
-      prisma.group.delete({ where: { id } }),
-    ]);
+      let frontier = [...placementIdsToDelete];
+      while (frontier.length > 0) {
+        const children = await transaction.groupsOnMaps.findMany({
+          where: { parentGroupId: { in: frontier } },
+          select: { id: true },
+        });
+
+        const newIds = children
+          .map((child) => child.id)
+          .filter((childId) => !placementIdsToDelete.has(childId));
+
+        newIds.forEach((childId) => placementIdsToDelete.add(childId));
+        frontier = newIds;
+      }
+
+      // Remove the placements (whole subtree at once; Postgres resolves the
+      // self-referencing FK within the single statement).
+      if (placementIdsToDelete.size > 0) {
+        await transaction.groupsOnMaps.deleteMany({
+          where: { id: { in: [...placementIdsToDelete] } },
+        });
+      }
+
+      // Remove the group's own layer instances and role restrictions.
+      await transaction.layerInstance.deleteMany({ where: { groupId: id } });
+      await transaction.roleOnGroup.deleteMany({ where: { groupId: id } });
+
+      // Finally remove the group itself.
+      await transaction.group.delete({ where: { id } });
+    });
   }
 }
 
