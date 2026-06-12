@@ -29,49 +29,25 @@ import {
 } from "@/api/documents";
 import { getDocuments } from "@/api/documents/requests";
 import { DocumentsTree } from "./documents-tree";
-import { DocumentEditorDialog } from "./document-editor-dialog";
 import type { DocTreeNode } from "./types.ts";
 
 interface DocumentsTabPanelProps {
-  folderName?: string;
-  documentId?: string;
   mapName: string | undefined;
+  openDocument?: { folder: string; document: string } | null;
+  onOpenDocument: (folder: string, document: string) => void;
+  onCloseDocument: () => void;
 }
 
 export function DocumentsTabPanel({
-  folderName,
-  documentId,
   mapName,
+  openDocument,
+  onOpenDocument,
+  onCloseDocument,
 }: DocumentsTabPanelProps) {
   const { t } = useTranslation();
 
-  const [selectedFolder, setSelectedFolder] = useState<string | undefined>(
-    folderName
-  );
-  const [selectedDocName, setSelectedDocName] = useState<string | undefined>(
-    documentId
-  );
-  const [editorOpen, setEditorOpen] = useState(
-    !!(documentId && folderName)
-  );
   // Tracks which node is highlighted in the tree (drives New document target)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-
-  const [prevRouteDocument, setPrevRouteDocument] = useState({
-    folderName,
-    documentId,
-  });
-  if (
-    folderName !== prevRouteDocument.folderName ||
-    documentId !== prevRouteDocument.documentId
-  ) {
-    setPrevRouteDocument({ folderName, documentId });
-    if (documentId && folderName) {
-      setSelectedFolder(folderName);
-      setSelectedDocName(documentId);
-      setEditorOpen(true);
-    }
-  }
 
   // Dialog state
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
@@ -164,18 +140,6 @@ export function DocumentsTabPanel({
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  function handleOpenDocument(folderNameArg: string, docName: string) {
-    setSelectedFolder(folderNameArg);
-    setSelectedDocName(docName);
-    setEditorOpen(true);
-  }
-
-  function handleCloseEditor() {
-    setEditorOpen(false);
-    setSelectedDocName(undefined);
-    setSelectedFolder(undefined);
-  }
-
   function handleCreateFolder() {
     if (!newFolderTitle.trim() || !mapName) return;
     createFolderMutation.mutate(
@@ -197,7 +161,7 @@ export function DocumentsTabPanel({
         onSuccess: (doc) => {
           setNewDocDialogOpen(false);
           setNewDocTitle("");
-          handleOpenDocument(activeNewDocFolder, doc.name);
+          onOpenDocument(activeNewDocFolder, doc.name);
         },
       }
     );
@@ -223,10 +187,9 @@ export function DocumentsTabPanel({
   }
 
   const isLoading = foldersLoading || allDocsLoading;
-  const selectedDocTreeId =
-    selectedFolder && selectedDocName
-      ? `doc:${selectedFolder}/${selectedDocName}`
-      : null;
+  const selectedDocTreeId = openDocument
+    ? `doc:${openDocument.folder}/${openDocument.document}`
+    : null;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -288,7 +251,7 @@ export function DocumentsTabPanel({
             selectedNodeId={selectedNodeId}
             activeFolderName={activeNewDocFolder ?? null}
             onSelectNode={setSelectedNodeId}
-            onOpenDocument={handleOpenDocument}
+            onOpenDocument={onOpenDocument}
             onDeleteFolder={handleDeleteFolder}
             onDeleteDocument={handleDeleteDocument}
             onMoveDocument={({ sourceFolder, name, targetFolder }) => {
@@ -296,17 +259,6 @@ export function DocumentsTabPanel({
             }}
           />
         </Box>
-      )}
-
-      {/* ── Document editor dialog ──────────────────────────────────────── */}
-      {mapName && (
-        <DocumentEditorDialog
-          open={editorOpen}
-          mapName={mapName}
-          folderName={selectedFolder}
-          docName={selectedDocName}
-          onClose={handleCloseEditor}
-        />
       )}
 
       {/* ── New folder dialog ───────────────────────────────────────────── */}
@@ -438,11 +390,12 @@ export function DocumentsTabPanel({
               if (!deleteDocInfo) return;
               deleteDocMutation.mutate(deleteDocInfo.docName, {
                 onSuccess: () => {
-                  const wasOpen = selectedDocName === deleteDocInfo.docName;
+                  const wasOpen =
+                    openDocument?.folder === deleteDocInfo.folderName &&
+                    openDocument?.document === deleteDocInfo.docName;
                   setDeleteDocInfo(null);
                   if (wasOpen) {
-                    setEditorOpen(false);
-                    setSelectedDocName(undefined);
+                    onCloseDocument();
                   }
                 },
               });

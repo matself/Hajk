@@ -112,6 +112,7 @@ export function RichTextEditor({
         borderRadius: 1,
         overflow: "hidden",
         height: "100%",
+        width: "100%",
       }}
     >
       {!readOnly && (
@@ -127,10 +128,14 @@ export function RichTextEditor({
         sx={{
           flex: 1,
           overflow: "auto",
+          width: "100%",
+          "& > div": { width: "100%" },
           "& .tiptap": {
             outline: "none",
             p: 2,
             minHeight: 200,
+            width: "100%",
+            boxSizing: "border-box",
             "& p": { my: 0.5 },
             "& ul, & ol": { pl: 3 },
             // Global CSS reset uses `font: inherit` on *, which strips browser

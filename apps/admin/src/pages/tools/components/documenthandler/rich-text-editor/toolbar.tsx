@@ -15,13 +15,16 @@ import {
   StrikethroughS,
   FormatListBulleted,
   FormatListNumbered,
-  Link as LinkIcon,
+  Launch,
+  Description,
+  Map,
   Image as ImageIcon,
   Videocam,
   MusicNote,
   WebAsset,
   FormatQuote,
   Spellcheck,
+  ModeCommentOutlined,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { applyEditorSpellcheck } from "./spellcheck-preference";
@@ -32,7 +35,7 @@ import {
   VideoDialog,
 } from "./dialogs/media-dialog";
 import { TextSectionDialog } from "./dialogs/text-section-dialog";
-import type { HajkLinkAttrs } from "./extensions/hajk-link";
+import type { HajkLinkAttrs, HajkLinkType } from "./extensions/hajk-link";
 import type { MediaFigureAttrs, MediaType } from "./extensions/media-figure";
 import type { TextSectionAttrs } from "./extensions/text-section";
 import {
@@ -120,8 +123,14 @@ export function RichTextToolbar({
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkDialogKey, setLinkDialogKey] = useState(0);
+  const [linkDialogIsEdit, setLinkDialogIsEdit] = useState(false);
+  const [pendingLinkType, setPendingLinkType] = useState<HajkLinkType>("web");
+  const savedLinkSelectionRef = useRef<{ from: number; to: number } | null>(
+    null
+  );
   const [textSectionDialogOpen, setTextSectionDialogOpen] = useState(false);
   const [textSectionDialogKey, setTextSectionDialogKey] = useState(0);
+  const [textSectionDialogIsEdit, setTextSectionDialogIsEdit] = useState(false);
   const savedTextSectionSelectionRef = useRef<{
     from: number;
     to: number;
@@ -132,7 +141,22 @@ export function RichTextToolbar({
 
   // ── Link handling ─────────────────────────────────────────────────────────
 
-  function openLinkDialog() {
+  function openLinkDialog(type: HajkLinkType) {
+    const isEdit =
+      editor.isActive("hajkLink") &&
+      editor.getAttributes("hajkLink").linkType === type;
+
+    if (isEdit) {
+      editor.chain().extendMarkRange("hajkLink").run();
+      const { from, to } = editor.state.selection;
+      savedLinkSelectionRef.current = { from, to };
+    } else {
+      const { from, to, empty } = editor.state.selection;
+      savedLinkSelectionRef.current = empty ? null : { from, to };
+    }
+
+    setLinkDialogIsEdit(isEdit);
+    setPendingLinkType(type);
     setLinkDialogKey((k) => k + 1);
     setLinkDialogOpen(true);
   }
@@ -145,12 +169,27 @@ export function RichTextToolbar({
   }
 
   function handleLinkConfirm(attrs: HajkLinkAttrs) {
-    editor.chain().focus().setMark("hajkLink", attrs).run();
+    const saved = savedLinkSelectionRef.current;
+    const chain = editor.chain().focus();
+    if (saved) {
+      chain.setTextSelection(saved);
+    }
+    if (linkDialogIsEdit) {
+      chain.extendMarkRange("hajkLink");
+    }
+    chain.setMark("hajkLink", attrs).run();
+    savedLinkSelectionRef.current = null;
     setLinkDialogOpen(false);
   }
 
   function handleLinkRemove() {
-    editor.chain().focus().unsetMark("hajkLink").run();
+    const saved = savedLinkSelectionRef.current;
+    const chain = editor.chain().focus();
+    if (saved) {
+      chain.setTextSelection(saved);
+    }
+    chain.extendMarkRange("hajkLink").unsetMark("hajkLink").run();
+    savedLinkSelectionRef.current = null;
     setLinkDialogOpen(false);
   }
 
@@ -175,7 +214,6 @@ export function RichTextToolbar({
   }
 
   const mediaDialogProps = {
-    key: mediaDialogKey,
     open: mediaDialogOpen,
     onConfirm: handleMediaConfirm,
     onCancel: () => setMediaDialogOpen(false),
@@ -195,15 +233,21 @@ export function RichTextToolbar({
   // ── Text section ──────────────────────────────────────────────────────────
 
   function openTextSectionDialog() {
-    const { from, to, empty } = editor.state.selection;
-    savedTextSectionSelectionRef.current = empty ? null : { from, to };
+    const { from, to } = editor.state.selection;
+    savedTextSectionSelectionRef.current = { from, to };
+    setTextSectionDialogIsEdit(editor.isActive("textSection"));
     setTextSectionDialogKey((k) => k + 1);
     setTextSectionDialogOpen(true);
   }
 
   function handleTextSectionConfirm(attrs: TextSectionAttrs) {
-    if (editor.isActive("textSection")) {
-      editor.chain().focus().updateAttributes("textSection", attrs).run();
+    if (textSectionDialogIsEdit) {
+      const saved = savedTextSectionSelectionRef.current;
+      const chain = editor.chain().focus();
+      if (saved) {
+        chain.setTextSelection(saved);
+      }
+      chain.updateAttributes("textSection", attrs).run();
     } else {
       const saved = savedTextSectionSelectionRef.current;
       const selectedContent =
@@ -237,14 +281,52 @@ export function RichTextToolbar({
   }
 
   function handleTextSectionRemove() {
-    editor.chain().focus().unwrapTextSection().run();
+    const saved = savedTextSectionSelectionRef.current;
+    const chain = editor.chain().focus();
+    if (saved) {
+      chain.setTextSelection(saved);
+    }
+    chain.unwrapTextSection().run();
+    savedTextSectionSelectionRef.current = null;
     setTextSectionDialogOpen(false);
   }
 
   const isLinkActive = activeState?.hajkLink ?? false;
-  const canUseLink =
-    isLinkActive || !(activeState?.selectionEmpty ?? true);
   const currentLink = getCurrentLinkAttrs();
+  const currentLinkType = currentLink?.linkType;
+
+  function canUseLinkType(type: HajkLinkType): boolean {
+    if (isLinkActive) return currentLinkType === type;
+    return !(activeState?.selectionEmpty ?? true);
+  }
+
+  const LINK_TOOLBAR_TITLE_KEYS: Record<
+    HajkLinkType,
+    { insert: string; edit: string }
+  > = {
+    web: {
+      insert: "dhRichTextEditor.toolbar.insertWebLink",
+      edit: "dhRichTextEditor.toolbar.editWebLink",
+    },
+    document: {
+      insert: "dhRichTextEditor.toolbar.insertDocumentLink",
+      edit: "dhRichTextEditor.toolbar.editDocumentLink",
+    },
+    map: {
+      insert: "dhRichTextEditor.toolbar.insertMapLink",
+      edit: "dhRichTextEditor.toolbar.editMapLink",
+    },
+    hover: {
+      insert: "dhRichTextEditor.toolbar.insertTooltip",
+      edit: "dhRichTextEditor.toolbar.editTooltip",
+    },
+  };
+
+  function linkButtonTitle(type: HajkLinkType): string {
+    const isActive = isLinkActive && currentLinkType === type;
+    const keys = LINK_TOOLBAR_TITLE_KEYS[type];
+    return t(isActive ? keys.edit : keys.insert);
+  }
 
   return (
     <>
@@ -313,16 +395,36 @@ export function RichTextToolbar({
 
         {/* ── Links ── */}
         <Btn
-          title={
-            isLinkActive
-              ? t("dhRichTextEditor.toolbar.editLink")
-              : t("dhRichTextEditor.toolbar.insertLink")
-          }
-          onClick={openLinkDialog}
-          active={isLinkActive}
-          disabled={!canUseLink}
+          title={linkButtonTitle("web")}
+          onClick={() => openLinkDialog("web")}
+          active={isLinkActive && currentLinkType === "web"}
+          disabled={!canUseLinkType("web")}
         >
-          <LinkIcon fontSize="small" />
+          <Launch fontSize="small" />
+        </Btn>
+        <Btn
+          title={linkButtonTitle("document")}
+          onClick={() => openLinkDialog("document")}
+          active={isLinkActive && currentLinkType === "document"}
+          disabled={!canUseLinkType("document")}
+        >
+          <Description fontSize="small" />
+        </Btn>
+        <Btn
+          title={linkButtonTitle("map")}
+          onClick={() => openLinkDialog("map")}
+          active={isLinkActive && currentLinkType === "map"}
+          disabled={!canUseLinkType("map")}
+        >
+          <Map fontSize="small" />
+        </Btn>
+        <Btn
+          title={linkButtonTitle("hover")}
+          onClick={() => openLinkDialog("hover")}
+          active={isLinkActive && currentLinkType === "hover"}
+          disabled={!canUseLinkType("hover")}
+        >
+          <ModeCommentOutlined fontSize="small" />
         </Btn>
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
@@ -381,17 +483,18 @@ export function RichTextToolbar({
 
       {/* ── Dialogs ── */}
       <LinkDialog
-        key={linkDialogKey}
+        key={`link-${pendingLinkType}-${linkDialogKey}`}
         open={linkDialogOpen}
+        linkType={pendingLinkType}
         initial={currentLink}
         mapName={mapName}
         onConfirm={handleLinkConfirm}
         onCancel={() => setLinkDialogOpen(false)}
-        onRemove={isLinkActive ? handleLinkRemove : undefined}
+        onRemove={linkDialogIsEdit ? handleLinkRemove : undefined}
       />
 
       <TextSectionDialog
-        key={textSectionDialogKey}
+        key={`textsection-${textSectionDialogKey}`}
         open={textSectionDialogOpen}
         initial={
           activeState?.textSection
@@ -401,18 +504,18 @@ export function RichTextToolbar({
         onConfirm={handleTextSectionConfirm}
         onCancel={() => setTextSectionDialogOpen(false)}
         onRemove={
-          activeState?.textSection ? handleTextSectionRemove : undefined
+          textSectionDialogIsEdit ? handleTextSectionRemove : undefined
         }
       />
 
       {pendingMediaType === "image" && (
-        <ImageDialog {...mediaDialogProps} srcList={imageList} />
+        <ImageDialog key={`image-${mediaDialogKey}`} {...mediaDialogProps} srcList={imageList} />
       )}
       {pendingMediaType === "video" && (
-        <VideoDialog {...mediaDialogProps} srcList={videoList} />
+        <VideoDialog key={`video-${mediaDialogKey}`} {...mediaDialogProps} srcList={videoList} />
       )}
       {pendingMediaType === "audio" && (
-        <AudioDialog {...mediaDialogProps} srcList={audioList} />
+        <AudioDialog key={`audio-${mediaDialogKey}`} {...mediaDialogProps} srcList={audioList} />
       )}
     </>
   );

@@ -25,6 +25,7 @@ import type { HajkLinkAttrs, HajkLinkType } from "../extensions/hajk-link";
 
 interface LinkDialogProps {
   open: boolean;
+  linkType: HajkLinkType;
   initial?: Partial<HajkLinkAttrs>;
   mapName?: string;
   onConfirm: (attrs: HajkLinkAttrs) => void;
@@ -32,7 +33,19 @@ interface LinkDialogProps {
   onRemove?: () => void;
 }
 
-const LINK_TYPES: HajkLinkType[] = ["web", "document", "map", "hover"];
+const INSERT_TITLE_KEYS: Record<HajkLinkType, string> = {
+  web: "dhRichTextEditor.link.insertWebTitle",
+  document: "dhRichTextEditor.link.insertDocumentTitle",
+  map: "dhRichTextEditor.link.insertMapTitle",
+  hover: "dhRichTextEditor.link.insertTooltipTitle",
+};
+
+const EDIT_TITLE_KEYS: Record<HajkLinkType, string> = {
+  web: "dhRichTextEditor.link.editWebTitle",
+  document: "dhRichTextEditor.link.editDocumentTitle",
+  map: "dhRichTextEditor.link.editMapTitle",
+  hover: "dhRichTextEditor.link.editTooltipTitle",
+};
 
 interface TopLevelChapter {
   header: string;
@@ -50,6 +63,7 @@ function getTopLevelChapters(
 
 export function LinkDialog({
   open,
+  linkType,
   initial,
   mapName,
   onConfirm,
@@ -57,9 +71,6 @@ export function LinkDialog({
   onRemove,
 }: LinkDialogProps) {
   const { t } = useTranslation();
-  const [linkType, setLinkType] = useState<HajkLinkType>(
-    initial?.linkType ?? "web"
-  );
   const [href, setHref] = useState(initial?.href ?? "");
   const [folderName, setFolderName] = useState("");
   const [documentName, setDocumentName] = useState(
@@ -134,26 +145,16 @@ export function LinkDialog({
     }
   }
 
+  const isEditing = Boolean(initial?.linkType);
+  const titleKey = isEditing
+    ? EDIT_TITLE_KEYS[linkType]
+    : INSERT_TITLE_KEYS[linkType];
+
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
-      <DialogTitle>{t("dhRichTextEditor.link.title")}</DialogTitle>
+      <DialogTitle>{t(titleKey)}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
-          <FormControl size="small" fullWidth>
-            <InputLabel>{t("dhRichTextEditor.link.linkTypeLabel")}</InputLabel>
-            <Select<HajkLinkType>
-              value={linkType}
-              label={t("dhRichTextEditor.link.linkTypeLabel")}
-              onChange={(e) => setLinkType(e.target.value)}
-            >
-              {LINK_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {t(`dhRichTextEditor.link.types.${type}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
           {linkType === "web" && (
             <TextField
               autoFocus

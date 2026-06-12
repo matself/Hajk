@@ -836,6 +836,7 @@
           "deleteConfirmMessage": "Du håller på att ta bort \"{{title}}\". Denna åtgärd kan inte ångras.",
           "deleteConfirmMessageWithChildren": "Du håller på att ta bort \"{{title}}\" och {{count}} underliggande poster. Denna åtgärd kan inte ångras.",
           "openDocument": "Öppna dokument",
+          "openDocumentName": "Öppna {{name}}",
           "openMapLink": "Öppna kartlänk",
           "openLink": "Öppna extern länk",
           "fields": {
@@ -875,7 +876,10 @@
           "documentTitle": "Dokumenttitel",
           "editDocument": "Redigera dokument",
           "selectFolderForNewDocument": "Välj en mapp i trädet för att lägga till ett dokument",
-          "contentHint": "Dokumentinnehåll (JSON)"
+          "contentHint": "Dokumentinnehåll (JSON)",
+          "unsavedChangesTitle": "Är du säker?",
+          "unsavedChangesMessage": "Du har osparad data.",
+          "discardChanges": "Stäng utan att spara"
         },
         "attachments": {
           "tabLabel": "Bilagor",
@@ -904,6 +908,14 @@
         "orderedList": "Numrerad lista",
         "editLink": "Redigera länk",
         "insertLink": "Infoga länk",
+        "insertWebLink": "Lägg till en webblänk",
+        "editWebLink": "Redigera webblänk",
+        "insertDocumentLink": "Lägg till en dokumentlänk",
+        "editDocumentLink": "Redigera dokumentlänk",
+        "insertMapLink": "Lägg till en kartlänk",
+        "editMapLink": "Redigera kartlänk",
+        "insertTooltip": "Lägg till tooltip",
+        "editTooltip": "Redigera tooltip",
         "insertImage": "Infoga bild",
         "insertVideo": "Infoga video",
         "insertAudio": "Infoga ljud",
@@ -915,11 +927,19 @@
       "link": {
         "title": "Länk",
         "linkTypeLabel": "Länktyp",
+        "insertWebTitle": "Lägg till webblänk",
+        "editWebTitle": "Redigera webblänk",
+        "insertDocumentTitle": "Lägg till dokumentlänk",
+        "editDocumentTitle": "Redigera dokumentlänk",
+        "insertMapTitle": "Lägg till kartlänk",
+        "editMapTitle": "Redigera kartlänk",
+        "insertTooltipTitle": "Lägg till tooltip",
+        "editTooltipTitle": "Redigera tooltip",
         "types": {
           "web": "Webblänk",
           "document": "Dokumentlänk",
           "map": "Kartlänk",
-          "hover": "Svävartext (tooltip)"
+          "hover": "Tooltip"
         },
         "url": "URL",
         "urlPlaceholder": "https://...",
@@ -933,9 +953,9 @@
         "noMapContext": "Dokumentlänkar kräver en kartkontext. Öppna editorn från dokumenthanteraren.",
         "mapLink": "Kartlänk (URL)",
         "mapLinkHelper": "URL till kartvy, t.ex. kopierad från kartan",
-        "tooltipText": "Tooltip-text",
-        "tooltipPlaceholder": "Förklaringstext som visas vid hover...",
-        "tooltipHelper": "Texten visas som tooltip när användaren hovrar",
+        "tooltipText": "Tooltip",
+        "tooltipPlaceholder": "Förklaringstext som visas i tooltipen...",
+        "tooltipHelper": "Texten visas som tooltip",
         "remove": "Ta bort länk"
       },
       "media": {

@@ -836,6 +836,7 @@
           "deleteConfirmMessage": "You are about to delete \"{{title}}\". This action cannot be undone.",
           "deleteConfirmMessageWithChildren": "You are about to delete \"{{title}}\" and {{count}} nested item(s). This action cannot be undone.",
           "openDocument": "Open document",
+          "openDocumentName": "Open {{name}}",
           "openMapLink": "Open map link",
           "openLink": "Open external link",
           "fields": {
@@ -875,7 +876,10 @@
           "documentTitle": "Document title",
           "contentHint": "Document content (JSON)",
           "editDocument": "Edit document",
-          "selectFolderForNewDocument": "Select a folder in the tree to add a document"
+          "selectFolderForNewDocument": "Select a folder in the tree to add a document",
+          "unsavedChangesTitle": "Are you sure?",
+          "unsavedChangesMessage": "You have unsaved data.",
+          "discardChanges": "Close without saving"
         },
         "attachments": {
           "tabLabel": "Attachments",
@@ -904,6 +908,14 @@
         "orderedList": "Numbered list",
         "editLink": "Edit link",
         "insertLink": "Insert link",
+        "insertWebLink": "Insert web link",
+        "editWebLink": "Edit web link",
+        "insertDocumentLink": "Insert document link",
+        "editDocumentLink": "Edit document link",
+        "insertMapLink": "Insert map link",
+        "editMapLink": "Edit map link",
+        "insertTooltip": "Insert tooltip",
+        "editTooltip": "Edit tooltip",
         "insertImage": "Insert image",
         "insertVideo": "Insert video",
         "insertAudio": "Insert audio",
@@ -915,11 +927,19 @@
       "link": {
         "title": "Link",
         "linkTypeLabel": "Link type",
+        "insertWebTitle": "Insert web link",
+        "editWebTitle": "Edit web link",
+        "insertDocumentTitle": "Insert document link",
+        "editDocumentTitle": "Edit document link",
+        "insertMapTitle": "Insert map link",
+        "editMapTitle": "Edit map link",
+        "insertTooltipTitle": "Insert tooltip",
+        "editTooltipTitle": "Edit tooltip",
         "types": {
           "web": "Web link",
           "document": "Document link",
           "map": "Map link",
-          "hover": "Hover text (tooltip)"
+          "hover": "Tooltip"
         },
         "url": "URL",
         "urlPlaceholder": "https://...",
@@ -933,9 +953,9 @@
         "noMapContext": "Document links require a map context. Open the editor from the document handler.",
         "mapLink": "Map link (URL)",
         "mapLinkHelper": "URL to map view, e.g. copied from the map",
-        "tooltipText": "Tooltip text",
-        "tooltipPlaceholder": "Explanatory text shown on hover...",
-        "tooltipHelper": "Text shown as a tooltip when the user hovers",
+        "tooltipText": "Tooltip",
+        "tooltipPlaceholder": "Explanatory text shown in the tooltip...",
+        "tooltipHelper": "Text shown as a tooltip",
         "remove": "Remove link"
       },
       "media": {

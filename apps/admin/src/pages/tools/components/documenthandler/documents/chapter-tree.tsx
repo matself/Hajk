@@ -79,7 +79,6 @@ interface ChapterTreeProps {
   onSelect: (id: string | null) => void;
   onChange: (next: ChapterTreeNode[]) => void;
   onAddChild: (parentId: string) => void;
-  onRename: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -89,7 +88,6 @@ export function ChapterTree({
   onSelect,
   onChange,
   onAddChild,
-  onRename,
   onDelete,
 }: ChapterTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -113,7 +111,6 @@ export function ChapterTree({
         {...props}
         selectedId={selectedId}
         onAddChild={onAddChild}
-        onRename={onRename}
         onDelete={onDelete}
       />
     );

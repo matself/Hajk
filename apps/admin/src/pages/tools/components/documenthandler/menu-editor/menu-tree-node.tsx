@@ -17,12 +17,15 @@ import {
   Link as LinkIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
+import { useFolders, useResolveDocumentFolder } from "@/api/documents";
 import type { MenuTreeNode } from "./types";
 import { isNodeValid } from "./utils";
 
 interface MenuTreeNodeProps extends NodeRendererProps<MenuTreeNode> {
   onDelete: (id: string) => void;
   onAddChild: (parentId: string) => void;
+  onOpenDocument: (folder: string, document: string) => void;
+  mapName?: string;
   selectedId: string | null;
 }
 
@@ -30,14 +33,56 @@ const tooltipSlotProps = {
   popper: { sx: { pointerEvents: "none" } },
 } as const;
 
+function MenuTreeDocumentIcon({
+  mapName,
+  document,
+  folder,
+  onOpenDocument,
+}: {
+  mapName?: string;
+  document: string;
+  folder?: string;
+  onOpenDocument: (folder: string, document: string) => void;
+}) {
+  const { t } = useTranslation();
+  const { data: folders = [] } = useFolders(mapName);
+  const { effectiveFolder, isResolving } = useResolveDocumentFolder(
+    mapName,
+    document,
+    folder,
+    folders
+  );
+
+  const docName = document.trim();
+  const canOpen = !!docName && !!effectiveFolder && !isResolving;
+
+  return (
+    <Tooltip
+      title={t("tools.documenthandler.menuEditor.openDocumentName", {
+        name: document,
+      })}
+      slotProps={tooltipSlotProps}
+    >
+      <span>
+        <IconButton
+          size="small"
+          disabled={!canOpen}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDocument(effectiveFolder!, docName);
+          }}
+          sx={{ p: 0.25, opacity: 0.7, "&:hover": { opacity: 1 } }}
+        >
+          <DocumentIcon fontSize="small" sx={{ color: "text.secondary" }} />
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
+}
+
 function getConnectionIcon(node: MenuTreeNode) {
   const { document, maplink, link } = node.data;
-  if (document)
-    return (
-      <Tooltip title={document} slotProps={tooltipSlotProps}>
-        <DocumentIcon fontSize="small" sx={{ color: "text.secondary" }} />
-      </Tooltip>
-    );
+  if (document) return null;
   if (maplink)
     return (
       <Tooltip title={maplink} slotProps={tooltipSlotProps}>
@@ -57,19 +102,34 @@ export const MenuTreeNodeRenderer = React.forwardRef<
   HTMLDivElement,
   MenuTreeNodeProps
 >(function MenuTreeNodeRenderer(
-  { style, node, dragHandle, onDelete, onAddChild, selectedId },
+  {
+    style,
+    node,
+    dragHandle,
+    onDelete,
+    onAddChild,
+    onOpenDocument,
+    mapName,
+    selectedId,
+  },
   ref
 ) {
   const { t } = useTranslation();
   const isSelected = node.id === selectedId;
   const isValid = isNodeValid(node.data);
   const { materialUiIconName } = node.data.data.icon;
+  const { document, folder, maplink, link } = node.data.data;
   const title = node.data.data.title || (
     <em style={{ opacity: 0.5 }}>
       {t("tools.documenthandler.menuEditor.untitled")}
     </em>
   );
   const connectionIcon = getConnectionIcon(node.data);
+  const hasConnection =
+    !!document.trim() || !!maplink.trim() || !!link.trim();
+  const invalidNodeWarning = t(
+    "tools.documenthandler.menuEditor.invalidNodeWarning"
+  );
 
   return (
     <Box
@@ -170,13 +230,24 @@ export const MenuTreeNodeRenderer = React.forwardRef<
       </Typography>
 
       {/* Connection indicator */}
-      {connectionIcon && (
-        <Box sx={{ display: "flex", flexShrink: 0 }}>{connectionIcon}</Box>
+      {document ? (
+        <Box sx={{ display: "flex", flexShrink: 0 }}>
+          <MenuTreeDocumentIcon
+            mapName={mapName}
+            document={document}
+            folder={folder}
+            onOpenDocument={onOpenDocument}
+          />
+        </Box>
+      ) : (
+        connectionIcon && (
+          <Box sx={{ display: "flex", flexShrink: 0 }}>{connectionIcon}</Box>
+        )
       )}
 
       {/* Validation warning */}
       {!isValid && (
-        <Tooltip title={t("tools.documenthandler.menuEditor.invalidNodeWarning")}>
+        <Tooltip title={invalidNodeWarning}>
           <WarningIcon
             fontSize="small"
             color="warning"
@@ -190,14 +261,23 @@ export const MenuTreeNodeRenderer = React.forwardRef<
         sx={{ display: "flex", gap: 0, flexShrink: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Tooltip title={t("tools.documenthandler.menuEditor.addChild")}>
-          <IconButton
-            size="small"
-            onClick={() => onAddChild(node.id)}
-            sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
-          >
-            <AddChildIcon fontSize="small" />
-          </IconButton>
+        <Tooltip
+          title={
+            hasConnection
+              ? invalidNodeWarning
+              : t("tools.documenthandler.menuEditor.addChild")
+          }
+        >
+          <span>
+            <IconButton
+              size="small"
+              disabled={hasConnection}
+              onClick={() => onAddChild(node.id)}
+              sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+            >
+              <AddChildIcon fontSize="small" />
+            </IconButton>
+          </span>
         </Tooltip>
         <Tooltip title={t("common.delete")}>
           <IconButton

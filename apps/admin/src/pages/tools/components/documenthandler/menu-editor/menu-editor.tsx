@@ -206,6 +206,8 @@ export function MenuEditor({ value, onChange, onOpenDocument, mapName }: MenuEdi
               onChange={handleTreeChange}
               onAddChild={handleAddChild}
               onDelete={handleDeleteRequest}
+              onOpenDocument={onOpenDocument}
+              mapName={mapName}
             />
           )}
         </Box>

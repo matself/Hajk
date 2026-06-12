@@ -5,14 +5,12 @@ import {
   AddCircleOutlined as AddChildIcon,
   Delete as DeleteIcon,
   DragIndicator,
-  Edit as EditIcon,
 } from "@mui/icons-material";
 import type { ChapterTreeNode } from "./chapter-tree-utils";
 
 interface ChapterTreeNodeProps extends NodeRendererProps<ChapterTreeNode> {
   selectedId: string | null;
   onAddChild: (parentId: string) => void;
-  onRename: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -20,7 +18,7 @@ export const ChapterTreeNodeRenderer = React.forwardRef<
   HTMLDivElement,
   ChapterTreeNodeProps
 >(function ChapterTreeNodeRenderer(
-  { style, node, dragHandle, selectedId, onAddChild, onRename, onDelete },
+  { style, node, dragHandle, selectedId, onAddChild, onDelete },
   ref
 ) {
   const isSelected = node.id === selectedId;
@@ -123,15 +121,6 @@ export const ChapterTreeNodeRenderer = React.forwardRef<
             sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
           >
             <AddChildIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Byt namn">
-          <IconButton
-            size="small"
-            onClick={() => onRename(node.id)}
-            sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
-          >
-            <EditIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Ta bort kapitel">

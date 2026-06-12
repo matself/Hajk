@@ -1,8 +1,15 @@
-import type { Chapter } from "./chapter-editor-panel";
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+export interface Chapter {
+  header: string;
+  headerIdentifier: string;
+  html: string;
+  keywords: unknown[];
+  geoObjects: unknown[];
+  chapters: Chapter[];
+}
 
 export interface ChapterTreeNodeData {
   header: string;

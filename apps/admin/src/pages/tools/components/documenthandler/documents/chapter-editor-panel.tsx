@@ -13,6 +13,7 @@ import {
   Button,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import { useSaveDocument } from "@/api/documents";
 import type { Document } from "@/api/documents/types";
 import { RichTextEditor } from "../rich-text-editor";
@@ -25,19 +26,9 @@ import {
   removeNodeById,
   toChapterTree,
   updateNodeById,
+  type Chapter,
   type ChapterTreeNode,
 } from "./chapter-tree-utils";
-
-// ─── Chapter type ─────────────────────────────────────────────────────────────
-
-export interface Chapter {
-  header: string;
-  headerIdentifier: string;
-  html: string;
-  keywords: unknown[];
-  geoObjects: unknown[];
-  chapters: Chapter[];
-}
 
 function extractChapters(content: Record<string, unknown>): Chapter[] {
   const raw = content.chapters;
@@ -45,7 +36,7 @@ function extractChapters(content: Record<string, unknown>): Chapter[] {
   return raw as Chapter[];
 }
 
-const CHAPTER_PANEL_WIDTH = 340;
+export const CHAPTER_PANEL_WIDTH = 340;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -54,10 +45,14 @@ interface ChapterEditorPanelProps {
   mapName: string;
   folderName: string;
   docName: string;
+  docTitle: string;
+  onDocTitleChange: (title: string) => void;
   /** Called whenever dirty/saving state changes so the dialog can render the Save button */
   onStateChange?: (state: { isDirty: boolean; isPending: boolean }) => void;
   /** Called by the dialog's Save button — triggers the actual save */
   onSaveRef?: React.MutableRefObject<() => void>;
+  /** Called after a successful save so the dialog can update its dirty baseline */
+  onSaveSuccess?: () => void;
 }
 
 export function ChapterEditorPanel({
@@ -65,9 +60,13 @@ export function ChapterEditorPanel({
   mapName,
   folderName,
   docName,
+  docTitle,
+  onDocTitleChange,
   onStateChange,
   onSaveRef,
+  onSaveSuccess,
 }: ChapterEditorPanelProps) {
+  const { t } = useTranslation();
   const initialTree = toChapterTree(extractChapters(document.content));
   const [tree, setTree] = useState<ChapterTreeNode[]>(initialTree);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -79,9 +78,6 @@ export function ChapterEditorPanel({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addTitle, setAddTitle] = useState("");
   const [addParentId, setAddParentId] = useState<string | null>(null);
-  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
-  const [renameTitle, setRenameTitle] = useState("");
-  const [renameTargetId, setRenameTargetId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
@@ -111,15 +107,29 @@ export function ChapterEditorPanel({
     setIsDirty(true);
   }, []);
 
+  const handleHeaderChange = useCallback((id: string, header: string) => {
+    setTree((prev) =>
+      updateNodeById(prev, id, (node) => ({
+        ...node,
+        data: { ...node.data, header },
+      }))
+    );
+    setIsDirty(true);
+  }, []);
+
   // ── Save ─────────────────────────────────────────────────────────────────────
 
   function handleSave() {
     const final = fromChapterTree(tree);
     saveDocMutation.mutate(
-      { content: { ...document.content, chapters: final } },
+      {
+        title: docTitle || undefined,
+        content: { ...document.content, chapters: final },
+      },
       {
         onSuccess: () => {
           setIsDirty(false);
+          onSaveSuccess?.();
         },
       }
     );
@@ -147,27 +157,6 @@ export function ChapterEditorPanel({
     setAddDialogOpen(false);
   }
 
-  // ── Rename chapter ────────────────────────────────────────────────────────
-
-  function handleRenameOpen(id: string) {
-    const node = findNodeById(tree, id);
-    if (!node) return;
-    setRenameTargetId(id);
-    setRenameTitle(node.data.header);
-    setRenameDialogOpen(true);
-  }
-
-  function handleRename() {
-    if (!renameTargetId || !renameTitle.trim()) return;
-    mutate((prev) =>
-      updateNodeById(prev, renameTargetId, (node) => ({
-        ...node,
-        data: { ...node.data, header: renameTitle.trim() },
-      }))
-    );
-    setRenameDialogOpen(false);
-  }
-
   // ── Delete chapter ────────────────────────────────────────────────────────
 
   function handleDeleteOpen(id: string) {
@@ -190,7 +179,7 @@ export function ChapterEditorPanel({
     : null;
 
   return (
-    <Box sx={{ display: "flex", height: "100%", gap: 2, overflow: "hidden" }}>
+    <Box sx={{ display: "flex", height: "100%", width: "100%", gap: 2, minHeight: 0, pt: 1 }}>
       {/* ── Chapter tree panel ── */}
       <Box
         sx={{
@@ -198,66 +187,103 @@ export function ChapterEditorPanel({
           flexShrink: 0,
           display: "flex",
           flexDirection: "column",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 1,
-          overflow: "hidden",
+          gap: 1,
+          minHeight: 0,
         }}
       >
+        <TextField
+          label={t("tools.documenthandler.documents.documentTitle")}
+          value={docTitle}
+          onChange={(e) => onDocTitleChange(e.target.value)}
+          size="small"
+          fullWidth
+          sx={{ flexShrink: 0 }}
+        />
+
         <Box
           sx={{
+            flex: 1,
             display: "flex",
-            alignItems: "center",
-            px: 1,
-            py: 0.5,
-            borderBottom: "1px solid",
+            flexDirection: "column",
+            border: "1px solid",
             borderColor: "divider",
-            bgcolor: "background.paper",
+            borderRadius: 1,
+            overflow: "hidden",
+            minHeight: 0,
           }}
         >
-          <Typography variant="subtitle2" sx={{ flex: 1 }}>
-            Kapitel
-          </Typography>
-          <Tooltip title="Lägg till kapitel">
-            <IconButton size="small" onClick={() => openAddDialog(null)}>
-              <AddIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        {tree.length === 0 ? (
-          <Box sx={{ p: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Inga kapitel ännu
-            </Typography>
-          </Box>
-        ) : (
-          <ChapterTree
-            data={tree}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onChange={(next) => {
-              setTree(next);
-              setIsDirty(true);
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              px: 1,
+              py: 0.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
-            onAddChild={(parentId) => openAddDialog(parentId)}
-            onRename={handleRenameOpen}
-            onDelete={handleDeleteOpen}
-          />
-        )}
+          >
+            <Typography variant="subtitle2" sx={{ flex: 1 }}>
+              Kapitel
+            </Typography>
+            <Tooltip title="Lägg till kapitel">
+              <IconButton size="small" onClick={() => openAddDialog(null)}>
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          {tree.length === 0 ? (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Inga kapitel ännu
+              </Typography>
+            </Box>
+          ) : (
+            <ChapterTree
+              data={tree}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onChange={(next) => {
+                setTree(next);
+                setIsDirty(true);
+              }}
+              onAddChild={(parentId) => openAddDialog(parentId)}
+              onDelete={handleDeleteOpen}
+            />
+          )}
+        </Box>
       </Box>
 
       {/* ── Editor panel ── */}
       <Box
-        sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          minWidth: 0,
+        }}
       >
         {selectedChapter ? (
-          <RichTextEditor
-            key={selectedId ?? "none"}
-            html={selectedChapter.data.html}
-            onChange={(html) => handleHtmlChange(selectedId!, html)}
-            mapName={mapName}
-          />
+          <>
+            <TextField
+              label="Kapiteltitel"
+              value={selectedChapter.data.header}
+              onChange={(e) => handleHeaderChange(selectedId!, e.target.value)}
+              size="small"
+              fullWidth
+              sx={{ mb: 1, flexShrink: 0 }}
+            />
+            <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden", width: "100%" }}>
+              <RichTextEditor
+                key={selectedId ?? "none"}
+                html={selectedChapter.data.html}
+                onChange={(html) => handleHtmlChange(selectedId!, html)}
+                mapName={mapName}
+              />
+            </Box>
+          </>
         ) : (
           <Alert severity="info">
             {tree.length === 0
@@ -297,38 +323,6 @@ export function ChapterEditorPanel({
             disabled={!addTitle.trim()}
           >
             Lägg till
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ── Rename dialog ── */}
-      <Dialog
-        open={renameDialogOpen}
-        onClose={() => setRenameDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Byt namn på kapitel</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            label="Kapiteltitel"
-            value={renameTitle}
-            onChange={(e) => setRenameTitle(e.target.value)}
-            size="small"
-            fullWidth
-            sx={{ mt: 1 }}
-            onKeyDown={(e) => e.key === "Enter" && handleRename()}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRenameDialogOpen(false)}>Avbryt</Button>
-          <Button
-            variant="contained"
-            onClick={handleRename}
-            disabled={!renameTitle.trim()}
-          >
-            Byt namn
           </Button>
         </DialogActions>
       </Dialog>
