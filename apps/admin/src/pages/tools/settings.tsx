@@ -3,7 +3,7 @@ import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
 
-import { useTools, useUpdateTool, useMapsByToolName, Tool } from "../../api/tools";
+import { useTools, useUpdateTool, Tool } from "../../api/tools";
 import FormContainer from "../../components/form-components/form-container";
 import FormActionPanel from "../../components/form-action-panel";
 import { useRef, useEffect } from "react";
@@ -14,13 +14,12 @@ import { useForm, FieldValues } from "react-hook-form";
 
 export default function ToolSettings() {
   const { t } = useTranslation();
-  const { toolName } = useParams<{ toolName: string }>();
+  const { toolId } = useParams<{ toolId: string }>();
   const { data: tools, isLoading } = useTools();
-  const { data: mapsData, isLoading: isLoadingMaps } = useMapsByToolName(toolName ?? "");
   const updateToolMutation = useUpdateTool();
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const tool = (tools ?? []).find((t) => t.type === toolName);
+  const tool = (tools ?? []).find((t) => String(t.id) === toolId);
 
   const {
     control,
@@ -98,8 +97,16 @@ export default function ToolSettings() {
         ? "error"
         : "idle";
 
+  const displayName = tool?.title ?? tool?.type;
+
   return (
-    <Page title={toolName ? `${t("common.settings")} - ${toolName}` : t("common.settings")}>
+    <Page
+      title={
+        displayName
+          ? `${t("common.settings")} - ${displayName}`
+          : t("common.settings")
+      }
+    >
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
@@ -125,8 +132,11 @@ export default function ToolSettings() {
           >
             {renderTool(tool)}
             <UsedInMapsPanel
-              rows={(mapsData ?? []).map((map) => ({ id: map.id, map: map.name }))}
-              isLoading={isLoadingMaps}
+              rows={tool.mapNames.map((mapName) => ({
+                id: mapName,
+                map: mapName,
+              }))}
+              isLoading={isLoading}
               emptyMessage={t("tools.usedInMapsNone")}
             />
           </FormContainer>

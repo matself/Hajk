@@ -27,6 +27,36 @@ const prisma = new PrismaClient({
 
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
 
+// Known plugin types available in the client. Each Tool instance references
+// one of these. Types found in map configs but missing here are upserted
+// with the type name as title.
+const KNOWN_TOOL_TYPES = [
+  { type: "anchor", title: "Dela" },
+  { type: "bookmarks", title: "Bokmärken" },
+  { type: "buffer", title: "Buffra" },
+  { type: "collector", title: "Tyck till" },
+  { type: "coordinates", title: "Visa koordinat" },
+  { type: "documenthandler", title: "Dokumenthanterare" },
+  { type: "edit", title: "Redigera" },
+  { type: "externalLinks", title: "Externa länkar" },
+  { type: "fmeserver", title: "FME-server" },
+  { type: "infoclick", title: "Infoklick" },
+  { type: "infodialog", title: "Infodialog" },
+  { type: "information", title: "Om kartan" },
+  { type: "layercomparer", title: "Lagerjämförare" },
+  { type: "layerswitcher", title: "Lagerhanterare" },
+  { type: "location", title: "Positionera" },
+  { type: "measure", title: "Mät" },
+  { type: "measurer", title: "Mät" },
+  { type: "preset", title: "Snabbval" },
+  { type: "print", title: "Utskrift" },
+  { type: "routing", title: "Navigation" },
+  { type: "search", title: "Sök" },
+  { type: "sketch", title: "Rita" },
+  { type: "streetview", title: "Gatuvy" },
+  { type: "timeslider", title: "Tidslinje" },
+];
+
 const jsonToDisplayLayerId = new Map();
 const jsonToSearchLayerId = new Map();
 const jsonToEditingLayerId = new Map();
@@ -148,8 +178,16 @@ async function readMapConfigAndPopulateMap(file) {
   console.log("Creating tools…");
   const toolsToConnectToMap = [];
   for await (const t of mapConfig.tools) {
+    // Make sure the tool type exists — map configs may contain types
+    // missing from KNOWN_TOOL_TYPES.
+    await prisma.toolType.upsert({
+      where: { type: t.type },
+      update: {},
+      create: { type: t.type, title: t.type },
+    });
+
     const tool = await prisma.tool.create({
-      data: { type: t.type, options: t.options },
+      data: { type: t.type, title: t.options?.title ?? null, options: t.options },
     });
 
     // Add potential role restrictions on the tool
@@ -1016,7 +1054,17 @@ async function seedDocuments() {
   }
 }
 
+async function createToolTypes() {
+  const created = await prisma.toolType.createMany({
+    data: KNOWN_TOOL_TYPES,
+    skipDuplicates: true,
+  });
+  console.log(`Created ${created.count} tool types`);
+}
+
 async function main() {
+  // The known plugin types — Tool instances reference these via FK.
+  await createToolTypes();
   // Get all available map-config files...
   const mapConfigs = await getAvailableMaps();
   // ... and add the map configurations to the database.

@@ -177,15 +177,30 @@ model Document {
   @@unique([mapName, folderId, name])
 }
 
+/// Available plugin types. Each Tool instance references one of these.
+model ToolType {
+  type        String  @id
+  title       String
+  description String?
+  tools       Tool[]
+}
+
+/// A configured instance of a plugin (ToolType). Several instances of the
+/// same type can exist, e.g. "Dokument Bygglov" and "Dokument Detaljplaner".
 model Tool {
   id                Int           @id @default(autoincrement())
   locked            Boolean       @default(false)
   type              String
+  /// Instance name, distinguishes instances of the same type
+  title             String?
   options           Json          @default("{}")
   createdBy         String?
   createdDate       DateTime?     @db.Timestamptz(3) // Timestamp when created
   lastSavedBy       String?
   lastSavedDate     DateTime?     @db.Timestamptz(3) // Timestamp when last saved
+  /// Soft delete - set instead of removing the row
+  deletedAt         DateTime?     @db.Timestamptz(3)
+  toolType          ToolType      @relation(fields: [type], references: [type])
   maps              ToolsOnMaps[]
   restrictedToRoles RoleOnTool[]
 }

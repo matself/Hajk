@@ -15,6 +15,13 @@ class ToolsController {
     res.status(HttpStatusCodes.OK).json({ count: mapped.length, tools: mapped });
   }
 
+  async getToolTypes(_: Request, res: Response) {
+    const toolTypes = await ToolService.getToolTypes();
+    res
+      .status(HttpStatusCodes.OK)
+      .json({ count: toolTypes.length, toolTypes });
+  }
+
   async getMapsWithTool(req: Request, res: Response) {
     try {
       // This will throw if the tool type is not valid.
@@ -50,7 +57,7 @@ class ToolsController {
 
   async deleteTool(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
-    await ToolService.deleteTool(id);
+    await ToolService.deleteTool(id, req.user?.id);
     res.status(HttpStatusCodes.NO_CONTENT).send();
   }
 }
