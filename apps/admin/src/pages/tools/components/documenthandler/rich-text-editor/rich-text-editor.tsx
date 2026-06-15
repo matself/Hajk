@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import type { AnyExtension } from "@tiptap/core";
 import { Box } from "@mui/material";
@@ -14,7 +14,10 @@ import useAppStateStore from "@/store/use-app-state-store";
 interface RichTextEditorProps {
   /** The raw legacy HTML for one chapter */
   html: string;
-  onChange: (html: string) => void;
+  /** Called once when the first edit is made — for dirty-state tracking only */
+  onDirty?: () => void;
+  /** Ref populated with a function that serializes the editor's current content to HTML on demand */
+  getHtmlRef?: React.MutableRefObject<() => string>;
   /** Optional lists for media pickers */
   imageList?: string[];
   videoList?: string[];
@@ -25,7 +28,8 @@ interface RichTextEditorProps {
 
 export function RichTextEditor({
   html,
-  onChange,
+  onDirty,
+  getHtmlRef,
   imageList,
   videoList,
   audioList,
@@ -94,10 +98,18 @@ export function RichTextEditor({
         ...(spellcheckEnabled ? { lang: i18n.language } : {}),
       },
     },
-    onUpdate({ editor: e }) {
-      const doc = e.getJSON();
-      onChange(serializeToLegacyHtml(doc as Record<string, unknown>));
+    onUpdate() {
+      onDirty?.();
     },
+  });
+
+  // Expose a getter so callers can pull the serialized HTML on demand
+  // (e.g. on save or chapter switch) without receiving it on every keystroke.
+  useEffect(() => {
+    if (getHtmlRef && editor) {
+      getHtmlRef.current = () =>
+        serializeToLegacyHtml(editor.getJSON() as Record<string, unknown>);
+    }
   });
 
   if (!editor) return null;

@@ -37,9 +37,6 @@ function ChapterView({ chapter, depth, mapName }: ChapterViewProps) {
       {chapter.html ? (
         <RichTextEditor
           html={chapter.html}
-          onChange={() => {
-            /* read-only */
-          }}
           readOnly
           mapName={mapName}
         />

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -53,6 +53,8 @@ interface ChapterEditorPanelProps {
   onSaveRef?: React.MutableRefObject<() => void>;
   /** Called after a successful save so the dialog can update its dirty baseline */
   onSaveSuccess?: () => void;
+  /** Ref populated with a function that returns the current unsaved draft on demand */
+  getDraftRef?: React.MutableRefObject<() => Document>;
 }
 
 export function ChapterEditorPanel({
@@ -65,6 +67,7 @@ export function ChapterEditorPanel({
   onStateChange,
   onSaveRef,
   onSaveSuccess,
+  getDraftRef,
 }: ChapterEditorPanelProps) {
   const { t } = useTranslation();
   const initialTree = toChapterTree(extractChapters(document.content));
@@ -73,6 +76,9 @@ export function ChapterEditorPanel({
     initialTree.length > 0 ? initialTree[0].id : null
   );
   const [isDirty, setIsDirty] = useState(false);
+
+  // Ref to the currently-mounted RichTextEditor's HTML getter
+  const getHtmlRef = useRef<() => string>(() => "");
 
   // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -95,15 +101,23 @@ export function ChapterEditorPanel({
     setIsDirty(true);
   }
 
-  // ── Chapter HTML changes (from the TipTap editor) ──────────────────────────
+  // ── Chapter HTML sync ─────────────────────────────────────────────────────
+  // HTML is NOT synced to the tree on every keystroke. Instead it is flushed
+  // into the tree on demand: before switching chapters, before saving, and
+  // when the draft is read for the "Visa" preview.
 
-  const handleHtmlChange = useCallback((id: string, html: string) => {
+  const flushCurrentHtml = useCallback(() => {
+    if (!selectedId) return;
+    const html = getHtmlRef.current();
     setTree((prev) =>
-      updateNodeById(prev, id, (node) => ({
+      updateNodeById(prev, selectedId, (node) => ({
         ...node,
         data: { ...node.data, html },
       }))
     );
+  }, [selectedId]);
+
+  const handleEditorDirty = useCallback(() => {
     setIsDirty(true);
   }, []);
 
@@ -120,24 +134,49 @@ export function ChapterEditorPanel({
   // ── Save ─────────────────────────────────────────────────────────────────────
 
   function handleSave() {
-    const final = fromChapterTree(tree);
-    saveDocMutation.mutate(
-      {
-        title: docTitle || undefined,
-        content: { ...document.content, chapters: final },
-      },
-      {
-        onSuccess: () => {
-          setIsDirty(false);
-          onSaveSuccess?.();
+    // Flush the active editor's HTML into the tree before reading it for save.
+    flushCurrentHtml();
+    setTree((latestTree) => {
+      const final = fromChapterTree(latestTree);
+      saveDocMutation.mutate(
+        {
+          title: docTitle || undefined,
+          content: { ...document.content, chapters: final },
         },
-      }
-    );
+        {
+          onSuccess: () => {
+            setIsDirty(false);
+            onSaveSuccess?.();
+          },
+        }
+      );
+      return latestTree;
+    });
   }
 
-  // Keep the parent dialog's save ref up to date after handleSave is defined
+  // Keep save and draft refs up to date after every render (no deps — intentional ref sync)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (onSaveRef) onSaveRef.current = handleSave;
+    if (getDraftRef) {
+      getDraftRef.current = () => {
+        const currentHtml = selectedId ? getHtmlRef.current() : "";
+        const treeWithLatestHtml = selectedId
+          ? updateNodeById(tree, selectedId, (node) => ({
+              ...node,
+              data: { ...node.data, html: currentHtml },
+            }))
+          : tree;
+        return {
+          ...document,
+          title: docTitle,
+          content: {
+            ...document.content,
+            chapters: fromChapterTree(treeWithLatestHtml),
+          },
+        };
+      };
+    }
   });
 
   // ── Add chapter ───────────────────────────────────────────────────────────
@@ -243,7 +282,10 @@ export function ChapterEditorPanel({
             <ChapterTree
               data={tree}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={(id) => {
+                flushCurrentHtml();
+                setSelectedId(id);
+              }}
               onChange={(next) => {
                 setTree(next);
                 setIsDirty(true);
@@ -279,7 +321,8 @@ export function ChapterEditorPanel({
               <RichTextEditor
                 key={selectedId ?? "none"}
                 html={selectedChapter.data.html}
-                onChange={(html) => handleHtmlChange(selectedId!, html)}
+                onDirty={handleEditorDirty}
+                getHtmlRef={getHtmlRef}
                 mapName={mapName}
               />
             </Box>

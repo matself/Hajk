@@ -21,6 +21,7 @@ import {
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { useDocument, useSaveDocument } from "@/api/documents";
+import type { Document } from "@/api/documents/types";
 import {
   CHAPTER_PANEL_WIDTH,
   ChapterEditorPanel,
@@ -58,6 +59,8 @@ export function DocumentEditorDialog({
   const { t } = useTranslation();
   const [tab, setTab] = useState<"editor" | "view" | "source">("editor");
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [draftDocument, setDraftDocument] = useState<Document | null>(null);
+  const getDraftRef = useRef<() => Document>(() => null as unknown as Document);
 
   // State mirrored from ChapterEditorPanel for the Save button in DialogActions
   const [panelDirty, setPanelDirty] = useState(false);
@@ -112,6 +115,8 @@ export function DocumentEditorDialog({
       setContentError(null);
       setTab("editor");
       setConfirmCloseOpen(false);
+      setDraftDocument(null);
+      getDraftRef.current = () => null as unknown as Document;
     }
   }, [open]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -217,7 +222,10 @@ export function DocumentEditorDialog({
           {showSourceTab && (
             <Tabs
               value={tab}
-              onChange={(_e, v: "editor" | "view" | "source") => setTab(v)}
+              onChange={(_e, v: "editor" | "view" | "source") => {
+                if (v === "view") setDraftDocument(getDraftRef.current());
+                setTab(v);
+              }}
               sx={{ px: 3 }}
             >
               <Tab label={t("tools.documenthandler.documents.editorTab")} value="editor" />
@@ -239,13 +247,24 @@ export function DocumentEditorDialog({
                 {/* ── View panel ── */}
                 {isRichText && tab === "view" && activeDocument && (
                   <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-                    <DocumentViewPanel document={activeDocument} mapName={mapName} />
+                    <DocumentViewPanel
+                      document={draftDocument ?? activeDocument}
+                      mapName={mapName}
+                    />
                   </Box>
                 )}
 
-                {/* ── Rich-text editor panel ── */}
-                {isRichText && tab === "editor" && activeDocument && (
-                  <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative", display: "flex" }}>
+                {/* ── Rich-text editor panel (kept mounted to preserve unsaved edits) ── */}
+                {isRichText && activeDocument && (
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minHeight: 0,
+                      minWidth: 0,
+                      position: "relative",
+                      display: tab === "editor" ? "flex" : "none",
+                    }}
+                  >
                     <ChapterEditorPanel
                       key={activeDocument.id}
                       document={activeDocument}
@@ -260,6 +279,7 @@ export function DocumentEditorDialog({
                       }}
                       onSaveRef={panelSaveRef}
                       onSaveSuccess={() => setSavedTitle(docTitleDraft)}
+                      getDraftRef={getDraftRef}
                     />
                   </Box>
                 )}
