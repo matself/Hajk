@@ -1,6 +1,7 @@
 {
   "translation": {
     "common.loading": "Laddar...",
+    "common.notFound": "Hittades inte",
     "common.actions": "Åtgärder",
     "common.all": "Alla",
     "common.cancel": "Avbryt",

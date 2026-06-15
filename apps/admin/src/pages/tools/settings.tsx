@@ -14,7 +14,7 @@ import { useForm, FieldValues } from "react-hook-form";
 
 export default function ToolSettings() {
   const { t } = useTranslation();
-  const { toolId } = useParams<{ toolId: string }>();
+  const { toolId } = useParams<{ toolId?: string }>();
   const { data: tools, isLoading } = useTools();
   const updateToolMutation = useUpdateTool();
   const formRef = useRef<HTMLFormElement | null>(null);

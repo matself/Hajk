@@ -25,6 +25,7 @@ const EDIT_TOOLTIP_KEYS = {
 
 export function MediaFigureView({
   node,
+  editor,
   updateAttributes,
   deleteNode,
   imageList,
@@ -34,6 +35,7 @@ export function MediaFigureView({
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const attrs = node.attrs as MediaFigureAttrs;
+  const isEditable = editor.isEditable;
 
   const previewStyle: React.CSSProperties = {
     maxWidth: attrs.width ? `${attrs.width}px` : "100%",
@@ -65,12 +67,16 @@ export function MediaFigureView({
         sx={{
           display: "inline-block",
           position: "relative",
-          border: "2px dashed",
-          borderColor: "divider",
-          borderRadius: 1,
-          p: 0.5,
+          ...(isEditable
+            ? {
+                border: "2px dashed",
+                borderColor: "divider",
+                borderRadius: 1,
+                p: 0.5,
+                "&:hover .media-edit-btn": { opacity: 1 },
+              }
+            : {}),
           m: 0,
-          "&:hover .media-edit-btn": { opacity: 1 },
         }}
       >
         {attrs.mediaType === "audio" ? (
@@ -110,33 +116,35 @@ export function MediaFigureView({
           </Box>
         )}
 
-        <Tooltip title={t(EDIT_TOOLTIP_KEYS[attrs.mediaType])}>
-          <IconButton
-            className="media-edit-btn"
-            size="small"
-            onClick={() => setDialogOpen(true)}
-            sx={{
-              position: "absolute",
-              top: 2,
-              right: 2,
-              opacity: 0,
-              transition: "opacity 0.15s",
-              bgcolor: "background.paper",
-              "&:hover": { bgcolor: "background.default" },
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {isEditable && (
+          <Tooltip title={t(EDIT_TOOLTIP_KEYS[attrs.mediaType])}>
+            <IconButton
+              className="media-edit-btn"
+              size="small"
+              onClick={() => setDialogOpen(true)}
+              sx={{
+                position: "absolute",
+                top: 2,
+                right: 2,
+                opacity: 0,
+                transition: "opacity 0.15s",
+                bgcolor: "background.paper",
+                "&:hover": { bgcolor: "background.default" },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
-      {attrs.mediaType === "image" && (
+      {isEditable && attrs.mediaType === "image" && (
         <ImageDialog {...dialogProps} srcList={imageList} />
       )}
-      {attrs.mediaType === "video" && (
+      {isEditable && attrs.mediaType === "video" && (
         <VideoDialog {...dialogProps} srcList={videoList} />
       )}
-      {attrs.mediaType === "audio" && (
+      {isEditable && attrs.mediaType === "audio" && (
         <AudioDialog {...dialogProps} srcList={audioList} />
       )}
     </NodeViewWrapper>

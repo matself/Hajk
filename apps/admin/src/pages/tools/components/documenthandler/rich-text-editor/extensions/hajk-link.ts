@@ -1,5 +1,27 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
 
+/**
+ * Strips URLs with dangerous schemes (javascript:, vbscript:, non-image data:).
+ * Returns an empty string for any unsafe input so it is never serialised into HTML.
+ */
+export function sanitizeUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  // Allow relative URLs (starting with /, ./, #, ?)
+  if (/^[/?#.]/.test(trimmed)) return trimmed;
+  try {
+    const url = new URL(trimmed);
+    const safe = ["http:", "https:", "mailto:"];
+    if (safe.includes(url.protocol)) return trimmed;
+    // Allow data: only for images (used by media embeds)
+    if (url.protocol === "data:" && trimmed.startsWith("data:image/")) return trimmed;
+    return "";
+  } catch {
+    // Relative URL that didn't match the prefix check (e.g. bare anchor text) — block it
+    return "";
+  }
+}
+
 export type HajkLinkType = "web" | "document" | "map" | "hover";
 
 export interface HajkLinkAttrs {
@@ -52,7 +74,7 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
           const el = dom as HTMLAnchorElement;
           return {
             linkType: "document",
-            href: el.getAttribute("href") ?? "",
+            href: sanitizeUrl(el.getAttribute("href") ?? ""),
             documentName: el.getAttribute("data-document") ?? "",
             headerIdentifier:
               el.getAttribute("data-header-identifier") ?? "",
@@ -68,10 +90,10 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
           const el = dom as HTMLAnchorElement;
           return {
             linkType: "map",
-            href: el.getAttribute("href") ?? "",
+            href: sanitizeUrl(el.getAttribute("href") ?? ""),
             documentName: "",
             headerIdentifier: "",
-            maplink: el.getAttribute("data-maplink") ?? "",
+            maplink: sanitizeUrl(el.getAttribute("data-maplink") ?? ""),
             hoverText: "",
           };
         },
@@ -81,9 +103,10 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
         tag: "a[data-link]",
         getAttrs(dom) {
           const el = dom as HTMLAnchorElement;
+          const raw = el.getAttribute("data-link") ?? el.getAttribute("href") ?? "";
           return {
             linkType: "web",
-            href: el.getAttribute("data-link") ?? el.getAttribute("href") ?? "",
+            href: sanitizeUrl(raw),
             documentName: "",
             headerIdentifier: "",
             maplink: "",
@@ -116,8 +139,9 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
 
     switch (linkType) {
       case "document": {
+        const safeHref = sanitizeUrl(href || documentName);
         const attrs: Record<string, string> = {
-          href: href || documentName,
+          href: safeHref,
           "data-document": documentName,
         };
         if (headerIdentifier) {
@@ -125,21 +149,25 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
         }
         return ["a", mergeAttributes(attrs), 0];
       }
-      case "map":
+      case "map": {
+        const safeMaplink = sanitizeUrl(maplink);
         return [
           "a",
-          mergeAttributes({ href: maplink, "data-maplink": maplink }),
+          mergeAttributes({ href: safeMaplink, "data-maplink": safeMaplink }),
           0,
         ];
+      }
       case "hover":
         return ["a", mergeAttributes({ "data-hover": hoverText }), 0];
       case "web":
-      default:
+      default: {
+        const safeHref = sanitizeUrl(href);
         return [
           "a",
-          mergeAttributes({ href, "data-link": href }),
+          mergeAttributes({ href: safeHref, "data-link": safeHref }),
           0,
         ];
+      }
     }
   },
 });

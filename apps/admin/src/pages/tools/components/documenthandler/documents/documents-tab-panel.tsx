@@ -245,6 +245,13 @@ export function DocumentsTabPanel({
         </Alert>
       ) : (
         <Box sx={{ maxWidth: { md: "50%" } }}>
+          {moveDocMutation.isError && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {moveDocMutation.error instanceof Error
+                ? moveDocMutation.error.message
+                : t("tools.documenthandler.documents.moveError")}
+            </Alert>
+          )}
           <DocumentsTree
             data={treeData}
             selectedDocId={selectedDocTreeId}

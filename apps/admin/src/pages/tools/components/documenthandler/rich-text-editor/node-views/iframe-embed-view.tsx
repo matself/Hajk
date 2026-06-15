@@ -24,10 +24,11 @@ import type { IframeEmbedAttrs } from "../extensions/iframe-embed";
 
 const IFRAME_POSITIONS = ["left", "center", "right"] as const;
 
-export function IframeEmbedView({ node, updateAttributes, deleteNode }: NodeViewProps) {
+export function IframeEmbedView({ node, editor, updateAttributes, deleteNode }: NodeViewProps) {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const attrs = node.attrs as IframeEmbedAttrs;
+  const isEditable = editor.isEditable;
 
   const [src, setSrc] = useState(attrs.src);
   const [title, setTitle] = useState(attrs.title);
@@ -60,12 +61,16 @@ export function IframeEmbedView({ node, updateAttributes, deleteNode }: NodeView
         contentEditable={false}
         sx={{
           position: "relative",
-          border: "2px dashed",
-          borderColor: "info.light",
-          borderRadius: 1,
+          ...(isEditable
+            ? {
+                border: "2px dashed",
+                borderColor: "info.light",
+                borderRadius: 1,
+                "&:hover .iframe-edit-btn": { opacity: 1 },
+              }
+            : {}),
           overflow: "hidden",
           display: "inline-block",
-          "&:hover .iframe-edit-btn": { opacity: 1 },
           maxWidth: iframeWidth ?? "100%",
         }}
       >
@@ -94,26 +99,29 @@ export function IframeEmbedView({ node, updateAttributes, deleteNode }: NodeView
           </Box>
         )}
 
-        <Tooltip title={t("dhRichTextEditor.iframe.edit")}>
-          <IconButton
-            className="iframe-edit-btn"
-            size="small"
-            onClick={openDialog}
-            sx={{
-              position: "absolute",
-              top: 2,
-              right: 2,
-              opacity: 0,
-              transition: "opacity 0.15s",
-              bgcolor: "background.paper",
-              "&:hover": { bgcolor: "background.default" },
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {isEditable && (
+          <Tooltip title={t("dhRichTextEditor.iframe.edit")}>
+            <IconButton
+              className="iframe-edit-btn"
+              size="small"
+              onClick={openDialog}
+              sx={{
+                position: "absolute",
+                top: 2,
+                right: 2,
+                opacity: 0,
+                transition: "opacity 0.15s",
+                bgcolor: "background.paper",
+                "&:hover": { bgcolor: "background.default" },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
+      {isEditable && (
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>{t("dhRichTextEditor.iframe.title")}</DialogTitle>
         <DialogContent>
@@ -187,6 +195,7 @@ export function IframeEmbedView({ node, updateAttributes, deleteNode }: NodeView
           </Button>
         </DialogActions>
       </Dialog>
+      )}
     </NodeViewWrapper>
   );
 }

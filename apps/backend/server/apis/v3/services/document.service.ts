@@ -1,9 +1,12 @@
+import { Prisma } from "@prisma/client";
 import log4js from "log4js";
 import prisma from "../../../common/prisma.ts";
 import { HajkError } from "../../../common/classes.ts";
 import HttpStatusCodes from "../../../common/http-status-codes.ts";
 import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import { slugify, uniqueSlug } from "../utils/slugify.ts";
+
+const SLUG_MAX_RETRIES = 5;
 
 const logger = log4js.getLogger("service.v3.document");
 
@@ -23,24 +26,40 @@ class DocumentService {
   }
 
   async createFolder(mapName: string, title: string, userId?: string) {
-    const existing = await prisma.documentFolder.findMany({
-      where: { mapName },
-      select: { name: true },
-    });
-    const existingNames = new Set(existing.map((f) => f.name));
-    const name = uniqueSlug(slugify(title), existingNames);
+    const base = slugify(title);
+    for (let attempt = 1; attempt <= SLUG_MAX_RETRIES; attempt++) {
+      const existing = await prisma.documentFolder.findMany({
+        where: { mapName },
+        select: { name: true },
+      });
+      const existingNames = new Set(existing.map((f) => f.name));
+      const name = uniqueSlug(base, existingNames);
 
-    return await prisma.documentFolder.create({
-      data: {
-        name,
-        title,
-        mapName,
-        createdBy: userId,
-        createdDate: new Date(),
-        lastSavedBy: userId,
-        lastSavedDate: new Date(),
-      },
-    });
+      try {
+        return await prisma.documentFolder.create({
+          data: {
+            name,
+            title,
+            mapName,
+            createdBy: userId,
+            createdDate: new Date(),
+            lastSavedBy: userId,
+            lastSavedDate: new Date(),
+          },
+        });
+      } catch (err) {
+        const isUniqueViolation =
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2002";
+        if (!isUniqueViolation || attempt === SLUG_MAX_RETRIES) throw err;
+      }
+    }
+    // Unreachable — the loop always returns or throws.
+    throw new HajkError(
+      HttpStatusCodes.CONFLICT,
+      `Could not generate a unique slug for folder '${title}' in map '${mapName}'.`,
+      HajkStatusCodes.DOCUMENT_ALREADY_EXISTS
+    );
   }
 
   async renameFolder(
@@ -123,27 +142,42 @@ class DocumentService {
     userId?: string
   ) {
     const folder = await this.#requireFolder(mapName, folderName);
+    const base = slugify(title);
 
-    const existing = await prisma.document.findMany({
-      where: { mapName, folderId: folder.id },
-      select: { name: true },
-    });
-    const existingNames = new Set(existing.map((d) => d.name));
-    const name = uniqueSlug(slugify(title), existingNames);
+    for (let attempt = 1; attempt <= SLUG_MAX_RETRIES; attempt++) {
+      const existing = await prisma.document.findMany({
+        where: { mapName, folderId: folder.id },
+        select: { name: true },
+      });
+      const existingNames = new Set(existing.map((d) => d.name));
+      const name = uniqueSlug(base, existingNames);
 
-    return await prisma.document.create({
-      data: {
-        name,
-        title,
-        content: { chapters: [] },
-        mapName,
-        folderId: folder.id,
-        createdBy: userId,
-        createdDate: new Date(),
-        lastSavedBy: userId,
-        lastSavedDate: new Date(),
-      },
-    });
+      try {
+        return await prisma.document.create({
+          data: {
+            name,
+            title,
+            content: { chapters: [] },
+            mapName,
+            folderId: folder.id,
+            createdBy: userId,
+            createdDate: new Date(),
+            lastSavedBy: userId,
+            lastSavedDate: new Date(),
+          },
+        });
+      } catch (err) {
+        const isUniqueViolation =
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2002";
+        if (!isUniqueViolation || attempt === SLUG_MAX_RETRIES) throw err;
+      }
+    }
+    throw new HajkError(
+      HttpStatusCodes.CONFLICT,
+      `Could not generate a unique slug for document '${title}' in folder '${folderName}'.`,
+      HajkStatusCodes.DOCUMENT_ALREADY_EXISTS
+    );
   }
 
   async saveDocument(
@@ -197,14 +231,40 @@ class DocumentService {
       );
     }
 
-    return await prisma.document.update({
-      where: { id: doc.id },
-      data: {
-        folderId: targetFolder.id,
-        lastSavedBy: userId,
-        lastSavedDate: new Date(),
-      },
+    const conflict = await prisma.document.findFirst({
+      where: { mapName, folderId: targetFolder.id, name: docName },
+      select: { id: true },
     });
+    if (conflict) {
+      throw new HajkError(
+        HttpStatusCodes.CONFLICT,
+        `A document named '${docName}' already exists in folder '${targetFolderName}'.`,
+        HajkStatusCodes.DOCUMENT_ALREADY_EXISTS
+      );
+    }
+
+    try {
+      return await prisma.document.update({
+        where: { id: doc.id },
+        data: {
+          folderId: targetFolder.id,
+          lastSavedBy: userId,
+          lastSavedDate: new Date(),
+        },
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        throw new HajkError(
+          HttpStatusCodes.CONFLICT,
+          `A document named '${docName}' already exists in folder '${targetFolderName}'.`,
+          HajkStatusCodes.DOCUMENT_ALREADY_EXISTS
+        );
+      }
+      throw err;
+    }
   }
 
   async deleteDocument(mapName: string, folderName: string, docName: string) {

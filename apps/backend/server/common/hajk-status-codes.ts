@@ -73,7 +73,7 @@ enum HajkStatusCodes {
   /**
    * The requested document name does not exist in the given map + folder.
    */
-  UNKNOWN_DOCUMENT = "DB008",
+  UNKNOWN_DOCUMENT = "DB012",
 
   /**
    * A document with this name already exists in the given map + folder.

@@ -1,6 +1,7 @@
 {
   "translation": {
     "common.loading": "Loading...",
+    "common.notFound": "Not found",
     "common.actions": "Actions",
     "common.all": "All",
     "common.cancel": "Cancel",

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Control, Controller, FieldValues, UseFormSetValue } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useParams, useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tool, useMapsByToolName } from "../../../api/tools";
 import { useDefaultMap } from "../../../hooks/use-default-map";
@@ -36,8 +36,9 @@ export default function DocumentHandlerRenderer({
   setValue,
 }: DocumentHandlerRendererProps) {
   const { t } = useTranslation();
-  const { documentId } = useParams<{ documentId?: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const documentId = searchParams.get("documentId") ?? undefined;
   const queryClient = useQueryClient();
 
   const urlDocId =
@@ -106,7 +107,7 @@ export default function DocumentHandlerRenderer({
   const handleMapChange = (mapName: string) => {
     setSelectedMapName(mapName);
     setOpenDocument(null);
-    navigate(`/tools/${tool.type}`);
+    void navigate(`/tools/${tool.id}`);
   };
 
   async function handleOpenDocument(folder: string, document: string) {
@@ -121,7 +122,7 @@ export default function DocumentHandlerRenderer({
       });
       const id = docs.find((d) => d.name === document)?.id;
       if (id !== undefined) {
-        navigate(`/tools/${tool.type}/${id}`);
+        setSearchParams({ documentId: String(id) });
       }
     } catch {
       // Navigation best-effort; dialog is already open
@@ -130,7 +131,7 @@ export default function DocumentHandlerRenderer({
 
   function handleCloseDocument() {
     setOpenDocument(null);
-    navigate(`/tools/${tool.type}`);
+    setSearchParams({});
   }
 
   return (
