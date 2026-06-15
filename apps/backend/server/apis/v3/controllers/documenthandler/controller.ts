@@ -3,6 +3,20 @@ import DocumentService from "../../services/document.service.ts";
 import HttpStatusCodes from "../../../../common/http-status-codes.ts";
 
 class DocumentHandlerController {
+  // ─── By id ─────────────────────────────────────────────────────────────────
+
+  async getDocumentById(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res
+        .status(HttpStatusCodes.BAD_REQUEST)
+        .json({ error: "Document id must be a number." });
+      return;
+    }
+    const document = await DocumentService.getDocumentById(id);
+    res.status(HttpStatusCodes.OK).json(document);
+  }
+
   // ─── Folders ───────────────────────────────────────────────────────────────
 
   async getFolders(req: Request, res: Response) {

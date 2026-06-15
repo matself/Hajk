@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   FormControl,
@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { Control, Controller, FieldValues, UseFormSetValue } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useParams, useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Tool, useMapsByToolName } from "../../../api/tools";
 import { useDefaultMap } from "../../../hooks/use-default-map";
 import { MenuEditor } from "../components/documenthandler/menu-editor/menu-editor";
@@ -17,6 +19,8 @@ import type { MenuConfig } from "../components/documenthandler/menu-editor/types
 import { DocumentsTabPanel } from "../components/documenthandler/documents/documents-tab-panel";
 import { DocumentEditorDialog } from "../components/documenthandler/documents/document-editor-dialog";
 import { SettingsTabPanel } from "../components/documenthandler/settings/settings-tab-panel";
+import { useDocumentById } from "../../../api/documents";
+import { getDocuments } from "../../../api/documents/requests";
 
 interface DocumentHandlerRendererProps {
   tool: Tool;
@@ -32,6 +36,15 @@ export default function DocumentHandlerRenderer({
   setValue,
 }: DocumentHandlerRendererProps) {
   const { t } = useTranslation();
+  const { documentId } = useParams<{ documentId?: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const urlDocId =
+    documentId !== undefined ? parseInt(documentId, 10) : undefined;
+  const validUrlDocId =
+    urlDocId !== undefined && !isNaN(urlDocId) ? urlDocId : undefined;
+
   const [activeTab, setActiveTab] = useState<ActiveTab>("settings");
   const [openDocument, setOpenDocument] = useState<{
     folder: string;
@@ -56,6 +69,25 @@ export default function DocumentHandlerRenderer({
     }
   }, [resolvedMapName, selectedMapName]);
 
+  // Resolve the URL document id → open the editor dialog
+  const { data: linkedDoc } = useDocumentById(validUrlDocId);
+  const lastAppliedIdRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (
+      linkedDoc &&
+      linkedDoc.id !== lastAppliedIdRef.current
+    ) {
+      lastAppliedIdRef.current = linkedDoc.id;
+      setSelectedMapName(linkedDoc.mapName);
+      setOpenDocument({ folder: linkedDoc.folderName, document: linkedDoc.name });
+      setActiveTab("documents");
+    }
+    if (!validUrlDocId && lastAppliedIdRef.current !== undefined) {
+      lastAppliedIdRef.current = undefined;
+      setOpenDocument(null);
+    }
+  }, [linkedDoc, validUrlDocId]);
+
   const tabs: { key: ActiveTab; label: string }[] = [
     {
       key: "settings",
@@ -74,10 +106,31 @@ export default function DocumentHandlerRenderer({
   const handleMapChange = (mapName: string) => {
     setSelectedMapName(mapName);
     setOpenDocument(null);
+    navigate(`/tools/${tool.type}`);
   };
 
-  function handleOpenDocument(folder: string, document: string) {
+  async function handleOpenDocument(folder: string, document: string) {
     setOpenDocument({ folder, document });
+    const map = resolvedMapName;
+    if (!map) return;
+    try {
+      const docs = await queryClient.fetchQuery({
+        queryKey: ["documents", map, folder],
+        queryFn: () => getDocuments(map, folder),
+        staleTime: 30_000,
+      });
+      const id = docs.find((d) => d.name === document)?.id;
+      if (id !== undefined) {
+        navigate(`/tools/${tool.type}/${id}`);
+      }
+    } catch {
+      // Navigation best-effort; dialog is already open
+    }
+  }
+
+  function handleCloseDocument() {
+    setOpenDocument(null);
+    navigate(`/tools/${tool.type}`);
   }
 
   return (
@@ -168,7 +221,7 @@ export default function DocumentHandlerRenderer({
           mapName={resolvedMapName}
           openDocument={openDocument}
           onOpenDocument={handleOpenDocument}
-          onCloseDocument={() => setOpenDocument(null)}
+          onCloseDocument={handleCloseDocument}
         />
       </Box>
 
@@ -178,7 +231,7 @@ export default function DocumentHandlerRenderer({
           mapName={resolvedMapName}
           folderName={openDocument.folder}
           docName={openDocument.document}
-          onClose={() => setOpenDocument(null)}
+          onClose={handleCloseDocument}
         />
       )}
     </>

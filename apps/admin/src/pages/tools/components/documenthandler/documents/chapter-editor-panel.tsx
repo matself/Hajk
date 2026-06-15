@@ -224,9 +224,9 @@ export function ChapterEditorPanel({
             }}
           >
             <Typography variant="subtitle2" sx={{ flex: 1 }}>
-              Kapitel
+              {t("tools.documenthandler.documents.chapters")}
             </Typography>
-            <Tooltip title="Lägg till kapitel">
+            <Tooltip title={t("tools.documenthandler.documents.addChapter")}>
               <IconButton size="small" onClick={() => openAddDialog(null)}>
                 <AddIcon fontSize="small" />
               </IconButton>
@@ -236,7 +236,7 @@ export function ChapterEditorPanel({
           {tree.length === 0 ? (
             <Box sx={{ p: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Inga kapitel ännu
+                {t("tools.documenthandler.documents.noChapters")}
               </Typography>
             </Box>
           ) : (
@@ -268,7 +268,7 @@ export function ChapterEditorPanel({
         {selectedChapter ? (
           <>
             <TextField
-              label="Kapiteltitel"
+              label={t("tools.documenthandler.documents.chapterTitle")}
               value={selectedChapter.data.header}
               onChange={(e) => handleHeaderChange(selectedId!, e.target.value)}
               size="small"
@@ -287,8 +287,8 @@ export function ChapterEditorPanel({
         ) : (
           <Alert severity="info">
             {tree.length === 0
-              ? "Lägg till ett kapitel för att börja redigera."
-              : "Välj ett kapitel till vänster."}
+              ? t("tools.documenthandler.documents.addChapterPrompt")
+              : t("tools.documenthandler.documents.selectChapterPrompt")}
           </Alert>
         )}
       </Box>
@@ -301,12 +301,14 @@ export function ChapterEditorPanel({
         fullWidth
       >
         <DialogTitle>
-          {addParentId ? "Nytt underkapitel" : "Nytt kapitel"}
+          {addParentId
+            ? t("tools.documenthandler.documents.newSubChapter")
+            : t("tools.documenthandler.documents.newChapter")}
         </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
-            label="Kapiteltitel"
+            label={t("tools.documenthandler.documents.chapterTitle")}
             value={addTitle}
             onChange={(e) => setAddTitle(e.target.value)}
             size="small"
@@ -316,13 +318,13 @@ export function ChapterEditorPanel({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false)}>Avbryt</Button>
+          <Button onClick={() => setAddDialogOpen(false)}>{t("common.cancel")}</Button>
           <Button
             variant="contained"
             onClick={handleAdd}
             disabled={!addTitle.trim()}
           >
-            Lägg till
+            {t("tools.documenthandler.documents.addChapterConfirm")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -333,21 +335,24 @@ export function ChapterEditorPanel({
         onClose={() => setDeleteDialogOpen(false)}
         maxWidth="xs"
       >
-        <DialogTitle>Ta bort kapitel?</DialogTitle>
+        <DialogTitle>{t("tools.documenthandler.documents.confirmDeleteChapter")}</DialogTitle>
         <DialogContent>
           <Typography>
-            &quot;{deleteTarget?.data.header ?? "Namnlöst kapitel"}&quot; och
-            eventuella underkapitel tas bort permanent.
+            {t("tools.documenthandler.documents.deleteChapterMessage", {
+              header:
+                deleteTarget?.data.header ??
+                t("tools.documenthandler.documents.untitledChapter"),
+            })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Avbryt</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t("common.cancel")}</Button>
           <Button
             variant="contained"
             color="error"
             onClick={handleDeleteConfirm}
           >
-            Ta bort
+            {t("common.delete")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -31,6 +31,10 @@ export interface Document {
   lastSavedDate?: string;
 }
 
+export interface DocumentWithFolder extends Document {
+  folderName: string;
+}
+
 export interface FolderCreateInput {
   title: string;
 }

@@ -6,6 +6,7 @@ import {
   Delete as DeleteIcon,
   DragIndicator,
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import type { ChapterTreeNode } from "./chapter-tree-utils";
 
 interface ChapterTreeNodeProps extends NodeRendererProps<ChapterTreeNode> {
@@ -21,8 +22,10 @@ export const ChapterTreeNodeRenderer = React.forwardRef<
   { style, node, dragHandle, selectedId, onAddChild, onDelete },
   ref
 ) {
+  const { t } = useTranslation();
   const isSelected = node.id === selectedId;
-  const titleText = node.data.data.header || "Namnlöst kapitel";
+  const titleText =
+    node.data.data.header || t("tools.documenthandler.documents.untitledChapter");
   const isPlaceholder = !node.data.data.header;
 
   return (
@@ -114,7 +117,7 @@ export const ChapterTreeNodeRenderer = React.forwardRef<
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Tooltip title="Lägg till underkapitel">
+        <Tooltip title={t("tools.documenthandler.documents.addSubChapter")}>
           <IconButton
             size="small"
             onClick={() => onAddChild(node.id)}
@@ -123,7 +126,7 @@ export const ChapterTreeNodeRenderer = React.forwardRef<
             <AddChildIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Ta bort kapitel">
+        <Tooltip title={t("tools.documenthandler.documents.deleteChapter")}>
           <IconButton
             size="small"
             color="error"

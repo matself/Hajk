@@ -3,6 +3,7 @@ import type {
   DocumentFolder,
   DocumentSummary,
   Document,
+  DocumentWithFolder,
   FolderCreateInput,
   FolderRenameInput,
   DocumentCreateInput,
@@ -20,6 +21,25 @@ const folderBase = (mapName: string, folder: string) =>
 
 const docBase = (mapName: string, folder: string, name: string) =>
   `${folderBase(mapName, folder)}/documents/${encodeURIComponent(name)}`;
+
+// ─── By id ──────────────────────────────────────────────────────────────────
+
+export const getDocumentById: (
+  id: number,
+) => Promise<DocumentWithFolder> = async (id) => {
+  const client = getApiClient();
+  try {
+    const response = await client.get<DocumentWithFolder>(`/documents/${id}`);
+    return response.data;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    throw new Error(
+      axiosError.response
+        ? `Failed to fetch document. ErrorId: ${axiosError.response.data.errorId}.`
+        : "Failed to fetch document."
+    );
+  }
+};
 
 // ─── Folders ────────────────────────────────────────────────────────────────
 

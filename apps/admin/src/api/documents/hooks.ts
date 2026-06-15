@@ -13,6 +13,7 @@ import {
   deleteFolder,
   getDocuments,
   getDocument,
+  getDocumentById,
   createDocument,
   saveDocument,
   moveDocument,
@@ -22,6 +23,7 @@ import type {
   DocumentFolder,
   DocumentSummary,
   Document,
+  DocumentWithFolder,
   FolderCreateInput,
   FolderRenameInput,
   DocumentCreateInput,
@@ -183,6 +185,21 @@ export const useDocument = (
     queryKey: ["document", mapName, folder, name],
     queryFn: () => getDocument(mapName!, folder!, name!),
     enabled: !!mapName && !!folder && !!name,
+  });
+};
+
+export const useDocumentById = (
+  id: number | undefined,
+): UseQueryResult<DocumentWithFolder> => {
+  return useQuery<DocumentWithFolder>({
+    queryKey: ["document-by-id", id],
+    queryFn: (): Promise<DocumentWithFolder> => {
+      if (id === undefined || Number.isNaN(id)) {
+        throw new Error("Document id is required");
+      }
+      return getDocumentById(id);
+    },
+    enabled: id !== undefined && !Number.isNaN(id),
   });
 };
 

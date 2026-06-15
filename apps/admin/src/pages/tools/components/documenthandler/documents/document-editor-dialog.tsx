@@ -25,6 +25,7 @@ import {
   CHAPTER_PANEL_WIDTH,
   ChapterEditorPanel,
 } from "./chapter-editor-panel";
+import { DocumentViewPanel } from "./document-view-panel";
 
 function noop() { /* intentional no-op for initial save ref */ }
 
@@ -55,7 +56,7 @@ export function DocumentEditorDialog({
   onClose,
 }: DocumentEditorDialogProps) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<"editor" | "source">("editor");
+  const [tab, setTab] = useState<"editor" | "view" | "source">("editor");
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
 
   // State mirrored from ChapterEditorPanel for the Save button in DialogActions
@@ -123,7 +124,7 @@ export function DocumentEditorDialog({
       parsed = JSON.parse(contentDraft) as Record<string, unknown>;
       setContentError(null);
     } catch {
-      setContentError("Ogiltig JSON — rätta syntax och försök igen.");
+      setContentError(t("tools.documenthandler.documents.invalidJson"));
       return;
     }
     saveDocMutation.mutate(
@@ -155,8 +156,11 @@ export function DocumentEditorDialog({
   const contentChanged = contentDraft !== savedContentJson;
   const sourceTabDirty = titleChanged || contentChanged;
   const editorTabDirty = titleChanged || panelDirty;
-  const isDirty =
-    isRichText && tab === "editor" ? editorTabDirty : sourceTabDirty;
+  const isDirty = isRichText
+    ? tab === "source"
+      ? sourceTabDirty
+      : editorTabDirty
+    : sourceTabDirty;
 
   function requestClose() {
     if (isDirty) {
@@ -213,11 +217,12 @@ export function DocumentEditorDialog({
           {showSourceTab && (
             <Tabs
               value={tab}
-              onChange={(_e, v: "editor" | "source") => setTab(v)}
+              onChange={(_e, v: "editor" | "view" | "source") => setTab(v)}
               sx={{ px: 3 }}
             >
-              <Tab label="Redigera" value="editor" />
-              <Tab label="JSON-källkod" value="source" />
+              <Tab label={t("tools.documenthandler.documents.editorTab")} value="editor" />
+              <Tab label={t("tools.documenthandler.documents.viewTab")} value="view" />
+              <Tab label={t("tools.documenthandler.documents.sourceTab")} value="source" />
             </Tabs>
           )}
 
@@ -231,6 +236,13 @@ export function DocumentEditorDialog({
               </Box>
             ) : (
               <>
+                {/* ── View panel ── */}
+                {isRichText && tab === "view" && activeDocument && (
+                  <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+                    <DocumentViewPanel document={activeDocument} mapName={mapName} />
+                  </Box>
+                )}
+
                 {/* ── Rich-text editor panel ── */}
                 {isRichText && tab === "editor" && activeDocument && (
                   <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative", display: "flex" }}>
@@ -254,7 +266,7 @@ export function DocumentEditorDialog({
 
                 {/* ── Raw JSON / source tab ── */}
                 {(!isRichText || tab === "source") && (
-                  <Box sx={{ flex: 1, overflow: "auto" }}>
+                  <Box sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
                     {!isRichText && (
                       <TextField
                         label={t("tools.documenthandler.documents.documentTitle")}
@@ -262,31 +274,52 @@ export function DocumentEditorDialog({
                         onChange={(e) => setDocTitleDraft(e.target.value)}
                         size="small"
                         fullWidth
-                        sx={{ mb: 1, maxWidth: CHAPTER_PANEL_WIDTH }}
+                        sx={{ mb: 1, maxWidth: CHAPTER_PANEL_WIDTH, flexShrink: 0 }}
                       />
                     )}
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
                       {t("tools.documenthandler.documents.contentHint")}
                     </Typography>
-                    <TextField
-                      multiline
-                      minRows={18}
-                      maxRows={40}
-                      fullWidth
-                      value={contentDraft}
-                      onChange={(e) => {
-                        setContentDraft(e.target.value);
-                        setContentError(null);
+                    <Box
+                      sx={{
+                        mt: 0.5,
+                        flex: 1,
+                        minHeight: 0,
+                        border: "1px solid",
+                        borderColor: contentError ? "error.main" : "divider",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                        display: "flex",
+                        "&:focus-within": { borderColor: "primary.main", borderWidth: 2 },
                       }}
-                      error={!!contentError}
-                      helperText={contentError}
-                      slotProps={{
-                        htmlInput: {
-                          style: { fontFamily: "monospace", fontSize: 11 },
-                        },
-                      }}
-                      sx={{ mt: 0.5 }}
-                    />
+                    >
+                      <Box
+                        component="textarea"
+                        value={contentDraft}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                          setContentDraft(e.target.value);
+                          setContentError(null);
+                        }}
+                        spellCheck={false}
+                        sx={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: 11,
+                          border: "none",
+                          outline: "none",
+                          resize: "none",
+                          p: 1,
+                          overflow: "auto",
+                          bgcolor: "background.paper",
+                          color: "text.primary",
+                        }}
+                      />
+                    </Box>
+                    {contentError && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                        {contentError}
+                      </Typography>
+                    )}
                   </Box>
                 )}
               </>

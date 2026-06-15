@@ -88,6 +88,10 @@ const router = createBrowserRouter(
           element: <ToolSettings />,
         },
         {
+          path: "tools/:toolName/:documentId",
+          element: <ToolSettings />,
+        },
+        {
           path: "services",
           element: <ServicesPage />,
         },

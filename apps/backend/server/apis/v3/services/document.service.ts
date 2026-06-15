@@ -223,6 +223,22 @@ class DocumentService {
     await prisma.document.delete({ where: { id: doc.id } });
   }
 
+  async getDocumentById(id: number) {
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      include: { folder: { select: { name: true } } },
+    });
+    if (!doc) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `No document with id '${id}'.`,
+        HajkStatusCodes.UNKNOWN_DOCUMENT
+      );
+    }
+    const { folder, ...rest } = doc;
+    return { ...rest, folderName: folder.name };
+  }
+
   // ─── Private ──────────────────────────────────────────────────────────────
 
   async #requireFolder(mapName: string, folderName: string) {
