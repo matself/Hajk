@@ -138,6 +138,11 @@ function checkInvariants(result: string, context: string) {
     ).toBe("FIGURE");
   });
 
+  // No <p> directly inside <li>
+  dom.querySelectorAll("li > p").forEach(() => {
+    expect.fail(`[${context}] <p> found directly inside <li>`);
+  });
+
   // No generic spans
   dom.querySelectorAll("span").forEach((span) => {
     expect(

@@ -12,7 +12,6 @@ import {
   FormatBold,
   FormatItalic,
   FormatUnderlined,
-  StrikethroughS,
   FormatListBulleted,
   FormatListNumbered,
   Launch,
@@ -35,9 +34,11 @@ import {
   VideoDialog,
 } from "./dialogs/media-dialog";
 import { TextSectionDialog } from "./dialogs/text-section-dialog";
+import { IframeDialog } from "./dialogs/iframe-dialog";
 import type { HajkLinkAttrs, HajkLinkType } from "./extensions/hajk-link";
 import type { MediaFigureAttrs, MediaType } from "./extensions/media-figure";
 import type { TextSectionAttrs } from "./extensions/text-section";
+import type { IframeEmbedAttrs } from "./extensions/iframe-embed";
 import {
   getInlineContentFromRange,
   hasMeaningfulInlineContent,
@@ -112,7 +113,6 @@ export function RichTextToolbar({
       bold: e.isActive("bold"),
       italic: e.isActive("italic"),
       underline: e.isActive("underline"),
-      strike: e.isActive("strike"),
       bulletList: e.isActive("bulletList"),
       orderedList: e.isActive("orderedList"),
       hajkLink: e.isActive("hajkLink"),
@@ -219,15 +219,23 @@ export function RichTextToolbar({
     onCancel: () => setMediaDialogOpen(false),
   };
 
+  // ── Iframe insertion ──────────────────────────────────────────────────────
+
+  const [iframeDialogOpen, setIframeDialogOpen] = useState(false);
+  const [iframeDialogKey, setIframeDialogKey] = useState(0);
+
   function handleIframeInsert() {
+    setIframeDialogKey((k) => k + 1);
+    setIframeDialogOpen(true);
+  }
+
+  function handleIframeConfirm(attrs: IframeEmbedAttrs) {
     editor
       .chain()
       .focus()
-      .insertContent({
-        type: "iframeEmbed",
-        attrs: { src: "", title: "", width: "", height: "", position: "left" },
-      })
+      .insertContent({ type: "iframeEmbed", attrs })
       .run();
+    setIframeDialogOpen(false);
   }
 
   // ── Text section ──────────────────────────────────────────────────────────
@@ -365,14 +373,6 @@ export function RichTextToolbar({
         >
           <FormatUnderlined fontSize="small" />
         </Btn>
-        <Btn
-          title={t("dhRichTextEditor.toolbar.strikethrough")}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          active={activeState?.strike}
-        >
-          <StrikethroughS fontSize="small" />
-        </Btn>
-
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
         {/* ── Lists ── */}
@@ -517,6 +517,13 @@ export function RichTextToolbar({
       {pendingMediaType === "audio" && (
         <AudioDialog key={`audio-${mediaDialogKey}`} {...mediaDialogProps} srcList={audioList} />
       )}
+
+      <IframeDialog
+        key={`iframe-${iframeDialogKey}`}
+        open={iframeDialogOpen}
+        onConfirm={handleIframeConfirm}
+        onCancel={() => setIframeDialogOpen(false)}
+      />
     </>
   );
 }

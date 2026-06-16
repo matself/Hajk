@@ -11,7 +11,6 @@ import { HajkLink } from "../extensions/hajk-link";
 import { TextSection } from "../extensions/text-section";
 import { MediaFigure } from "../extensions/media-figure";
 import { IframeEmbed } from "../extensions/iframe-embed";
-import { LegacyStrike } from "../extensions/legacy-strike";
 
 export function buildExtensions(placeholder?: string) {
   return [
@@ -24,13 +23,11 @@ export function buildExtensions(placeholder?: string) {
       // Disable StarterKit's built-in versions — we use our own below
       link: false,
       underline: false,
-      strike: false,         // replaced by LegacyStrike (renders <del>)
+      strike: false,         // client doesn't support <s>/<del>; stripped on parse
       // Keep headings — client supports h1-h6
     }),
     // Our own underline (renders <u>, also parses <ins> defensively)
     Underline,
-    // Strike renders as <del> for legacy-compatibility
-    LegacyStrike,
     // Hajk custom marks / nodes
     HajkLink,
     TextSection,

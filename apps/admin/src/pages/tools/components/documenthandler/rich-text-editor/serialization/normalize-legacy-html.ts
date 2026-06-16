@@ -6,8 +6,11 @@
 
 /**
  * Maps <ins> elements to <u> (legacy Draft.js occasionally emitted <ins> for
- * underline before the correct <u> was confirmed). Also handles <s> / <strike>
- * as aliases for <del>.
+ * underline before the correct <u> was confirmed).
+ *
+ * Strips <s>, <strike>, and <del> to their plain text content: the Hajk
+ * client does not support any strikethrough tag, so we preserve the text
+ * rather than emitting an element that the client would silently drop.
  */
 function replaceObsoleteTags(root: HTMLElement): void {
   // <ins> → <u>
@@ -16,11 +19,12 @@ function replaceObsoleteTags(root: HTMLElement): void {
     u.innerHTML = el.innerHTML;
     el.replaceWith(u);
   });
-  // <s> / <strike> → <del>
-  root.querySelectorAll("s, strike").forEach((el) => {
-    const del = document.createElement("del");
-    del.innerHTML = el.innerHTML;
-    el.replaceWith(del);
+  // <s> / <strike> / <del> → unwrap to child nodes (keep text, drop tag)
+  root.querySelectorAll("s, strike, del").forEach((el) => {
+    while (el.firstChild) {
+      el.parentNode?.insertBefore(el.firstChild, el);
+    }
+    el.remove();
   });
 }
 

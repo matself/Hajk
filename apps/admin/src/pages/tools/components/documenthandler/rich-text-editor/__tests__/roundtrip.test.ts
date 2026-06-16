@@ -152,6 +152,16 @@ describe("roundtrip: basic markup", () => {
     assertNoEmptyParagraphs(roundtripHtml(html));
   });
 
+  it("list items are not wrapped in <p>", () => {
+    const dom = parseDom(roundtripHtml(html));
+    dom.querySelectorAll("li").forEach((li) => {
+      expect(
+        li.querySelector("p"),
+        `<p> found inside <li>`
+      ).toBeFalsy();
+    });
+  });
+
   it("is idempotent", () => {
     const once = roundtripHtml(html);
     const twice = roundtripHtml(once);
@@ -217,6 +227,14 @@ describe("roundtrip: links", () => {
     const dom = parseDom(roundtripHtml(html));
     const docLinks = dom.querySelectorAll("a[data-document]");
     expect(docLinks.length).toBe(2);
+  });
+
+  it("document link href matches data-document slug", () => {
+    const dom = parseDom(roundtripHtml(html));
+    dom.querySelectorAll("a[data-document]").forEach((a) => {
+      const slug = a.getAttribute("data-document");
+      expect(a.getAttribute("href")).toBe(slug);
+    });
   });
 
   it("document link with header-identifier preserves it", () => {
@@ -379,9 +397,17 @@ describe("edge cases", () => {
     expect(dom.querySelector("ins")).toBeFalsy();
   });
 
-  it("<del> is preserved", () => {
+  it("<del> is stripped to plain text (client-unsupported tag)", () => {
     const result = roundtripHtml("<p>Text with <del>strikethrough</del>.</p>");
     const dom = parseDom(result);
-    expect(dom.querySelector("del")).toBeTruthy();
+    expect(dom.querySelector("del")).toBeFalsy();
+    expect(result).toContain("strikethrough");
+  });
+
+  it("<s> is stripped to plain text", () => {
+    const result = roundtripHtml("<p>Text with <s>struck</s>.</p>");
+    const dom = parseDom(result);
+    expect(dom.querySelector("s")).toBeFalsy();
+    expect(result).toContain("struck");
   });
 });

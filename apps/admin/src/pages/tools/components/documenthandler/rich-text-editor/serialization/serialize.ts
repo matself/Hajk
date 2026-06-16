@@ -52,15 +52,50 @@ export function roundtripHtml(html: string): string {
 // ─── Post-processing ──────────────────────────────────────────────────────────
 
 /**
- * Remove empty paragraphs that TipTap emits for empty documents or empty
- * trailing paragraphs, matching the legacy editor's behaviour.
+ * Remove empty paragraphs and unwrap list-item paragraphs.
+ *
+ * TipTap's StarterKit wraps list-item content in a <p>, giving
+ * `<li><p>text</p></li>`.  Legacy documents (and the Hajk client) expect the
+ * flat form `<li>text</li>`, so we unwrap the inner <p> when it is the sole
+ * element child of an <li>.
  */
 function postProcess(html: string): string {
   // Strip <p></p> and <p><br></p> — both forms can appear
-  const result = html
+  let result = html
     .replace(/<p><br\s*\/?><\/p>/gi, "")
     .replace(/<p>\s*<\/p>/gi, "")
     .trim();
 
+  if (!result) return result;
+
+  result = unwrapListItemParagraphs(result);
+
   return result;
+}
+
+/**
+ * For every `<li>` whose only element child is a single `<p>`, hoist the
+ * paragraph's children directly into the `<li>` and remove the `<p>` wrapper.
+ */
+function unwrapListItemParagraphs(html: string): string {
+  const root = document.createElement("div");
+  root.innerHTML = html;
+
+  root.querySelectorAll("li").forEach((li) => {
+    const elementChildren = Array.from(li.childNodes).filter(
+      (n): n is Element => n.nodeType === 1
+    );
+    if (
+      elementChildren.length === 1 &&
+      elementChildren[0].tagName === "P"
+    ) {
+      const p = elementChildren[0] as HTMLElement;
+      while (p.firstChild) {
+        li.insertBefore(p.firstChild, p);
+      }
+      p.remove();
+    }
+  });
+
+  return root.innerHTML;
 }

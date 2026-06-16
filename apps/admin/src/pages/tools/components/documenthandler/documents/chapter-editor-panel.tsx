@@ -155,7 +155,6 @@ export function ChapterEditorPanel({
   }
 
   // Keep save and draft refs up to date after every render (no deps — intentional ref sync)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (onSaveRef) onSaveRef.current = handleSave;
     if (getDraftRef) {
@@ -318,6 +317,11 @@ export function ChapterEditorPanel({
               sx={{ mb: 1, flexShrink: 0 }}
             />
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden", width: "100%" }}>
+              {/*
+               * TODO: Pass imageList/videoList/audioList once the v3 backend
+               * exposes a file-listing API for uploaded media (legacy: ../Upload/).
+               * Until then the media insert dialogs fall back to free-text URL input.
+               */}
               <RichTextEditor
                 key={selectedId ?? "none"}
                 html={selectedChapter.data.html}

@@ -139,9 +139,11 @@ export const HajkLink = Mark.create<HajkLinkAttrs>({
 
     switch (linkType) {
       case "document": {
-        const safeHref = sanitizeUrl(href || documentName);
+        // The href for document links is the document slug (not a navigable URL),
+        // so it must not go through sanitizeUrl, which would reject bare slugs.
+        // The Hajk client reads data-document; href is kept for legacy parity only.
         const attrs: Record<string, string> = {
-          href: safeHref,
+          href: documentName,
           "data-document": documentName,
         };
         if (headerIdentifier) {

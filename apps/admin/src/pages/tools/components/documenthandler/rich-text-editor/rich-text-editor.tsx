@@ -110,7 +110,7 @@ export function RichTextEditor({
       getHtmlRef.current = () =>
         serializeToLegacyHtml(editor.getJSON() as Record<string, unknown>);
     }
-  });
+  }, [editor, getHtmlRef]);
 
   if (!editor) return null;
 
