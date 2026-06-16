@@ -11,7 +11,6 @@ import {
   IconButton,
   Tab,
   Tabs,
-  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -22,22 +21,10 @@ import {
 import { useTranslation } from "react-i18next";
 import { useDocument, useSaveDocument } from "@/api/documents";
 import type { Document } from "@/api/documents/types";
-import {
-  CHAPTER_PANEL_WIDTH,
-  ChapterEditorPanel,
-} from "./chapter-editor-panel";
+import { ChapterEditorPanel } from "./chapter-editor-panel";
 import { DocumentViewPanel } from "./document-view-panel";
 
 function noop() { /* intentional no-op for initial save ref */ }
-
-// ─── Feature flag ─────────────────────────────────────────────────────────────
-
-/**
- * Set VITE_LEGACY_DOC_EDITOR=1 in .env to fall back to the raw JSON editor.
- * Default: rich-text (TipTap) editor.
- */
-const USE_RICH_TEXT_EDITOR =
-  import.meta.env.VITE_LEGACY_DOC_EDITOR !== "1";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -66,6 +53,11 @@ export function DocumentEditorDialog({
   const [panelDirty, setPanelDirty] = useState(false);
   const [panelPending, setPanelPending] = useState(false);
   const panelSaveRef = useRef<() => void>(noop);
+
+  // Incremented to force-remount ChapterEditorPanel after a source-tab save
+  const [editorKey, setEditorKey] = useState(0);
+  // Set to true after a source save so the next activeDocument refetch triggers a remount
+  const pendingEditorRemountRef = useRef(false);
 
   // ── Document data ──────────────────────────────────────────────────────────
   const [docTitleDraft, setDocTitleDraft] = useState("");
@@ -101,6 +93,10 @@ export function DocumentEditorDialog({
       setSavedTitle(title);
       setSavedContentJson(contentJson);
       setContentError(null);
+      if (pendingEditorRemountRef.current) {
+        pendingEditorRemountRef.current = false;
+        setEditorKey((k) => k + 1);
+      }
     }
   }, [activeDocument]);
 
@@ -142,6 +138,9 @@ export function DocumentEditorDialog({
           setSavedTitle(docTitleDraft);
           setSavedContentJson(contentDraft);
           setPanelDirty(false);
+          // Allow the next activeDocument refetch to re-sync and remount the editor
+          lastSyncedDocIdRef.current = undefined;
+          pendingEditorRemountRef.current = true;
         },
       }
     );
@@ -154,18 +153,11 @@ export function DocumentEditorDialog({
       ? docTitleDraft
       : (docName ?? t("tools.documenthandler.documents.editDocument"));
 
-  const isRichText = USE_RICH_TEXT_EDITOR;
-  const showSourceTab = isRichText; // show "Source" tab alongside the rich editor
-
   const titleChanged = docTitleDraft !== savedTitle;
   const contentChanged = contentDraft !== savedContentJson;
   const sourceTabDirty = titleChanged || contentChanged;
   const editorTabDirty = titleChanged || panelDirty;
-  const isDirty = isRichText
-    ? tab === "source"
-      ? sourceTabDirty
-      : editorTabDirty
-    : sourceTabDirty;
+  const isDirty = tab === "source" ? sourceTabDirty : editorTabDirty;
 
   function requestClose() {
     if (isDirty) {
@@ -215,24 +207,32 @@ export function DocumentEditorDialog({
             flexDirection: "column",
           }}
         >
-          <DialogTitle sx={{ pb: showSourceTab ? 0 : undefined, pr: 6, fontWeight: "bold" }}>
+          <DialogTitle sx={{ pb: 0, pr: 6, fontWeight: "bold" }}>
             {docTitle}
           </DialogTitle>
 
-          {showSourceTab && (
-            <Tabs
-              value={tab}
-              onChange={(_e, v: "editor" | "view" | "source") => {
-                if (v === "view") setDraftDocument(getDraftRef.current());
-                setTab(v);
-              }}
-              sx={{ px: 3 }}
-            >
-              <Tab label={t("tools.documenthandler.documents.editorTab")} value="editor" />
-              <Tab label={t("tools.documenthandler.documents.viewTab")} value="view" />
-              <Tab label={t("tools.documenthandler.documents.sourceTab")} value="source" />
-            </Tabs>
-          )}
+          <Tabs
+            value={tab}
+            onChange={(_e, v: "editor" | "view" | "source") => {
+              if (v === "view") {
+                setDraftDocument(getDraftRef.current());
+              }
+              if (v === "source") {
+                const draft = getDraftRef.current();
+                if (draft) {
+                  const json = JSON.stringify(draft.content, null, 2);
+                  setContentDraft(json);
+                  setSavedContentJson(json);
+                }
+              }
+              setTab(v);
+            }}
+            sx={{ px: 3 }}
+          >
+            <Tab label={t("tools.documenthandler.documents.editorTab")} value="editor" />
+            <Tab label={t("tools.documenthandler.documents.viewTab")} value="view" />
+            <Tab label={t("tools.documenthandler.documents.sourceTab")} value="source" />
+          </Tabs>
 
           <DialogContent
             dividers
@@ -245,7 +245,7 @@ export function DocumentEditorDialog({
             ) : (
               <>
                 {/* ── View panel ── */}
-                {isRichText && tab === "view" && activeDocument && (
+                {tab === "view" && activeDocument && (
                   <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
                     <DocumentViewPanel
                       document={draftDocument ?? activeDocument}
@@ -255,7 +255,7 @@ export function DocumentEditorDialog({
                 )}
 
                 {/* ── Rich-text editor panel (kept mounted to preserve unsaved edits) ── */}
-                {isRichText && activeDocument && (
+                {activeDocument && (
                   <Box
                     sx={{
                       flex: 1,
@@ -266,7 +266,7 @@ export function DocumentEditorDialog({
                     }}
                   >
                     <ChapterEditorPanel
-                      key={activeDocument.id}
+                      key={`${activeDocument.id}-${editorKey}`}
                       document={activeDocument}
                       mapName={mapName}
                       folderName={folderName ?? ""}
@@ -285,18 +285,8 @@ export function DocumentEditorDialog({
                 )}
 
                 {/* ── Raw JSON / source tab ── */}
-                {(!isRichText || tab === "source") && (
+                {tab === "source" && (
                   <Box sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-                    {!isRichText && (
-                      <TextField
-                        label={t("tools.documenthandler.documents.documentTitle")}
-                        value={docTitleDraft}
-                        onChange={(e) => setDocTitleDraft(e.target.value)}
-                        size="small"
-                        fullWidth
-                        sx={{ mb: 1, maxWidth: CHAPTER_PANEL_WIDTH, flexShrink: 0 }}
-                      />
-                    )}
                     <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
                       {t("tools.documenthandler.documents.contentHint")}
                     </Typography>
@@ -361,7 +351,7 @@ export function DocumentEditorDialog({
             <Button onClick={requestClose}>{t("common.cancel")}</Button>
 
             {/* Rich-text editor mode: Save button triggers ChapterEditorPanel's save */}
-            {isRichText && tab === "editor" && (
+            {tab === "editor" && (
               <Button
                 variant="contained"
                 startIcon={
@@ -384,7 +374,7 @@ export function DocumentEditorDialog({
             )}
 
             {/* Raw JSON / source tab mode */}
-            {(!isRichText || tab === "source") && (
+            {tab === "source" && (
               <Button
                 variant="contained"
                 startIcon={
