@@ -31,6 +31,7 @@ const defaultState = {
   delayBeforeAutoSearch: 500,
   disableAutocomplete: false,
   disableSearchCombinations: false,
+  matchAllWordsInSameField: false,
   searchBarPlaceholder: "Sök...",
   excelColumnFilter: "",
   autocompleteWildcardAtStart: false,
@@ -164,6 +165,9 @@ class ToolOptions extends Component {
           disableSearchCombinations:
             tool.options.disableSearchCombinations ??
             this.state.disableSearchCombinations,
+          matchAllWordsInSameField:
+            tool.options.matchAllWordsInSameField ??
+            this.state.matchAllWordsInSameField,
           autocompleteWildcardAtStart:
             tool.options.autocompleteWildcardAtStart ??
             this.state.autocompleteWildcardAtStart,
@@ -389,6 +393,7 @@ class ToolOptions extends Component {
         delayBeforeAutoSearch: this.state.delayBeforeAutoSearch,
         disableAutocomplete: this.state.disableAutocomplete,
         disableSearchCombinations: this.state.disableSearchCombinations,
+        matchAllWordsInSameField: this.state.matchAllWordsInSameField,
         searchBarPlaceholder: this.state.searchBarPlaceholder,
         excelColumnFilter: this.state.excelColumnFilter,
         autocompleteWildcardAtStart: this.state.autocompleteWildcardAtStart,
@@ -813,6 +818,29 @@ class ToolOptions extends Component {
                 (Kombinationerna kan öka möjligheten att användarna hittar vad de
                 letar efter, men det kan ta längre tid för servern att bearbeta
                 sökningen.)"
+              />
+            </label>
+          </div>
+          <div>
+            <input
+              id="matchAllWordsInSameField"
+              name="matchAllWordsInSameField"
+              type="checkbox"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              checked={this.state.matchAllWordsInSameField}
+            />
+            &nbsp;
+            <label htmlFor="matchAllWordsInSameField" className="long-label">
+              Kräv att alla sökord matchar i samma fält{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Vid sökning på flera ord kräver att samtliga ord
+                matchar inom ett och samma fält. Förhindrar oväntade träffar
+                där olika sökord matchar i olika fält (t.ex. ett ord i
+                fastighet_f och ett annat i fastighet_l)."
               />
             </label>
           </div>

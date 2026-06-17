@@ -28,6 +28,7 @@ class SearchModel {
     matchCase: false, // should search be case sensitive?
     wildcardAtStart: false, // should the search string start with the wildcard character?
     wildcardAtEnd: true, // should the search string be end with the wildcard character?
+    matchAllWordsInSameField: false, // should all words be required to match within the same field?
   };
 
   #componentOptions;
@@ -290,6 +291,28 @@ class SearchModel {
   };
 
   #getSearchFilters = (wordsArray, searchSource, searchOptions) => {
+    // Opt-in behavior: require all words to match within the SAME field.
+    // We build an OR across fields of (AND across words), so a feature only
+    // matches when one and the same field contains every word. This avoids
+    // cross-field false positives (e.g. one word matching "fastighet_f" while
+    // another matches "fastighet_l"). Only meaningful for multi-field,
+    // multi-word queries; otherwise fall through to the existing logic.
+    if (
+      searchOptions.matchAllWordsInSameField &&
+      searchSource.searchFields.length > 1 &&
+      wordsArray.length > 1
+    ) {
+      return new Or(
+        ...searchSource.searchFields.map((searchField) => {
+          return new And(
+            ...wordsArray.map((word) => {
+              return this.#getIsLikeFilter(searchField, word, searchOptions);
+            })
+          );
+        })
+      );
+    }
+
     if (searchSource.searchFields.length > 1) {
       let OrFilters = wordsArray.map((word) => {
         return this.#getOrFilter(word, searchSource, searchOptions);

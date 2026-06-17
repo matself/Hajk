@@ -502,6 +502,7 @@ class Search extends React.PureComponent {
       ...fetchSettings,
       wildcardAtStart: options.autocompleteWildcardAtStart || false,
       getPossibleCombinations: !this.disableSearchCombinations,
+      matchAllWordsInSameField: options.matchAllWordsInSameField ?? false,
       initiator: "autocomplete",
     };
     return fetchSettings;
@@ -1033,6 +1034,8 @@ class Search extends React.PureComponent {
       matchCase: matchCase,
       wildcardAtStart: wildcardAtStart,
       wildcardAtEnd: wildcardAtEnd,
+      matchAllWordsInSameField:
+        this.props.options?.matchAllWordsInSameField ?? false,
       maxResultsPerDataset: maxResultsPerDataset,
     };
   };
