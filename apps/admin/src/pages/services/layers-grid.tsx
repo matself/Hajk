@@ -129,7 +129,7 @@ function LayersGrid({
   // `serviceType` comes from legacy admin data models where some values are not
   // strongly typed. We only need the string enum value here to control which
   // layer kinds can be selected.
-  const serviceTypeValue = serviceType as unknown as string | undefined;
+  const serviceTypeValue = serviceType;
 
   const selectableLayerCategories = useMemo(
     () => getSelectableLayerCategories(serviceTypeValue),

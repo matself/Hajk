@@ -862,6 +862,198 @@ async function updateRolesFromVisibleForGroups(
   }
 }
 
+/**
+ * Converts a title string to a URL-safe lowercase slug.
+ * Mirrors the logic in server/apis/v3/utils/slugify.ts.
+ */
+function slugify(title) {
+  const base = title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+  return base || "item";
+}
+
+function uniqueSlug(base, existingSet) {
+  if (!existingSet.has(base)) return base;
+  let n = 2;
+  while (existingSet.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+/**
+ * Seeds DocumentFolder + Document rows from legacy App_Data/documents/*.json files.
+ * Legacy documents can be at root level or inside a single subfolder level.
+ * Since documents now require a folder, root-level docs are placed in a
+ * default "General" folder for each map.
+ */
+async function seedDocuments() {
+  const docsDir = path.join(process.cwd(), "App_Data", "documents");
+
+  let entries;
+  try {
+    entries = await fs.promises.readdir(docsDir, { withFileTypes: true });
+  } catch {
+    console.log("No App_Data/documents directory found — skipping document seed.");
+    return;
+  }
+
+  // Collect all maps from the DB so we know valid mapNames
+  const mapsInDB = await prisma.map.findMany({ select: { name: true } });
+  const mapNames = new Set(mapsInDB.map((m) => m.name));
+
+  if (mapNames.size === 0) {
+    console.log("No maps in DB — skipping document seed.");
+    return;
+  }
+
+  // We'll track slugs per (mapName, folderId) to ensure uniqueness
+  const folderSlugsByMap = new Map(); // mapName -> Set<slug>
+  const docSlugsByFolder = new Map(); // folderId -> Set<slug>
+
+  // Helper: get or create a folder for a map
+  async function getOrCreateFolder(mapName, folderTitle) {
+    if (!folderSlugsByMap.has(mapName)) {
+      folderSlugsByMap.set(mapName, new Set());
+    }
+    const existingSlugs = folderSlugsByMap.get(mapName);
+    const folderSlug = uniqueSlug(slugify(folderTitle), existingSlugs);
+    existingSlugs.add(folderSlug);
+
+    const folder = await prisma.documentFolder.upsert({
+      where: { mapName_name: { mapName, name: folderSlug } },
+      update: {},
+      create: {
+        name: folderSlug,
+        title: folderTitle,
+        mapName,
+        createdDate: new Date(),
+        lastSavedDate: new Date(),
+      },
+    });
+    console.log(`  → Folder "${folderTitle}" (${folderSlug}) in map "${mapName}"`);
+    docSlugsByFolder.set(folder.id, new Set());
+    return folder;
+  }
+
+  // Helper: create a document inside a folder
+  async function createDocument(mapName, folderId, docTitle, content) {
+    if (!docSlugsByFolder.has(folderId)) {
+      docSlugsByFolder.set(folderId, new Set());
+    }
+    const existingSlugs = docSlugsByFolder.get(folderId);
+    const docSlug = uniqueSlug(slugify(docTitle), existingSlugs);
+    existingSlugs.add(docSlug);
+
+    await prisma.document.create({
+      data: {
+        name: docSlug,
+        title: docTitle,
+        content,
+        mapName,
+        folderId,
+        createdDate: new Date(),
+        lastSavedDate: new Date(),
+      },
+    });
+  }
+
+  // Helper: determine which map to assign a document to.
+  // Use the doc's "map" field if it matches a known map; fallback to the first map.
+  const firstMapName = [...mapNames][0];
+  function resolveMapName(docMapField) {
+    if (docMapField && mapNames.has(docMapField)) return docMapField;
+    return firstMapName;
+  }
+
+  let totalDocs = 0;
+
+  // Process root-level .json files (root documents → "General" folder)
+  const rootJsonFiles = entries.filter(
+    (e) => e.isFile() && e.name.endsWith(".json")
+  );
+
+  if (rootJsonFiles.length > 0) {
+    // Group root docs by their intended map so each map gets one "General" folder
+    const rootDocsByMap = new Map();
+    for (const entry of rootJsonFiles) {
+      const filePath = path.join(docsDir, entry.name);
+      const text = await fs.promises.readFile(filePath, "utf-8");
+      let doc;
+      try {
+        doc = JSON.parse(text);
+      } catch {
+        console.warn(`  Skipping invalid JSON: ${entry.name}`);
+        continue;
+      }
+      const mapName = resolveMapName(doc.map);
+      if (!rootDocsByMap.has(mapName)) rootDocsByMap.set(mapName, []);
+      rootDocsByMap.get(mapName).push({ entry, doc });
+    }
+
+    for (const [mapName, items] of rootDocsByMap) {
+      const generalFolder = await getOrCreateFolder(mapName, "General");
+      for (const { entry, doc } of items) {
+        const docTitle = doc.title || entry.name.replace(".json", "");
+        const content = { chapters: doc.chapters ?? [] };
+        await createDocument(mapName, generalFolder.id, docTitle, content);
+        console.log(`    • "${docTitle}" → General`);
+        totalDocs++;
+      }
+    }
+  }
+
+  // Process subdirectory-level documents (folder name = subdirectory name)
+  const subDirs = entries.filter((e) => e.isDirectory());
+  for (const subDir of subDirs) {
+    const subDirPath = path.join(docsDir, subDir.name);
+    const subEntries = await fs.promises.readdir(subDirPath, {
+      withFileTypes: true,
+    });
+    const subJsonFiles = subEntries.filter(
+      (e) => e.isFile() && e.name.endsWith(".json")
+    );
+    if (subJsonFiles.length === 0) continue;
+
+    // Group by map
+    const docsByMap = new Map();
+    for (const entry of subJsonFiles) {
+      const filePath = path.join(subDirPath, entry.name);
+      const text = await fs.promises.readFile(filePath, "utf-8");
+      let doc;
+      try {
+        doc = JSON.parse(text);
+      } catch {
+        console.warn(`  Skipping invalid JSON: ${subDir.name}/${entry.name}`);
+        continue;
+      }
+      const mapName = resolveMapName(doc.map);
+      if (!docsByMap.has(mapName)) docsByMap.set(mapName, []);
+      docsByMap.get(mapName).push({ entry, doc });
+    }
+
+    for (const [mapName, items] of docsByMap) {
+      const folder = await getOrCreateFolder(mapName, subDir.name);
+      for (const { entry, doc } of items) {
+        const docTitle = doc.title || entry.name.replace(".json", "");
+        const content = { chapters: doc.chapters ?? [] };
+        await createDocument(mapName, folder.id, docTitle, content);
+        console.log(`    • "${docTitle}" → ${subDir.name}`);
+        totalDocs++;
+      }
+    }
+  }
+
+  if (totalDocs > 0) {
+    console.log(`Seeded ${totalDocs} document(s) from App_Data/documents/`);
+  } else {
+    console.log("No legacy documents found to seed.");
+  }
+}
+
 async function createToolTypes() {
   const created = await prisma.toolType.createMany({
     data: KNOWN_TOOL_TYPES,
@@ -890,6 +1082,9 @@ async function main() {
   // Base roles (e.g. SUPERUSER, ADMIN) for map/layer/tool restrictions and future IdP group mapping.
   // Local users are not seeded: identities come from Keycloak or another external IdP.
   await createBaseRoles();
+
+  // Seed documents from App_Data/documents/ into DocumentFolder + Document tables.
+  await seedDocuments();
 
   // Seed a few test LayerInstances so the "used in maps" feature has data to display.
   // Only runs if there are no LayerInstances already (i.e. no App_Data map configs were found).

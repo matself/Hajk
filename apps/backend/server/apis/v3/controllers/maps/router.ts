@@ -1,5 +1,6 @@
 import * as express from "express";
 import MapsController from "./controller.ts";
+import documentHandlerRouter from "../documenthandler/router.ts";
 
 export default express
   .Router()
@@ -12,4 +13,5 @@ export default express
   .get("/:mapName/layers", MapsController.getLayersForMap)
   .get("/:mapName/projections", MapsController.getProjectionsForMap)
   .get("/:mapName/tools", MapsController.getToolsForMap)
-  .put("/:mapName/tools", MapsController.updateMapTools);
+  .put("/:mapName/tools", MapsController.updateMapTools)
+  .use("/:mapName/documenthandler", documentHandlerRouter);

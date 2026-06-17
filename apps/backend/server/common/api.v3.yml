@@ -477,6 +477,294 @@ paths:
           description: Return the maps that use the tool
         404:
           description: Requested tool was not found
+  /maps/{mapName}/documenthandler/folders:
+    get:
+      tags:
+        - Admin only
+      summary: List document folders for a map
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of folders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  folders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DocumentFolder"
+        404:
+          description: Map not found
+    post:
+      tags:
+        - Admin only
+      summary: Create a new document folder
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+      responses:
+        201:
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentFolder"
+        400:
+          description: Validation error
+  /maps/{mapName}/documenthandler/folders/{folder}:
+    put:
+      tags:
+        - Admin only
+      summary: Rename a document folder (title only; slug name is immutable)
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          description: Folder slug (URL-safe name)
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+      responses:
+        200:
+          description: Folder renamed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentFolder"
+        404:
+          description: Folder not found
+    delete:
+      tags:
+        - Admin only
+      summary: Delete a document folder (blocked if it contains documents)
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          description: Folder slug (URL-safe name)
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Folder deleted
+        404:
+          description: Folder not found
+        409:
+          description: Folder still contains documents
+  /maps/{mapName}/documenthandler/folders/{folder}/documents:
+    get:
+      tags:
+        - Admin only
+      summary: List documents in a folder
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          description: Folder slug
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of documents (metadata only, no content)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  documents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DocumentSummary"
+        404:
+          description: Map or folder not found
+    post:
+      tags:
+        - Admin only
+      summary: Create a new document
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+      responses:
+        201:
+          description: Document created with empty chapter tree
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        400:
+          description: Validation error
+        404:
+          description: Map or folder not found
+  /maps/{mapName}/documenthandler/folders/{folder}/documents/{name}:
+    get:
+      tags:
+        - Admin only
+      summary: Load a document with its full content
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          description: Document slug (URL-safe name)
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Full document including content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        404:
+          description: Document not found
+    put:
+      tags:
+        - Admin only
+      summary: Save (full replace) document content and optional title
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: object
+                  description: Chapter tree JSON
+              required:
+                - content
+      responses:
+        200:
+          description: Document saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        400:
+          description: Validation error
+        404:
+          description: Document not found
+    delete:
+      tags:
+        - Admin only
+      summary: Delete a document
+      parameters:
+        - name: mapName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Document deleted
+        404:
+          description: Document not found
   /search/autocomplete:
     post:
       tags:
@@ -740,6 +1028,106 @@ components:
         - status
         - timestamp
         - error
+    DocumentFolder:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: "URL-safe slug (immutable after creation)"
+        title:
+          type: string
+          description: "Human-readable display name"
+        mapName:
+          type: string
+        createdBy:
+          type: string
+          nullable: true
+        createdDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastSavedBy:
+          type: string
+          nullable: true
+        lastSavedDate:
+          type: string
+          format: date-time
+          nullable: true
+        _count:
+          type: object
+          properties:
+            documents:
+              type: integer
+          description: "Number of documents in the folder (included on list responses)"
+      required:
+        - id
+        - name
+        - title
+        - mapName
+    DocumentSummary:
+      type: object
+      description: "Document metadata without content"
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: "URL-safe slug (immutable after creation)"
+        title:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastSavedDate:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - name
+        - title
+    Document:
+      type: object
+      description: "Full document including chapter tree content"
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: "URL-safe slug (immutable after creation)"
+        title:
+          type: string
+        content:
+          type: object
+          description: "Chapter tree JSON: { chapters: [...] }"
+        mapName:
+          type: string
+        folderId:
+          type: integer
+        createdBy:
+          type: string
+          nullable: true
+        createdDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastSavedBy:
+          type: string
+          nullable: true
+        lastSavedDate:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - name
+        - title
+        - content
+        - mapName
+        - folderId
     Error:
       type: object
       properties:
