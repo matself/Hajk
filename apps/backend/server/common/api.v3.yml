@@ -315,6 +315,19 @@ paths:
           description: Service deleted
         404:
           description: Service not found
+  /services/{id}/layers/count:
+    get:
+      tags:
+        - Admin only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return layer counts linked to this service
   /services/{id}/layers:
     get:
       tags:
@@ -327,7 +340,7 @@ paths:
             type: string
       responses:
         200:
-          description: Return the Hajk layers that use this service
+          description: Return summary fields for layers linked to this service
   /services/{id}/maps:
     get:
       tags:

@@ -34,7 +34,7 @@ import {
   Service,
   useCreateService,
   useDeleteService,
-  useLayersByServiceId,
+  useLayerCountByServiceId,
   ServiceCreateInput,
   SERVICE_TYPE,
   SERVICE_STATUS,
@@ -141,10 +141,10 @@ export default function ServicesList({
     () => services?.find((service) => service.id === selectedServiceId),
     [services, selectedServiceId],
   );
-  const { data: layersByServiceId } = useLayersByServiceId(
+  const { data: layerCountByService } = useLayerCountByServiceId(
     selectedServiceId ?? "",
   );
-  const selectedServiceLayerCount = layersByServiceId?.layers?.length ?? 0;
+  const selectedServiceLayerCount = layerCountByService?.count ?? 0;
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };

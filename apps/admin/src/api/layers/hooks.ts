@@ -93,6 +93,9 @@ export const useCreateLayer = (serviceId: string) => {
       void queryClient.invalidateQueries({
         queryKey: ["services", "layers", serviceId],
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["services", "layers", serviceId, "count"],
+      });
     },
     onError: (error) => {
       console.error(error);
@@ -135,6 +138,9 @@ export const useDeleteLayer = (serviceId: string) => {
       void queryClient.invalidateQueries({ queryKey: ["layersUsageSummary"] });
       void queryClient.invalidateQueries({
         queryKey: ["services", "layers", serviceId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["services", "layers", serviceId, "count"],
       });
     },
     onError: (error) => {

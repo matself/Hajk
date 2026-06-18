@@ -12,6 +12,18 @@ import {
 
 const logger = log4js.getLogger("service.v3.layer");
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
+
+const SERVICE_LAYER_LIST_SELECT = {
+  id: true,
+  name: true,
+  selectedLayers: true,
+} as const;
+
+const SERVICE_LAYER_WHERE = (serviceId: string) => ({
+  serviceId,
+  deletedAt: null,
+});
+
 class ServicesService {
   constructor() {
     logger.debug("Initiating Services Service");
@@ -53,16 +65,37 @@ class ServicesService {
     return service;
   }
 
+  async getLayerCountByServiceId(id: string) {
+    const where = SERVICE_LAYER_WHERE(id);
+    const [displayLayerCount, searchLayerCount, editingLayerCount] =
+      await Promise.all([
+        prisma.displayLayer.count({ where }),
+        prisma.searchLayer.count({ where }),
+        prisma.editingLayer.count({ where }),
+      ]);
+
+    return {
+      count: displayLayerCount + searchLayerCount + editingLayerCount,
+      displayLayerCount,
+      searchLayerCount,
+      editingLayerCount,
+    };
+  }
+
   async getLayersByServiceId(id: string) {
+    const where = SERVICE_LAYER_WHERE(id);
     const [displayLayers, searchLayers, editingLayers] = await Promise.all([
       prisma.displayLayer.findMany({
-        where: { serviceId: id, deletedAt: null },
+        where,
+        select: SERVICE_LAYER_LIST_SELECT,
       }),
       prisma.searchLayer.findMany({
-        where: { serviceId: id, deletedAt: null },
+        where,
+        select: SERVICE_LAYER_LIST_SELECT,
       }),
       prisma.editingLayer.findMany({
-        where: { serviceId: id, deletedAt: null },
+        where,
+        select: SERVICE_LAYER_LIST_SELECT,
       }),
     ]);
 
@@ -99,7 +132,7 @@ class ServicesService {
       throw new HajkError(
         HttpStatusCodes.BAD_GATEWAY,
         `GetCapabilities failed: ${result.message}`,
-        HajkStatusCodes.UPSTREAM_CAPABILITIES_FAILED,
+        HajkStatusCodes.UPSTREAM_CAPABILITIES_FAILED
       );
     }
 

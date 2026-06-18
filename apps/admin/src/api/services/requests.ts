@@ -5,6 +5,7 @@ import {
   ServiceCreateInput,
   ServiceUpdateInput,
   ServiceCapabilities,
+  ServiceLayerCountResponse,
   SERVICE_STATUS,
   SERVICE_TYPE,
   Projection,
@@ -21,7 +22,8 @@ import useAppStateStore from "../../store/use-app-state-store";
  *
  * - The `getServices` function retrieves a list of all services.
  * - The `getServiceById` function fetches details of a specific service by its ID.
- * - The `getLayersByServiceId` function retrieves all layers linked to a given service ID.
+ * - The `getLayersByServiceId` function retrieves summary fields for layers linked to a service.
+ * - The `getLayerCountByServiceId` function returns layer counts without loading layer rows.
  * - The `getMapsByServiceId` function fetches all maps linked to a given service ID.
  * - The ´createService` function creates a new service.
  * - The `updateService` function updates a service.
@@ -113,6 +115,30 @@ export const getLayersByServiceId = async (
       );
     } else {
       throw new Error("Failed to fetch layers");
+    }
+  }
+};
+
+export const getLayerCountByServiceId = async (
+  serviceId: string,
+): Promise<ServiceLayerCountResponse> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.get<ServiceLayerCountResponse>(
+      `/services/${serviceId}/layers/count`,
+    );
+    if (!response.data) {
+      throw new Error("No layer count data found");
+    }
+    return response.data;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to fetch layer count. ErrorId: ${axiosError.response.data.errorId}.`,
+      );
+    } else {
+      throw new Error("Failed to fetch layer count");
     }
   }
 };

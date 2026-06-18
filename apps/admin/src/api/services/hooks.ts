@@ -8,6 +8,7 @@ import {
   getServices,
   getServiceById,
   getLayersByServiceId,
+  getLayerCountByServiceId,
   getMapsByServiceId,
   getGroupsByServiceId,
   createService,
@@ -18,6 +19,7 @@ import {
 } from "./requests";
 import {
   Service,
+  ServiceLayerCountResponse,
   ServiceUpdateInput,
   UseServiceCapabilitiesProps,
   Projection,
@@ -75,6 +77,17 @@ export const useLayersByServiceId = (
   return useQuery({
     queryKey: ["services", "layers", serviceId],
     queryFn: () => getLayersByServiceId(serviceId),
+    enabled: Boolean(serviceId),
+  });
+};
+
+// React Query hook to fetch layer counts by service id
+export const useLayerCountByServiceId = (
+  serviceId: string,
+): UseQueryResult<ServiceLayerCountResponse> => {
+  return useQuery({
+    queryKey: ["services", "layers", serviceId, "count"],
+    queryFn: () => getLayerCountByServiceId(serviceId),
     enabled: Boolean(serviceId),
   });
 };
@@ -158,6 +171,9 @@ export const useDeleteService = () => {
       void queryClient.invalidateQueries({ queryKey: ["services", serviceId] });
       void queryClient.invalidateQueries({
         queryKey: ["services", "layers", serviceId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["services", "layers", serviceId, "count"],
       });
       void queryClient.invalidateQueries({
         queryKey: ["mapsByServiceId", serviceId],
