@@ -11,6 +11,7 @@ import {
 } from "./constants";
 import useAppStateStore from "../../store/use-app-state-store";
 import PageTitle from "./components/page-title";
+import DefaultMapInitializer from "../../components/default-map-initializer";
 
 /** To turn on multi-admin WebSocket presence later: import `WebSocketProvider` and wrap the layout tree; set `ENABLE_WEBSOCKETS=true` in backend `.env`. */
 
@@ -40,6 +41,7 @@ export default function RootLayout() {
         square
       >
         <PageTitle title={"Hajk - admin"} />
+        <DefaultMapInitializer />
         <Header />
         <Sidebar
           open={sidebarOpen}

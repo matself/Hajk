@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import authRouter from "./controllers/auth/router.ts";
 import databaseRouter from "./controllers/database/router.ts";
+import documentsRouter from "./controllers/documents/router.ts";
 import groupsRouter from "./controllers/groups/router.ts";
 import layersRouter from "./controllers/layers/router.ts";
 import mapsRouter from "./controllers/maps/router.ts";
@@ -22,6 +23,7 @@ export default Router()
   // The admin endpoints require that the user is authenticated and has the admin role
   .use("/websockets", isAdmin, websocketsRouter) // Note that UPGRADE endpoint at /api/v3/websockets is not behind this router, but rather directly in the websockets.ts file
   .use("/database", isAdmin, databaseRouter)
+  .use("/documents", isAdmin, documentsRouter)
   .use("/groups", isAdmin, groupsRouter)
   .use("/layers", isAdmin, layersRouter)
   .use("/maps", isAdmin, mapsRouter)

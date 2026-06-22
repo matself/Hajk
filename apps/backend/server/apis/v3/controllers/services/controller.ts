@@ -29,6 +29,15 @@ class ServicesController {
     res.status(HttpStatusCodes.OK).json(service);
   });
 
+  getLayerCountByServiceId = asyncHandler(
+    async (req: Request, res: Response) => {
+      const counts = await ServicesService.getLayerCountByServiceId(
+        req.params.id,
+      );
+      res.status(HttpStatusCodes.OK).json(counts);
+    },
+  );
+
   getLayersByServiceId = asyncHandler(async (req: Request, res: Response) => {
     const layers = await ServicesService.getLayersByServiceId(req.params.id);
     res.status(HttpStatusCodes.OK).json({ count: layers.length, layers });

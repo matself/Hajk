@@ -71,6 +71,26 @@ enum HajkStatusCodes {
   LAYER_ALREADY_PUBLISHED = "CF005",
 
   /**
+   * The requested document name does not exist in the given map + folder.
+   */
+  UNKNOWN_DOCUMENT = "DB012",
+
+  /**
+   * A document with this name already exists in the given map + folder.
+   */
+  DOCUMENT_ALREADY_EXISTS = "DB009",
+
+  /**
+   * The requested folder name does not exist in the given map.
+   */
+  UNKNOWN_FOLDER = "DB010",
+
+  /**
+   * The folder cannot be deleted because it still contains documents.
+   */
+  FOLDER_NOT_EMPTY = "DB011",
+
+  /**
    * The request body is invalid, e.g. lacks some required fields.
    */
   INVALID_REQUEST_BODY = "RQ001",

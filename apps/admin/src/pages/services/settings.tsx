@@ -31,7 +31,7 @@ import {
   useServiceById,
   useUpdateService,
   useDeleteService,
-  useLayersByServiceId,
+  useLayerCountByServiceId,
   SERVICE_TYPE,
   ServiceUpdateInput,
   serverTypes,
@@ -123,8 +123,10 @@ export default function ServiceSettings() {
     useUpdateService();
   const { mutateAsync: removeService, isPending: isDeletingService } =
     useDeleteService();
-  const { data: layersByServiceId } = useLayersByServiceId(serviceId ?? "");
-  const count = layersByServiceId?.layers?.length ?? 0;
+  const { data: layerCountByService } = useLayerCountByServiceId(
+    serviceId ?? "",
+  );
+  const count = layerCountByService?.count ?? 0;
   const { defaultCoordinates } = useAppStateStore.getState();
   const {
     layers: getCapLayers,
@@ -919,7 +921,7 @@ export default function ServiceSettings() {
         {count >= 1 && (
           <Trans
             i18nKey="services.affectedLayers"
-            values={{ count: layersByServiceId?.count }}
+            values={{ count }}
             components={{ strong: <strong /> }}
           />
         )}

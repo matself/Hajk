@@ -108,6 +108,13 @@ export interface ServiceCapabilities {
   };
 }
 
+export interface ServiceLayerCountResponse {
+  count: number;
+  displayLayerCount: number;
+  searchLayerCount: number;
+  editingLayerCount: number;
+}
+
 export interface LayersGridProps {
   layers: string[];
   workspaces?: string[];

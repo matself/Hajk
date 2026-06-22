@@ -6,6 +6,8 @@ interface AppState {
   language: string;
   themeMode: PaletteMode;
   sidebarLocked: boolean;
+  defaultMap: string | null;
+  editorSpellcheckEnabled: boolean;
   apiBaseUrl: string;
   axiosConfigOverrides: Record<string, unknown>;
   servicesDefault: Record<string, unknown>;
@@ -15,6 +17,8 @@ interface AppState {
   setLanguage: (lang: Language) => void;
   setThemeMode: (theme: PaletteMode) => void;
   setSidebarLocked: (locked: boolean) => void;
+  setDefaultMap: (mapName: string) => void;
+  setEditorSpellcheckEnabled: (enabled: boolean) => void;
   loadConfig: () => Promise<void>;
 }
 
@@ -39,10 +43,27 @@ const getDefaultSidebarLocked = () => {
   return value === "true" ? true : false;
 };
 
+const getDefaultEditorSpellcheckEnabled = () => {
+  const stored = localStorage.getItem("editorSpellcheckEnabled");
+  if (stored !== null) return stored === "true";
+
+  // Migrate legacy key from early rich-text editor implementation
+  const legacy = localStorage.getItem("dh-rich-text-editor-spellcheck");
+  if (legacy !== null) {
+    localStorage.setItem("editorSpellcheckEnabled", legacy);
+    localStorage.removeItem("dh-rich-text-editor-spellcheck");
+    return legacy === "true";
+  }
+
+  return true;
+};
+
 const useAppStateStore = create<AppState>((set) => ({
   language: localStorage.getItem("language") ?? "sv",
   themeMode: getDefaultThemeMode(),
   sidebarLocked: getDefaultSidebarLocked(),
+  defaultMap: localStorage.getItem("defaultMap"),
+  editorSpellcheckEnabled: getDefaultEditorSpellcheckEnabled(),
   apiBaseUrl: "",
   axiosConfigOverrides: {},
   servicesDefault: {},
@@ -64,6 +85,16 @@ const useAppStateStore = create<AppState>((set) => ({
   setSidebarLocked: (locked: boolean) => {
     localStorage.setItem("sidebarLocked", locked.toString());
     set({ sidebarLocked: locked });
+  },
+
+  setDefaultMap: (mapName: string) => {
+    localStorage.setItem("defaultMap", mapName);
+    set({ defaultMap: mapName });
+  },
+
+  setEditorSpellcheckEnabled: (enabled: boolean) => {
+    localStorage.setItem("editorSpellcheckEnabled", String(enabled));
+    set({ editorSpellcheckEnabled: enabled });
   },
 
   loadConfig: async () => {

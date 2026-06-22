@@ -14,7 +14,7 @@ import { useForm, FieldValues } from "react-hook-form";
 
 export default function ToolSettings() {
   const { t } = useTranslation();
-  const { toolId } = useParams<{ toolId: string }>();
+  const { toolId } = useParams<{ toolId?: string }>();
   const { data: tools, isLoading } = useTools();
   const updateToolMutation = useUpdateTool();
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -25,6 +25,7 @@ export default function ToolSettings() {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
@@ -54,6 +55,13 @@ export default function ToolSettings() {
     // Extract type from data, rest goes into options
     const { type, ...options } = data;
 
+    // Strip attachments where both name and link are blank
+    if (Array.isArray(options.pdfLinks)) {
+      options.pdfLinks = (
+        options.pdfLinks as { name: string; link: string }[]
+      ).filter((a) => a.name.trim() !== "" || a.link.trim() !== "");
+    }
+
     updateToolMutation.mutate(
       {
         id: tool.id,
@@ -76,7 +84,7 @@ export default function ToolSettings() {
 
   const renderTool = (t: Tool) => {
     if (t) {
-      return <RenderTool tool={t} control={control} />;
+      return <RenderTool tool={t} control={control} setValue={setValue} />;
     }
   };
 
