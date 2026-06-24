@@ -1,11 +1,16 @@
-import {
-  Map,
+import type {
+  Map as MapRecord,
   MapsApiResponse,
   ProjectionsApiResponse,
   GroupApiResponse,
   MapMutation,
   ToolOnMap,
 } from "./types";
+import {
+  buildCreateMapPayload,
+  type MapCreateInput,
+} from "./map-create-types";
+import useAppStateStore from "../../store/use-app-state-store";
 import { LayersApiResponse } from "../layers/types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 
@@ -28,7 +33,7 @@ import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
  * All functions return a Promise with the expected data format or throw an error in case of failure.
  *
  */
-export const getMaps = async (): Promise<Map[]> => {
+export const getMaps = async (): Promise<MapRecord[]> => {
   const internalApiClient = getApiClient();
   try {
     const response = await internalApiClient.get<MapsApiResponse>("/maps");
@@ -49,10 +54,10 @@ export const getMaps = async (): Promise<Map[]> => {
   }
 };
 
-export const getMapByName = async (mapName: string): Promise<Map> => {
+export const getMapByName = async (mapName: string): Promise<MapRecord> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<Map>(`/maps/${mapName}`);
+    const response = await internalApiClient.get<MapRecord>(`/maps/${mapName}`);
     if (!response.data) {
       throw new Error("No map data found");
     }
@@ -190,10 +195,16 @@ export const updateMapTools = async (
   }
 };
 
-export const createMap = async (newMap: MapMutation): Promise<MapMutation> => {
+/**
+ * Creates a map via backend `POST /maps`.
+ * On 4xx/5xx, rejects with the Axios error so callers can read `response.data`.
+ */
+export const createMap = async (newMap: MapCreateInput): Promise<MapRecord> => {
   const internalApiClient = getApiClient();
+  const { mapsDefault } = useAppStateStore.getState();
+  const payload = buildCreateMapPayload(newMap, mapsDefault ?? {});
   try {
-    const response = await internalApiClient.post<MapMutation>("/maps", newMap);
+    const response = await internalApiClient.post<MapRecord>("/maps", payload);
     if (!response.data) {
       throw new Error("No map data found");
     }
@@ -201,12 +212,9 @@ export const createMap = async (newMap: MapMutation): Promise<MapMutation> => {
   } catch (error) {
     const axiosError = error as InternalApiError;
     if (axiosError.response) {
-      throw new Error(
-        `Failed to create map. ErrorId: ${axiosError.response.data.errorId}.`
-      );
-    } else {
-      throw new Error(`Failed to create map.`);
+      throw axiosError;
     }
+    throw new Error("Failed to create map");
   }
 };
 

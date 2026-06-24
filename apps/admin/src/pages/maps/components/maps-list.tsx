@@ -3,23 +3,72 @@ import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid";
 import { Button, Box, TextField, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { isAxiosError } from "axios";
 import Page from "../../../layouts/root/components/page";
-import { useMaps, Map, useCreateMap, MapMutation } from "../../../api/maps";
+import type { Map as MapRecord } from "../../../api/maps/types";
+import type { MapCreateInput } from "../../../api/maps/map-create-types";
+import { useMaps, useCreateMap } from "../../../api/maps";
 import DialogWrapper from "../../../components/flexible-dialog";
 import CreateButton from "../../../components/create-button";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "react-toastify";
 import StyledDataGrid from "../../../components/data-grid";
 import { GridColDef } from "@mui/x-data-grid";
 import MoreIcon from "@mui/icons-material/More";
 import { useDebounce } from "use-debounce";
+import type { ApiValidationDetail } from "../../../lib/internal-api-client";
+
+interface MapCreateFormValues {
+  name: string;
+  locked: boolean;
+  options: {
+    title: string;
+    description: string;
+  };
+}
 
 interface MapsListProps {
-  filterMaps: (maps: Map[]) => Map[];
+  filterMaps: (maps: MapRecord[]) => MapRecord[];
   showCreateButton?: boolean;
   pageTitleKey: string;
   baseRoute: string;
+}
+
+interface MapCreateErrorBody {
+  errorId?: string;
+  error?: string;
+  details?: ApiValidationDetail[];
+}
+
+function getCreateMapErrorMessage(error: unknown, t: TFunction): string {
+  if (!isAxiosError<MapCreateErrorBody>(error) || !error.response) {
+    return t("maps.createMapFailed");
+  }
+
+  const status = error.response.status;
+  const data = error.response.data;
+
+  if (status === 409) {
+    if (typeof data?.error === "string" && data.error.trim()) {
+      return data.error.trim();
+    }
+    return t("maps.createMapConflict");
+  }
+
+  if (status === 400 && Array.isArray(data?.details)) {
+    const messages = data.details.map((d) => d.message).filter(Boolean);
+    if (messages.length > 0) {
+      return messages.join(" · ");
+    }
+  }
+
+  if (typeof data?.error === "string" && data.error.trim()) {
+    return data.error.trim();
+  }
+
+  return t("maps.createMapFailed");
 }
 
 export default function MapsList({
@@ -42,7 +91,37 @@ export default function MapsList({
     setSearchString(event.target.value);
   };
 
+  const defaultValues: MapCreateFormValues = {
+    name: "",
+    locked: false,
+    options: {
+      title: "",
+      description: "",
+    },
+  };
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<MapCreateFormValues>({
+    defaultValues,
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+
+  const watchedName = useWatch({ control, name: "name" });
+
+  const isDuplicateMapName = useMemo(() => {
+    const normalizedName = watchedName?.trim().toLowerCase() ?? "";
+    if (!normalizedName || !maps?.length) return false;
+    return maps.some((map) => map.name.toLowerCase() === normalizedName);
+  }, [watchedName, maps]);
+
   const handleClickOpen = () => {
+    reset(defaultValues);
     setOpen(true);
   };
   const handleClose = () => {
@@ -56,7 +135,7 @@ export default function MapsList({
     const typeFilteredMaps = filterMaps(maps);
 
     // Then apply search filter
-    const searchFilter = (map: Map) => {
+    const searchFilter = (map: MapRecord) => {
       return (
         debouncedSearchString === "" ||
         Object.values(map).some((value) => {
@@ -89,7 +168,7 @@ export default function MapsList({
     return typeFilteredMaps.filter(searchFilter);
   }, [maps, debouncedSearchString, filterMaps]);
 
-  const columns: GridColDef<Map>[] = [
+  const columns: GridColDef<MapRecord>[] = [
     { field: "name", flex: 1, headerName: t("map.name") },
     {
       field: "description",
@@ -130,47 +209,33 @@ export default function MapsList({
     },
   ];
 
-  const defaultValues = {
-    id: 0,
-    name: "",
-    locked: false,
-    options: {
-      title: "",
-      description: "",
-    },
-  };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<MapMutation>({
-    defaultValues,
-    mode: "onChange",
-    reValidateMode: "onChange",
-  });
-
-  const handleMapSubmit = async (mapData: MapMutation) => {
+  const handleMapSubmit = async (mapData: MapCreateFormValues) => {
     try {
-      const payload = {
-        id: 0, // This will be set by the server
-        name: mapData.name,
+      const payload: MapCreateInput = {
+        name: mapData.name.trim(),
         locked: mapData.locked,
         options: mapData.options,
       };
       const response = await createMap(payload);
+      if (response.id == null) {
+        toast.error(t("maps.createMapFailed"), {
+          position: "bottom-left",
+          theme: palette.mode,
+          hideProgressBar: true,
+        });
+        return;
+      }
       toast.success(t("maps.createMapSuccess", { name: mapData.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
       });
-      void navigate(`${baseRoute}/${response?.id}`);
-      reset();
+      void navigate(`${baseRoute}/${response.id}`);
+      reset(defaultValues);
       handleClose();
     } catch (error) {
       console.error("Failed to submit map:", error);
-      toast.error(t("maps.createMapFailed"), {
+      toast.error(getCreateMapErrorMessage(error, t), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -178,7 +243,7 @@ export default function MapsList({
     }
   };
 
-  const onSubmit = (data: MapMutation) => {
+  const onSubmit = (data: MapCreateFormValues) => {
     void handleMapSubmit(data);
   };
 
@@ -217,7 +282,12 @@ export default function MapsList({
               label={t("map.name")}
               fullWidth
               {...register("name", {
-                required: `${t("common.required")}`,
+                validate: (value) => {
+                  const trimmed = value.trim();
+                  if (!trimmed) return `${t("common.required")}`;
+                  if (isDuplicateMapName) return t("maps.createMapConflict");
+                  return true;
+                },
               })}
               error={!!errors.name}
               helperText={errors.name?.message}
@@ -260,7 +330,7 @@ export default function MapsList({
           </Box>
 
           <Grid size={12}>
-            <StyledDataGrid<Map>
+            <StyledDataGrid<MapRecord>
               storageKey="maps"
               customSx={{ height: "calc(100vh - 320px)" }}
               onRowClick={({ row }) => {
