@@ -1,69 +1,44 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo, type ReactElement } from "react";
 import { useParams, useSearchParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { useTranslation } from "react-i18next";
 import {
   TextField,
   useTheme,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Button,
-  List,
-  ListItem,
-  Typography,
-  styled,
+  Tabs,
+  Tab,
+  Box,
 } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LayersIcon from "@mui/icons-material/Layers";
 import BuildIcon from "@mui/icons-material/Build";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import MapIcon from "@mui/icons-material/Map";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
+import PaletteIcon from "@mui/icons-material/Palette";
+import CookieIcon from "@mui/icons-material/Cookie";
 
-const StyledTabButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== "isActive",
-})<{ isActive: boolean }>(({ theme, isActive }) => ({
-  textTransform: "none",
-  borderRadius: 14,
-  justifyContent: "flex-start",
-  color: theme.palette.text.primary,
-  paddingTop: theme.spacing(1.8),
-  paddingBottom: theme.spacing(1.8),
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
-  minHeight: 48,
-  backgroundColor: isActive ? theme.palette.action.focus : "transparent",
-  transition: "all 200ms ease",
-  "&:hover": {
-    backgroundColor: isActive
-      ? theme.palette.action.selected
-      : theme.palette.action.hover,
-  },
-  "& .MuiButton-startIcon": {
-    fontSize: "1.25rem",
-    marginRight: theme.spacing(2),
-  },
-}));
-import { Controller, FieldValues, useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import {
   useMapByName,
-  MapMutation,
   useUpdateMap,
   useMaps,
   useToolsByMapName,
-  useUpdateMapTools,
   ToolOnMap,
 } from "../../api/maps";
+import {
+  buildMapSettingsFormValues,
+  buildMapUpdatePayload,
+} from "./map-settings-form-values";
 import { SquareSpinnerComponent } from "../../components/progress/square-progress";
 import FormActionPanel from "../../components/form-action-panel";
 import { toast } from "react-toastify";
 import { HttpError } from "../../lib/http-error";
 import FormContainer from "../../components/form-components/form-container";
-import FormPanel from "../../components/form-components/form-panel";
-import FormFieldGrid, { FormFieldRow } from "../../components/form-components/form-field-grid";
-import FormAccordion from "../../components/form-components/form-accordion";
+import MapSettingsForm, {
+  type MapSettingsSection,
+} from "./components/map-settings-form";
 import {
   LayerSwitcherDnD,
   TreeItemData,
@@ -74,6 +49,98 @@ import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
 import { useTools } from "../../api/tools";
 import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
+
+const MAP_PAGE_TABS = [
+  { key: "menu", labelKey: "common.layerGroups", icon: <LayersIcon /> },
+  { key: "settings", labelKey: "common.settings", icon: <SettingsIcon /> },
+  { key: "tools", labelKey: "common.tools", icon: <BuildIcon /> },
+] as const;
+
+const MAP_SETTINGS_SECTIONS: {
+  key: MapSettingsSection;
+  labelKey: string;
+  icon: ReactElement;
+}[] = [
+  { key: "map", labelKey: "map.baseSettings", icon: <MapIcon /> },
+  {
+    key: "controls",
+    labelKey: "map.settingsSection.controls",
+    icon: <TouchAppIcon />,
+  },
+  {
+    key: "appearance",
+    labelKey: "map.settingsSection.appearance",
+    icon: <PaletteIcon />,
+  },
+  {
+    key: "content",
+    labelKey: "map.settingsSection.content",
+    icon: <CookieIcon />,
+  },
+  {
+    key: "search",
+    labelKey: "common.searchSettings",
+    icon: <ManageSearchIcon />,
+  },
+];
+
+const VALID_MAP_SETTINGS_SECTIONS = new Set<MapSettingsSection>(
+  MAP_SETTINGS_SECTIONS.map((section) => section.key),
+);
+
+interface ToolZones {
+  drawer: TreeItems<TreeItemData>;
+  widgetLeft: TreeItems<TreeItemData>;
+  widgetRight: TreeItems<TreeItemData>;
+  control: TreeItems<TreeItemData>;
+}
+
+const EMPTY_TOOL_ZONES: ToolZones = {
+  drawer: [],
+  widgetLeft: [],
+  widgetRight: [],
+  control: [],
+};
+
+function mapToolsToZones(mapTools: ToolOnMap[]): ToolZones {
+  const toItem = (tool: ToolOnMap): TreeItem<TreeItemData> => ({
+    id: `tool${ID_DELIMITER}${tool.toolId}`,
+    name: tool.tool.type,
+    type: "tool" as const,
+    canHaveChildren: false,
+  });
+
+  const byZone = (zone: string) =>
+    [...mapTools]
+      .filter((tool) => tool.target === zone)
+      .sort((a, b) => a.index - b.index)
+      .map(toItem);
+
+  return {
+    drawer: byZone("drawer"),
+    widgetLeft: byZone("widgetLeft"),
+    widgetRight: byZone("widgetRight"),
+    control: byZone("controlButton"),
+  };
+}
+
+const tabTextColorSx = {
+  "& .MuiTab-root": {
+    color: (theme: Theme) =>
+      theme.palette.mode === "dark"
+        ? theme.palette.common.white
+        : theme.palette.common.black,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: (theme: Theme) =>
+      theme.palette.mode === "dark"
+        ? theme.palette.common.white
+        : theme.palette.common.black,
+  },
+  "& .MuiTab-icon": {
+    color: "inherit",
+  },
+};
 
 export default function MapSettings() {
   const { t } = useTranslation();
@@ -90,12 +157,45 @@ export default function MapSettings() {
     | "settings"
     | "tools";
   const setActiveTab = (tab: string) =>
-    setSearchParams({ tab }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", tab);
+        return next;
+      },
+      { replace: true },
+    );
+
+  const settingsSectionFromUrl = searchParams.get("settingsTab");
+  const normalizedSettingsSection: MapSettingsSection | null =
+    settingsSectionFromUrl === "ui"
+      ? "appearance"
+      : (settingsSectionFromUrl as MapSettingsSection | null);
+  const settingsSection: MapSettingsSection =
+    normalizedSettingsSection &&
+    VALID_MAP_SETTINGS_SECTIONS.has(normalizedSettingsSection)
+      ? normalizedSettingsSection
+      : "map";
+  const setSettingsSection = (section: MapSettingsSection) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", "settings");
+        next.set("settingsTab", section);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
+  const showSettingsSearchUi =
+    activeTab === "settings" && settingsSection === "search";
+  const settingsSearchTerm = showSettingsSearchUi ? settingsSearchQuery : "";
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
   const { data: mapTools } = useToolsByMapName(mapName ?? "");
-  const { mutateAsync: updateMapToolsMutation } = useUpdateMapTools();
 
   // Drop zone states
   const [backgroundLayersDZ, setBackgroundLayersDZ] = useState<
@@ -104,81 +204,58 @@ export default function MapSettings() {
   const [groupLayersDZ, setGroupLayersDZ] = useState<TreeItems<TreeItemData>>(
     [],
   );
-  const [drawerDZ, setDrawerDZ] = useState<TreeItems<TreeItemData>>([]);
-  const [controlDZ, setControlDZ] = useState<TreeItems<TreeItemData>>([]);
-  const [widgetLeftDZ, setWidgetLeftDZ] = useState<TreeItems<TreeItemData>>([]);
-  const [widgetRightDZ, setWidgetRightDZ] = useState<TreeItems<TreeItemData>>(
-    [],
+  const serverToolZones = useMemo(
+    () => (mapTools ? mapToolsToZones(mapTools) : null),
+    [mapTools],
   );
-  const [isToolsDirty, setIsToolsDirty] = useState(false);
-  const initialToolsLoaded = useRef(false);
+  const [toolsDraft, setToolsDraft] = useState<{
+    mapName: string;
+    zones: ToolZones;
+  } | null>(null);
 
-  useEffect(() => {
-    if (!mapTools) return;
-    const toItem = (t: ToolOnMap): TreeItem<TreeItemData> => ({
-      id: `tool${ID_DELIMITER}${t.toolId}`,
-      name: t.tool.type,
-      type: "tool" as const,
-      canHaveChildren: false,
-    });
+  const toolZones =
+    toolsDraft != null && toolsDraft.mapName === mapName
+      ? toolsDraft.zones
+      : (serverToolZones ?? EMPTY_TOOL_ZONES);
 
-    const byZone = (zone: string) =>
-      [...mapTools]
-        .filter((t) => t.target === zone)
-        .sort((a, b) => a.index - b.index)
-        .map(toItem);
+  const updateToolZone = useCallback(
+    (zone: keyof ToolZones, items: TreeItems<TreeItemData>) => {
+      setToolsDraft((prev) => {
+        const base =
+          prev != null && prev.mapName === mapName
+            ? prev.zones
+            : (serverToolZones ?? EMPTY_TOOL_ZONES);
 
-    setDrawerDZ(byZone("drawer"));
-    setWidgetLeftDZ(byZone("widgetLeft"));
-    setWidgetRightDZ(byZone("widgetRight"));
-    setControlDZ(byZone("controlButton"));
-    initialToolsLoaded.current = true;
-    setIsToolsDirty(false);
-  }, [mapTools]);
-
-  const markToolsDirty = useCallback(() => {
-    if (initialToolsLoaded.current) setIsToolsDirty(true);
-  }, []);
-
-  const handleSaveTools = async () => {
-    const zones: [TreeItems<TreeItemData>, string][] = [
-      [drawerDZ, "drawer"],
-      [widgetLeftDZ, "widgetLeft"],
-      [widgetRightDZ, "widgetRight"],
-      [controlDZ, "controlButton"],
-    ];
-    const toolsPayload = zones.flatMap(([items, zone]) =>
-      items.map((item, index) => ({
-        toolId: parseInt(String(item.id).split(ID_DELIMITER)[1], 10),
-        index,
-        target: zone,
-      }))
-    );
-    try {
-      await updateMapToolsMutation({ mapName: mapName ?? "", tools: toolsPayload });
-      toast.success(t("maps.updateMapSuccess", { name: mapName }), {
-        position: "bottom-left",
-        theme: palette.mode,
-        hideProgressBar: true,
+        return {
+          mapName: mapName ?? "",
+          zones: { ...base, [zone]: items },
+        };
       });
-      setIsToolsDirty(false);
-    } catch (error) {
-      console.error("Failed to update map tools:", error);
-      toast.error(t("maps.updateMapFailed", { name: mapName }), {
-        position: "bottom-left",
-        theme: palette.mode,
-        hideProgressBar: true,
-      });
-    }
-  };
+    },
+    [mapName, serverToolZones],
+  );
 
   const backgroundImage = "/mapbackground.png";
 
+  const mapFormBaseline = useMemo(
+    () => (map ? buildMapSettingsFormValues(map) : null),
+    [map],
+  );
+
+  const mapFormSyncKey = map ? map.name : null;
+
+  const [committedFormBaseline, setCommittedFormBaseline] =
+    useState<FieldValues | null>(null);
+  const [syncedMapFormKey, setSyncedMapFormKey] = useState<string | null>(null);
+
+  if (mapFormSyncKey !== syncedMapFormKey) {
+    setSyncedMapFormKey(mapFormSyncKey);
+    setCommittedFormBaseline(null);
+  }
+
+  const formBaseline = committedFormBaseline ?? mapFormBaseline;
+
   const handleExternalSubmit = () => {
-    if (activeTab === "tools") {
-      void handleSaveTools();
-      return;
-    }
     if (formRef.current) {
       formRef.current.requestSubmit();
     }
@@ -188,112 +265,33 @@ export default function MapSettings() {
     register,
     handleSubmit,
     control,
-    reset,
+    getValues,
     formState: { isDirty },
   } = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
+    values: formBaseline ?? undefined,
   });
 
-  useEffect(() => {
-    if (map) {
-      const options = map.options ?? {};
+  const handleUpdateMap = async (formData: FieldValues) => {
+    if (!map) return;
 
-      const defaultValues = {
-        name: map.name ?? "",
-        locked: map.locked ?? false,
-        "options.projection": options.projection ?? "EPSG:3006",
-        "options.startZoom": options.startZoom ?? "1.33",
-        "options.maxZoom": options.maxZoom ?? "8",
-        "options.minZoom": options.minZoom ?? "0",
-        "options.centerCoordinate":
-          options.centerCoordinate ?? "576357, 6386049",
-        "options.origin": options.origin ?? "0,0",
-        "options.extent":
-          options.extent ?? "-1200000, 4700000, 2600000, 8500000",
-        "options.resolutions":
-          options.resolutions ?? "2048, 1024, 512, 256, 128, 64, 32, 16, 8",
-        "options.printResolutions": options.printResolutions ?? "",
-        "options.constrainResolution": options.constrainResolution === "true",
-        "options.constrainOnlyCenter": options.constrainOnlyCenter === "true",
-        "options.constrainResolutionMobile":
-          options.constrainResolutionMobile === "true",
-        "options.enableDownloadLink": options.enableDownloadLink === "true",
-        "options.enableAppStateInHash": options.enableAppStateInHash === "true",
-        "options.confirmOnWindowClose": options.confirmOnWindowClose === "true",
-        "options.logoLight": options.logoLight ?? "/logoLight.png",
-        "options.logoDark": options.logoDark ?? "",
-        "options.legendOptions": options.legendOptions ?? "",
-        "options.crossOrigin": options.crossOrigin ?? "anonymous",
-        "options.mapselector": options.mapselector === "true",
-        "options.mapcleaner": options.mapcleaner === "true",
-        "options.mapresetter": options.mapresetter === "true",
-        "options.showThemeToggler": options.showThemeToggler === "true",
-        "options.showUserAvatar": options.showUserAvatar === "true",
-        "options.showRecentlyUsedPlugins":
-          options.showRecentlyUsedPlugins === "true",
-        "options.altShiftDragRotate": options.altShiftDragRotate === "true",
-        "options.onFocusOnly": options.onFocusOnly === "true",
-        "options.doubleClickZoom": options.doubleClickZoom === "true",
-        "options.keyboard": options.keyboard === "true",
-        "options.mouseWheelZoom": options.mouseWheelZoom === "true",
-        "options.shiftDragZoom": options.shiftDragZoom === "true",
-        "options.dragPan": options.dragPan === "true",
-        "options.pinchRotate": options.pinchRotate === "true",
-        "options.pinchZoom": options.pinchZoom === "true",
-        "options.zoomLevelDelta": options.zoomLevelDelta ?? "",
-        "options.zoomAnimationDuration": options.zoomAnimationDuration ?? "",
-        "options.preferredColorScheme": options.preferredColorScheme ?? "user",
-        "options.primaryColor": options.primaryColor ?? "#333333",
-        "options.secondaryColor": options.secondaryColor ?? "#ffa000",
-        "options.drawerStatic": options.drawerStatic === "true",
-        "options.drawerVisible": options.drawerVisible === "true",
-        "options.drawerVisibleMobile": options.drawerVisibleMobile === "true",
-        "options.drawerPermanent": options.drawerPermanent === "true",
-        "options.drawerContent": options.drawerContent ?? "plugins",
-        "options.drawerTitle": options.drawerTitle ?? "Kartverktyg",
-        "options.drawerButtonTitle": options.drawerButtonTitle ?? "Kartverktyg",
-        "options.drawerButtonIcon": options.drawerButtonIcon ?? "MapIcon",
-        "options.showCookieNotice": options.showCookieNotice === "true",
-        "options.cookieUse3dPart": options.cookieUse3dPart === "true",
-        "options.showCookieNoticeButton":
-          options.showCookieNoticeButton === "true",
-        "options.cookieLink":
-          options.cookieLink ??
-          "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/",
-        "options.cookieMessage":
-          options.cookieMessage ??
-          "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
-        "options.introductionEnabled": options.introductionEnabled === "true",
-        "options.introductionShowControlButton":
-          options.introductionShowControlButton === "true",
-        "options.introductionSteps": options.introductionSteps ?? "[]",
-      };
-
-      reset(defaultValues);
-    }
-  }, [map, reset]);
-
-  const handleUpdateMap = async (mapData: MapMutation) => {
     try {
-      const payload = {
-        name: mapData.name ?? "",
-        locked: mapData.locked ?? false,
-        options: mapData.options ?? {},
-      };
+      const payload = buildMapUpdatePayload(formData, map);
 
       await updateMap({
-        mapName: map?.name ?? "",
+        mapName: map.name,
         data: payload,
       });
-      toast.success(t("maps.updateMapSuccess", { name: mapData.name }), {
+      setCommittedFormBaseline(formData);
+      toast.success(t("maps.updateMapSuccess", { name: map.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
       });
     } catch (error) {
       console.error("Failed to update map:", error);
-      toast.error(t("maps.updateMapFailed", { name: map?.name }), {
+      toast.error(t("maps.updateMapFailed", { name: map.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -317,34 +315,23 @@ export default function MapSettings() {
           : t("common.settings")
       }
     >
-      <List
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 1,
-          p: 0,
-          mb: 2,
-        }}
+      <Tabs
+        value={activeTab}
+        onChange={(_, value) =>
+          setActiveTab(value as (typeof MAP_PAGE_TABS)[number]["key"])
+        }
+        sx={{ mb: 2, ...tabTextColorSx }}
       >
-        {(
-          [
-            { key: "menu", label: t("common.layerGroups"), icon: <LayersIcon /> },
-            { key: "settings", label: t("common.settings"), icon: <SettingsIcon /> },
-            { key: "tools", label: t("common.tools"), icon: <BuildIcon /> },
-          ] as const
-        ).map((tab) => (
-          <ListItem key={tab.key} disablePadding disableGutters sx={{ width: "auto" }}>
-            <StyledTabButton
-              isActive={activeTab === tab.key}
-              startIcon={tab.icon}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              <Typography>{tab.label}</Typography>
-            </StyledTabButton>
-          </ListItem>
+        {MAP_PAGE_TABS.map((tab) => (
+          <Tab
+            key={tab.key}
+            value={tab.key}
+            icon={tab.icon}
+            iconPosition="start"
+            label={t(tab.labelKey as never)}
+          />
         ))}
-      </List>
+      </Tabs>
       <FormActionPanel
         updateStatus={updateStatus}
         onUpdate={handleExternalSubmit}
@@ -353,935 +340,101 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
-        isDirty={isDirty || isToolsDirty}
+        isDirty={isDirty}
       >
-        {activeTab === "settings" && (
+        <Box sx={{ display: activeTab === "settings" ? "block" : "none" }}>
           <FormContainer
             onSubmit={(e) => {
               e.preventDefault();
               void handleSubmit((data: FieldValues) => {
-                const toNumber = (v: unknown) =>
-                  typeof v === "string" && v.trim() !== ""
-                    ? Number(v)
-                    : (v as number | undefined);
-
-                const normalized: MapMutation = {
-                  id: 0,
-                  name: (data.name as string) ?? "",
-                  locked: (data.locked as boolean) ?? false,
-                  options: {
-                    projection:
-                      (data["options.projection"] as string) ?? "EPSG:3006",
-                    startZoom: String(
-                      toNumber(data["options.startZoom"]) ?? 1.33,
-                    ),
-                    maxZoom: String(toNumber(data["options.maxZoom"]) ?? 8),
-                    minZoom: String(toNumber(data["options.minZoom"]) ?? 0),
-                    centerCoordinate:
-                      (data["options.centerCoordinate"] as string) ??
-                      "576357, 6386049",
-                    origin: (data["options.origin"] as string) ?? "0,0",
-                    extent:
-                      (data["options.extent"] as string) ??
-                      "-1200000, 4700000, 2600000, 8500000",
-                    resolutions:
-                      (data["options.resolutions"] as string) ??
-                      "2048, 1024, 512, 256, 128, 64, 32, 16, 8",
-                    printResolutions:
-                      (data["options.printResolutions"] as string) ?? "",
-                    constrainResolution: String(
-                      Boolean(data["options.constrainResolution"]),
-                    ),
-                    constrainOnlyCenter: String(
-                      Boolean(data["options.constrainOnlyCenter"]),
-                    ),
-                    constrainResolutionMobile: String(
-                      Boolean(data["options.constrainResolutionMobile"]),
-                    ),
-                    enableDownloadLink: String(
-                      Boolean(data["options.enableDownloadLink"]),
-                    ),
-                    enableAppStateInHash: String(
-                      Boolean(data["options.enableAppStateInHash"]),
-                    ),
-                    confirmOnWindowClose: String(
-                      Boolean(data["options.confirmOnWindowClose"]),
-                    ),
-                    logoLight:
-                      (data["options.logoLight"] as string) ?? "/logoLight.png",
-                    logoDark: (data["options.logoDark"] as string) ?? "",
-                    legendOptions:
-                      (data["options.legendOptions"] as string) ?? "",
-                    crossOrigin:
-                      (data["options.crossOrigin"] as string) ?? "anonymous",
-                    mapselector: String(Boolean(data["options.mapselector"])),
-                    mapcleaner: String(Boolean(data["options.mapcleaner"])),
-                    mapresetter: String(Boolean(data["options.mapresetter"])),
-                    showThemeToggler: String(
-                      Boolean(data["options.showThemeToggler"]),
-                    ),
-                    showUserAvatar: String(
-                      Boolean(data["options.showUserAvatar"]),
-                    ),
-                    showRecentlyUsedPlugins: String(
-                      Boolean(data["options.showRecentlyUsedPlugins"]),
-                    ),
-                    altShiftDragRotate: String(
-                      Boolean(data["options.altShiftDragRotate"]),
-                    ),
-                    onFocusOnly: String(Boolean(data["options.onFocusOnly"])),
-                    doubleClickZoom: String(
-                      Boolean(data["options.doubleClickZoom"]),
-                    ),
-                    keyboard: String(Boolean(data["options.keyboard"])),
-                    mouseWheelZoom: String(
-                      Boolean(data["options.mouseWheelZoom"]),
-                    ),
-                    shiftDragZoom: String(
-                      Boolean(data["options.shiftDragZoom"]),
-                    ),
-                    dragPan: String(Boolean(data["options.dragPan"])),
-                    pinchRotate: String(Boolean(data["options.pinchRotate"])),
-                    pinchZoom: String(Boolean(data["options.pinchZoom"])),
-                    zoomLevelDelta: String(
-                      toNumber(data["options.zoomLevelDelta"]) ?? "",
-                    ),
-                    zoomAnimationDuration: String(
-                      toNumber(data["options.zoomAnimationDuration"]) ?? "",
-                    ),
-                    preferredColorScheme:
-                      (data["options.preferredColorScheme"] as string) ??
-                      "user",
-                    primaryColor:
-                      (data["options.primaryColor"] as string) ?? "#333333",
-                    secondaryColor:
-                      (data["options.secondaryColor"] as string) ?? "#ffa000",
-                    drawerStatic: String(Boolean(data["options.drawerStatic"])),
-                    drawerVisible: String(
-                      Boolean(data["options.drawerVisible"]),
-                    ),
-                    drawerVisibleMobile: String(
-                      Boolean(data["options.drawerVisibleMobile"]),
-                    ),
-                    drawerPermanent: String(
-                      Boolean(data["options.drawerPermanent"]),
-                    ),
-                    drawerContent:
-                      (data["options.drawerContent"] as string) ?? "plugins",
-                    drawerTitle:
-                      (data["options.drawerTitle"] as string) ?? "Kartverktyg",
-                    drawerButtonTitle:
-                      (data["options.drawerButtonTitle"] as string) ??
-                      "Kartverktyg",
-                    drawerButtonIcon:
-                      (data["options.drawerButtonIcon"] as string) ?? "MapIcon",
-                    showCookieNotice: String(
-                      Boolean(data["options.showCookieNotice"]),
-                    ),
-                    cookieUse3dPart: String(
-                      Boolean(data["options.cookieUse3dPart"]),
-                    ),
-                    showCookieNoticeButton: String(
-                      Boolean(data["options.showCookieNoticeButton"]),
-                    ),
-                    cookieLink:
-                      (data["options.cookieLink"] as string) ??
-                      "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/",
-                    cookieMessage:
-                      (data["options.cookieMessage"] as string) ??
-                      "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
-                    introductionEnabled: String(
-                      Boolean(data["options.introductionEnabled"]),
-                    ),
-                    introductionShowControlButton: String(
-                      Boolean(data["options.introductionShowControlButton"]),
-                    ),
-                    introductionSteps:
-                      (data["options.introductionSteps"] as string) ?? "[]",
-                  },
-                };
-
-                void handleUpdateMap(normalized);
+                void handleUpdateMap(data);
               })(e);
             }}
             formRef={formRef}
             noValidate={false}
           >
-            <FormPanel title={t("map.baseSettings")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.projection")}
-                    fullWidth
-                    defaultValue={map?.options?.projection ?? "EPSG:3006"}
-                    {...register("options.projection")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.startZoom")}
-                    fullWidth
-                    type="number"
-                    defaultValue={map?.options?.startZoom ?? 1.33}
-                    {...register("options.startZoom")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.maxZoom")}
-                    fullWidth
-                    type="number"
-                    defaultValue={map?.options?.maxZoom ?? 8}
-                    {...register("options.maxZoom")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.minZoom")}
-                    fullWidth
-                    type="number"
-                    defaultValue={map?.options?.minZoom ?? 0}
-                    {...register("options.minZoom")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.centerCoordinate")}
-                    fullWidth
-                    defaultValue={
-                      map?.options?.centerCoordinate ?? "576357, 6386049"
-                    }
-                    {...register("options.centerCoordinate")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.origin")}
-                    fullWidth
-                    defaultValue={map?.options?.origin ?? "0,0"}
-                    {...register("options.origin")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.extent")}
-                    fullWidth
-                    defaultValue={
-                      map?.options?.extent ??
-                      "-1200000, 4700000, 2600000, 8500000"
-                    }
-                    {...register("options.extent")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.resolutions")}
-                    fullWidth
-                    defaultValue={
-                      map?.options?.resolutions ??
-                      "2048, 1024, 512, 256, 128, 64, 32, 16, 8"
-                    }
-                    {...register("options.resolutions")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.printResolutions")}
-                    fullWidth
-                    defaultValue={map?.options?.printResolutions ?? ""}
-                    {...register("options.printResolutions")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormPanel>
-
-            <FormAccordion title={t("map.extraSettings")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.constrainResolution"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.constrainResolution")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.constrainOnlyCenter"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.constrainOnlyCenter")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.constrainResolutionMobile"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.constrainResolutionMobile")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.enableDownloadLink"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.enableDownloadLink")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.enableAppStateInHash"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.enableAppStateInHash")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.confirmOnWindowClose"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.confirmOnWindowClose")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.logoLight")}
-                    fullWidth
-                    defaultValue={map?.options?.logoLight ?? "/logoLight.png"}
-                    {...register("options.logoLight")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.logoDark")}
-                    fullWidth
-                    defaultValue={map?.options?.logoDark ?? ""}
-                    {...register("options.logoDark")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.legendOptions")}
-                    fullWidth
-                    defaultValue={map?.options?.legendOptions ?? ""}
-                    {...register("options.legendOptions")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.crossOrigin")}
-                    fullWidth
-                    defaultValue={map?.options?.crossOrigin ?? "anonymous"}
-                    {...register("options.crossOrigin")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
-
-            <FormAccordion title={t("map.extraMapControls")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.mapselector"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.mapselector")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.mapcleaner"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.mapcleaner")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.mapresetter"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.mapresetter")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.showThemeToggler"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.showThemeToggler")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.showUserAvatar"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.showUserAvatar")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.showRecentlyUsedPlugins"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.showRecentlyUsedPlugins")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
-
-            <FormAccordion title={t("map.interactions")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.altShiftDragRotate"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.altShiftDragRotate")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.onFocusOnly"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.onFocusOnly")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.doubleClickZoom"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.doubleClickZoom")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.keyboard"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.keyboard")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.mouseWheelZoom"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.mouseWheelZoom")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.shiftDragZoom"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.shiftDragZoom")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.dragPan"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.dragPan")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.pinchRotate"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.pinchRotate")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.pinchZoom"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.pinchZoom")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.zoomLevelDelta")}
-                    fullWidth
-                    type="number"
-                    defaultValue={map?.options?.zoomLevelDelta ?? ""}
-                    {...register("options.zoomLevelDelta")}
-                  />
-                  <TextField
-                    label={t("map.zoomAnimationDuration")}
-                    fullWidth
-                    type="number"
-                    defaultValue={map?.options?.zoomAnimationDuration ?? ""}
-                    {...register("options.zoomAnimationDuration")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
-
-            <FormAccordion title={t("map.colors")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormControl fullWidth>
-                    <InputLabel id="preferredColorScheme-label">
-                      {t("map.preferredColorScheme")}
-                    </InputLabel>
-                    <Controller
-                      name="options.preferredColorScheme"
-                      control={control}
-                      defaultValue={
-                        map?.options?.preferredColorScheme ?? "user"
-                      }
-                      render={({ field }) => (
-                        <Select
-                          labelId="preferredColorScheme-label"
-                          label={t("map.preferredColorScheme")}
-                          {...field}
-                        >
-                          <MenuItem value="user">
-                            {t("map.colorSchemeUser")}
-                          </MenuItem>
-                          <MenuItem value="light">
-                            {t("map.colorSchemeLight")}
-                          </MenuItem>
-                          <MenuItem value="dark">
-                            {t("map.colorSchemeDark")}
-                          </MenuItem>
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.primaryColor")}
-                    fullWidth
-                    defaultValue={map?.options?.primaryColor ?? "#333333"}
-                    {...register("options.primaryColor")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.secondaryColor")}
-                    fullWidth
-                    defaultValue={map?.options?.secondaryColor ?? "#ffa000"}
-                    {...register("options.secondaryColor")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
-
-            <FormAccordion title={t("map.sidepanel")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.drawerStatic"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.drawerStatic")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.drawerVisible"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.drawerVisible")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.drawerVisibleMobile"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.drawerVisibleMobile")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.drawerPermanent"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.drawerPermanent")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-                <FormFieldRow>
-                <TextField
-                  label={t("map.drawerContent")}
-                  fullWidth
-                  defaultValue={map?.options?.drawerContent ?? "plugins"}
-                  {...register("options.drawerContent")}
+            <Tabs
+              value={settingsSection}
+              onChange={(_, value) =>
+                setSettingsSection(value as MapSettingsSection)
+              }
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                mb: 2,
+                minHeight: 36,
+                pl: 1,
+                borderLeft: 2,
+                borderColor: "divider",
+                "& .MuiTab-root": {
+                  minHeight: 36,
+                  fontSize: (theme) => theme.typography.body2.fontSize,
+                  fontWeight: 500,
+                  textTransform: "none",
+                  px: 1.5,
+                  py: 0.5,
+                  minWidth: "auto",
+                  color: (theme: Theme) =>
+                    theme.palette.mode === "dark"
+                      ? theme.palette.common.white
+                      : theme.palette.common.black,
+                },
+                "& .MuiTab-root.Mui-selected": {
+                  color: (theme: Theme) =>
+                    theme.palette.mode === "dark"
+                      ? theme.palette.common.white
+                      : theme.palette.common.black,
+                },
+                "& .MuiTab-icon": {
+                  fontSize: "1.125rem",
+                  color: "inherit",
+                },
+                "& .MuiTabs-indicator": {
+                  height: 2,
+                },
+              }}
+            >
+              {MAP_SETTINGS_SECTIONS.map((section) => (
+                <Tab
+                  key={section.key}
+                  value={section.key}
+                  icon={section.icon}
+                  iconPosition="start"
+                  label={t(section.labelKey as never)}
                 />
-              </FormFieldRow>
-              <FormFieldRow>
-                <TextField
-                  label={t("map.drawerTitle")}
-                  fullWidth
-                  defaultValue={map?.options?.drawerTitle ?? "Kartverktyg"}
-                  {...register("options.drawerTitle")}
-                />
-              </FormFieldRow>
-              <FormFieldRow>
-                <TextField
-                  label={t("map.drawerButtonTitle")}
-                  fullWidth
-                  defaultValue={
-                    map?.options?.drawerButtonTitle ?? "Kartverktyg"
-                  }
-                  {...register("options.drawerButtonTitle")}
-                />
-              </FormFieldRow>
-              <FormFieldRow>
-                <FormControl fullWidth>
-                  <InputLabel id="drawerButtonIcon-label">
-                    {t("map.drawerButtonIcon")}
-                  </InputLabel>
-                  <Controller
-                    name="options.drawerButtonIcon"
-                    control={control}
-                    defaultValue={map?.options?.drawerButtonIcon ?? "MapIcon"}
-                    render={({ field }) => (
-                      <Select
-                        labelId="drawerButtonIcon-label"
-                        label={t("map.drawerButtonIcon")}
-                        {...field}
-                      >
-                        <MenuItem value="MapIcon">MapIcon</MenuItem>
-                        <MenuItem value="MenuIcon">MenuIcon</MenuItem>
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
+              ))}
+            </Tabs>
 
-            <FormAccordion title={t("map.cookies")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.showCookieNotice"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.showCookieNotice")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.cookieUse3dPart"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.cookieUse3dPart")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.showCookieNoticeButton"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.showCookieNoticeButton")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.cookieLink")}
-                    fullWidth
-                    defaultValue={
-                      map?.options?.cookieLink ??
-                      "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/"
-                    }
-                    {...register("options.cookieLink")}
-                  />
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.cookieMessage")}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    defaultValue={
-                      map?.options?.cookieMessage ??
-                      "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen."
-                    }
-                    {...register("options.cookieMessage")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
+            {showSettingsSearchUi && (
+              <TextField
+                placeholder={`${t("common.searchSettings")}...`}
+                fullWidth
+                autoFocus
+                value={settingsSearchQuery}
+                onChange={(e) => setSettingsSearchQuery(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <ManageSearchIcon
+                        sx={{ mr: 1, color: "text.secondary" }}
+                      />
+                    ),
+                  },
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
 
-            <FormAccordion title={t("map.introGuide")}>
-              <FormFieldGrid>
-                <FormFieldRow>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.introductionEnabled"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.introductionEnabled")}
-                    />
-                    <FormControlLabel
-                      control={
-                        <Controller
-                          name="options.introductionShowControlButton"
-                          control={control}
-                          render={({ field }) => (
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={(e) => field.onChange(e.target.checked)}
-                            />
-                          )}
-                        />
-                      }
-                      label={t("map.introductionShowControlButton")}
-                    />
-                  </FormGroup>
-                </FormFieldRow>
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.introductionSteps")}
-                    fullWidth
-                    multiline
-                    rows={8}
-                    defaultValue={map?.options?.introductionSteps ?? "[]"}
-                    {...register("options.introductionSteps")}
-                  />
-                </FormFieldRow>
-              </FormFieldGrid>
-            </FormAccordion>
+            <MapSettingsForm
+              register={register}
+              control={control}
+              activeSection={settingsSection}
+              settingsSearchTerm={settingsSearchTerm}
+              showSettingsSearchUi={showSettingsSearchUi}
+              getValues={getValues}
+            />
           </FormContainer>
-        )}
+        </Box>
 
         {activeTab === "menu" && (
           <>
@@ -1313,14 +466,14 @@ export default function MapSettings() {
         {activeTab === "tools" && (
           <ToolPlacementDnD
             tools={tools.map((tool) => ({ id: tool.id, name: tool.type }))}
-            drawerItems={drawerDZ}
-            onDrawerItemsChange={(items) => { setDrawerDZ(items); markToolsDirty(); }}
-            widgetLeftItems={widgetLeftDZ}
-            onWidgetLeftItemsChange={(items) => { setWidgetLeftDZ(items); markToolsDirty(); }}
-            widgetRightItems={widgetRightDZ}
-            onWidgetRightItemsChange={(items) => { setWidgetRightDZ(items); markToolsDirty(); }}
-            controlButtonItems={controlDZ}
-            onControlButtonItemsChange={(items) => { setControlDZ(items); markToolsDirty(); }}
+            drawerItems={toolZones.drawer}
+            onDrawerItemsChange={(items) => updateToolZone("drawer", items)}
+            widgetLeftItems={toolZones.widgetLeft}
+            onWidgetLeftItemsChange={(items) => updateToolZone("widgetLeft", items)}
+            widgetRightItems={toolZones.widgetRight}
+            onWidgetRightItemsChange={(items) => updateToolZone("widgetRight", items)}
+            controlButtonItems={toolZones.control}
+            onControlButtonItemsChange={(items) => updateToolZone("control", items)}
             backgroundImage={backgroundImage}
           />
         )}
