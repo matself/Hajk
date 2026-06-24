@@ -16,6 +16,7 @@ import FormFieldGrid, {
 } from "../../../components/form-components/form-field-grid";
 import SearchablePanel from "../../../components/form-components/searchable-panel";
 import { SettingsSearchField } from "../../../components/form-components/searchable-field";
+import { SelectWithHelp } from "../../../components/form-components/field-label-with-help";
 import { useSettingsSearchLabels } from "../../../hooks/use-settings-search-labels";
 
 export type MapSettingsSection =
@@ -32,6 +33,8 @@ interface MapSettingsFormProps {
   settingsSearchTerm: string;
   showSettingsSearchUi: boolean;
   getValues: () => FieldValues;
+  defaultCoordinates: string[];
+  projectionOptions: { title: string; value: string }[];
 }
 
 function MapCheckboxField({
@@ -84,6 +87,8 @@ export default function MapSettingsForm({
   settingsSearchTerm,
   showSettingsSearchUi,
   getValues,
+  defaultCoordinates,
+  projectionOptions,
 }: MapSettingsFormProps) {
   const { t } = useTranslation();
   const settingsSearchLabels = useSettingsSearchLabels();
@@ -122,7 +127,7 @@ export default function MapSettingsForm({
               "resolution",
             ]}
             fields={[
-              "options.projection",
+              "projection.code",
               "options.startZoom",
               "options.maxZoom",
               "options.minZoom",
@@ -139,16 +144,37 @@ export default function MapSettingsForm({
               <FormFieldGrid>
                 <SettingsSearchField
                   labelKeys={["map.projection"]}
-                  fields={["options.projection"]}
+                  fields={["projection.code"]}
                   synonyms={["projection", "epsg"]}
                   searchTerm={settingsSearchTerm}
                   allValues={searchValues}
                 >
                   <FormFieldRow>
-                    <TextField
-                      label={t("map.projection")}
-                      fullWidth
-                      {...register("options.projection")}
+                    <Controller
+                      name="projection.code"
+                      control={control}
+                      render={({ field }) => (
+                        <SelectWithHelp
+                          labelKey="map.projection"
+                          helpKey="map.projectionHelp"
+                          {...field}
+                          value={(field.value as string) ?? ""}
+                        >
+                          {defaultCoordinates.map((value) => {
+                            const opt = projectionOptions.find(
+                              (projection) => projection.value === value,
+                            );
+                            return (
+                              <MenuItem
+                                key={value}
+                                value={opt?.value ?? value}
+                              >
+                                {opt?.title ?? value}
+                              </MenuItem>
+                            );
+                          })}
+                        </SelectWithHelp>
+                      )}
                     />
                   </FormFieldRow>
                 </SettingsSearchField>

@@ -108,29 +108,18 @@ const useAppStateStore = create<AppState>((set) => ({
       set({
         apiBaseUrl:
           typeof config.apiBaseUrl === "string" ? config.apiBaseUrl : "",
+        axiosConfigOverrides: (config.axiosConfigOverrides ?? {}) as Record<
+          string,
+          unknown
+        >,
+        servicesDefault: (config.servicesDefault ?? {}) as Record<
+          string,
+          unknown
+        >,
+        layersDefault: (config.layersDefault ?? {}) as Record<string, unknown>,
+        mapsDefault: (config.mapsDefault ?? {}) as Record<string, unknown>,
+        defaultCoordinates: (config.defaultCoordinates ?? []) as string[],
         loading: false,
-      });
-
-      set({
-        axiosConfigOverrides: config.axiosConfigOverrides as
-          | Record<string, unknown>
-          | undefined,
-      });
-
-      set({
-        servicesDefault: config.servicesDefault as Record<string, unknown>,
-      });
-
-      set({
-        layersDefault: config.layersDefault as Record<string, unknown>,
-      });
-
-      set({
-        mapsDefault: config.mapsDefault as Record<string, unknown>,
-      });
-
-      set({
-        defaultCoordinates: config.defaultCoordinates as string[],
       });
     } catch (error) {
       console.error("Failed to load config:", error);

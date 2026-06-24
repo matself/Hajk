@@ -10,7 +10,6 @@ import {
   buildCreateMapPayload,
   type MapCreateInput,
 } from "./map-create-types";
-import useAppStateStore from "../../store/use-app-state-store";
 import { LayersApiResponse } from "../layers/types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 
@@ -201,8 +200,7 @@ export const updateMapTools = async (
  */
 export const createMap = async (newMap: MapCreateInput): Promise<MapRecord> => {
   const internalApiClient = getApiClient();
-  const { mapsDefault } = useAppStateStore.getState();
-  const payload = buildCreateMapPayload(newMap, mapsDefault ?? {});
+  const payload = buildCreateMapPayload(newMap);
   try {
     const response = await internalApiClient.post<MapRecord>("/maps", payload);
     if (!response.data) {
