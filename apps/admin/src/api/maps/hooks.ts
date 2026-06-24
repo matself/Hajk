@@ -133,8 +133,9 @@ export const useUpdateMap = () => {
       mapName: string;
       data: Partial<MapMutation>;
     }) => updateMap(mapName, data),
-    onSuccess: () => {
+    onSuccess: (_, { mapName }) => {
       void queryClient.invalidateQueries({ queryKey: ["maps"] });
+      void queryClient.invalidateQueries({ queryKey: ["maps", mapName] });
     },
     onError: (error) => {
       console.error(error);

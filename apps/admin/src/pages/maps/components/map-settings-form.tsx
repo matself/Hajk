@@ -17,7 +17,6 @@ import FormFieldGrid, {
 import SearchablePanel from "../../../components/form-components/searchable-panel";
 import { SettingsSearchField } from "../../../components/form-components/searchable-field";
 import { useSettingsSearchLabels } from "../../../hooks/use-settings-search-labels";
-import type { Map } from "../../../api/maps";
 
 export type MapSettingsSection =
   | "map"
@@ -27,7 +26,6 @@ export type MapSettingsSection =
   | "search";
 
 interface MapSettingsFormProps {
-  map: Map;
   register: UseFormRegister<FieldValues>;
   control: Control<FieldValues>;
   activeSection: MapSettingsSection;
@@ -80,7 +78,6 @@ function MapCheckboxField({
 }
 
 export default function MapSettingsForm({
-  map,
   register,
   control,
   activeSection,
@@ -151,7 +148,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.projection")}
                       fullWidth
-                      defaultValue={map?.options?.projection ?? "EPSG:3006"}
                       {...register("options.projection")}
                     />
                   </FormFieldRow>
@@ -167,8 +163,9 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.startZoom")}
                       fullWidth
-                      type="number"
-                      defaultValue={map?.options?.startZoom ?? 1.33}
+                      slotProps={{
+                        htmlInput: { inputMode: "decimal" },
+                      }}
                       {...register("options.startZoom")}
                     />
                   </FormFieldRow>
@@ -185,7 +182,6 @@ export default function MapSettingsForm({
                       label={t("map.maxZoom")}
                       fullWidth
                       type="number"
-                      defaultValue={map?.options?.maxZoom ?? 8}
                       {...register("options.maxZoom")}
                     />
                   </FormFieldRow>
@@ -202,7 +198,6 @@ export default function MapSettingsForm({
                       label={t("map.minZoom")}
                       fullWidth
                       type="number"
-                      defaultValue={map?.options?.minZoom ?? 0}
                       {...register("options.minZoom")}
                     />
                   </FormFieldRow>
@@ -218,9 +213,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.centerCoordinate")}
                       fullWidth
-                      defaultValue={
-                        map?.options?.centerCoordinate ?? "576357, 6386049"
-                      }
                       {...register("options.centerCoordinate")}
                     />
                   </FormFieldRow>
@@ -235,7 +227,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.origin")}
                       fullWidth
-                      defaultValue={map?.options?.origin ?? "0,0"}
                       {...register("options.origin")}
                     />
                   </FormFieldRow>
@@ -250,10 +241,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.extent")}
                       fullWidth
-                      defaultValue={
-                        map?.options?.extent ??
-                        "-1200000, 4700000, 2600000, 8500000"
-                      }
                       {...register("options.extent")}
                     />
                   </FormFieldRow>
@@ -269,10 +256,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.resolutions")}
                       fullWidth
-                      defaultValue={
-                        map?.options?.resolutions ??
-                        "2048, 1024, 512, 256, 128, 64, 32, 16, 8"
-                      }
                       {...register("options.resolutions")}
                     />
                   </FormFieldRow>
@@ -288,7 +271,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.printResolutions")}
                       fullWidth
-                      defaultValue={map?.options?.printResolutions ?? ""}
                       {...register("options.printResolutions")}
                     />
                   </FormFieldRow>
@@ -396,7 +378,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.logoLight")}
                       fullWidth
-                      defaultValue={map?.options?.logoLight ?? "/logoLight.png"}
                       {...register("options.logoLight")}
                     />
                   </FormFieldRow>
@@ -412,7 +393,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.logoDark")}
                       fullWidth
-                      defaultValue={map?.options?.logoDark ?? ""}
                       {...register("options.logoDark")}
                     />
                   </FormFieldRow>
@@ -428,7 +408,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.legendOptions")}
                       fullWidth
-                      defaultValue={map?.options?.legendOptions ?? ""}
                       {...register("options.legendOptions")}
                     />
                   </FormFieldRow>
@@ -443,7 +422,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.crossOrigin")}
                       fullWidth
-                      defaultValue={map?.options?.crossOrigin ?? "anonymous"}
                       {...register("options.crossOrigin")}
                     />
                   </FormFieldRow>
@@ -666,7 +644,6 @@ export default function MapSettingsForm({
                       label={t("map.zoomLevelDelta")}
                       fullWidth
                       type="number"
-                      defaultValue={map?.options?.zoomLevelDelta ?? ""}
                       {...register("options.zoomLevelDelta")}
                     />
                   </FormFieldRow>
@@ -683,7 +660,6 @@ export default function MapSettingsForm({
                       label={t("map.zoomAnimationDuration")}
                       fullWidth
                       type="number"
-                      defaultValue={map?.options?.zoomAnimationDuration ?? ""}
                       {...register("options.zoomAnimationDuration")}
                     />
                   </FormFieldRow>
@@ -736,7 +712,6 @@ export default function MapSettingsForm({
                     <Controller
                       name="options.preferredColorScheme"
                       control={control}
-                      defaultValue={map?.options?.preferredColorScheme ?? "user"}
                       render={({ field }) => (
                         <Select
                           labelId="preferredColorScheme-label"
@@ -769,7 +744,6 @@ export default function MapSettingsForm({
                   <TextField
                     label={t("map.primaryColor")}
                     fullWidth
-                    defaultValue={map?.options?.primaryColor ?? "#333333"}
                     {...register("options.primaryColor")}
                   />
                 </FormFieldRow>
@@ -785,7 +759,6 @@ export default function MapSettingsForm({
                   <TextField
                     label={t("map.secondaryColor")}
                     fullWidth
-                    defaultValue={map?.options?.secondaryColor ?? "#ffa000"}
                     {...register("options.secondaryColor")}
                   />
                 </FormFieldRow>
@@ -875,7 +848,6 @@ export default function MapSettingsForm({
                   <TextField
                     label={t("map.drawerContent")}
                     fullWidth
-                    defaultValue={map?.options?.drawerContent ?? "plugins"}
                     {...register("options.drawerContent")}
                   />
                 </FormFieldRow>
@@ -891,7 +863,6 @@ export default function MapSettingsForm({
                   <TextField
                     label={t("map.drawerTitle")}
                     fullWidth
-                    defaultValue={map?.options?.drawerTitle ?? "Kartverktyg"}
                     {...register("options.drawerTitle")}
                   />
                 </FormFieldRow>
@@ -907,9 +878,6 @@ export default function MapSettingsForm({
                   <TextField
                     label={t("map.drawerButtonTitle")}
                     fullWidth
-                    defaultValue={
-                      map?.options?.drawerButtonTitle ?? "Kartverktyg"
-                    }
                     {...register("options.drawerButtonTitle")}
                   />
                 </FormFieldRow>
@@ -929,7 +897,6 @@ export default function MapSettingsForm({
                     <Controller
                       name="options.drawerButtonIcon"
                       control={control}
-                      defaultValue={map?.options?.drawerButtonIcon ?? "MapIcon"}
                       render={({ field }) => (
                         <Select
                           labelId="drawerButtonIcon-label"
@@ -1015,10 +982,6 @@ export default function MapSettingsForm({
                     <TextField
                       label={t("map.cookieLink")}
                       fullWidth
-                      defaultValue={
-                        map?.options?.cookieLink ??
-                        "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/"
-                      }
                       {...register("options.cookieLink")}
                     />
                   </FormFieldRow>
@@ -1036,10 +999,6 @@ export default function MapSettingsForm({
                       fullWidth
                       multiline
                       rows={3}
-                      defaultValue={
-                        map?.options?.cookieMessage ??
-                        "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen."
-                      }
                       {...register("options.cookieMessage")}
                     />
                   </FormFieldRow>
@@ -1103,7 +1062,6 @@ export default function MapSettingsForm({
                       fullWidth
                       multiline
                       rows={8}
-                      defaultValue={map?.options?.introductionSteps ?? "[]"}
                       {...register("options.introductionSteps")}
                     />
                   </FormFieldRow>
