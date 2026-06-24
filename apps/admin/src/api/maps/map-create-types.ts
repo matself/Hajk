@@ -4,6 +4,19 @@ import useAppStateStore from "../../store/use-app-state-store";
 export interface MapCreateOptionsInput {
   title?: string;
   description?: string;
+  /** EPSG code selected in the create wizard; falls back to config default. */
+  projection?: string;
+  startZoom?: string;
+  minZoom?: string;
+  maxZoom?: string;
+  centerCoordinate?: string;
+  origin?: string;
+  extent?: string;
+  resolutions?: string;
+  printResolutions?: string;
+  constrainResolution?: boolean | string;
+  constrainOnlyCenter?: boolean | string;
+  constrainResolutionMobile?: boolean | string;
 }
 
 export type MapOptionsRecord = Record<string, string>;
@@ -49,7 +62,12 @@ function normalizeMapOptions(
 export function buildCreateMapPayload(input: MapCreateInput): MapCreatePayload {
   const { mapsDefault } = useAppStateStore.getState();
   const configDefaults = { ...(mapsDefault ?? {}) };
-  const projectionCode = getDefaultMapProjectionCode();
+
+  const requestedProjection =
+    typeof input.options?.projection === "string"
+      ? input.options.projection.trim()
+      : "";
+  const projectionCode = requestedProjection || getDefaultMapProjectionCode();
 
   const mergedOptions = mergeWithConfigDefaults(
     configDefaults,
