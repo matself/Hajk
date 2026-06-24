@@ -14,13 +14,60 @@ import {
 
 const logger = log4js.getLogger("service.v3.map");
 
+const DEFAULT_PROJECTION_CODE = "EPSG:3006";
+
+type MapWriteInput = {
+  name?: string;
+  locked?: boolean;
+  options?: Prisma.InputJsonValue;
+  projection?: { code?: string };
+};
+
+async function resolveProjectionConnect(code?: string) {
+  const projectionCode = code?.trim() || DEFAULT_PROJECTION_CODE;
+  const existingProjection = await prisma.projection.findUnique({
+    where: { code: projectionCode },
+  });
+
+  if (!existingProjection) {
+    throw new HajkError(
+      HttpStatusCodes.BAD_REQUEST,
+      `Projection with code ${projectionCode} not found`,
+      HajkStatusCodes.INVALID_REQUEST_BODY
+    );
+  }
+
+  return {
+    projectionCode,
+    connect: { id: existingProjection.id },
+  };
+}
+
+function mergeOptionsWithProjection(
+  options: Prisma.InputJsonValue,
+  projectionCode: string
+): Prisma.InputJsonValue {
+  const base =
+    options && typeof options === "object" && !Array.isArray(options)
+      ? (options as Record<string, unknown>)
+      : {};
+
+  return {
+    ...base,
+    projection: projectionCode,
+  };
+}
+
 class MapService {
   constructor() {
     logger.debug("Initiating Map Service");
   }
 
   async getMaps() {
-    const maps = await prisma.map.findMany({ orderBy: { name: "asc" } });
+    const maps = await prisma.map.findMany({
+      orderBy: { name: "asc" },
+      include: { projection: true },
+    });
 
     return maps;
   }
@@ -102,6 +149,7 @@ class MapService {
       },
       // TODO: Tools, Layers and Groups must also be filtered by `roles`.
       include: {
+        projection: true,
         projections: true,
         // Soft-deleted tools must not reach the client map config.
         tools: { where: { tool: { deletedAt: null } }, include: { tool: true } },
@@ -237,7 +285,7 @@ class MapService {
     ]);
   }
 
-  async createMap(data: Prisma.MapCreateInput, userId?: string) {
+  async createMap(data: MapWriteInput, userId?: string) {
     const name =
       typeof data.name === "string" ? data.name.trim() : String(data.name ?? "");
     if (!name) {
@@ -249,22 +297,32 @@ class MapService {
     }
 
     const locked = typeof data.locked === "boolean" ? data.locked : false;
-    const options =
+    const rawOptions =
       data.options &&
       typeof data.options === "object" &&
       !Array.isArray(data.options)
         ? data.options
         : {};
+    const optionsFromInput = rawOptions as Record<string, unknown>;
+    const projectionCodeFromOptions =
+      typeof optionsFromInput.projection === "string"
+        ? optionsFromInput.projection
+        : undefined;
+    const { projectionCode, connect } = await resolveProjectionConnect(
+      data.projection?.code ?? projectionCodeFromOptions
+    );
 
     try {
       const newMap = await prisma.map.create({
         data: {
           name,
           locked,
-          options,
+          options: mergeOptionsWithProjection(rawOptions, projectionCode),
+          projection: { connect },
           createdBy: userId,
           createdDate: new Date(),
         },
+        include: { projection: true },
       });
       return newMap;
     } catch (error) {
@@ -282,18 +340,47 @@ class MapService {
     }
   }
 
-  async updateMap(
-    mapName: string,
-    data: Prisma.MapUpdateInput,
-    userId?: string
-  ) {
+  async updateMap(mapName: string, data: MapWriteInput, userId?: string) {
+    const { projection, options, ...mapScalars } = data;
+    const updateData: Prisma.MapUpdateInput = {
+      ...mapScalars,
+      lastSavedBy: userId,
+      lastSavedDate: new Date(),
+    };
+
+    if (options !== undefined) {
+      updateData.options = options;
+    }
+
+    if (projection?.code) {
+      const { projectionCode, connect } = await resolveProjectionConnect(
+        projection.code
+      );
+      updateData.projection = { connect };
+      const existing = await prisma.map.findUnique({
+        where: { name: mapName },
+        select: { options: true },
+      });
+      const existingOptions =
+        existing?.options &&
+        typeof existing.options === "object" &&
+        !Array.isArray(existing.options)
+          ? existing.options
+          : {};
+      const nextOptions =
+        options !== undefined
+          ? options
+          : (existingOptions as Prisma.InputJsonValue);
+      updateData.options = mergeOptionsWithProjection(
+        nextOptions,
+        projectionCode
+      );
+    }
+
     const updatedMap = await prisma.map.update({
       where: { name: mapName },
-      data: {
-        ...data,
-        lastSavedBy: userId,
-        lastSavedDate: new Date(),
-      },
+      data: updateData,
+      include: { projection: true },
     });
     return updatedMap;
   }

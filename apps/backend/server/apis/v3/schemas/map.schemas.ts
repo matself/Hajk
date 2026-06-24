@@ -11,10 +11,15 @@ const ProjectionSchema = z.object({
 import { ToolCreateSchema, ToolUpdateSchema } from "./tool.schemas.ts";
 import { GroupCreateSchema, GroupUpdateSchema } from "./group.schemas.ts";
 
+const MapProjectionSchema = z.object({
+  code: z.string().min(1, "Projection code is required"),
+});
+
 export const MapCreateSchema = z.object({
   name: z.string().min(1, "Map name is required"),
   locked: z.boolean().default(false),
   options: z.record(z.string(), z.unknown()).default({}),
+  projection: MapProjectionSchema.optional(),
   projections: z.array(ProjectionSchema).optional(),
   tools: z.array(ToolCreateSchema).optional(),
   groups: z.array(GroupCreateSchema).optional(),
@@ -32,6 +37,7 @@ export const MapUpdateSchema = z.object({
   name: z.string().min(1, "Map name is required").optional(),
   locked: z.boolean().optional(),
   options: z.record(z.string(), z.unknown()).optional(),
+  projection: MapProjectionSchema.optional(),
   projections: z.array(ProjectionSchema).optional(),
   tools: z.array(ToolUpdateSchema).optional(),
   groups: z.array(GroupUpdateSchema).optional(),

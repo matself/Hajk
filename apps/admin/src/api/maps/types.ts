@@ -3,6 +3,9 @@ export interface Map {
   name: string;
   locked: boolean;
   options?: Record<string, string>;
+  projection?: {
+    code: string;
+  } | null;
   createdBy?: string;
   createdDate?: string;
   lastSavedBy?: string;
@@ -45,6 +48,9 @@ export interface MapMutation {
   id: number;
   locked: boolean;
   name: string;
+  projection?: {
+    code: string;
+  };
   options?: Record<string, string>;
 }
 

@@ -1,5 +1,11 @@
 import type { FieldValues } from "react-hook-form";
-import type { Map, MapMutation } from "../../api/maps";
+import type { Map as MapRecord, MapMutation } from "../../api/maps/types";
+import { getDefaultMapProjectionCode } from "../../lib/map-defaults";
+
+interface MapProjectionSource {
+  projection?: { code: string } | null;
+  options?: Record<string, string>;
+}
 
 function fromOptionFlag(value: string | undefined): boolean {
   return value === "true";
@@ -39,11 +45,37 @@ function getFormOptions(data: FieldValues): Record<string, unknown> {
   return {};
 }
 
+function getMapProjectionCode(map: MapProjectionSource): string {
+  const projectionCode = map.projection?.code;
+  if (typeof projectionCode === "string" && projectionCode.trim()) {
+    return projectionCode.trim();
+  }
+  const optionsProjection = map.options?.projection;
+  if (typeof optionsProjection === "string" && optionsProjection.trim()) {
+    return optionsProjection.trim();
+  }
+  return getDefaultMapProjectionCode();
+}
+
+function getProjectionCode(data: FieldValues, fallback?: string): string {
+  const projection: unknown = data.projection;
+  if (
+    projection &&
+    typeof projection === "object" &&
+    !Array.isArray(projection)
+  ) {
+    const code = (projection as { code?: unknown }).code;
+    if (typeof code === "string" && code.trim()) {
+      return code.trim();
+    }
+  }
+  return fallback ?? getDefaultMapProjectionCode();
+}
+
 function buildOptionsFormValues(
   options: Record<string, string>,
 ): Record<string, unknown> {
   return {
-    projection: options.projection ?? "EPSG:3006",
     startZoom: options.startZoom ?? "1.33",
     maxZoom: options.maxZoom ?? "8",
     minZoom: options.minZoom ?? "0",
@@ -111,19 +143,25 @@ function buildOptionsFormValues(
 }
 
 /** Form shape used by map settings reset / dirty comparison. */
-export function buildMapSettingsFormValues(map: Map): FieldValues {
+export function buildMapSettingsFormValues(map: MapRecord): FieldValues {
+  const projectionCode = getMapProjectionCode(map);
+
   return {
     name: map.name ?? "",
     locked: map.locked ?? false,
+    projection: {
+      code: projectionCode,
+    },
     options: buildOptionsFormValues(map.options ?? {}),
   };
 }
 
 function formOptionsFromValues(data: FieldValues): Record<string, string> {
   const options = getFormOptions(data);
+  const projectionCode = getProjectionCode(data);
 
   return {
-    projection: toStringValue(options.projection, "EPSG:3006"),
+    projection: projectionCode,
     startZoom: toStringValue(options.startZoom, "1.33"),
     maxZoom: String(toNumber(options.maxZoom) ?? 8),
     minZoom: String(toNumber(options.minZoom) ?? 0),
@@ -202,13 +240,15 @@ function formOptionsFromValues(data: FieldValues): Record<string, string> {
 
 export function buildMapUpdatePayload(
   data: FieldValues,
-  map: Pick<Map, "name" | "locked" | "options">,
+  map: MapProjectionSource & Pick<MapRecord, "name" | "locked">,
 ): Partial<MapMutation> {
   const formOptions = formOptionsFromValues(data);
+  const projectionCode = getProjectionCode(data, getMapProjectionCode(map));
 
   return {
     name: (data.name as string) ?? map.name ?? "",
     locked: (data.locked as boolean) ?? map.locked ?? false,
+    projection: { code: projectionCode },
     options: {
       ...(map.options ?? {}),
       ...formOptions,

@@ -16,7 +16,17 @@
     "EPSG:3007",
     "EPSG:3008",
     "EPSG:3009",
-    "EPSG:3010"
+    "EPSG:3010",
+    "EPSG:3011",
+    "EPSG:3012",
+    "EPSG:3013",
+    "EPSG:3014",
+    "EPSG:3015",
+    "EPSG:3016",
+    "EPSG:3017",
+    "EPSG:3018",
+    "EPSG:3021",
+    "EPSG:3857"
   ],
   "servicesDefault": {
     "version": "1.1.1",
@@ -31,6 +41,7 @@
     "internalName": "test"
   },
   "mapsDefault": {
+    "projection": "EPSG:3006",
     "logoLight": "/logoLight.png",
     "logoDark": "/logoDark.png",
     "preferredColorScheme": "user",

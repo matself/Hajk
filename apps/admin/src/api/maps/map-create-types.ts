@@ -1,5 +1,6 @@
 import { mergeWithConfigDefaults } from "../../lib/merge-with-config-defaults";
-
+import { getDefaultMapProjectionCode } from "../../lib/map-defaults";
+import useAppStateStore from "../../store/use-app-state-store";
 export interface MapCreateOptionsInput {
   title?: string;
   description?: string;
@@ -16,6 +17,7 @@ export interface MapCreateInput {
 export interface MapCreatePayload {
   name: string;
   locked: boolean;
+  projection: { code: string };
   options: MapOptionsRecord;
 }
 
@@ -44,18 +46,24 @@ function normalizeMapOptions(
  * Builds the JSON body for `POST /maps`.
  * Merges `mapsDefault` from config.json into `options` (user dialog fields win).
  */
-export function buildCreateMapPayload(
-  input: MapCreateInput,
-  mapsDefault: Record<string, unknown> = {},
-): MapCreatePayload {
+export function buildCreateMapPayload(input: MapCreateInput): MapCreatePayload {
+  const { mapsDefault } = useAppStateStore.getState();
+  const configDefaults = { ...(mapsDefault ?? {}) };
+  const projectionCode = getDefaultMapProjectionCode();
+
   const mergedOptions = mergeWithConfigDefaults(
-    { ...mapsDefault },
+    configDefaults,
     { ...(input.options ?? {}) },
   );
+  const normalizedOptions = normalizeMapOptions(mergedOptions);
 
   return {
     name: input.name.trim(),
     locked: input.locked ?? false,
-    options: normalizeMapOptions(mergedOptions),
+    projection: { code: projectionCode },
+    options: {
+      ...normalizedOptions,
+      projection: projectionCode,
+    },
   };
 }

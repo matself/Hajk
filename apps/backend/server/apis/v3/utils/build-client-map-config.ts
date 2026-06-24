@@ -42,6 +42,7 @@ export async function buildClientProjectionsForMap(mapName: string) {
 export async function buildClientMapForMap(mapName: string) {
   const map = await prisma.map.findFirst({
     where: { name: mapName },
+    include: { projection: true },
   });
 
   if (!map) {
@@ -53,8 +54,13 @@ export async function buildClientMapForMap(mapName: string) {
       ? (map.options as Prisma.JsonObject)
       : {};
 
+  const projectionCode =
+    map.projection?.code ??
+    (typeof options.projection === "string" ? options.projection : undefined);
+
   return {
     ...options,
+    ...(projectionCode ? { projection: projectionCode } : {}),
     name: map.name,
     locked: map.locked,
   };

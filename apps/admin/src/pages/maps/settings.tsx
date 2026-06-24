@@ -48,6 +48,8 @@ import {
 import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
 import { useTools } from "../../api/tools";
+import { useProjections } from "../../api/services";
+import useAppStateStore from "../../store/use-app-state-store";
 import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
 
 const MAP_PAGE_TABS = [
@@ -196,6 +198,19 @@ export default function MapSettings() {
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
   const { data: mapTools } = useToolsByMapName(mapName ?? "");
+  const { data: projections } = useProjections();
+  const { defaultCoordinates } = useAppStateStore.getState();
+
+  const projectionOptions = useMemo(
+    () =>
+      (projections ?? [])
+        .filter((projection) => projection.code.startsWith("EPSG:"))
+        .map((projection) => ({
+          title: projection.code,
+          value: projection.code,
+        })),
+    [projections],
+  );
 
   // Drop zone states
   const [backgroundLayersDZ, setBackgroundLayersDZ] = useState<
@@ -432,6 +447,8 @@ export default function MapSettings() {
               settingsSearchTerm={settingsSearchTerm}
               showSettingsSearchUi={showSettingsSearchUi}
               getValues={getValues}
+              defaultCoordinates={defaultCoordinates}
+              projectionOptions={projectionOptions}
             />
           </FormContainer>
         </Box>

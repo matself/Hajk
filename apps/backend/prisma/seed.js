@@ -204,10 +204,18 @@ async function readMapConfigAndPopulateMap(file) {
 
   // Finally we can create the map
   console.log("Creating map…");
+  const mapProjectionCode =
+    mapConfig.map?.projection || projectionsToConnect[0]?.code || DEFAULT_PROJECTION_CODE;
+  const mapProjection = await prisma.projection.findUnique({
+    where: { code: mapProjectionCode },
+  });
   const createdMap = await prisma.map.create({
     data: {
       name: file, // We use the file name as our unique map identifier
       options: mapConfig.map, // Put all map options as-is, as JSON
+      ...(mapProjection
+        ? { projection: { connect: { id: mapProjection.id } } }
+        : {}),
       projections: {
         connect: projectionsToConnect,
       },
