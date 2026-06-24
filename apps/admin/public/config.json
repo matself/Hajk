@@ -32,7 +32,7 @@
   },
   "mapsDefault": {
     "logoLight": "/logoLight.png",
-    "logoDark": "",
+    "logoDark": "/logoDark.png",
     "preferredColorScheme": "user",
     "primaryColor": "#333333",
     "secondaryColor": "#ffa000",

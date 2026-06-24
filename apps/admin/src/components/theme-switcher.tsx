@@ -16,9 +16,10 @@ export default function ThemeSwitcher() {
       sx={{
         padding: 3,
         mb: 2,
+        maxWidth: 400,
       }}
     >
-      <Typography variant="h6" gutterBottom>
+      <Typography sx={{ mb: 4 }} variant="h6" gutterBottom>
         {t("common.theme")}
       </Typography>
       <Box
