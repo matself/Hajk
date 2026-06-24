@@ -238,14 +238,48 @@ class MapService {
   }
 
   async createMap(data: Prisma.MapCreateInput, userId?: string) {
-    const newMap = await prisma.map.create({
-      data: {
-        ...data,
-        createdBy: userId,
-        createdDate: new Date(),
-      },
-    });
-    return newMap;
+    const name =
+      typeof data.name === "string" ? data.name.trim() : String(data.name ?? "");
+    if (!name) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Map name is required",
+        HajkStatusCodes.INVALID_REQUEST_BODY
+      );
+    }
+
+    const locked = typeof data.locked === "boolean" ? data.locked : false;
+    const options =
+      data.options &&
+      typeof data.options === "object" &&
+      !Array.isArray(data.options)
+        ? data.options
+        : {};
+
+    try {
+      const newMap = await prisma.map.create({
+        data: {
+          name,
+          locked,
+          options,
+          createdBy: userId,
+          createdDate: new Date(),
+        },
+      });
+      return newMap;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new HajkError(
+          HttpStatusCodes.CONFLICT,
+          `Could not create map: a map named "${name}" already exists`,
+          HajkStatusCodes.MAP_ALREADY_EXISTS
+        );
+      }
+      throw error;
+    }
   }
 
   async updateMap(

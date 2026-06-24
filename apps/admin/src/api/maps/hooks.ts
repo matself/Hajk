@@ -16,8 +16,8 @@ import {
   deleteMap,
   updateMap,
 } from "./requests";
-import {
-  Map,
+import type {
+  Map as MapRecord,
   ProjectionsApiResponse,
   GroupApiResponse,
   MapMutation,
@@ -27,7 +27,7 @@ import { LayersApiResponse } from "../layers/types";
 
 // React Query hook to fetch all maps
 // This hook uses the `getMaps` function from the `requests` module
-export const useMaps = (): UseQueryResult<Map[]> => {
+export const useMaps = (): UseQueryResult<MapRecord[]> => {
   return useQuery({
     queryKey: ["maps"],
     queryFn: getMaps,
@@ -36,7 +36,7 @@ export const useMaps = (): UseQueryResult<Map[]> => {
 
 // React Query hook to fetch map by name
 // This hook uses the `getMapByName` function from the `requests` module
-export const useMapByName = (mapName: string): UseQueryResult<Map> => {
+export const useMapByName = (mapName: string): UseQueryResult<MapRecord> => {
   return useQuery({
     queryKey: ["maps", mapName],
     queryFn: () => getMapByName(mapName),
@@ -58,7 +58,7 @@ export const useGroupsByMapName = (
 // This hook uses the `getLayersByMapName` function from the maps `requests` module
 export const useLayersByMapName = (
   mapName: string
-): UseQueryResult<LayersApiResponse> => {
+): UseQueryResult<LayersApiResponse[]> => {
   return useQuery({
     queryKey: ["layersByMap", mapName],
     queryFn: () => getLayersByMapName(mapName),

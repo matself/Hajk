@@ -37,6 +37,11 @@ enum HajkStatusCodes {
    * A service with this URL and type already exists.
    */
   SERVICE_ALREADY_EXISTS = "DB006",
+
+  /**
+   * A map with this name already exists.
+   */
+  MAP_ALREADY_EXISTS = "DB013",
   /**
    * Service deletion is blocked because the service is still referenced.
    */
