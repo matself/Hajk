@@ -16,12 +16,13 @@ const logger = log4js.getLogger("service.v3.map");
 
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
 
-type MapWriteInput = {
+interface MapWriteInput {
   name?: string;
   locked?: boolean;
   options?: Prisma.InputJsonValue;
   projection?: { code?: string };
-};
+  projections?: { code?: string }[];
+}
 
 async function resolveProjectionConnect(code?: string) {
   const projectionCode = code?.trim() || DEFAULT_PROJECTION_CODE;
@@ -41,6 +42,41 @@ async function resolveProjectionConnect(code?: string) {
     projectionCode,
     connect: { id: existingProjection.id },
   };
+}
+
+/**
+ * Resolves the many-to-many `projections` relation. Each entry is connected by
+ * its (unique) `code`; an unknown code yields a 400 (mirrors the single
+ * `projection` behavior). Returns `undefined` when nothing is to connect.
+ */
+async function resolveProjectionsConnect(
+  projections?: { code?: string }[]
+): Promise<{ id: number }[] | undefined> {
+  if (!projections || projections.length === 0) {
+    return undefined;
+  }
+
+  const connect: { id: number }[] = [];
+  const seen = new Set<number>();
+  for (const projection of projections) {
+    const code = projection.code?.trim();
+    if (!code) continue;
+
+    const existing = await prisma.projection.findUnique({ where: { code } });
+    if (!existing) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        `Projection with code ${code} not found`,
+        HajkStatusCodes.INVALID_REQUEST_BODY
+      );
+    }
+    if (!seen.has(existing.id)) {
+      seen.add(existing.id);
+      connect.push({ id: existing.id });
+    }
+  }
+
+  return connect.length > 0 ? connect : undefined;
 }
 
 function mergeOptionsWithProjection(
@@ -311,6 +347,9 @@ class MapService {
     const { projectionCode, connect } = await resolveProjectionConnect(
       data.projection?.code ?? projectionCodeFromOptions
     );
+    const projectionsConnect = await resolveProjectionsConnect(
+      data.projections
+    );
 
     try {
       const newMap = await prisma.map.create({
@@ -319,10 +358,13 @@ class MapService {
           locked,
           options: mergeOptionsWithProjection(rawOptions, projectionCode),
           projection: { connect },
+          ...(projectionsConnect
+            ? { projections: { connect: projectionsConnect } }
+            : {}),
           createdBy: userId,
           createdDate: new Date(),
         },
-        include: { projection: true },
+        include: { projection: true, projections: true },
       });
       return newMap;
     } catch (error) {
@@ -341,7 +383,7 @@ class MapService {
   }
 
   async updateMap(mapName: string, data: MapWriteInput, userId?: string) {
-    const { projection, options, ...mapScalars } = data;
+    const { projection, projections, options, ...mapScalars } = data;
     const updateData: Prisma.MapUpdateInput = {
       ...mapScalars,
       lastSavedBy: userId,
@@ -350,6 +392,12 @@ class MapService {
 
     if (options !== undefined) {
       updateData.options = options;
+    }
+
+    // Replace the many-to-many `projections` set when the caller sends the key.
+    if (projections !== undefined) {
+      const projectionsConnect = await resolveProjectionsConnect(projections);
+      updateData.projections = { set: projectionsConnect ?? [] };
     }
 
     if (projection?.code) {
@@ -380,7 +428,7 @@ class MapService {
     const updatedMap = await prisma.map.update({
       where: { name: mapName },
       data: updateData,
-      include: { projection: true },
+      include: { projection: true, projections: true },
     });
     return updatedMap;
   }
