@@ -18,7 +18,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { useForm, useWatch, Controller } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { isAxiosError } from "axios";
@@ -157,15 +157,13 @@ export default function CreateMapDialog({
     onClose();
   };
 
-  const watchedName = useWatch({ control, name: "name" });
-
-  const isDuplicateMapName = useMemo(() => {
-    const normalizedName = watchedName?.trim().toLowerCase() ?? "";
+  const isDuplicateMapName = (value: string) => {
+    const normalizedName = value.trim().toLowerCase();
     if (!normalizedName || !existingMaps.length) return false;
     return existingMaps.some(
       (map) => map.name.toLowerCase() === normalizedName,
     );
-  }, [watchedName, existingMaps]);
+  };
 
   const projectionCodes = useMemo(() => {
     const fromProjections = (projections ?? [])
@@ -287,7 +285,7 @@ export default function CreateMapDialog({
                 validate: (value) => {
                   const trimmed = value.trim();
                   if (!trimmed) return `${t("common.required")}`;
-                  if (isDuplicateMapName) return t("maps.createMapConflict");
+                  if (isDuplicateMapName(value)) return t("maps.createMapConflict");
                   return true;
                 },
               })}
