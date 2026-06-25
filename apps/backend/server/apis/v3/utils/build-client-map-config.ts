@@ -1,10 +1,39 @@
 import type { Prisma } from "@prisma/client";
 
 import prisma from "../../../common/prisma.ts";
+import { DEFAULT_MAP_OPTIONS } from "../../../common/defaults.ts";
 import {
   buildLayerSwitcherBaselayersForMap,
   buildLayerSwitcherGroupsForMap,
 } from "./build-layer-switcher-groups-for-map.ts";
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    value !== null && typeof value === "object" && !Array.isArray(value)
+  );
+}
+
+/**
+ * Deep-merges `override` onto `base`. Plain objects merge recursively; arrays and
+ * scalars replace. `undefined` values in `override` are ignored so the
+ * corresponding `base` (default) value is kept.
+ */
+function deepMerge(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    if (value === undefined) continue;
+    const baseValue = result[key];
+    if (isPlainObject(baseValue) && isPlainObject(value)) {
+      result[key] = deepMerge(baseValue, value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
 /** Parse a single number from a number or a numeric string. */
 function toNumber(value: unknown): number | undefined {
@@ -44,9 +73,14 @@ function toNumberArray(value: unknown): number[] | undefined {
   return undefined;
 }
 
-/** Admin stores booleans as the strings `"true"`/`"false"`. */
-function toBool(value: unknown): boolean {
-  return value === true || value === "true";
+/**
+ * Admin stores booleans as the strings `"true"`/`"false"`. Returns `undefined`
+ * when the value is absent, so a default can fill in via deep-merge.
+ */
+function toBoolOrUndefined(value: unknown): boolean | undefined {
+  if (value === true || value === "true") return true;
+  if (value === false || value === "false") return false;
+  return undefined;
 }
 
 function toStringOrUndefined(value: unknown): string | undefined {
@@ -54,17 +88,17 @@ function toStringOrUndefined(value: unknown): string | undefined {
 }
 
 /** Parse a JSON array from an array or a JSON string (used for `introductionSteps`). */
-function toJsonArray(value: unknown): unknown[] {
+function toJsonArray(value: unknown): unknown[] | undefined {
   if (Array.isArray(value)) return value;
   if (typeof value === "string" && value.trim() !== "") {
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed) ? parsed : undefined;
     } catch {
-      return [];
+      return undefined;
     }
   }
-  return [];
+  return undefined;
 }
 
 /**
@@ -87,15 +121,17 @@ function translateMapOptionsToClient(
     // View geometry
     center: toNumberArray(options.centerCoordinate),
     origin: toNumberArray(options.origin),
-    extent: toNumberArray(options.extent) ?? [],
-    resolutions: toNumberArray(options.resolutions) ?? [],
-    extraPrintResolutions: toNumberArray(options.printResolutions) ?? [],
+    extent: toNumberArray(options.extent),
+    resolutions: toNumberArray(options.resolutions),
+    extraPrintResolutions: toNumberArray(options.printResolutions),
     zoom: toNumber(options.startZoom),
     minZoom: toNumber(options.minZoom),
     maxZoom: toNumber(options.maxZoom),
-    constrainOnlyCenter: toBool(options.constrainOnlyCenter),
-    constrainResolution: toBool(options.constrainResolution),
-    constrainResolutionMobile: toBool(options.constrainResolutionMobile),
+    constrainOnlyCenter: toBoolOrUndefined(options.constrainOnlyCenter),
+    constrainResolution: toBoolOrUndefined(options.constrainResolution),
+    constrainResolutionMobile: toBoolOrUndefined(
+      options.constrainResolutionMobile
+    ),
 
     // Appearance
     colors: {
@@ -110,49 +146,49 @@ function translateMapOptionsToClient(
     crossOrigin: toStringOrUndefined(options.crossOrigin),
 
     // Controls
-    mapselector: toBool(options.mapselector),
-    mapcleaner: toBool(options.mapcleaner),
-    mapresetter: toBool(options.mapresetter),
-    showThemeToggler: toBool(options.showThemeToggler),
-    showUserAvatar: toBool(options.showUserAvatar),
-    showRecentlyUsedPlugins: toBool(options.showRecentlyUsedPlugins),
-    enableDownloadLink: toBool(options.enableDownloadLink),
-    enableAppStateInHash: toBool(options.enableAppStateInHash),
-    confirmOnWindowClose: toBool(options.confirmOnWindowClose),
+    mapselector: toBoolOrUndefined(options.mapselector),
+    mapcleaner: toBoolOrUndefined(options.mapcleaner),
+    mapresetter: toBoolOrUndefined(options.mapresetter),
+    showThemeToggler: toBoolOrUndefined(options.showThemeToggler),
+    showUserAvatar: toBoolOrUndefined(options.showUserAvatar),
+    showRecentlyUsedPlugins: toBoolOrUndefined(options.showRecentlyUsedPlugins),
+    enableDownloadLink: toBoolOrUndefined(options.enableDownloadLink),
+    enableAppStateInHash: toBoolOrUndefined(options.enableAppStateInHash),
+    confirmOnWindowClose: toBoolOrUndefined(options.confirmOnWindowClose),
 
     // Side panel / drawer
-    drawerStatic: toBool(options.drawerStatic),
-    drawerVisible: toBool(options.drawerVisible),
-    drawerVisibleMobile: toBool(options.drawerVisibleMobile),
-    drawerPermanent: toBool(options.drawerPermanent),
+    drawerStatic: toBoolOrUndefined(options.drawerStatic),
+    drawerVisible: toBoolOrUndefined(options.drawerVisible),
+    drawerVisibleMobile: toBoolOrUndefined(options.drawerVisibleMobile),
+    drawerPermanent: toBoolOrUndefined(options.drawerPermanent),
     activeDrawerOnStart: toStringOrUndefined(options.drawerContent),
     drawerTitle: toStringOrUndefined(options.drawerTitle),
     drawerButtonTitle: toStringOrUndefined(options.drawerButtonTitle),
     drawerButtonIcon: toStringOrUndefined(options.drawerButtonIcon),
 
     // Interactions
-    altShiftDragRotate: toBool(options.altShiftDragRotate),
-    onFocusOnly: toBool(options.onFocusOnly),
-    doubleClickZoom: toBool(options.doubleClickZoom),
-    keyboard: toBool(options.keyboard),
-    mouseWheelZoom: toBool(options.mouseWheelZoom),
-    shiftDragZoom: toBool(options.shiftDragZoom),
-    dragPan: toBool(options.dragPan),
-    pinchRotate: toBool(options.pinchRotate),
-    pinchZoom: toBool(options.pinchZoom),
-    zoomDelta: toNumber(options.zoomLevelDelta) ?? null,
-    zoomDuration: toNumber(options.zoomAnimationDuration) ?? null,
+    altShiftDragRotate: toBoolOrUndefined(options.altShiftDragRotate),
+    onFocusOnly: toBoolOrUndefined(options.onFocusOnly),
+    doubleClickZoom: toBoolOrUndefined(options.doubleClickZoom),
+    keyboard: toBoolOrUndefined(options.keyboard),
+    mouseWheelZoom: toBoolOrUndefined(options.mouseWheelZoom),
+    shiftDragZoom: toBoolOrUndefined(options.shiftDragZoom),
+    dragPan: toBoolOrUndefined(options.dragPan),
+    pinchRotate: toBoolOrUndefined(options.pinchRotate),
+    pinchZoom: toBoolOrUndefined(options.pinchZoom),
+    zoomDelta: toNumber(options.zoomLevelDelta),
+    zoomDuration: toNumber(options.zoomAnimationDuration),
 
     // Cookies
-    showCookieNotice: toBool(options.showCookieNotice),
-    showCookieNoticeButton: toBool(options.showCookieNoticeButton),
-    cookieUse3dPart: toBool(options.cookieUse3dPart),
+    showCookieNotice: toBoolOrUndefined(options.showCookieNotice),
+    showCookieNoticeButton: toBoolOrUndefined(options.showCookieNoticeButton),
+    cookieUse3dPart: toBoolOrUndefined(options.cookieUse3dPart),
     defaultCookieNoticeMessage: toStringOrUndefined(options.cookieMessage),
     defaultCookieNoticeUrl: toStringOrUndefined(options.cookieLink),
 
     // Introduction guide
-    introductionEnabled: toBool(options.introductionEnabled),
-    introductionShowControlButton: toBool(
+    introductionEnabled: toBoolOrUndefined(options.introductionEnabled),
+    introductionShowControlButton: toBoolOrUndefined(
       options.introductionShowControlButton
     ),
     introductionSteps: toJsonArray(options.introductionSteps),
@@ -211,11 +247,15 @@ export async function buildClientMapForMap(mapName: string) {
     map.projection?.code ??
     (typeof options.projection === "string" ? options.projection : undefined);
 
-  return translateMapOptionsToClient(options, {
+  const translated = translateMapOptionsToClient(options, {
     name: map.name,
     locked: map.locked,
     projectionCode,
   });
+
+  // Deep-merge defaults first, DB/translated values on top, so the client always
+  // receives a complete map config even when stored `options` is sparse.
+  return deepMerge(DEFAULT_MAP_OPTIONS, translated);
 }
 
 export async function buildClientToolsForMap(mapName: string) {
