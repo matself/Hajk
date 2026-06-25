@@ -1,5 +1,5 @@
 export interface Map {
-  id: string;
+  id: number;
   name: string;
   locked: boolean;
   options?: Record<string, string>;

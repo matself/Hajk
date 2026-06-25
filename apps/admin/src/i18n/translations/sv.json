@@ -231,6 +231,8 @@
     "maps.createMapConflict": "En karta med detta namn finns redan.",
     "maps.createMapFailed": "Det gick inte att skapa kartan.",
     "maps.createMapSuccess": "Kartan \"{{name}}\" skapades.",
+    "maps.updateMapSuccess": "Kartan \"{{name}}\" sparades.",
+    "maps.updateMapFailed": "Det gick inte att spara kartan \"{{name}}\".",
     "maps.dialog.title": "Skapa karta",
     "maps.dialog.stepBasicInfo": "Grunduppgifter",
     "maps.dialog.stepBaseSettings": "Basinställningar",

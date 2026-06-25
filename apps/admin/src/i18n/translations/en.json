@@ -232,6 +232,8 @@
     "maps.createMapConflict": "A map with this name already exists.",
     "maps.createMapFailed": "Failed to create map.",
     "maps.createMapSuccess": "Map \"{{name}}\" was created.",
+    "maps.updateMapSuccess": "Map \"{{name}}\" was saved.",
+    "maps.updateMapFailed": "Could not save map \"{{name}}\".",
     "maps.dialog.title": "Create map",
     "maps.dialog.stepBasicInfo": "Basic info",
     "maps.dialog.stepBaseSettings": "Base settings",
