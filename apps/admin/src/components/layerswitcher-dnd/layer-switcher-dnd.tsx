@@ -281,6 +281,7 @@ export const LayerSwitcherDnD: React.FC<LayerSwitcherDnDProps> = ({
                   key={zone.id}
                   id={zone.id}
                   title={zone.title}
+                  titleIcon={zone.titleIcon}
                   items={zone.items}
                   onItemsChange={zone.onItemsChange}
                   onAddToGroup={handleAddToGroup}

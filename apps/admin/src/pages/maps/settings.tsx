@@ -19,6 +19,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import BuildIcon from "@mui/icons-material/Build";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import MapIcon from "@mui/icons-material/Map";
+import CollectionsIcon from "@mui/icons-material/Collections";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import PaletteIcon from "@mui/icons-material/Palette";
 import CookieIcon from "@mui/icons-material/Cookie";
@@ -36,7 +37,6 @@ import {
   useToolsByMapName,
   useLayersByMapName,
   useGroupsByMapName,
-  ToolOnMap,
   type MapGroup,
   type MapLayerPlacement,
   type MapGroupPlacement,
@@ -57,19 +57,25 @@ import MapSettingsForm, {
 import {
   LayerSwitcherDnD,
   TreeItemData,
-  ToolPlacementDnD,
   ID_DELIMITER,
 } from "../../components/layerswitcher-dnd";
 import { useLayers } from "../../api/layers";
 import { useGroups } from "../../api/groups";
-import { useTools } from "../../api/tools";
+import MapToolsPanel from "./components/map-tools-panel";
+import {
+  EMPTY_TOOL_ZONES,
+  mapToolsToZones,
+  toolZonesSignature,
+  zonesToToolsPayload,
+  type ToolZones,
+} from "./map-tools-utils";
 import { useProjections } from "../../api/services";
 import useAppStateStore from "../../store/use-app-state-store";
-import { TreeItems, TreeItem } from "dnd-kit-sortable-tree";
+import { TreeItems } from "dnd-kit-sortable-tree";
 
 const MAP_PAGE_TABS = [
-  { key: "menu", labelKey: "common.layerGroups", icon: <LayersIcon /> },
   { key: "settings", labelKey: "common.settings", icon: <SettingsIcon /> },
+  { key: "menu", labelKey: "common.layerGroups", icon: <LayersIcon /> },
   { key: "tools", labelKey: "common.tools", icon: <BuildIcon /> },
 ] as const;
 
@@ -104,66 +110,6 @@ const MAP_SETTINGS_SECTIONS: {
 const VALID_MAP_SETTINGS_SECTIONS = new Set<MapSettingsSection>(
   MAP_SETTINGS_SECTIONS.map((section) => section.key),
 );
-
-interface ToolZones {
-  drawer: TreeItems<TreeItemData>;
-  widgetLeft: TreeItems<TreeItemData>;
-  widgetRight: TreeItems<TreeItemData>;
-  control: TreeItems<TreeItemData>;
-}
-
-const EMPTY_TOOL_ZONES: ToolZones = {
-  drawer: [],
-  widgetLeft: [],
-  widgetRight: [],
-  control: [],
-};
-
-function mapToolsToZones(mapTools: ToolOnMap[]): ToolZones {
-  const toItem = (tool: ToolOnMap): TreeItem<TreeItemData> => ({
-    id: `tool${ID_DELIMITER}${tool.toolId}`,
-    name: tool.tool.type,
-    type: "tool" as const,
-    canHaveChildren: false,
-  });
-
-  const byZone = (zone: string) =>
-    [...mapTools]
-      .filter((tool) => tool.target === zone)
-      .sort((a, b) => a.index - b.index)
-      .map(toItem);
-
-  return {
-    drawer: byZone("drawer"),
-    widgetLeft: byZone("widgetLeft"),
-    widgetRight: byZone("widgetRight"),
-    control: byZone("controlButton"),
-  };
-}
-
-const ZONE_TO_TARGET: Record<keyof ToolZones, string> = {
-  drawer: "drawer",
-  widgetLeft: "widgetLeft",
-  widgetRight: "widgetRight",
-  control: "controlButton",
-};
-
-/** Flattens the tool drop zones into the `PUT /maps/:name/tools` payload. */
-function zonesToToolsPayload(
-  zones: ToolZones,
-): { toolId: number; index: number; target: string }[] {
-  const result: { toolId: number; index: number; target: string }[] = [];
-  (Object.keys(ZONE_TO_TARGET) as (keyof ToolZones)[]).forEach((zone) => {
-    zones[zone].forEach((item, index) => {
-      const parts = String(item.id).split(ID_DELIMITER);
-      const toolId = Number(parts[parts.length - 1]);
-      if (!Number.isNaN(toolId)) {
-        result.push({ toolId, index, target: ZONE_TO_TARGET[zone] });
-      }
-    });
-  });
-  return result;
-}
 
 /** Extracts the trailing entity id from a drop-zone item id (`type::id`). */
 function entityIdFromItemId(itemId: string | number): string {
@@ -328,7 +274,6 @@ export default function MapSettings() {
   const settingsSearchTerm = showSettingsSearchUi ? settingsSearchQuery : "";
   const { data: layers = [] } = useLayers();
   const { data: groups = [] } = useGroups();
-  const { data: tools = [] } = useTools();
   const { data: mapTools } = useToolsByMapName(mapName ?? "");
   const { data: mapLayers } = useLayersByMapName(mapName ?? "");
   const { data: mapGroups } = useGroupsByMapName(mapName ?? "");
@@ -415,10 +360,13 @@ export default function MapSettings() {
 
   // True when the local tool placement draft differs from what the server has.
   const toolsDirty = useMemo(() => {
-    if (toolsDraft == null || toolsDraft.mapName !== mapName) return false;
-    const draftPayload = zonesToToolsPayload(toolsDraft.zones);
-    const serverPayload = zonesToToolsPayload(serverToolZones ?? EMPTY_TOOL_ZONES);
-    return JSON.stringify(draftPayload) !== JSON.stringify(serverPayload);
+    if (toolsDraft == null || toolsDraft.mapName !== mapName) {
+      return false;
+    }
+    return (
+      toolZonesSignature(toolsDraft.zones) !==
+      toolZonesSignature(serverToolZones ?? EMPTY_TOOL_ZONES)
+    );
   }, [toolsDraft, mapName, serverToolZones]);
 
   const updateToolZone = useCallback(
@@ -482,10 +430,10 @@ export default function MapSettings() {
     try {
       // Persist placements first (keyed by the current name) so a simultaneous
       // rename doesn't target a no-longer-existing map name.
-      if (toolsDirty && toolsDraft) {
+      if (toolsDirty && toolsDraft && mapTools) {
         await updateMapTools({
           mapName: map.name,
-          tools: zonesToToolsPayload(toolsDraft.zones),
+          tools: zonesToToolsPayload(toolsDraft.zones, mapTools),
         });
         setToolsDraft(null);
       }
@@ -736,6 +684,7 @@ export default function MapSettings() {
                 {
                   id: "layers",
                   title: t("common.layers"),
+                  titleIcon: <LayersIcon />,
                   items: backgroundLayersDZ,
                   onItemsChange: setBackgroundLayersDZ,
                 },
@@ -747,6 +696,7 @@ export default function MapSettings() {
                 {
                   id: "groups",
                   title: t("common.layerGroups"),
+                  titleIcon: <CollectionsIcon />,
                   items: groupLayersDZ,
                   onItemsChange: setGroupLayersDZ,
                 },
@@ -756,16 +706,10 @@ export default function MapSettings() {
         )}
 
         {activeTab === "tools" && (
-          <ToolPlacementDnD
-            tools={tools.map((tool) => ({ id: tool.id, name: tool.type }))}
-            drawerItems={toolZones.drawer}
-            onDrawerItemsChange={(items) => updateToolZone("drawer", items)}
-            widgetLeftItems={toolZones.widgetLeft}
-            onWidgetLeftItemsChange={(items) => updateToolZone("widgetLeft", items)}
-            widgetRightItems={toolZones.widgetRight}
-            onWidgetRightItemsChange={(items) => updateToolZone("widgetRight", items)}
-            controlButtonItems={toolZones.control}
-            onControlButtonItemsChange={(items) => updateToolZone("control", items)}
+          <MapToolsPanel
+            mapTools={mapTools}
+            toolZones={toolZones}
+            onUpdateToolZone={updateToolZone}
             backgroundImage={backgroundImage}
           />
         )}

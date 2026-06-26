@@ -1,3 +1,4 @@
+import React from "react";
 import { TreeItems } from "dnd-kit-sortable-tree";
 
 export type ItemType = "group" | "layer" | "tool";
@@ -16,6 +17,7 @@ export interface TreeItemData {
 export interface DropZoneConfig {
   id: string;
   title: string;
+  titleIcon?: React.ReactNode;
   items: TreeItems<TreeItemData>;
   onItemsChange: (items: TreeItems<TreeItemData>) => void;
 }

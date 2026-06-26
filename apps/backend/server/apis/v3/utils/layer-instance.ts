@@ -75,6 +75,47 @@ export const activeLayerInstanceWhere: Prisma.LayerInstanceWhereInput = {
   ],
 };
 
+/**
+ * LayerInstance filter shared by getLayersForMap and map list layer counts —
+ * active instances linked directly to the map or via a group placed on it.
+ */
+export function activeLayerInstancesForMapWhere(
+  mapName: string
+): Prisma.LayerInstanceWhereInput {
+  return {
+    AND: [
+      activeLayerInstanceWhere,
+      {
+        OR: [
+          { map: { name: mapName } },
+          { group: { maps: { some: { mapName } } } },
+        ],
+      },
+    ],
+  };
+}
+
+/** Batch variant of {@link activeLayerInstancesForMapWhere}. */
+export function activeLayerInstancesForMapsWhere(
+  mapNames: string[]
+): Prisma.LayerInstanceWhereInput {
+  return {
+    AND: [
+      activeLayerInstanceWhere,
+      {
+        OR: [
+          { map: { name: { in: mapNames } } },
+          {
+            group: {
+              maps: { some: { mapName: { in: mapNames } } },
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
 export const layerInstanceIncludeAll = {
   displayLayer: true,
   searchLayer: true,

@@ -8,7 +8,8 @@ import HajkStatusCodes from "../../../common/hajk-status-codes.ts";
 import { getUserRoles } from "../../../common/auth/get-user-roles.ts";
 import { isAuthActive } from "../../../common/auth/is-auth-active.ts";
 import {
-  activeLayerInstanceWhere,
+  activeLayerInstancesForMapWhere,
+  activeLayerInstancesForMapsWhere,
   layerInstanceIncludeAll,
   resolveLayerKindById,
 } from "../utils/layer-instance.ts";
@@ -16,6 +17,11 @@ import {
 const logger = log4js.getLogger("service.v3.map");
 
 const DEFAULT_PROJECTION_CODE = "EPSG:3006";
+
+/** Excludes soft-deleted tools from map tool counts and listings. */
+const ACTIVE_TOOLS_ON_MAP_WHERE: Prisma.ToolsOnMapsWhereInput = {
+  tool: { deletedAt: null },
+};
 
 interface MapWriteInput {
   name?: string;
@@ -121,10 +127,77 @@ class MapService {
   async getMaps() {
     const maps = await prisma.map.findMany({
       orderBy: { name: "asc" },
-      include: { projection: true },
+      include: {
+        projection: true,
+        _count: {
+          select: {
+            groups: true,
+            tools: {
+              where: ACTIVE_TOOLS_ON_MAP_WHERE,
+            },
+            projections: true,
+          },
+        },
+      },
     });
 
-    return maps;
+    // Layer count spans direct map layers and layers inherited via groups —
+    // Prisma `_count.layers` only covers direct `mapId` links, so we batch-count
+    // with the same filter as getLayersForMap.
+    const layerCounts = await this.countLayersByMapNames(
+      maps.map((entry) => entry.name)
+    );
+
+    return maps.map(({ _count, ...map }) => ({
+      ...map,
+      layerCount: layerCounts.get(map.name) ?? 0,
+      groupCount: _count.groups,
+      toolCount: _count.tools,
+      projectionCount: _count.projections,
+    }));
+  }
+
+  /**
+   * Counts active layer instances linked to each map — both directly (`mapId`)
+   * and via groups placed on the map. Matches the filter used by getLayersForMap.
+   */
+  private async countLayersByMapNames(mapNames: string[]) {
+    const counts = new Map(mapNames.map((name) => [name, 0]));
+    if (mapNames.length === 0) {
+      return counts;
+    }
+
+    const instances = await prisma.layerInstance.findMany({
+      where: activeLayerInstancesForMapsWhere(mapNames),
+      select: {
+        map: { select: { name: true } },
+        group: {
+          select: {
+            maps: {
+              where: { mapName: { in: mapNames } },
+              select: { mapName: true },
+            },
+          },
+        },
+      },
+    });
+
+    for (const instance of instances) {
+      if (instance.map?.name) {
+        counts.set(
+          instance.map.name,
+          (counts.get(instance.map.name) ?? 0) + 1
+        );
+      }
+      for (const placement of instance.group?.maps ?? []) {
+        counts.set(
+          placement.mapName,
+          (counts.get(placement.mapName) ?? 0) + 1
+        );
+      }
+    }
+
+    return counts;
   }
 
   async getMapNames() {
@@ -207,7 +280,7 @@ class MapService {
         projection: true,
         projections: true,
         // Soft-deleted tools must not reach the client map config.
-        tools: { where: { tool: { deletedAt: null } }, include: { tool: true } },
+        tools: { where: ACTIVE_TOOLS_ON_MAP_WHERE, include: { tool: true } },
         layers: {
           include: layerInstanceIncludeAll,
         },
@@ -268,17 +341,7 @@ class MapService {
 
   async getLayersForMap(mapName: string) {
     const instances = await prisma.layerInstance.findMany({
-      where: {
-        AND: [
-          activeLayerInstanceWhere,
-          {
-            OR: [
-              { map: { name: mapName } },
-              { group: { maps: { some: { mapName } } } },
-            ],
-          },
-        ],
-      },
+      where: activeLayerInstancesForMapWhere(mapName),
       include: layerInstanceIncludeAll,
     });
 
@@ -315,8 +378,7 @@ class MapService {
 
   async getToolsForMap(mapName: string) {
     return await prisma.toolsOnMaps.findMany({
-      // Soft-deleted tools keep their placements but are hidden everywhere.
-      where: { mapName, tool: { deletedAt: null } },
+      where: { mapName, ...ACTIVE_TOOLS_ON_MAP_WHERE },
       include: { tool: true },
       orderBy: { index: "asc" },
     });
@@ -330,7 +392,7 @@ class MapService {
       // Only replace placements for active tools — soft-deleted tools keep
       // theirs so a restored tool reappears on its maps.
       prisma.toolsOnMaps.deleteMany({
-        where: { mapName, tool: { deletedAt: null } },
+        where: { mapName, ...ACTIVE_TOOLS_ON_MAP_WHERE },
       }),
       ...(tools.length > 0
         ? [

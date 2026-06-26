@@ -372,8 +372,10 @@ const SortableZoneItem: React.FC<SortableZoneItemProps> = ({
 };
 
 interface ToolPlacementDnDProps {
-  /** Available tools to drag from source */
+  /** Map tools not yet placed in a zone — available to drag into the view. */
   tools: SourceItem[];
+  /** Heading for the source list below the placement view. */
+  sourceTitle?: string;
   /** Items in drawer zone */
   drawerItems: TreeItems<TreeItemData>;
   onDrawerItemsChange: (items: TreeItems<TreeItemData>) => void;
@@ -392,6 +394,7 @@ interface ToolPlacementDnDProps {
 
 export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
   tools,
+  sourceTitle,
   drawerItems,
   onDrawerItemsChange,
   widgetLeftItems,
@@ -448,8 +451,6 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
 
   const handleDragStart = (e: DragStartEvent) => {
     const activeId = e.active.id.toString();
-
-    console.log("Drag started:", e);
 
     // Check if it's a source tool being dragged
     const data = e.active.data.current as
@@ -752,8 +753,6 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
     );
   };
 
-  console.log(widgetLeftItems.length);
-
   return (
     <Paper sx={{ p: 2, background: isDarkMode ? "#121212" : "#efefef" }}>
       <DndContext
@@ -807,7 +806,7 @@ export const ToolPlacementDnD: React.FC<ToolPlacementDnDProps> = ({
               }}
             >
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {t("common.tools")}
+                {sourceTitle ?? t("common.tools")}
               </Typography>
               <TextField
                 size="small"

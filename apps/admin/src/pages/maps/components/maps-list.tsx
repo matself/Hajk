@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid";
 import {
@@ -22,6 +22,10 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LayersIcon from "@mui/icons-material/Layers";
+import CollectionsIcon from "@mui/icons-material/Collections";
+import BuildIcon from "@mui/icons-material/Build";
+import PublicIcon from "@mui/icons-material/Public";
 import type { GridRenderCellParams } from "@mui/x-data-grid";
 import { Trans, useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -48,6 +52,58 @@ interface MapsListProps {
 
 type LockedFilter = "" | "locked" | "unlocked";
 
+const ICON_COUNT_COLUMN_WIDTH = 92;
+
+const ICON_COUNT_COLUMN_HEADER_SX = {
+  "& .MuiDataGrid-columnHeader[data-field='layerCount'], & .MuiDataGrid-columnHeader[data-field='groupCount'], & .MuiDataGrid-columnHeader[data-field='toolCount'], & .MuiDataGrid-columnHeader[data-field='projectionCount']":
+    {
+      "& .MuiDataGrid-columnHeaderDraggableContainer": {
+        position: "relative",
+        justifyContent: "center",
+      },
+      "& .MuiDataGrid-columnHeaderTitleContainer": {
+        position: "absolute",
+        inset: 0,
+        justifyContent: "center",
+        margin: 0,
+      },
+      "& .MuiDataGrid-iconButtonContainer": {
+        position: "absolute",
+        right: 2,
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: 28,
+        margin: 0,
+        zIndex: 1,
+      },
+    },
+};
+
+function IconColumnHeader({
+  label,
+  icon,
+}: {
+  label: string;
+  icon: ReactElement;
+}) {
+  return (
+    <Tooltip title={label}>
+      <Box
+        component="span"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        aria-label={label}
+      >
+        {icon}
+      </Box>
+    </Tooltip>
+  );
+}
+
 function mapSearchText(map: MapRecord): string {
   const parts = [
     map.name,
@@ -67,7 +123,7 @@ export default function MapsList({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { palette } = useTheme();
-  const { data: maps, isLoading } = useMaps();
+  const { data: maps, isLoading, isError, refetch } = useMaps();
   const { mutateAsync: deleteMap, isPending: isDeletingMap } = useDeleteMap();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,6 +156,10 @@ export default function MapsList({
       return true;
     });
   }, [maps, searchTerm, lockedFilter, filterMaps]);
+
+  const hasActiveFilters = searchTerm.trim() !== "" || lockedFilter !== "";
+  const showEmptyState =
+    !isLoading && !isError && maps !== undefined && filteredMaps.length === 0;
 
   const handleOpenActionsMenu = (
     event: React.MouseEvent<HTMLElement>,
@@ -138,7 +198,11 @@ export default function MapsList({
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedMap?.name || !isDeleteConfirmNameMatching || selectedMap.locked) {
+    if (
+      !selectedMap?.name ||
+      !isDeleteConfirmNameMatching ||
+      selectedMap.locked
+    ) {
       return;
     }
 
@@ -165,7 +229,10 @@ export default function MapsList({
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <CreateButton onClick={() => setOpen(true)} label={t("map.createMap")} />
+          <CreateButton
+            onClick={() => setOpen(true)}
+            label={t("map.createMap")}
+          />
         ) : undefined
       }
     >
@@ -178,6 +245,17 @@ export default function MapsList({
 
       {isLoading ? (
         <SquareSpinnerComponent />
+      ) : isError ? (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => void refetch()}>
+              {t("common.retry")}
+            </Button>
+          }
+        >
+          {t("maps.loadMapsFailed")}
+        </Alert>
       ) : (
         <>
           <ListFilterRow>
@@ -211,10 +289,21 @@ export default function MapsList({
             </ListFilterField>
           </ListFilterRow>
 
+          {showEmptyState && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {hasActiveFilters
+                ? t("maps.noSearchResults")
+                : t("maps.noMapsFound")}
+            </Alert>
+          )}
+
           <Grid size={12}>
             <StyledDataGrid<MapRecord>
               storageKey="maps"
-              customSx={{ height: "calc(100vh - 320px)" }}
+              customSx={{
+                height: "calc(100vh - 320px)",
+                ...ICON_COUNT_COLUMN_HEADER_SX,
+              }}
               onRowClick={({ row }) => {
                 if (row.id != null) {
                   void navigate(`${baseRoute}/${row.id}`);
@@ -249,13 +338,73 @@ export default function MapsList({
                 },
                 {
                   field: "projection",
-                  flex: 0.2,
+                  flex: 0.15,
                   headerName: t("map.projection"),
                   valueGetter: (_value, row) => row.projection?.code ?? "–",
                 },
                 {
+                  field: "layerCount",
+                  width: ICON_COUNT_COLUMN_WIDTH,
+                  minWidth: ICON_COUNT_COLUMN_WIDTH,
+                  headerName: t("common.layers"),
+                  align: "center",
+                  headerAlign: "center",
+                  valueGetter: (_value, row) => row.layerCount ?? 0,
+                  renderHeader: () => (
+                    <IconColumnHeader
+                      label={t("common.layers")}
+                      icon={<LayersIcon fontSize="small" />}
+                    />
+                  ),
+                },
+                {
+                  field: "groupCount",
+                  width: ICON_COUNT_COLUMN_WIDTH,
+                  minWidth: ICON_COUNT_COLUMN_WIDTH,
+                  headerName: t("common.layerGroups"),
+                  align: "center",
+                  headerAlign: "center",
+                  valueGetter: (_value, row) => row.groupCount ?? 0,
+                  renderHeader: () => (
+                    <IconColumnHeader
+                      label={t("common.layerGroups")}
+                      icon={<CollectionsIcon fontSize="small" />}
+                    />
+                  ),
+                },
+                {
+                  field: "toolCount",
+                  width: ICON_COUNT_COLUMN_WIDTH,
+                  minWidth: ICON_COUNT_COLUMN_WIDTH,
+                  headerName: t("common.tools"),
+                  align: "center",
+                  headerAlign: "center",
+                  valueGetter: (_value, row) => row.toolCount ?? 0,
+                  renderHeader: () => (
+                    <IconColumnHeader
+                      label={t("common.tools")}
+                      icon={<BuildIcon fontSize="small" />}
+                    />
+                  ),
+                },
+                {
+                  field: "projectionCount",
+                  width: ICON_COUNT_COLUMN_WIDTH,
+                  minWidth: ICON_COUNT_COLUMN_WIDTH,
+                  headerName: t("map.projections"),
+                  align: "center",
+                  headerAlign: "center",
+                  valueGetter: (_value, row) => row.projectionCount ?? 0,
+                  renderHeader: () => (
+                    <IconColumnHeader
+                      label={t("map.projections")}
+                      icon={<PublicIcon fontSize="small" />}
+                    />
+                  ),
+                },
+                {
                   field: "locked",
-                  flex: 0.15,
+                  flex: 0.1,
                   headerName: t("map.locked"),
                   align: "center",
                   headerAlign: "center",
@@ -277,7 +426,7 @@ export default function MapsList({
                 },
                 {
                   field: "lastSavedDate",
-                  flex: 0.25,
+                  flex: 0.15,
                   headerName: t("common.lastSaved"),
                   valueFormatter: (value: string) =>
                     value ? new Date(value).toLocaleDateString("sv-SE") : "–",
@@ -314,9 +463,7 @@ export default function MapsList({
             onClick={(event) => event.stopPropagation()}
           >
             <Tooltip
-              title={
-                selectedMap?.locked ? t("maps.deleteLockedWarning") : ""
-              }
+              title={selectedMap?.locked ? t("maps.deleteLockedWarning") : ""}
             >
               <span>
                 <MenuItem

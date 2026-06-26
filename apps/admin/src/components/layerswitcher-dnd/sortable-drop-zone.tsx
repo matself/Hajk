@@ -17,6 +17,7 @@ import {
 interface SortableDropZoneProps {
   id: string;
   title?: string;
+  titleIcon?: React.ReactNode;
   items: TreeItems<TreeItemData>;
   onItemsChange: (items: TreeItems<TreeItemData>) => void;
   onAddToGroup?: (groupId: string) => void;
@@ -26,6 +27,7 @@ interface SortableDropZoneProps {
 export const SortableDropZone: React.FC<SortableDropZoneProps> = ({
   id,
   title,
+  titleIcon,
   items,
   onItemsChange,
   onAddToGroup,
@@ -40,7 +42,7 @@ export const SortableDropZone: React.FC<SortableDropZoneProps> = ({
   };
 
   return (
-    <TreeDropZone id={id} title={title} minHeight={minHeight}>
+    <TreeDropZone id={id} title={title} titleIcon={titleIcon} minHeight={minHeight}>
       <Box sx={DND_TREE_SORTABLE_OVERRIDES_SX}>
       <SortableTree
         items={items}
