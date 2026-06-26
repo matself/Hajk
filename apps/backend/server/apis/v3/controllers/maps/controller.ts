@@ -84,5 +84,14 @@ class MapsController {
     await MapService.deleteMap(req.params.mapName);
     res.status(HttpStatusCodes.NO_CONTENT).send();
   }
+
+  async duplicateMap(req: Request, res: Response) {
+    const map = await MapService.duplicateMap(
+      req.params.mapName,
+      req.body.name,
+      req.user?.id
+    );
+    res.status(HttpStatusCodes.CREATED).json(map);
+  }
 }
 export default new MapsController();

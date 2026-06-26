@@ -16,6 +16,7 @@ import {
   updateMapGroups,
   createMap,
   deleteMap,
+  duplicateMap,
   updateMap,
 } from "./requests";
 import type {
@@ -193,6 +194,20 @@ export const useDeleteMap = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (mapName: string) => deleteMap(mapName),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["maps"] });
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+};
+
+// React mutation to duplicate a map
+export const useDuplicateMap = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: duplicateMap,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["maps"] });
     },

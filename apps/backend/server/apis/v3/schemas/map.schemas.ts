@@ -33,6 +33,10 @@ export const ProjectionCreateSchema = z.object({
   locked: z.boolean().default(false),
 });
 
+export const MapDuplicateSchema = z.object({
+  name: z.string().min(1, "Map name is required"),
+});
+
 export const MapUpdateSchema = z.object({
   name: z.string().min(1, "Map name is required").optional(),
   locked: z.boolean().optional(),
@@ -83,6 +87,7 @@ export const ProjectionUpdateSchema = z.object({
   locked: z.boolean().optional(),
 });
 
+export type MapDuplicateInput = z.infer<typeof MapDuplicateSchema>;
 export type MapCreateInput = z.infer<typeof MapCreateSchema>;
 export type ProjectionCreateInput = z.infer<typeof ProjectionCreateSchema>;
 export type MapUpdateInput = z.infer<typeof MapUpdateSchema>;
