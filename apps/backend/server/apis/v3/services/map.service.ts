@@ -592,6 +592,14 @@ class MapService {
       );
     }
 
+    if (map.locked) {
+      throw new HajkError(
+        HttpStatusCodes.FORBIDDEN,
+        `Map "${mapName}" is locked and cannot be deleted`,
+        HajkStatusCodes.INVALID_REQUEST_BODY
+      );
+    }
+
     // Remove the map together with its per-map placements. We only delete the
     // join/placement rows (LayerInstance, ToolsOnMaps, GroupsOnMaps) — the
     // shared underlying entities (display/search/editing layers, tools, groups,

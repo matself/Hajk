@@ -1,17 +1,42 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import Grid from "@mui/material/Grid";
-import { Button, Box, TextField } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  FormControl,
+  IconButton,
+  InputLabel,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Select,
+  TextField,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import type { GridRenderCellParams } from "@mui/x-data-grid";
+import { Trans, useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 import Page from "../../../layouts/root/components/page";
 import type { Map as MapRecord } from "../../../api/maps/types";
-import { useMaps } from "../../../api/maps";
+import { useDeleteMap, useMaps } from "../../../api/maps";
 import CreateButton from "../../../components/create-button";
+import DialogWrapper from "../../../components/flexible-dialog";
 import { SquareSpinnerComponent } from "../../../components/progress/square-progress";
 import StyledDataGrid from "../../../components/data-grid";
-import { GridColDef } from "@mui/x-data-grid";
-import MoreIcon from "@mui/icons-material/More";
-import { useDebounce } from "use-debounce";
+import {
+  ListFilterField,
+  ListFilterRow,
+  ListFilterSearch,
+} from "../../../components/form-components/list-filter-row";
 import CreateMapDialog from "./create-map-dialog";
 
 interface MapsListProps {
@@ -19,6 +44,18 @@ interface MapsListProps {
   showCreateButton?: boolean;
   pageTitleKey: string;
   baseRoute: string;
+}
+
+type LockedFilter = "" | "locked" | "unlocked";
+
+function mapSearchText(map: MapRecord): string {
+  const parts = [
+    map.name,
+    map.projection?.code ?? "",
+    map.options?.title ?? "",
+    map.options?.description ?? "",
+  ];
+  return parts.join(" ").toLowerCase();
 }
 
 export default function MapsList({
@@ -29,148 +66,331 @@ export default function MapsList({
 }: MapsListProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { palette } = useTheme();
   const { data: maps, isLoading } = useMaps();
+  const { mutateAsync: deleteMap, isPending: isDeletingMap } = useDeleteMap();
 
-  const [searchString, setSearchString] = useState("");
-  const [debouncedSearchString] = useDebounce(searchString, 200);
-  const [open, setOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [lockedFilter, setLockedFilter] = useState<LockedFilter>("");
+  const [open, setOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchString(event.target.value);
-  };
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const actionsMenuOpen = Boolean(anchorEl);
+  const selectedMap = useMemo(
+    () => maps?.find((map) => map.id === selectedMapId),
+    [maps, selectedMapId],
+  );
+  const isDeleteConfirmNameMatching =
+    Boolean(selectedMap?.name) && deleteConfirmName === selectedMap?.name;
 
   const filteredMaps = useMemo(() => {
     if (!maps) return [];
 
-    // First apply the specific filter for this page type
-    const typeFilteredMaps = filterMaps(maps);
+    const query = searchTerm.trim().toLowerCase();
 
-    // Then apply search filter
-    const searchFilter = (map: MapRecord) => {
-      return (
-        debouncedSearchString === "" ||
-        Object.values(map).some((value) => {
-          return (
-            ((typeof value === "string" &&
-              value
-                .toLowerCase()
-                .includes(debouncedSearchString.toLowerCase())) ||
-              (value &&
-                typeof value === "object" &&
-                Object.values(map).some(
-                  (v) =>
-                    typeof v === "string" &&
-                    v
-                      .toLowerCase()
-                      .includes(debouncedSearchString.toLowerCase()),
-                ))) ??
-            (typeof map === "object" &&
-              typeof map.options === "object" &&
-              Object.values(map.options).some(
-                (v) =>
-                  typeof v === "string" &&
-                  v.toLowerCase().includes(debouncedSearchString.toLowerCase()),
-              ))
-          );
-        })
-      );
-    };
+    return filterMaps(maps).filter((map) => {
+      if (query && !mapSearchText(map).includes(query)) {
+        return false;
+      }
+      if (lockedFilter === "locked" && !map.locked) return false;
+      if (lockedFilter === "unlocked" && map.locked) return false;
+      return true;
+    });
+  }, [maps, searchTerm, lockedFilter, filterMaps]);
 
-    return typeFilteredMaps.filter(searchFilter);
-  }, [maps, debouncedSearchString, filterMaps]);
+  const handleOpenActionsMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    mapId: number,
+  ) => {
+    if (isDeletingMap) return;
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedMapId(mapId);
+  };
 
-  const columns: GridColDef<MapRecord>[] = [
-    { field: "name", flex: 1, headerName: t("map.name") },
-    {
-      field: "description",
-      flex: 1,
-      headerName: t("map.description"),
-      valueGetter: (_value, row) =>
-        row.options?.description ?? "(to be implemented)",
-    },
-    {
-      field: "title",
-      flex: 1,
-      headerName: t("map.title"),
-      valueGetter: (_value, row) => {
-        return row.options?.title;
-      },
-    },
-    { field: "locked", flex: 1, headerName: t("map.locked") },
-    {
-      field: "lastSavedDate",
-      flex: 0.8,
-      headerName: t("common.lastSaved"),
-      valueFormatter: (value: string) =>
-        value ? new Date(value).toLocaleDateString("sv-SE") : "–",
-    },
-    {
-      field: "more",
-      headerName: "",
-      flex: 0.2,
-      renderCell: () => (
-        <Button
-          color="info"
-          size="small"
-          //   onClick={() => {}}
-        >
-          <MoreIcon />
-        </Button>
-      ),
-    },
-  ];
+  const handleCloseActionsMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    handleCloseActionsMenu();
+    if (selectedMap?.locked) {
+      toast.warning(t("maps.deleteLockedWarning"), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      setSelectedMapId(null);
+      return;
+    }
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (isDeletingMap) return;
+    setIsDeleteDialogOpen(false);
+    setSelectedMapId(null);
+    setDeleteConfirmName("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedMap?.name || !isDeleteConfirmNameMatching || selectedMap.locked) {
+      return;
+    }
+
+    try {
+      await deleteMap(selectedMap.name);
+      toast.success(t("maps.deleteMapSuccess", { name: selectedMap.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete map:", error);
+      toast.error(t("maps.deleteMapFailed", { name: selectedMap.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
+  };
 
   return (
     <Page
       title={t(pageTitleKey)}
       actionButtons={
         showCreateButton ? (
-          <CreateButton onClick={handleClickOpen} label={t("map.createMap")} />
+          <CreateButton onClick={() => setOpen(true)} label={t("map.createMap")} />
         ) : undefined
       }
     >
       <CreateMapDialog
         open={open}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
         baseRoute={baseRoute}
         existingMaps={maps ?? []}
       />
+
       {isLoading ? (
         <SquareSpinnerComponent />
       ) : (
         <>
-          <Box sx={{ mb: 2, width: { xs: "100%", sm: "50%", md: "33%" } }}>
-            <TextField
-              fullWidth
-              label={t("map.searchTitle")}
-              variant="outlined"
-              value={searchString}
-              onChange={handleSearchChange}
-            />
-          </Box>
+          <ListFilterRow>
+            <ListFilterSearch>
+              <TextField
+                fullWidth
+                label={t("map.searchTitle")}
+                variant="outlined"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </ListFilterSearch>
+            <ListFilterField>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="maps-locked-filter-label">
+                  {t("maps.filterByLocked")}
+                </InputLabel>
+                <Select
+                  labelId="maps-locked-filter-label"
+                  label={t("maps.filterByLocked")}
+                  value={lockedFilter}
+                  onChange={(event) =>
+                    setLockedFilter(event.target.value as LockedFilter)
+                  }
+                >
+                  <MenuItem value="">{t("common.all")}</MenuItem>
+                  <MenuItem value="locked">{t("map.locked")}</MenuItem>
+                  <MenuItem value="unlocked">{t("maps.unlocked")}</MenuItem>
+                </Select>
+              </FormControl>
+            </ListFilterField>
+          </ListFilterRow>
 
           <Grid size={12}>
             <StyledDataGrid<MapRecord>
               storageKey="maps"
               customSx={{ height: "calc(100vh - 320px)" }}
               onRowClick={({ row }) => {
-                const id = row.id;
-                if (id !== undefined && id !== null) {
-                  void navigate(`${baseRoute}/${id}`);
+                if (row.id != null) {
+                  void navigate(`${baseRoute}/${row.id}`);
                 }
               }}
               rows={filteredMaps}
-              columns={columns}
               loading={isLoading}
+              columns={[
+                {
+                  field: "name",
+                  flex: 0.45,
+                  headerName: t("common.name"),
+                  renderCell: (params: GridRenderCellParams<MapRecord>) => {
+                    const title = params.row.options?.title;
+                    const description = params.row.options?.description;
+                    const secondary =
+                      title && description && title !== description
+                        ? `${title} · ${description}`
+                        : title || description || undefined;
+
+                    return (
+                      <ListItemText
+                        primary={params.row.name}
+                        secondary={secondary}
+                        slotProps={{
+                          primary: { noWrap: true },
+                          secondary: { noWrap: true },
+                        }}
+                      />
+                    );
+                  },
+                },
+                {
+                  field: "projection",
+                  flex: 0.2,
+                  headerName: t("map.projection"),
+                  valueGetter: (_value, row) => row.projection?.code ?? "–",
+                },
+                {
+                  field: "locked",
+                  flex: 0.15,
+                  headerName: t("map.locked"),
+                  align: "center",
+                  headerAlign: "center",
+                  renderCell: (params: GridRenderCellParams<MapRecord>) =>
+                    params.row.locked ? (
+                      <Chip
+                        icon={<LockOutlinedIcon />}
+                        label={t("map.locked")}
+                        size="small"
+                        color="default"
+                        variant="outlined"
+                        sx={{ height: 26 }}
+                      />
+                    ) : (
+                      <Typography variant="body2" color="text.disabled">
+                        –
+                      </Typography>
+                    ),
+                },
+                {
+                  field: "lastSavedDate",
+                  flex: 0.25,
+                  headerName: t("common.lastSaved"),
+                  valueFormatter: (value: string) =>
+                    value ? new Date(value).toLocaleDateString("sv-SE") : "–",
+                },
+                {
+                  field: "actions",
+                  headerName: "",
+                  width: 60,
+                  align: "center",
+                  sortable: false,
+                  filterable: false,
+                  disableColumnMenu: true,
+                  renderCell: (params: GridRenderCellParams<MapRecord>) => (
+                    <IconButton
+                      aria-label={t("common.actions")}
+                      size="small"
+                      disabled={isDeletingMap}
+                      onClick={(event) =>
+                        handleOpenActionsMenu(event, params.row.id)
+                      }
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  ),
+                },
+              ]}
             />
           </Grid>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={actionsMenuOpen}
+            onClose={handleCloseActionsMenu}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Tooltip
+              title={
+                selectedMap?.locked ? t("maps.deleteLockedWarning") : ""
+              }
+            >
+              <span>
+                <MenuItem
+                  onClick={handleOpenDeleteDialog}
+                  disabled={isDeletingMap || selectedMap?.locked}
+                >
+                  {t("maps.delete")}
+                </MenuItem>
+              </span>
+            </Tooltip>
+          </Menu>
+
+          <DialogWrapper
+            fullWidth
+            open={isDeleteDialogOpen}
+            title={t("maps.deleteTitle")}
+            onClose={handleCloseDeleteDialog}
+            actions={
+              <>
+                <Button
+                  variant="text"
+                  onClick={handleCloseDeleteDialog}
+                  color="primary"
+                  disabled={isDeletingMap}
+                >
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  disabled={isDeletingMap || !isDeleteConfirmNameMatching}
+                  onClick={() => {
+                    void handleConfirmDelete();
+                  }}
+                  startIcon={
+                    isDeletingMap ? (
+                      <CircularProgress color="inherit" size={18} />
+                    ) : (
+                      <DeleteOutlineIcon />
+                    )
+                  }
+                >
+                  {t("maps.delete")}
+                </Button>
+              </>
+            }
+          >
+            <Typography>
+              <Trans
+                i18nKey="maps.deleteMapConfirmMessage"
+                values={{ name: selectedMap?.name ?? "" }}
+                components={{ strong: <strong /> }}
+              />
+            </Typography>
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              {t("maps.deleteMapWarning")}
+            </Alert>
+            <TextField
+              fullWidth
+              autoComplete="off"
+              margin="normal"
+              label={t("maps.deleteMapTypeNameLabel")}
+              helperText={
+                <Trans
+                  i18nKey="maps.deleteMapTypeNameHelper"
+                  values={{ name: selectedMap?.name ?? "" }}
+                  components={{ strong: <strong /> }}
+                />
+              }
+              value={deleteConfirmName}
+              onChange={(event) => setDeleteConfirmName(event.target.value)}
+              disabled={isDeletingMap}
+            />
+          </DialogWrapper>
         </>
       )}
     </Page>

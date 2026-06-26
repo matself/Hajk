@@ -531,7 +531,7 @@ export default function MapSettings() {
     Boolean(map?.name) && deleteConfirmName === map?.name;
 
   const handleDeleteClick = () => {
-    if (isDeletingMap) return;
+    if (isDeletingMap || map?.locked) return;
     setDeleteConfirmName("");
     setIsDeleteDialogOpen(true);
   };
@@ -543,7 +543,7 @@ export default function MapSettings() {
   };
 
   const handleDeleteMap = async () => {
-    if (!map?.name || !isDeleteConfirmNameMatching) return;
+    if (!map?.name || !isDeleteConfirmNameMatching || map.locked) return;
 
     try {
       await deleteMap(map.name);
@@ -609,13 +609,17 @@ export default function MapSettings() {
         isDirty={isDirty || toolsDirty || layersDirty || groupsDirty}
         warning={
           <Box sx={{ mt: 1 }}>
-            <Alert severity="warning">{t("maps.deleteMapWarning")}</Alert>
+            {map.locked ? (
+              <Alert severity="info">{t("maps.deleteLockedWarning")}</Alert>
+            ) : (
+              <Alert severity="warning">{t("maps.deleteMapWarning")}</Alert>
+            )}
             <Button
               variant="outlined"
               color="error"
               startIcon={<DeleteOutlineIcon />}
               onClick={handleDeleteClick}
-              disabled={isDeletingMap}
+              disabled={isDeletingMap || map.locked}
               sx={{
                 mt: 2,
                 width: "100%",
@@ -769,7 +773,7 @@ export default function MapSettings() {
       <DialogWrapper
         fullWidth
         open={isDeleteDialogOpen}
-        title={t("maps.deleteMapConfirmTitle")}
+        title={t("maps.deleteTitle")}
         onClose={handleCloseDeleteDialog}
         actions={
           <>
@@ -796,7 +800,7 @@ export default function MapSettings() {
                 )
               }
             >
-              {t("common.delete")}
+              {t("maps.delete")}
             </Button>
           </>
         }
