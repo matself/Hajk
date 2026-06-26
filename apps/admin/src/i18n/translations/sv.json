@@ -206,6 +206,7 @@
     "user.searchTitle": "Sök användare",
     "map.altShiftDragRotate": "Aktivera AltShiftDragRotate",
     "map.baseSettings": "Grundinställningar",
+    "map.generalSettings": "Allmänt",
     "map.centerCoordinate": "Centrumkoordinat",
     "map.centerCoordinateHelp": "Används som OpenLayers View 'center'-parameter, ex '110600,6283796'",
     "map.colors": "Färger",

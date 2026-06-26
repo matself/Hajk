@@ -23,6 +23,7 @@ import { FieldValues, useForm } from "react-hook-form";
 import {
   useMapByName,
   useUpdateMap,
+  useUpdateMapTools,
   useMaps,
   useToolsByMapName,
   ToolOnMap,
@@ -126,6 +127,30 @@ function mapToolsToZones(mapTools: ToolOnMap[]): ToolZones {
   };
 }
 
+const ZONE_TO_TARGET: Record<keyof ToolZones, string> = {
+  drawer: "drawer",
+  widgetLeft: "widgetLeft",
+  widgetRight: "widgetRight",
+  control: "controlButton",
+};
+
+/** Flattens the tool drop zones into the `PUT /maps/:name/tools` payload. */
+function zonesToToolsPayload(
+  zones: ToolZones,
+): { toolId: number; index: number; target: string }[] {
+  const result: { toolId: number; index: number; target: string }[] = [];
+  (Object.keys(ZONE_TO_TARGET) as (keyof ToolZones)[]).forEach((zone) => {
+    zones[zone].forEach((item, index) => {
+      const parts = String(item.id).split(ID_DELIMITER);
+      const toolId = Number(parts[parts.length - 1]);
+      if (!Number.isNaN(toolId)) {
+        result.push({ toolId, index, target: ZONE_TO_TARGET[zone] });
+      }
+    });
+  });
+  return result;
+}
+
 const tabTextColorSx = {
   "& .MuiTab-root": {
     color: (theme: Theme) =>
@@ -151,6 +176,7 @@ export default function MapSettings() {
   const mapName = maps?.find((m) => m.id == mapId)?.name;
   const { data: map, isLoading, isError } = useMapByName(mapName ?? "");
   const { mutateAsync: updateMap, status: updateStatus } = useUpdateMap();
+  const { mutateAsync: updateMapTools } = useUpdateMapTools();
   const { palette } = useTheme();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -233,6 +259,14 @@ export default function MapSettings() {
       ? toolsDraft.zones
       : (serverToolZones ?? EMPTY_TOOL_ZONES);
 
+  // True when the local tool placement draft differs from what the server has.
+  const toolsDirty = useMemo(() => {
+    if (toolsDraft == null || toolsDraft.mapName !== mapName) return false;
+    const draftPayload = zonesToToolsPayload(toolsDraft.zones);
+    const serverPayload = zonesToToolsPayload(serverToolZones ?? EMPTY_TOOL_ZONES);
+    return JSON.stringify(draftPayload) !== JSON.stringify(serverPayload);
+  }, [toolsDraft, mapName, serverToolZones]);
+
   const updateToolZone = useCallback(
     (zone: keyof ToolZones, items: TreeItems<TreeItemData>) => {
       setToolsDraft((prev) => {
@@ -292,13 +326,24 @@ export default function MapSettings() {
     if (!map) return;
 
     try {
-      const payload = buildMapUpdatePayload(formData, map);
+      // Persist tool placement first (keyed by the current name) so a
+      // simultaneous rename doesn't target a no-longer-existing map name.
+      if (toolsDirty && toolsDraft) {
+        await updateMapTools({
+          mapName: map.name,
+          tools: zonesToToolsPayload(toolsDraft.zones),
+        });
+        setToolsDraft(null);
+      }
 
-      await updateMap({
-        mapName: map.name,
-        data: payload,
-      });
-      setCommittedFormBaseline(formData);
+      if (isDirty) {
+        const payload = buildMapUpdatePayload(formData, map);
+        await updateMap({
+          mapName: map.name,
+          data: payload,
+        });
+        setCommittedFormBaseline(formData);
+      }
       toast.success(t("maps.updateMapSuccess", { name: map.name }), {
         position: "bottom-left",
         theme: palette.mode,
@@ -355,7 +400,7 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
-        isDirty={isDirty}
+        isDirty={isDirty || toolsDirty}
       >
         <Box sx={{ display: activeTab === "settings" ? "block" : "none" }}>
           <FormContainer

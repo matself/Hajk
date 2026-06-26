@@ -207,6 +207,7 @@
     "user.searchTitle": "Search users",
     "map.altShiftDragRotate": "Whether Alt-Shift-drag rotate is desired",
     "map.baseSettings": "Base settings",
+    "map.generalSettings": "General",
     "map.centerCoordinate": "Center coordinate",
     "map.centerCoordinateHelp": "Used as OpenLayers View 'center' parameter, e.g., '110600,6283796'",
     "map.colors": "Colors",

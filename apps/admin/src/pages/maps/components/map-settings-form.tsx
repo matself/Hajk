@@ -7,8 +7,8 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Switch,
   Box,
-  InputAdornment,
   Chip,
   OutlinedInput,
 } from "@mui/material";
@@ -21,6 +21,7 @@ import FormFieldGrid, {
 import SearchablePanel from "../../../components/form-components/searchable-panel";
 import { SettingsSearchField } from "../../../components/form-components/searchable-field";
 import { SelectWithHelp } from "../../../components/form-components/field-label-with-help";
+import FormColorPicker from "../../../components/form-components/form-color-picker";
 import { useSettingsSearchLabels } from "../../../hooks/use-settings-search-labels";
 
 export type MapSettingsSection =
@@ -84,8 +85,6 @@ function MapCheckboxField({
   );
 }
 
-const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-
 function MapColorField({
   name,
   labelKey,
@@ -115,44 +114,14 @@ function MapColorField({
         <Controller
           name={name}
           control={control}
-          render={({ field }) => {
-            const textValue =
-              typeof field.value === "string" ? field.value : "";
-            const swatchValue = HEX_COLOR_RE.test(textValue)
-              ? textValue
-              : "#000000";
-            return (
-              <TextField
-                label={t(labelKey as never)}
-                fullWidth
-                value={textValue}
-                onChange={(e) => field.onChange(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Box
-                          component="input"
-                          type="color"
-                          aria-label={t(labelKey as never)}
-                          value={swatchValue}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            p: 0,
-                            border: "none",
-                            background: "none",
-                            cursor: "pointer",
-                          }}
-                        />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-            );
-          }}
+          render={({ field }) => (
+            <FormColorPicker
+              label={t(labelKey as never)}
+              size="medium"
+              value={typeof field.value === "string" ? field.value : ""}
+              onChange={(hex) => field.onChange(hex)}
+            />
+          )}
         />
       </FormFieldRow>
     </SettingsSearchField>
@@ -191,6 +160,63 @@ export default function MapSettingsForm({
     <>
       {showMapSection && (
         <>
+          <SearchablePanel
+            panelTitleKeywords={settingsSearchLabels("map.generalSettings")}
+            keywords={[
+              ...settingsSearchLabels("map.name", "map.locked"),
+              "name",
+              "lock",
+            ]}
+            fields={["name", "locked"]}
+            allValues={searchValues}
+            searchTerm={settingsSearchTerm}
+          >
+            <FormPanel title={t("map.generalSettings")}>
+              <FormFieldGrid>
+                <SettingsSearchField
+                  labelKeys={["map.name"]}
+                  fields={["name"]}
+                  synonyms={["name"]}
+                  searchTerm={settingsSearchTerm}
+                  allValues={searchValues}
+                >
+                  <FormFieldRow>
+                    <TextField
+                      label={t("map.name")}
+                      fullWidth
+                      {...register("name")}
+                    />
+                  </FormFieldRow>
+                </SettingsSearchField>
+                <SettingsSearchField
+                  labelKeys={["map.locked"]}
+                  fields={["locked"]}
+                  synonyms={["lock"]}
+                  searchTerm={settingsSearchTerm}
+                  allValues={searchValues}
+                >
+                  <FormFieldRow>
+                    <FormControlLabel
+                      control={
+                        <Controller
+                          name="locked"
+                          control={control}
+                          render={({ field }) => (
+                            <Switch
+                              checked={Boolean(field.value)}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
+                        />
+                      }
+                      label={t("map.locked")}
+                    />
+                  </FormFieldRow>
+                </SettingsSearchField>
+              </FormFieldGrid>
+            </FormPanel>
+          </SearchablePanel>
+
           <SearchablePanel
             panelTitleKeywords={settingsSearchLabels("map.baseSettings")}
             keywords={[
@@ -307,7 +333,7 @@ export default function MapSettingsForm({
                                     gap: 0.5,
                                   }}
                                 >
-                                  {(value as string[]).map((code) => (
+                                  {value.map((code) => (
                                     <Chip key={code} label={code} size="small" />
                                   ))}
                                 </Box>
