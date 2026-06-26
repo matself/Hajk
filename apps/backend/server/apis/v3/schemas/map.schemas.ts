@@ -43,6 +43,38 @@ export const MapUpdateSchema = z.object({
   groups: z.array(GroupUpdateSchema).optional(),
 });
 
+const UsageSchema = z.enum(["BACKGROUND", "FOREGROUND"]);
+
+export const MapLayersUpdateSchema = z.object({
+  layers: z
+    .array(
+      z.object({
+        layerId: z.string().min(1, "Layer id is required"),
+        usage: UsageSchema.optional(),
+        visibleAtStart: z.boolean().optional(),
+        infoClickActive: z.boolean().optional(),
+        zIndex: z.number().optional(),
+      })
+    )
+    .default([]),
+});
+
+export const MapGroupsUpdateSchema = z.object({
+  groups: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        groupId: z.string().min(1, "Group id is required"),
+        parentGroupId: z.string().nullable().optional(),
+        usage: UsageSchema.optional(),
+        name: z.string().optional(),
+        toggled: z.boolean().optional(),
+        expanded: z.boolean().optional(),
+      })
+    )
+    .default([]),
+});
+
 export const ProjectionUpdateSchema = z.object({
   code: z.string().min(1, "Projection code is required").optional(),
   definition: z.string().min(1, "Projection definition is required").optional(),
@@ -55,3 +87,5 @@ export type MapCreateInput = z.infer<typeof MapCreateSchema>;
 export type ProjectionCreateInput = z.infer<typeof ProjectionCreateSchema>;
 export type MapUpdateInput = z.infer<typeof MapUpdateSchema>;
 export type ProjectionUpdateInput = z.infer<typeof ProjectionUpdateSchema>;
+export type MapLayersUpdateInput = z.infer<typeof MapLayersUpdateSchema>;
+export type MapGroupsUpdateInput = z.infer<typeof MapGroupsUpdateSchema>;

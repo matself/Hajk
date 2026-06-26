@@ -170,6 +170,105 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /maps/{mapName}/layers:
+    put:
+      tags:
+        - Admin only
+      parameters:
+        - name: mapName
+          in: path
+          description: Name of the map
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Layers placed directly on the map (replaces existing set)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                layers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      layerId:
+                        type: string
+                      usage:
+                        type: string
+                        enum: [BACKGROUND, FOREGROUND]
+                      visibleAtStart:
+                        type: boolean
+                      infoClickActive:
+                        type: boolean
+                      zIndex:
+                        type: integer
+                    required:
+                      - layerId
+      responses:
+        204:
+          description: Map layers updated
+        400:
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Map not found
+  /maps/{mapName}/groups:
+    put:
+      tags:
+        - Admin only
+      parameters:
+        - name: mapName
+          in: path
+          description: Name of the map
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Group placements on the map (replaces existing set)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groups:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      groupId:
+                        type: string
+                      parentGroupId:
+                        type: string
+                        nullable: true
+                      usage:
+                        type: string
+                        enum: [BACKGROUND, FOREGROUND]
+                      name:
+                        type: string
+                      toggled:
+                        type: boolean
+                      expanded:
+                        type: boolean
+                    required:
+                      - groupId
+      responses:
+        204:
+          description: Map groups updated
+        400:
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Map not found
   /layers:
     get:
       tags:

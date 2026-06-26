@@ -12,6 +12,8 @@ import {
   getProjectionsByMapName,
   getToolsByMapName,
   updateMapTools,
+  updateMapLayers,
+  updateMapGroups,
   createMap,
   deleteMap,
   updateMap,
@@ -19,11 +21,13 @@ import {
 import type {
   Map as MapRecord,
   ProjectionsApiResponse,
-  GroupApiResponse,
+  MapGroup,
+  MapLayer,
+  MapLayerPlacement,
+  MapGroupPlacement,
   MapMutation,
   ToolOnMap,
 } from "./types";
-import { LayersApiResponse } from "../layers/types";
 
 // React Query hook to fetch all maps
 // This hook uses the `getMaps` function from the `requests` module
@@ -46,11 +50,12 @@ export const useMapByName = (mapName: string): UseQueryResult<MapRecord> => {
 // React Query hook to fetch groups by map name
 // This hook uses the `getGroupsByMapName` function from the `requests` module
 export const useGroupsByMapName = (
-  mapId: string
-): UseQueryResult<GroupApiResponse> => {
+  mapName: string
+): UseQueryResult<MapGroup[]> => {
   return useQuery({
-    queryKey: ["groupsByMap", mapId],
-    queryFn: () => getGroupsByMapName(mapId),
+    queryKey: ["groupsByMap", mapName],
+    queryFn: () => getGroupsByMapName(mapName),
+    enabled: Boolean(mapName),
   });
 };
 
@@ -58,10 +63,11 @@ export const useGroupsByMapName = (
 // This hook uses the `getLayersByMapName` function from the maps `requests` module
 export const useLayersByMapName = (
   mapName: string
-): UseQueryResult<LayersApiResponse[]> => {
+): UseQueryResult<MapLayer[]> => {
   return useQuery({
     queryKey: ["layersByMap", mapName],
     queryFn: () => getLayersByMapName(mapName),
+    enabled: Boolean(mapName),
   });
 };
 
@@ -102,6 +108,44 @@ export const useUpdateMapTools = () => {
     onSuccess: (_, { mapName }) => {
       void queryClient.invalidateQueries({ queryKey: ["toolsByMap", mapName] });
       void queryClient.invalidateQueries({ queryKey: ["tools"] });
+    },
+  });
+};
+
+// React mutation to update the layers placed directly on a map
+export const useUpdateMapLayers = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      mapName,
+      layers,
+    }: {
+      mapName: string;
+      layers: MapLayerPlacement[];
+    }) => updateMapLayers(mapName, layers),
+    onSuccess: (_, { mapName }) => {
+      void queryClient.invalidateQueries({
+        queryKey: ["layersByMap", mapName],
+      });
+    },
+  });
+};
+
+// React mutation to update the group placements on a map
+export const useUpdateMapGroups = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      mapName,
+      groups,
+    }: {
+      mapName: string;
+      groups: MapGroupPlacement[];
+    }) => updateMapGroups(mapName, groups),
+    onSuccess: (_, { mapName }) => {
+      void queryClient.invalidateQueries({
+        queryKey: ["groupsByMap", mapName],
+      });
     },
   });
 };

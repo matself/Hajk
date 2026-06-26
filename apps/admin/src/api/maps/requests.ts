@@ -2,7 +2,12 @@ import type {
   Map as MapRecord,
   MapsApiResponse,
   ProjectionsApiResponse,
-  GroupApiResponse,
+  MapGroup,
+  MapGroupsApiResponse,
+  MapLayer,
+  MapLayersApiResponse,
+  MapLayerPlacement,
+  MapGroupPlacement,
   MapMutation,
   ToolOnMap,
 } from "./types";
@@ -10,7 +15,6 @@ import {
   buildCreateMapPayload,
   type MapCreateInput,
 } from "./map-create-types";
-import { LayersApiResponse } from "../layers/types";
 import { getApiClient, InternalApiError } from "../../lib/internal-api-client";
 
 /**
@@ -76,16 +80,16 @@ export const getMapByName = async (mapName: string): Promise<MapRecord> => {
 
 export const getGroupsByMapName = async (
   mapName: string
-): Promise<GroupApiResponse> => {
+): Promise<MapGroup[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<GroupApiResponse>(
+    const response = await internalApiClient.get<MapGroupsApiResponse>(
       `/maps/${mapName}/groups`
     );
     if (!response.data) {
       throw new Error("No groups data found");
     }
-    return response.data;
+    return response.data.groups;
   } catch (error) {
     const axiosError = error as InternalApiError;
 
@@ -101,16 +105,16 @@ export const getGroupsByMapName = async (
 
 export const getLayersByMapName = async (
   mapName: string
-): Promise<LayersApiResponse[]> => {
+): Promise<MapLayer[]> => {
   const internalApiClient = getApiClient();
   try {
-    const response = await internalApiClient.get<LayersApiResponse[]>(
+    const response = await internalApiClient.get<MapLayersApiResponse>(
       `/maps/${mapName}/layers`
     );
     if (!response.data) {
       throw new Error("No layers data found");
     }
-    return response.data;
+    return response.data.layers;
   } catch (error) {
     const axiosError = error as InternalApiError;
 
@@ -190,6 +194,44 @@ export const updateMapTools = async (
       );
     } else {
       throw new Error(`Failed to update map tools.`);
+    }
+  }
+};
+
+export const updateMapLayers = async (
+  mapName: string,
+  layers: MapLayerPlacement[]
+): Promise<void> => {
+  const internalApiClient = getApiClient();
+  try {
+    await internalApiClient.put(`/maps/${mapName}/layers`, { layers });
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to update map layers. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to update map layers.`);
+    }
+  }
+};
+
+export const updateMapGroups = async (
+  mapName: string,
+  groups: MapGroupPlacement[]
+): Promise<void> => {
+  const internalApiClient = getApiClient();
+  try {
+    await internalApiClient.put(`/maps/${mapName}/groups`, { groups });
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw new Error(
+        `Failed to update map groups. ErrorId: ${axiosError.response.data.errorId}.`
+      );
+    } else {
+      throw new Error(`Failed to update map groups.`);
     }
   }
 };

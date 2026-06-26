@@ -1,4 +1,4 @@
-import { Prisma, type User } from "@prisma/client";
+import { Prisma, UseType, type User } from "@prisma/client";
 import log4js from "log4js";
 
 import prisma from "../../../common/prisma.ts";
@@ -10,6 +10,7 @@ import { isAuthActive } from "../../../common/auth/is-auth-active.ts";
 import {
   activeLayerInstanceWhere,
   layerInstanceIncludeAll,
+  resolveLayerKindById,
 } from "../utils/layer-instance.ts";
 
 const logger = log4js.getLogger("service.v3.map");
@@ -22,6 +23,24 @@ interface MapWriteInput {
   options?: Prisma.InputJsonValue;
   projection?: { code?: string };
   projections?: { code?: string }[];
+}
+
+interface MapLayerInput {
+  layerId: string;
+  usage?: UseType;
+  visibleAtStart?: boolean;
+  infoClickActive?: boolean;
+  zIndex?: number;
+}
+
+interface MapGroupInput {
+  id?: string;
+  groupId: string;
+  parentGroupId?: string | null;
+  usage?: UseType;
+  name?: string;
+  toggled?: boolean;
+  expanded?: boolean;
 }
 
 async function resolveProjectionConnect(code?: string) {
@@ -265,14 +284,21 @@ class MapService {
 
     return instances
       .map((instance) => {
+        // Source info lets the admin tell map-direct layers (mapId set) apart
+        // from layers inherited via a group (groupId set).
+        const source = {
+          mapId: instance.mapId,
+          groupId: instance.groupId,
+          zIndex: instance.zIndex,
+        };
         if (instance.displayLayer) {
-          return { ...instance.displayLayer, layerKind: "display" as const };
+          return { ...instance.displayLayer, ...source, layerKind: "display" as const };
         }
         if (instance.searchLayer) {
-          return { ...instance.searchLayer, layerKind: "search" as const };
+          return { ...instance.searchLayer, ...source, layerKind: "search" as const };
         }
         if (instance.editingLayer) {
-          return { ...instance.editingLayer, layerKind: "editing" as const };
+          return { ...instance.editingLayer, ...source, layerKind: "editing" as const };
         }
         return null;
       })
@@ -319,6 +345,129 @@ class MapService {
           ]
         : []),
     ]);
+  }
+
+  private async requireMapByName(mapName: string) {
+    const map = await prisma.map.findUnique({ where: { name: mapName } });
+    if (map === null) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `"${mapName}" is not a valid map`,
+        HajkStatusCodes.UNKNOWN_MAP_NAME
+      );
+    }
+    return map;
+  }
+
+  /**
+   * Replaces the map's directly-attached layers (LayerInstance rows with
+   * `mapId`). Layers placed inside groups are untouched. Order is stored in
+   * `zIndex` (falls back to array position).
+   */
+  async updateMapLayers(mapName: string, layers: MapLayerInput[]) {
+    const map = await this.requireMapByName(mapName);
+
+    // Resolve each layer's kind up front so unknown ids fail before we delete.
+    const data: Prisma.LayerInstanceCreateManyInput[] = [];
+    for (const [index, layer] of layers.entries()) {
+      const kind = await resolveLayerKindById(layer.layerId);
+      if (!kind) {
+        throw new HajkError(
+          HttpStatusCodes.BAD_REQUEST,
+          `Unknown layer id: ${layer.layerId}`,
+          HajkStatusCodes.INVALID_REQUEST_BODY
+        );
+      }
+      data.push({
+        mapId: map.id,
+        displayLayerId: kind === "display" ? layer.layerId : undefined,
+        searchLayerId: kind === "search" ? layer.layerId : undefined,
+        editingLayerId: kind === "editing" ? layer.layerId : undefined,
+        usage: layer.usage ?? UseType.FOREGROUND,
+        visibleAtStart: layer.visibleAtStart ?? false,
+        infoClickActive: layer.infoClickActive ?? true,
+        zIndex: layer.zIndex ?? index,
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.layerInstance.deleteMany({ where: { mapId: map.id } });
+      if (data.length > 0) {
+        await tx.layerInstance.createMany({ data });
+      }
+    });
+  }
+
+  /**
+   * Replaces the map's group placements (GroupsOnMaps). Supports nesting via
+   * `parentGroupId`; entries referenced as a parent must carry an explicit
+   * `id`. Missing names default to the group's own name.
+   */
+  async updateMapGroups(mapName: string, groups: MapGroupInput[]) {
+    await this.requireMapByName(mapName);
+
+    const groupIds = Array.from(new Set(groups.map((g) => g.groupId)));
+    const groupRecords = await prisma.group.findMany({
+      where: { id: { in: groupIds } },
+      select: { id: true, name: true },
+    });
+    const nameById = new Map(groupRecords.map((g) => [g.id, g.name]));
+
+    for (const group of groups) {
+      if (!nameById.has(group.groupId)) {
+        throw new HajkError(
+          HttpStatusCodes.BAD_REQUEST,
+          `Unknown group id: ${group.groupId}`,
+          HajkStatusCodes.INVALID_REQUEST_BODY
+        );
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.groupsOnMaps.deleteMany({ where: { mapName } });
+
+      // Insert parents before children so self-referencing FKs resolve.
+      const pending = [...groups];
+      const createdIds = new Set<string>();
+
+      while (pending.length > 0) {
+        const batch = pending.filter(
+          (entry) =>
+            !entry.parentGroupId || createdIds.has(entry.parentGroupId)
+        );
+
+        if (batch.length === 0) {
+          throw new HajkError(
+            HttpStatusCodes.BAD_REQUEST,
+            "Invalid groups-on-maps parent references.",
+            HajkStatusCodes.INVALID_REQUEST_BODY
+          );
+        }
+
+        for (const entry of batch) {
+          const created = await tx.groupsOnMaps.create({
+            data: {
+              ...(entry.id ? { id: entry.id } : {}),
+              mapName,
+              groupId: entry.groupId,
+              parentGroupId: entry.parentGroupId ?? null,
+              usage: entry.usage ?? UseType.FOREGROUND,
+              name: entry.name ?? nameById.get(entry.groupId) ?? "",
+              toggled: entry.toggled ?? false,
+              expanded: entry.expanded ?? false,
+            },
+          });
+          createdIds.add(created.id);
+        }
+
+        for (const entry of batch) {
+          const index = pending.indexOf(entry);
+          if (index !== -1) {
+            pending.splice(index, 1);
+          }
+        }
+      }
+    });
   }
 
   async createMap(data: MapWriteInput, userId?: string) {
@@ -434,11 +583,26 @@ class MapService {
   }
 
   async deleteMap(mapName: string) {
-    // TODO: This does not delete corresponding layers, groups, etc.
-    // We should consider implementing a onDelete cascade in the schema, but
-    // must account for the fact that layers/groups etc. may be shared between
-    // maps.
-    await prisma.map.delete({ where: { name: mapName } });
+    const map = await prisma.map.findUnique({ where: { name: mapName } });
+    if (map === null) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `"${mapName}" is not a valid map`,
+        HajkStatusCodes.UNKNOWN_MAP_NAME
+      );
+    }
+
+    // Remove the map together with its per-map placements. We only delete the
+    // join/placement rows (LayerInstance, ToolsOnMaps, GroupsOnMaps) — the
+    // shared underlying entities (display/search/editing layers, tools, groups,
+    // projections) are kept since they may be used by other maps. RoleOnMap,
+    // DocumentFolder and Document are removed via onDelete: Cascade.
+    await prisma.$transaction([
+      prisma.layerInstance.deleteMany({ where: { mapId: map.id } }),
+      prisma.toolsOnMaps.deleteMany({ where: { mapName } }),
+      prisma.groupsOnMaps.deleteMany({ where: { mapName } }),
+      prisma.map.delete({ where: { id: map.id } }),
+    ]);
   }
 }
 

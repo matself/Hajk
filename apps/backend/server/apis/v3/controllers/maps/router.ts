@@ -5,6 +5,8 @@ import { validatePayload } from "../../middlewares/payload.validation.ts";
 import {
   MapCreateSchema,
   MapUpdateSchema,
+  MapLayersUpdateSchema,
+  MapGroupsUpdateSchema,
 } from "../../schemas/map.schemas.ts";
 
 export default express
@@ -23,4 +25,14 @@ export default express
   .get("/:mapName/projections", MapsController.getProjectionsForMap)
   .get("/:mapName/tools", MapsController.getToolsForMap)
   .put("/:mapName/tools", MapsController.updateMapTools)
+  .put(
+    "/:mapName/layers",
+    validatePayload(MapLayersUpdateSchema),
+    MapsController.updateMapLayers
+  )
+  .put(
+    "/:mapName/groups",
+    validatePayload(MapGroupsUpdateSchema),
+    MapsController.updateMapGroups
+  )
   .use("/:mapName/documenthandler", documentHandlerRouter);

@@ -50,6 +50,22 @@ class MapsController {
     res.status(HttpStatusCodes.NO_CONTENT).send();
   }
 
+  async updateMapLayers(req: Request, res: Response) {
+    const { layers } = req.body as {
+      layers: Parameters<typeof MapService.updateMapLayers>[1];
+    };
+    await MapService.updateMapLayers(req.params.mapName, layers ?? []);
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  }
+
+  async updateMapGroups(req: Request, res: Response) {
+    const { groups } = req.body as {
+      groups: Parameters<typeof MapService.updateMapGroups>[1];
+    };
+    await MapService.updateMapGroups(req.params.mapName, groups ?? []);
+    res.status(HttpStatusCodes.NO_CONTENT).send();
+  }
+
   async createMap(req: Request, res: Response) {
     const map = await MapService.createMap(req.body, req.user?.id);
     res.status(HttpStatusCodes.CREATED).json(map);

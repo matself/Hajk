@@ -1,13 +1,17 @@
 import { useRef, useState, useCallback, useMemo, type ReactElement } from "react";
-import { useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import Page from "../../layouts/root/components/page";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
   TextField,
   useTheme,
   Tabs,
   Tab,
   Box,
+  Button,
+  Alert,
+  Typography,
+  CircularProgress,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -18,16 +22,26 @@ import MapIcon from "@mui/icons-material/Map";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import PaletteIcon from "@mui/icons-material/Palette";
 import CookieIcon from "@mui/icons-material/Cookie";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 
 import { FieldValues, useForm } from "react-hook-form";
 import {
   useMapByName,
   useUpdateMap,
   useUpdateMapTools,
+  useUpdateMapLayers,
+  useUpdateMapGroups,
+  useDeleteMap,
   useMaps,
   useToolsByMapName,
+  useLayersByMapName,
+  useGroupsByMapName,
   ToolOnMap,
+  type MapGroup,
+  type MapLayerPlacement,
+  type MapGroupPlacement,
 } from "../../api/maps";
+import DialogWrapper from "../../components/flexible-dialog";
 import {
   buildMapSettingsFormValues,
   buildMapUpdatePayload,
@@ -151,6 +165,92 @@ function zonesToToolsPayload(
   return result;
 }
 
+/** Extracts the trailing entity id from a drop-zone item id (`type::id`). */
+function entityIdFromItemId(itemId: string | number): string {
+  const parts = String(itemId).split(ID_DELIMITER);
+  return parts[parts.length - 1];
+}
+
+/** Builds a nested group tree (for the drop zone) from GroupsOnMaps rows. */
+function buildGroupTree(rows: MapGroup[]): TreeItems<TreeItemData> {
+  const byParent = new Map<string | null, MapGroup[]>();
+  rows.forEach((row) => {
+    const key = row.parentGroupId ?? null;
+    const bucket = byParent.get(key);
+    if (bucket) bucket.push(row);
+    else byParent.set(key, [row]);
+  });
+
+  const build = (parentPlacementId: string | null): TreeItems<TreeItemData> =>
+    (byParent.get(parentPlacementId) ?? []).map((row) => ({
+      id: `group${ID_DELIMITER}${row.groupId}`,
+      name: row.name,
+      type: "group" as const,
+      canHaveChildren: true,
+      children: build(row.id),
+    }));
+
+  return build(null);
+}
+
+/** Flattens the layers drop zone into the `PUT /maps/:name/layers` payload. */
+function layersToPayload(
+  items: TreeItems<TreeItemData>,
+): MapLayerPlacement[] {
+  return items.map((item, index) => ({
+    layerId: entityIdFromItemId(item.id),
+    zIndex: index,
+  }));
+}
+
+/** Stable signature for the layers zone (order-sensitive), for dirty checks. */
+function layersSignature(items: TreeItems<TreeItemData>): string {
+  return JSON.stringify(items.map((item) => entityIdFromItemId(item.id)));
+}
+
+/**
+ * Flattens the groups tree into the `PUT /maps/:name/groups` payload. Fresh
+ * placement ids are generated each save (the backend fully replaces the set),
+ * and nesting is expressed via `parentGroupId`.
+ */
+function groupTreeToPayload(
+  items: TreeItems<TreeItemData>,
+): MapGroupPlacement[] {
+  const result: MapGroupPlacement[] = [];
+  const walk = (
+    nodes: TreeItems<TreeItemData>,
+    parentPlacementId: string | null,
+  ) => {
+    nodes.forEach((node) => {
+      const placementId = crypto.randomUUID();
+      result.push({
+        id: placementId,
+        groupId: entityIdFromItemId(node.id),
+        parentGroupId: parentPlacementId,
+      });
+      if (node.children?.length) walk(node.children, placementId);
+    });
+  };
+  walk(items, null);
+  return result;
+}
+
+/** Stable signature for the groups tree (structure + order), for dirty checks. */
+function groupsSignature(items: TreeItems<TreeItemData>): string {
+  const walk = (
+    nodes: TreeItems<TreeItemData>,
+    parentGroupId: string | null,
+  ): { groupId: string; parent: string | null }[] =>
+    nodes.flatMap((node) => {
+      const groupId = entityIdFromItemId(node.id);
+      return [
+        { groupId, parent: parentGroupId },
+        ...(node.children?.length ? walk(node.children, groupId) : []),
+      ];
+    });
+  return JSON.stringify(walk(items, null));
+}
+
 const tabTextColorSx = {
   "& .MuiTab-root": {
     color: (theme: Theme) =>
@@ -171,13 +271,19 @@ const tabTextColorSx = {
 
 export default function MapSettings() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { mapId } = useParams();
   const { data: maps } = useMaps();
   const mapName = maps?.find((m) => m.id == mapId)?.name;
   const { data: map, isLoading, isError } = useMapByName(mapName ?? "");
   const { mutateAsync: updateMap, status: updateStatus } = useUpdateMap();
   const { mutateAsync: updateMapTools } = useUpdateMapTools();
+  const { mutateAsync: updateMapLayers } = useUpdateMapLayers();
+  const { mutateAsync: updateMapGroups } = useUpdateMapGroups();
+  const { mutateAsync: deleteMap, isPending: isDeletingMap } = useDeleteMap();
   const { palette } = useTheme();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const formRef = useRef<HTMLFormElement | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get("tab") ?? "settings") as
@@ -224,6 +330,8 @@ export default function MapSettings() {
   const { data: groups = [] } = useGroups();
   const { data: tools = [] } = useTools();
   const { data: mapTools } = useToolsByMapName(mapName ?? "");
+  const { data: mapLayers } = useLayersByMapName(mapName ?? "");
+  const { data: mapGroups } = useGroupsByMapName(mapName ?? "");
   const { data: projections } = useProjections();
   const { defaultCoordinates } = useAppStateStore.getState();
 
@@ -245,6 +353,52 @@ export default function MapSettings() {
   const [groupLayersDZ, setGroupLayersDZ] = useState<TreeItems<TreeItemData>>(
     [],
   );
+
+  // Server baselines for the menu tab (layers placed directly on the map and
+  // the map's group placements). Used both to seed the drop zones and to
+  // detect unsaved changes.
+  const serverLayerItems = useMemo<TreeItems<TreeItemData>>(
+    () =>
+      (mapLayers ?? [])
+        .filter((layer) => layer.mapId != null)
+        .slice()
+        .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0))
+        .map((layer) => ({
+          id: `layer${ID_DELIMITER}${layer.id}`,
+          name: layer.name,
+          type: "layer" as const,
+          canHaveChildren: false,
+        })),
+    [mapLayers],
+  );
+  const serverGroupItems = useMemo<TreeItems<TreeItemData>>(
+    () => buildGroupTree(mapGroups ?? []),
+    [mapGroups],
+  );
+
+  // Seed the drop zones from the server once both queries have resolved, and
+  // re-seed whenever the active map changes.
+  const [menuSyncKey, setMenuSyncKey] = useState<string | null>(null);
+  if (
+    mapName &&
+    mapName !== menuSyncKey &&
+    mapLayers !== undefined &&
+    mapGroups !== undefined
+  ) {
+    setMenuSyncKey(mapName);
+    setBackgroundLayersDZ(serverLayerItems);
+    setGroupLayersDZ(serverGroupItems);
+  }
+
+  const layersDirty = useMemo(() => {
+    if (menuSyncKey !== mapName) return false;
+    return layersSignature(backgroundLayersDZ) !== layersSignature(serverLayerItems);
+  }, [backgroundLayersDZ, serverLayerItems, menuSyncKey, mapName]);
+
+  const groupsDirty = useMemo(() => {
+    if (menuSyncKey !== mapName) return false;
+    return groupsSignature(groupLayersDZ) !== groupsSignature(serverGroupItems);
+  }, [groupLayersDZ, serverGroupItems, menuSyncKey, mapName]);
   const serverToolZones = useMemo(
     () => (mapTools ? mapToolsToZones(mapTools) : null),
     [mapTools],
@@ -326,14 +480,28 @@ export default function MapSettings() {
     if (!map) return;
 
     try {
-      // Persist tool placement first (keyed by the current name) so a
-      // simultaneous rename doesn't target a no-longer-existing map name.
+      // Persist placements first (keyed by the current name) so a simultaneous
+      // rename doesn't target a no-longer-existing map name.
       if (toolsDirty && toolsDraft) {
         await updateMapTools({
           mapName: map.name,
           tools: zonesToToolsPayload(toolsDraft.zones),
         });
         setToolsDraft(null);
+      }
+
+      if (layersDirty) {
+        await updateMapLayers({
+          mapName: map.name,
+          layers: layersToPayload(backgroundLayersDZ),
+        });
+      }
+
+      if (groupsDirty) {
+        await updateMapGroups({
+          mapName: map.name,
+          groups: groupTreeToPayload(groupLayersDZ),
+        });
       }
 
       if (isDirty) {
@@ -352,6 +520,44 @@ export default function MapSettings() {
     } catch (error) {
       console.error("Failed to update map:", error);
       toast.error(t("maps.updateMapFailed", { name: map.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+    }
+  };
+
+  const isDeleteConfirmNameMatching =
+    Boolean(map?.name) && deleteConfirmName === map?.name;
+
+  const handleDeleteClick = () => {
+    if (isDeletingMap) return;
+    setDeleteConfirmName("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (isDeletingMap) return;
+    setIsDeleteDialogOpen(false);
+    setDeleteConfirmName("");
+  };
+
+  const handleDeleteMap = async () => {
+    if (!map?.name || !isDeleteConfirmNameMatching) return;
+
+    try {
+      await deleteMap(map.name);
+      toast.success(t("maps.deleteMapSuccess", { name: map.name }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
+      setIsDeleteDialogOpen(false);
+      setDeleteConfirmName("");
+      void navigate("/maps");
+    } catch (error) {
+      console.error("Failed to delete map:", error);
+      toast.error(t("maps.deleteMapFailed", { name: map.name }), {
         position: "bottom-left",
         theme: palette.mode,
         hideProgressBar: true,
@@ -400,7 +606,27 @@ export default function MapSettings() {
         createdDate={map?.createdDate}
         lastSavedBy={map?.lastSavedBy}
         lastSavedDate={map?.lastSavedDate}
-        isDirty={isDirty || toolsDirty}
+        isDirty={isDirty || toolsDirty || layersDirty || groupsDirty}
+        warning={
+          <Box sx={{ mt: 1 }}>
+            <Alert severity="warning">{t("maps.deleteMapWarning")}</Alert>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteOutlineIcon />}
+              onClick={handleDeleteClick}
+              disabled={isDeletingMap}
+              sx={{
+                mt: 2,
+                width: "100%",
+                justifyContent: "center",
+                borderStyle: "dashed",
+              }}
+            >
+              {t("maps.deleteMapButton")}
+            </Button>
+          </Box>
+        }
       >
         <Box sx={{ display: activeTab === "settings" ? "block" : "none" }}>
           <FormContainer
@@ -540,6 +766,68 @@ export default function MapSettings() {
           />
         )}
       </FormActionPanel>
+      <DialogWrapper
+        fullWidth
+        open={isDeleteDialogOpen}
+        title={t("maps.deleteMapConfirmTitle")}
+        onClose={handleCloseDeleteDialog}
+        actions={
+          <>
+            <Button
+              variant="text"
+              onClick={handleCloseDeleteDialog}
+              color="primary"
+              disabled={isDeletingMap}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={isDeletingMap || !isDeleteConfirmNameMatching}
+              onClick={() => {
+                void handleDeleteMap();
+              }}
+              startIcon={
+                isDeletingMap ? (
+                  <CircularProgress color="inherit" size={18} />
+                ) : (
+                  <DeleteOutlineIcon />
+                )
+              }
+            >
+              {t("common.delete")}
+            </Button>
+          </>
+        }
+      >
+        <Typography>
+          <Trans
+            i18nKey="maps.deleteMapConfirmMessage"
+            values={{ name: map?.name ?? "" }}
+            components={{ strong: <strong /> }}
+          />
+        </Typography>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          {t("maps.deleteMapWarning")}
+        </Alert>
+        <TextField
+          fullWidth
+          autoComplete="off"
+          margin="normal"
+          label={t("maps.deleteMapTypeNameLabel")}
+          helperText={
+            <Trans
+              i18nKey="maps.deleteMapTypeNameHelper"
+              values={{ name: map?.name ?? "" }}
+              components={{ strong: <strong /> }}
+            />
+          }
+          value={deleteConfirmName}
+          onChange={(e) => setDeleteConfirmName(e.target.value)}
+          disabled={isDeletingMap}
+        />
+      </DialogWrapper>
     </Page>
   );
 }

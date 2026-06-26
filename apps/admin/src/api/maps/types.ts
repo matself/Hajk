@@ -1,3 +1,5 @@
+import type { Layer } from "../layers/types";
+
 export interface Map {
   id: number;
   name: string;
@@ -14,11 +16,46 @@ export interface Map {
   lastSavedDate?: string;
 }
 
-export interface Group {
+/**
+ * A layer attached to a map (GET /maps/:name/layers). `mapId` is set for
+ * layers placed directly on the map; `groupId` is set for layers inherited
+ * via a group on the map.
+ */
+export interface MapLayer extends Layer {
+  mapId: number | null;
+  groupId: string | null;
+}
+
+/** A group placement on a map (GroupsOnMaps row, GET /maps/:name/groups). */
+export interface MapGroup {
   id: string;
   mapName: string;
   groupId: string;
+  parentGroupId: string | null;
+  usage: "BACKGROUND" | "FOREGROUND";
   name: string;
+  toggled: boolean;
+  expanded: boolean;
+}
+
+/** Payload entry for PUT /maps/:name/layers. */
+export interface MapLayerPlacement {
+  layerId: string;
+  usage?: "BACKGROUND" | "FOREGROUND";
+  visibleAtStart?: boolean;
+  infoClickActive?: boolean;
+  zIndex?: number;
+}
+
+/** Payload entry for PUT /maps/:name/groups. */
+export interface MapGroupPlacement {
+  id?: string;
+  groupId: string;
+  parentGroupId?: string | null;
+  usage?: "BACKGROUND" | "FOREGROUND";
+  name?: string;
+  toggled?: boolean;
+  expanded?: boolean;
 }
 
 export interface Projection {
@@ -32,11 +69,14 @@ export interface MapsApiResponse {
   errorId: string;
 }
 
-export interface GroupApiResponse {
-  groups: string[];
+export interface MapGroupsApiResponse {
+  groups: MapGroup[];
   count: number;
-  error: string;
-  errorId: string;
+}
+
+export interface MapLayersApiResponse {
+  layers: MapLayer[];
+  count: number;
 }
 
 export interface ProjectionsApiResponse {
