@@ -310,6 +310,8 @@
     "map.printResolutionsHelp": "Extra upplösningar som läggs på befintliga upplösningar vid utskrift",
     "map.projection": "Projektion",
     "map.projectionHelp": "Används som OpenLayers View 'projection'-parameter, ex 'EPSG:3008'",
+    "map.projections": "Kopplade projektioner",
+    "map.projectionsHelp": "Ytterligare koordinatsystem som är tillgängliga i kartan. Huvudprojektionen ingår alltid.",
     "map.resolutions": "Upplösningar",
     "map.resolutionsHelp": "Används som OpenLayers View 'resolutions'-parameter, ex '4096,2048,1024,512'",
     "map.searchTitle": "Sök bland kartor...",

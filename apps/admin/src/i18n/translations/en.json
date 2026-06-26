@@ -311,6 +311,8 @@
     "map.printResolutionsHelp": "Extra resolutions added to existing ones during printing",
     "map.projection": "Projection",
     "map.projectionHelp": "Used as OpenLayers View 'projection' parameter, e.g., 'EPSG:3008'",
+    "map.projections": "Linked projections",
+    "map.projectionsHelp": "Additional coordinate systems available in the map. The main projection is always included.",
     "map.resolutions": "Resolutions",
     "map.resolutionsHelp": "Used as OpenLayers View 'resolutions' parameter, e.g., '4096,2048,1024,512'",
     "map.searchTitle": "Search maps...",

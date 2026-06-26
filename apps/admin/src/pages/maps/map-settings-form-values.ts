@@ -4,7 +4,31 @@ import { getDefaultMapProjectionCode } from "../../lib/map-defaults";
 
 interface MapProjectionSource {
   projection?: { code: string } | null;
+  projections?: { code: string }[] | null;
   options?: Record<string, string>;
+}
+
+/** Unique, trimmed projection codes from a many-to-many projections array. */
+function getMapProjectionCodes(
+  projections: { code?: string | null }[] | null | undefined,
+): string[] {
+  if (!Array.isArray(projections)) return [];
+  const codes = projections
+    .map((projection) =>
+      typeof projection?.code === "string" ? projection.code.trim() : "",
+    )
+    .filter((code) => code.length > 0);
+  return Array.from(new Set(codes));
+}
+
+/** Reads the selected projection codes (string[]) from the form values. */
+function getFormProjectionCodes(data: FieldValues): string[] {
+  const value: unknown = data.projections;
+  if (!Array.isArray(value)) return [];
+  const codes = value
+    .map((code) => (typeof code === "string" ? code.trim() : ""))
+    .filter((code) => code.length > 0);
+  return Array.from(new Set(codes));
 }
 
 function fromOptionFlag(value: string | undefined): boolean {
@@ -145,6 +169,11 @@ function buildOptionsFormValues(
 /** Form shape used by map settings reset / dirty comparison. */
 export function buildMapSettingsFormValues(map: MapRecord): FieldValues {
   const projectionCode = getMapProjectionCode(map);
+  // Always include the main projection in the linked set so the multi-select
+  // and the single projection field stay consistent.
+  const projectionCodes = Array.from(
+    new Set([projectionCode, ...getMapProjectionCodes(map.projections)]),
+  );
 
   return {
     name: map.name ?? "",
@@ -152,6 +181,7 @@ export function buildMapSettingsFormValues(map: MapRecord): FieldValues {
     projection: {
       code: projectionCode,
     },
+    projections: projectionCodes,
     options: buildOptionsFormValues(map.options ?? {}),
   };
 }
@@ -244,11 +274,16 @@ export function buildMapUpdatePayload(
 ): Partial<MapMutation> {
   const formOptions = formOptionsFromValues(data);
   const projectionCode = getProjectionCode(data, getMapProjectionCode(map));
+  // Ensure the main projection is part of the linked many-to-many set.
+  const projectionCodes = Array.from(
+    new Set([projectionCode, ...getFormProjectionCodes(data)]),
+  );
 
   return {
     name: (data.name as string) ?? map.name ?? "",
     locked: (data.locked as boolean) ?? map.locked ?? false,
     projection: { code: projectionCode },
+    projections: projectionCodes.map((code) => ({ code })),
     options: {
       ...(map.options ?? {}),
       ...formOptions,

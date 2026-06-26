@@ -7,6 +7,10 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Box,
+  InputAdornment,
+  Chip,
+  OutlinedInput,
 } from "@mui/material";
 import { Control, Controller, FieldValues, UseFormRegister } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -80,6 +84,81 @@ function MapCheckboxField({
   );
 }
 
+const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+function MapColorField({
+  name,
+  labelKey,
+  control,
+  settingsSearchTerm,
+  showSettingsSearchUi,
+  getValues,
+}: {
+  name: string;
+  labelKey: string;
+  control: Control<FieldValues>;
+  settingsSearchTerm: string;
+  showSettingsSearchUi: boolean;
+  getValues: () => FieldValues;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <SettingsSearchField
+      labelKeys={[labelKey]}
+      fields={[name]}
+      synonyms={["color"]}
+      searchTerm={settingsSearchTerm}
+      allValues={showSettingsSearchUi ? getValues() : undefined}
+    >
+      <FormFieldRow>
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => {
+            const textValue =
+              typeof field.value === "string" ? field.value : "";
+            const swatchValue = HEX_COLOR_RE.test(textValue)
+              ? textValue
+              : "#000000";
+            return (
+              <TextField
+                label={t(labelKey as never)}
+                fullWidth
+                value={textValue}
+                onChange={(e) => field.onChange(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box
+                          component="input"
+                          type="color"
+                          aria-label={t(labelKey as never)}
+                          value={swatchValue}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            p: 0,
+                            border: "none",
+                            background: "none",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            );
+          }}
+        />
+      </FormFieldRow>
+    </SettingsSearchField>
+  );
+}
+
 export default function MapSettingsForm({
   register,
   control,
@@ -103,6 +182,11 @@ export default function MapSettingsForm({
 
   const searchValues = showSettingsSearchUi ? getValues() : undefined;
 
+  const projectionMultiOptions =
+    projectionOptions.length > 0
+      ? projectionOptions
+      : defaultCoordinates.map((value) => ({ title: value, value }));
+
   return (
     <>
       {showMapSection && (
@@ -112,6 +196,7 @@ export default function MapSettingsForm({
             keywords={[
               ...settingsSearchLabels(
                 "map.projection",
+                "map.projections",
                 "map.startZoom",
                 "map.maxZoom",
                 "map.minZoom",
@@ -128,6 +213,7 @@ export default function MapSettingsForm({
             ]}
             fields={[
               "projection.code",
+              "projections",
               "options.startZoom",
               "options.maxZoom",
               "options.minZoom",
@@ -176,6 +262,67 @@ export default function MapSettingsForm({
                         </SelectWithHelp>
                       )}
                     />
+                  </FormFieldRow>
+                </SettingsSearchField>
+                <SettingsSearchField
+                  labelKeys={["map.projections"]}
+                  fields={["projections"]}
+                  synonyms={["projection", "epsg", "coordinate"]}
+                  searchTerm={settingsSearchTerm}
+                  allValues={searchValues}
+                >
+                  <FormFieldRow>
+                    <FormControl fullWidth>
+                      <InputLabel id="map-projections-label">
+                        {t("map.projections")}
+                      </InputLabel>
+                      <Controller
+                        name="projections"
+                        control={control}
+                        render={({ field }) => {
+                          const selected = Array.isArray(field.value)
+                            ? (field.value as string[])
+                            : [];
+                          return (
+                            <Select
+                              labelId="map-projections-label"
+                              multiple
+                              value={selected}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  typeof value === "string"
+                                    ? value.split(",")
+                                    : value,
+                                );
+                              }}
+                              input={
+                                <OutlinedInput label={t("map.projections")} />
+                              }
+                              renderValue={(value) => (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {(value as string[]).map((code) => (
+                                    <Chip key={code} label={code} size="small" />
+                                  ))}
+                                </Box>
+                              )}
+                            >
+                              {projectionMultiOptions.map((opt) => (
+                                <MenuItem key={opt.value} value={opt.value}>
+                                  {opt.title}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          );
+                        }}
+                      />
+                    </FormControl>
                   </FormFieldRow>
                 </SettingsSearchField>
                 <SettingsSearchField
@@ -759,36 +906,22 @@ export default function MapSettingsForm({
                   </FormControl>
                 </FormFieldRow>
               </SettingsSearchField>
-              <SettingsSearchField
-                labelKeys={["map.primaryColor"]}
-                fields={["options.primaryColor"]}
-                synonyms={["color"]}
-                searchTerm={settingsSearchTerm}
-                allValues={searchValues}
-              >
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.primaryColor")}
-                    fullWidth
-                    {...register("options.primaryColor")}
-                  />
-                </FormFieldRow>
-              </SettingsSearchField>
-              <SettingsSearchField
-                labelKeys={["map.secondaryColor"]}
-                fields={["options.secondaryColor"]}
-                synonyms={["color"]}
-                searchTerm={settingsSearchTerm}
-                allValues={searchValues}
-              >
-                <FormFieldRow>
-                  <TextField
-                    label={t("map.secondaryColor")}
-                    fullWidth
-                    {...register("options.secondaryColor")}
-                  />
-                </FormFieldRow>
-              </SettingsSearchField>
+              <MapColorField
+                name="options.primaryColor"
+                labelKey="map.primaryColor"
+                control={control}
+                settingsSearchTerm={settingsSearchTerm}
+                showSettingsSearchUi={showSettingsSearchUi}
+                getValues={getValues}
+              />
+              <MapColorField
+                name="options.secondaryColor"
+                labelKey="map.secondaryColor"
+                control={control}
+                settingsSearchTerm={settingsSearchTerm}
+                showSettingsSearchUi={showSettingsSearchUi}
+                getValues={getValues}
+              />
             </FormFieldGrid>
           </FormPanel>
         </SearchablePanel>

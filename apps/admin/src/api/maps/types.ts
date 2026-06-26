@@ -6,6 +6,8 @@ export interface Map {
   projection?: {
     code: string;
   } | null;
+  /** Many-to-many projections linked to the map (from GET /maps/:name). */
+  projections?: { code: string }[];
   createdBy?: string;
   createdDate?: string;
   lastSavedBy?: string;
@@ -51,6 +53,8 @@ export interface MapMutation {
   projection?: {
     code: string;
   };
+  /** Many-to-many projections to link to the map (replaces the set on PATCH). */
+  projections?: { code: string }[];
   options?: Record<string, string>;
 }
 
