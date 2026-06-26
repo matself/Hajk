@@ -125,14 +125,11 @@ export default function DuplicateMapDialog({
         sourceMapName: sourceMap.name,
         name: data.name.trim(),
       });
-      toast.success(
-        t("maps.duplicateMapSuccess", { name: data.name.trim() }),
-        {
-          position: "bottom-left",
-          theme: palette.mode,
-          hideProgressBar: true,
-        },
-      );
+      toast.success(t("maps.duplicateMapSuccess", { name: data.name.trim() }), {
+        position: "bottom-left",
+        theme: palette.mode,
+        hideProgressBar: true,
+      });
       onDuplicated?.(response);
       onClose();
     } catch (error) {
@@ -176,6 +173,7 @@ export default function DuplicateMapDialog({
       }
     >
       <TextField
+        sx={{ mt: 1 }}
         label={t("map.name")}
         fullWidth
         autoFocus
