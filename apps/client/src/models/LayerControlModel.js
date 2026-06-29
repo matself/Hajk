@@ -1,5 +1,6 @@
 import { unByKey } from "ol/Observable";
 import { setOLSubLayers } from "../utils/groupLayers";
+import { BACKGROUND_LAYER_IDS } from "../constants/backgroundLayers";
 
 /**
  * @summary Centralized, reusable API for toggling layers by id.
@@ -15,10 +16,13 @@ import { setOLSubLayers } from "../utils/groupLayers";
  *
  * KNOWN LIMITATIONS / GAPS (please keep this list up to date):
  * 1. Base/background layers have only partial support. See `showLayer`/`hideLayer`
- *    `"base"` handling below.
- * 2. "Fake" background layers (white `"-1"`, black `"-2"`, OSM `"-3"`) are NOT
- *    real OpenLayers layers in the map collection, so they cannot be toggled
- *    through this API — `getLayer()` misses them and the call just warns.
+ *    `"base"` handling below (notably hide does not auto-select another bg).
+ * 2. The built-in "special" background layers (white `"-1"`, black `"-2"`, OSM
+ *    `"-3"`) ARE real OpenLayers layers and CAN be toggled through this API (see
+ *    `showBackgroundWhite`/`showBackgroundBlack`/`showBackgroundOSM` for named
+ *    shortcuts). The white/black ones render via
+ *    the `div#map` background color rather than tiles; that repaint is performed
+ *    by the BackgroundSwitcher when it observes the visibility change.
  * 3. This model lives for the whole app lifetime (instantiated once via
  *    `AppModel.addLayerControl()`), so the layer-collection `add`/`remove`
  *    listeners registered in the constructor are intentionally never torn down.
@@ -95,6 +99,10 @@ const arraysEqual = (a = [], b = []) => {
  * lc.toggleLayer("id");
  * lc.setLayerVisibility("id", true);               // boolean form of show/hide
  * lc.layerIsVisible("id");                         // -> boolean
+ * lc.showBackground("baseId");                     // any base layer (warns if not base)
+ * lc.showBackgroundWhite();                        // built-in white background
+ * lc.showBackgroundBlack();                        // built-in black background
+ * lc.showBackgroundOSM();                          // built-in OSM background
  *
  * // Sublayers of a WMS group layer (the nested checkboxes)
  * lc.showSubLayer("groupId", "subId");
@@ -309,11 +317,11 @@ class LayerControlModel {
           "layerswitcher.backgroundLayerChanged",
           id
         );
-        // GAP: the `div#map` background-color repaint for "fake" backgrounds is
-        // done only inside the BackgroundSwitcher/BackgroundLayer click
-        // handlers, so toggling a base layer through this API does NOT repaint
-        // the map canvas background. Replicate that logic here if full visual
-        // parity is ever needed.
+        // The white/black `div#map` background repaint is handled by the
+        // BackgroundSwitcher, which observes the layer's visibility change
+        // (`core.layerVisibilityChanged`, published by the special background
+        // layers) and repaints accordingly — so toggling a base layer through
+        // this API gets the same visual result as a click in the UI.
         break;
       }
       case "system": {
@@ -414,6 +422,59 @@ class LayerControlModel {
     } else {
       this.hideLayer(id);
     }
+  }
+
+  /**
+   * Show a background (base) layer by id, e.g. a configured server background.
+   * Warns and does nothing if the id is not a `layerType === "base"` layer, so
+   * callers can't accidentally route a normal/group layer through here. For the
+   * three built-in special backgrounds there are also the named shortcuts
+   * `showBackgroundWhite`/`showBackgroundBlack`/`showBackgroundOSM`.
+   * @param {string} id
+   */
+  showBackground(id) {
+    const olLayer = this.getLayer(id);
+    if (olLayer === undefined) {
+      console.warn(
+        `Attempt to show background with id ${id} failed: layer not found in current map`
+      );
+      return;
+    }
+    if (olLayer.get("layerType") !== "base") {
+      console.warn(
+        `Attempt to show background with id ${id} failed: layer is not a background (layerType "${olLayer.get(
+          "layerType"
+        )}"). Use showLayer() for non-background layers.`
+      );
+      return;
+    }
+    this.showLayer(id);
+  }
+
+  /**
+   * Convenience shortcut for the built-in white background layer, so callers
+   * don't have to know the magic `-1` id. Delegates to `showLayer`, so the
+   * exclusive base-layer behavior, the LayerSwitcher radio sync and the
+   * `div#map` background repaint all apply.
+   */
+  showBackgroundWhite() {
+    this.showLayer(BACKGROUND_LAYER_IDS.WHITE);
+  }
+
+  /**
+   * Convenience shortcut for the built-in black background layer (magic id
+   * `-2`). See `showBackgroundWhite` for details.
+   */
+  showBackgroundBlack() {
+    this.showLayer(BACKGROUND_LAYER_IDS.BLACK);
+  }
+
+  /**
+   * Convenience shortcut for the built-in OpenStreetMap background layer (magic
+   * id `-3`). See `showBackgroundWhite` for details.
+   */
+  showBackgroundOSM() {
+    this.showLayer(BACKGROUND_LAYER_IDS.OSM);
   }
 
   /**
