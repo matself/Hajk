@@ -1,4 +1,10 @@
-import { useRef, useState, useCallback, useMemo, type ReactElement } from "react";
+import {
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  type ReactElement,
+} from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import Page from "../../layouts/root/components/page";
 import { Trans, useTranslation } from "react-i18next";
@@ -21,6 +27,7 @@ import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import MapIcon from "@mui/icons-material/Map";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import PaletteIcon from "@mui/icons-material/Palette";
+import StyleIcon from "@mui/icons-material/Style";
 import CookieIcon from "@mui/icons-material/Cookie";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 
@@ -54,6 +61,7 @@ import FormContainer from "../../components/form-components/form-container";
 import MapSettingsForm, {
   type MapSettingsSection,
 } from "./components/map-settings-form";
+import MapThemesTab from "./components/map-themes-tab";
 import {
   LayerSwitcherDnD,
   TreeItemData,
@@ -71,6 +79,7 @@ const MAP_PAGE_TABS = [
   { key: "menu", labelKey: "common.layerGroups", icon: <LayersIcon /> },
   { key: "settings", labelKey: "common.settings", icon: <SettingsIcon /> },
   { key: "tools", labelKey: "common.tools", icon: <BuildIcon /> },
+  { key: "themes", labelKey: "common.themes", icon: <StyleIcon /> },
 ] as const;
 
 const MAP_SETTINGS_SECTIONS: {
@@ -194,9 +203,7 @@ function buildGroupTree(rows: MapGroup[]): TreeItems<TreeItemData> {
 }
 
 /** Flattens the layers drop zone into the `PUT /maps/:name/layers` payload. */
-function layersToPayload(
-  items: TreeItems<TreeItemData>,
-): MapLayerPlacement[] {
+function layersToPayload(items: TreeItems<TreeItemData>): MapLayerPlacement[] {
   return items.map((item, index) => ({
     layerId: entityIdFromItemId(item.id),
     zIndex: index,
@@ -289,7 +296,8 @@ export default function MapSettings() {
   const activeTab = (searchParams.get("tab") ?? "settings") as
     | "menu"
     | "settings"
-    | "tools";
+    | "tools"
+    | "themes";
   const setActiveTab = (tab: string) =>
     setSearchParams(
       (prev) => {
@@ -392,7 +400,9 @@ export default function MapSettings() {
 
   const layersDirty = useMemo(() => {
     if (menuSyncKey !== mapName) return false;
-    return layersSignature(backgroundLayersDZ) !== layersSignature(serverLayerItems);
+    return (
+      layersSignature(backgroundLayersDZ) !== layersSignature(serverLayerItems)
+    );
   }, [backgroundLayersDZ, serverLayerItems, menuSyncKey, mapName]);
 
   const groupsDirty = useMemo(() => {
@@ -417,7 +427,9 @@ export default function MapSettings() {
   const toolsDirty = useMemo(() => {
     if (toolsDraft == null || toolsDraft.mapName !== mapName) return false;
     const draftPayload = zonesToToolsPayload(toolsDraft.zones);
-    const serverPayload = zonesToToolsPayload(serverToolZones ?? EMPTY_TOOL_ZONES);
+    const serverPayload = zonesToToolsPayload(
+      serverToolZones ?? EMPTY_TOOL_ZONES,
+    );
     return JSON.stringify(draftPayload) !== JSON.stringify(serverPayload);
   }, [toolsDraft, mapName, serverToolZones]);
 
@@ -761,13 +773,23 @@ export default function MapSettings() {
             drawerItems={toolZones.drawer}
             onDrawerItemsChange={(items) => updateToolZone("drawer", items)}
             widgetLeftItems={toolZones.widgetLeft}
-            onWidgetLeftItemsChange={(items) => updateToolZone("widgetLeft", items)}
+            onWidgetLeftItemsChange={(items) =>
+              updateToolZone("widgetLeft", items)
+            }
             widgetRightItems={toolZones.widgetRight}
-            onWidgetRightItemsChange={(items) => updateToolZone("widgetRight", items)}
+            onWidgetRightItemsChange={(items) =>
+              updateToolZone("widgetRight", items)
+            }
             controlButtonItems={toolZones.control}
-            onControlButtonItemsChange={(items) => updateToolZone("control", items)}
+            onControlButtonItemsChange={(items) =>
+              updateToolZone("control", items)
+            }
             backgroundImage={backgroundImage}
           />
+        )}
+
+        {activeTab === "themes" && mapName && (
+          <MapThemesTab mapName={mapName} />
         )}
       </FormActionPanel>
       <DialogWrapper

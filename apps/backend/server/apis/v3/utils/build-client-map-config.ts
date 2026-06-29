@@ -259,7 +259,7 @@ export async function buildClientMapForMap(mapName: string) {
 }
 
 export async function buildClientToolsForMap(mapName: string) {
-  const [toolsOnMap, groups, baselayers] = await Promise.all([
+  const [toolsOnMap, groups, baselayers, themes] = await Promise.all([
     prisma.toolsOnMaps.findMany({
       where: { mapName },
       include: { tool: true },
@@ -267,7 +267,35 @@ export async function buildClientToolsForMap(mapName: string) {
     }),
     buildLayerSwitcherGroupsForMap(mapName),
     buildLayerSwitcherBaselayersForMap(mapName),
+    prisma.theme.findMany({
+      where: { mapName },
+      orderBy: { title: "asc" },
+    }),
   ]);
+
+  const quickAccessPresets = themes.map((theme) => {
+    const payload =
+      theme.data && typeof theme.data === "object" && !Array.isArray(theme.data)
+        ? (theme.data as Record<string, unknown>)
+        : {};
+    const layers = Array.isArray(payload.layers) ? payload.layers : [];
+    const metadata =
+      payload.metadata &&
+      typeof payload.metadata === "object" &&
+      !Array.isArray(payload.metadata)
+        ? payload.metadata
+        : {};
+
+    return {
+      id: String(theme.id),
+      title: theme.title,
+      author: theme.owner ?? "",
+      description: theme.description ?? "",
+      keywords: theme.keywords,
+      layers,
+      metadata,
+    };
+  });
 
   return toolsOnMap.map((entry) => {
     const mergedOptions = mergeJsonObjects(entry.tool.options, entry.options);
@@ -280,6 +308,7 @@ export async function buildClientToolsForMap(mapName: string) {
           ...mergedOptions,
           groups,
           baselayers,
+          ...(quickAccessPresets.length > 0 ? { quickAccessPresets } : {}),
         },
       };
     }

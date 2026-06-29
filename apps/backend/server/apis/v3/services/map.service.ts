@@ -636,6 +636,7 @@ class MapService {
         groups: true,
         documentFolders: { include: { documents: true } },
         documents: true,
+        themes: true,
       },
     });
 
@@ -884,6 +885,23 @@ class MapService {
               folderId: folderIdMap.get(document.folderId) ?? document.folderId,
               createdBy: userId,
               createdDate: new Date(),
+            })),
+          });
+        }
+
+        if (source.themes.length > 0) {
+          await tx.theme.createMany({
+            data: source.themes.map((theme) => ({
+              mapName: name,
+              title: theme.title,
+              owner: theme.owner,
+              description: theme.description,
+              keywords: theme.keywords,
+              data: theme.data,
+              createdBy: userId,
+              createdDate: new Date(),
+              lastSavedBy: userId,
+              lastSavedDate: new Date(),
             })),
           });
         }

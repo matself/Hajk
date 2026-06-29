@@ -1,6 +1,7 @@
 import * as express from "express";
 import MapsController from "./controller.ts";
 import documentHandlerRouter from "../documenthandler/router.ts";
+import themesRouter from "../themes/router.ts";
 import { validatePayload } from "../../middlewares/payload.validation.ts";
 import {
   MapCreateSchema,
@@ -41,4 +42,5 @@ export default express
     validatePayload(MapGroupsUpdateSchema),
     MapsController.updateMapGroups
   )
-  .use("/:mapName/documenthandler", documentHandlerRouter);
+  .use("/:mapName/documenthandler", documentHandlerRouter)
+  .use("/:mapName/themes", themesRouter);
