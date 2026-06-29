@@ -1,5 +1,6 @@
 import { Prisma, UseType, type User } from "@prisma/client";
 import log4js from "log4js";
+import { randomUUID } from "node:crypto";
 
 import prisma from "../../../common/prisma.ts";
 import { HajkError } from "../../../common/classes.ts";
@@ -673,6 +674,318 @@ class MapService {
       prisma.groupsOnMaps.deleteMany({ where: { mapName } }),
       prisma.map.delete({ where: { id: map.id } }),
     ]);
+  }
+
+  async duplicateMap(sourceMapName: string, newName: string, userId?: string) {
+    const name =
+      typeof newName === "string" ? newName.trim() : String(newName ?? "");
+    if (!name) {
+      throw new HajkError(
+        HttpStatusCodes.BAD_REQUEST,
+        "Map name is required",
+        HajkStatusCodes.INVALID_REQUEST_BODY
+      );
+    }
+
+    const source = await prisma.map.findUnique({
+      where: { name: sourceMapName },
+      include: {
+        projection: true,
+        projections: true,
+        restrictedToRoles: true,
+        tools: true,
+        layers: { include: { restrictedToRoles: true } },
+        groups: true,
+        documentFolders: { include: { documents: true } },
+        documents: true,
+        themes: true,
+      },
+    });
+
+    if (!source) {
+      throw new HajkError(
+        HttpStatusCodes.NOT_FOUND,
+        `"${sourceMapName}" is not a valid map`,
+        HajkStatusCodes.UNKNOWN_MAP_NAME
+      );
+    }
+
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const newMap = await tx.map.create({
+          data: {
+            name,
+            locked: source.locked,
+            options: source.options,
+            createdBy: userId,
+            createdDate: new Date(),
+            ...(source.projectionId
+              ? { projection: { connect: { id: source.projectionId } } }
+              : {}),
+            ...(source.projections.length > 0
+              ? {
+                  projections: {
+                    connect: source.projections.map((projection) => ({
+                      id: projection.id,
+                    })),
+                  },
+                }
+              : {}),
+            ...(source.restrictedToRoles.length > 0
+              ? {
+                  restrictedToRoles: {
+                    create: source.restrictedToRoles.map((role) => ({
+                      roleId: role.roleId,
+                    })),
+                  },
+                }
+              : {}),
+          },
+        });
+
+        if (source.tools.length > 0) {
+          await tx.toolsOnMaps.createMany({
+            data: source.tools.map((tool) => ({
+              mapName: name,
+              toolId: tool.toolId,
+              index: tool.index,
+              target: tool.target,
+              options: tool.options,
+            })),
+          });
+        }
+
+        const uniqueGroupIds = [
+          ...new Set(source.groups.map((entry) => entry.groupId)),
+        ];
+        const groupIdMap = new Map<string, string>();
+
+        for (const oldGroupId of uniqueGroupIds) {
+          const group = await tx.group.findUnique({
+            where: { id: oldGroupId },
+            include: {
+              layers: { include: { restrictedToRoles: true } },
+              restrictedToRoles: true,
+            },
+          });
+
+          if (!group) {
+            continue;
+          }
+
+          const newGroup = await tx.group.create({
+            data: {
+              locked: group.locked,
+              name: group.name,
+              internalName: group.internalName,
+              type: group.type,
+              createdBy: userId,
+              createdDate: new Date(),
+            },
+          });
+          groupIdMap.set(oldGroupId, newGroup.id);
+
+          if (group.restrictedToRoles.length > 0) {
+            await tx.roleOnGroup.createMany({
+              data: group.restrictedToRoles.map((role) => ({
+                groupId: newGroup.id,
+                roleId: role.roleId,
+              })),
+            });
+          }
+
+          for (const layer of group.layers) {
+            const createdLayer = await tx.layerInstance.create({
+              data: {
+                displayLayerId: layer.displayLayerId,
+                searchLayerId: layer.searchLayerId,
+                editingLayerId: layer.editingLayerId,
+                groupId: newGroup.id,
+                usage: layer.usage,
+                infoClickActive: layer.infoClickActive,
+                visibleAtStart: layer.visibleAtStart,
+                zIndex: layer.zIndex,
+                options: layer.options,
+              },
+            });
+
+            if (layer.restrictedToRoles.length > 0) {
+              await tx.roleOnLayerInstance.createMany({
+                data: layer.restrictedToRoles.map((role) => ({
+                  layerInstanceId: createdLayer.id,
+                  roleId: role.roleId,
+                })),
+              });
+            }
+          }
+        }
+
+        const groupsOnMapsIdMap = new Map<string, string>();
+        const pendingGroupsOnMaps = [...source.groups];
+
+        while (pendingGroupsOnMaps.length > 0) {
+          const batch = pendingGroupsOnMaps.filter(
+            (entry) =>
+              !entry.parentGroupId ||
+              groupsOnMapsIdMap.has(entry.parentGroupId)
+          );
+
+          if (batch.length === 0) {
+            throw new HajkError(
+              HttpStatusCodes.BAD_REQUEST,
+              "Invalid groups-on-maps parent references in source map.",
+              HajkStatusCodes.INVALID_REQUEST_BODY
+            );
+          }
+
+          for (const entry of batch) {
+            const newGroupOnMapId = randomUUID();
+            const mappedGroupId = groupIdMap.get(entry.groupId);
+
+            if (!mappedGroupId) {
+              throw new HajkError(
+                HttpStatusCodes.BAD_REQUEST,
+                `Group "${entry.groupId}" referenced by map "${sourceMapName}" could not be duplicated.`,
+                HajkStatusCodes.INVALID_REQUEST_BODY
+              );
+            }
+
+            await tx.groupsOnMaps.create({
+              data: {
+                id: newGroupOnMapId,
+                mapName: name,
+                groupId: mappedGroupId,
+                parentGroupId: entry.parentGroupId
+                  ? (groupsOnMapsIdMap.get(entry.parentGroupId) ?? null)
+                  : null,
+                usage: entry.usage,
+                name: entry.name,
+                toggled: entry.toggled,
+                expanded: entry.expanded,
+              },
+            });
+            groupsOnMapsIdMap.set(entry.id, newGroupOnMapId);
+          }
+
+          for (const entry of batch) {
+            const index = pendingGroupsOnMaps.indexOf(entry);
+            if (index !== -1) {
+              pendingGroupsOnMaps.splice(index, 1);
+            }
+          }
+        }
+
+        for (const layer of source.layers) {
+          const createdLayer = await tx.layerInstance.create({
+            data: {
+              displayLayerId: layer.displayLayerId,
+              searchLayerId: layer.searchLayerId,
+              editingLayerId: layer.editingLayerId,
+              mapId: newMap.id,
+              usage: layer.usage,
+              infoClickActive: layer.infoClickActive,
+              visibleAtStart: layer.visibleAtStart,
+              zIndex: layer.zIndex,
+              options: layer.options,
+            },
+          });
+
+          if (layer.restrictedToRoles.length > 0) {
+            await tx.roleOnLayerInstance.createMany({
+              data: layer.restrictedToRoles.map((role) => ({
+                layerInstanceId: createdLayer.id,
+                roleId: role.roleId,
+              })),
+            });
+          }
+        }
+
+        const folderIdMap = new Map<number, number>();
+        for (const folder of source.documentFolders) {
+          const newFolder = await tx.documentFolder.create({
+            data: {
+              name: folder.name,
+              title: folder.title,
+              mapName: name,
+              createdBy: userId,
+              createdDate: new Date(),
+            },
+          });
+          folderIdMap.set(folder.id, newFolder.id);
+
+          if (folder.documents.length > 0) {
+            await tx.document.createMany({
+              data: folder.documents.map((document) => ({
+                name: document.name,
+                title: document.title,
+                content: document.content,
+                mapName: name,
+                folderId: newFolder.id,
+                createdBy: userId,
+                createdDate: new Date(),
+              })),
+            });
+          }
+        }
+
+        const copiedDocumentIds = new Set(
+          source.documentFolders.flatMap((folder) =>
+            folder.documents.map((document) => document.id)
+          )
+        );
+        const standaloneDocuments = source.documents.filter(
+          (document) => !copiedDocumentIds.has(document.id)
+        );
+
+        if (standaloneDocuments.length > 0) {
+          await tx.document.createMany({
+            data: standaloneDocuments.map((document) => ({
+              name: document.name,
+              title: document.title,
+              content: document.content,
+              mapName: name,
+              folderId: folderIdMap.get(document.folderId) ?? document.folderId,
+              createdBy: userId,
+              createdDate: new Date(),
+            })),
+          });
+        }
+
+        if (source.themes.length > 0) {
+          await tx.theme.createMany({
+            data: source.themes.map((theme) => ({
+              mapName: name,
+              title: theme.title,
+              owner: theme.owner,
+              description: theme.description,
+              keywords: theme.keywords,
+              data: theme.data,
+              createdBy: userId,
+              createdDate: new Date(),
+              lastSavedBy: userId,
+              lastSavedDate: new Date(),
+            })),
+          });
+        }
+
+        return tx.map.findUniqueOrThrow({
+          where: { id: newMap.id },
+          include: { projection: true, projections: true },
+        });
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new HajkError(
+          HttpStatusCodes.CONFLICT,
+          `Could not duplicate map: a map named "${name}" already exists`,
+          HajkStatusCodes.MAP_ALREADY_EXISTS
+        );
+      }
+      throw error;
+    }
   }
 }
 

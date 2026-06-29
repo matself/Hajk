@@ -1,9 +1,11 @@
 import * as express from "express";
 import MapsController from "./controller.ts";
 import documentHandlerRouter from "../documenthandler/router.ts";
+import themesRouter from "../themes/router.ts";
 import { validatePayload } from "../../middlewares/payload.validation.ts";
 import {
   MapCreateSchema,
+  MapDuplicateSchema,
   MapUpdateSchema,
   MapLayersUpdateSchema,
   MapGroupsUpdateSchema,
@@ -19,6 +21,11 @@ export default express
     MapsController.updateMap
   )
   .delete("/:mapName", MapsController.deleteMap)
+  .post(
+    "/:mapName/duplicate",
+    validatePayload(MapDuplicateSchema),
+    MapsController.duplicateMap
+  )
   .get("/:mapName", MapsController.getMapByName)
   .get("/:mapName/groups", MapsController.getGroupsForMap)
   .get("/:mapName/layers", MapsController.getLayersForMap)
@@ -35,4 +42,5 @@ export default express
     validatePayload(MapGroupsUpdateSchema),
     MapsController.updateMapGroups
   )
-  .use("/:mapName/documenthandler", documentHandlerRouter);
+  .use("/:mapName/documenthandler", documentHandlerRouter)
+  .use("/:mapName/themes", themesRouter);

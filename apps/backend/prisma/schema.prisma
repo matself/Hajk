@@ -138,6 +138,26 @@ model Map {
   restrictedToRoles RoleOnMap[]
   documentFolders   DocumentFolder[]
   documents         Document[]
+  themes            Theme[]
+}
+
+/// Map theme preset for quick-access layer configurations.
+model Theme {
+  id            Int       @id @default(autoincrement())
+  mapName       String
+  title         String
+  owner         String?
+  description   String?
+  keywords      String[]  @default([])
+  /// Imported JSON payload (layers, metadata, etc.)
+  data          Json      @default("{}")
+  createdBy     String?
+  createdDate   DateTime? @db.Timestamptz(3)
+  lastSavedBy   String?
+  lastSavedDate DateTime? @db.Timestamptz(3)
+  map           Map       @relation(fields: [mapName], references: [name], onDelete: Cascade)
+
+  @@index([mapName])
 }
 
 /// A folder scoped to one map that groups documents.

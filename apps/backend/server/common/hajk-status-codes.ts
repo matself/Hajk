@@ -91,6 +91,11 @@ enum HajkStatusCodes {
   UNKNOWN_FOLDER = "DB010",
 
   /**
+   * The requested theme does not exist in the given map.
+   */
+  UNKNOWN_THEME = "DB014",
+
+  /**
    * The folder cannot be deleted because it still contains documents.
    */
   FOLDER_NOT_EMPTY = "DB011",

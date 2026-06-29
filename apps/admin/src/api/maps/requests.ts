@@ -294,3 +294,33 @@ export const deleteMap = async (mapName: string): Promise<void> => {
     }
   }
 };
+
+/**
+ * Duplicates a map via backend `POST /maps/:mapName/duplicate`.
+ * On 4xx/5xx, rejects with the Axios error so callers can read `response.data`.
+ */
+export const duplicateMap = async ({
+  sourceMapName,
+  name,
+}: {
+  sourceMapName: string;
+  name: string;
+}): Promise<MapRecord> => {
+  const internalApiClient = getApiClient();
+  try {
+    const response = await internalApiClient.post<MapRecord>(
+      `/maps/${encodeURIComponent(sourceMapName)}/duplicate`,
+      { name: name.trim() }
+    );
+    if (!response.data) {
+      throw new Error("No map data found");
+    }
+    return response.data;
+  } catch (error) {
+    const axiosError = error as InternalApiError;
+    if (axiosError.response) {
+      throw axiosError;
+    }
+    throw new Error("Failed to duplicate map");
+  }
+};

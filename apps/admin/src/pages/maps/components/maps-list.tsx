@@ -42,6 +42,7 @@ import {
   ListFilterSearch,
 } from "../../../components/form-components/list-filter-row";
 import CreateMapDialog from "./create-map-dialog";
+import DuplicateMapDialog from "./duplicate-map-dialog";
 
 interface MapsListProps {
   filterMaps: (maps: MapRecord[]) => MapRecord[];
@@ -133,6 +134,7 @@ export default function MapsList({
   const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
 
   const actionsMenuOpen = Boolean(anchorEl);
   const selectedMap = useMemo(
@@ -173,6 +175,16 @@ export default function MapsList({
 
   const handleCloseActionsMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleOpenDuplicateDialog = () => {
+    handleCloseActionsMenu();
+    setDuplicateDialogOpen(true);
+  };
+
+  const handleCloseDuplicateDialog = () => {
+    setDuplicateDialogOpen(false);
+    setSelectedMapId(null);
   };
 
   const handleOpenDeleteDialog = () => {
@@ -242,6 +254,17 @@ export default function MapsList({
         baseRoute={baseRoute}
         existingMaps={maps ?? []}
       />
+      <DuplicateMapDialog
+        open={duplicateDialogOpen}
+        sourceMap={selectedMap ?? null}
+        existingMaps={maps ?? []}
+        onClose={handleCloseDuplicateDialog}
+        onDuplicated={(map) => {
+          if (map.id != null) {
+            void navigate(`${baseRoute}/${map.id}`);
+          }
+        }}
+      />
 
       {isLoading ? (
         <SquareSpinnerComponent />
@@ -277,9 +300,7 @@ export default function MapsList({
                   labelId="maps-locked-filter-label"
                   label={t("maps.filterByLocked")}
                   value={lockedFilter}
-                  onChange={(event) =>
-                    setLockedFilter(event.target.value as LockedFilter)
-                  }
+                  onChange={(event) => setLockedFilter(event.target.value)}
                 >
                   <MenuItem value="">{t("common.all")}</MenuItem>
                   <MenuItem value="locked">{t("map.locked")}</MenuItem>
@@ -462,6 +483,9 @@ export default function MapsList({
             onClose={handleCloseActionsMenu}
             onClick={(event) => event.stopPropagation()}
           >
+            <MenuItem onClick={handleOpenDuplicateDialog}>
+              {t("common.duplicate")}
+            </MenuItem>
             <Tooltip
               title={selectedMap?.locked ? t("maps.deleteLockedWarning") : ""}
             >
