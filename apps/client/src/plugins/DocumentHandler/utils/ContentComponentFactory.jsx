@@ -471,7 +471,7 @@ export const Img = ({ imgTag, localObserver, componentId, baseUrl }) => {
 
   let imgUrl = image.url;
   if (imgUrl.includes("../")) {
-    imgUrl = image.url.replace("../", baseUrl);
+    imgUrl = image.url.replace("../", `${baseUrl.replace(/\/$/, "")}/`);
   }
 
   return (
@@ -557,7 +557,10 @@ export const Video = ({ imgTag, componentId, baseUrl }) => {
 
   let videoUrl = videoAttributes.url;
   if (videoUrl.includes("../")) {
-    videoUrl = videoAttributes.url.replace("../", baseUrl);
+    videoUrl = videoAttributes.url.replace(
+      "../",
+      `${baseUrl.replace(/\/$/, "")}/`
+    );
   }
 
   return (
@@ -623,7 +626,10 @@ export const Audio = ({ imgTag, componentId, baseUrl }) => {
 
   let audioUrl = audioAttributes.url;
   if (audioUrl.includes("../")) {
-    audioUrl = audioAttributes.url.replace("../", baseUrl);
+    audioUrl = audioAttributes.url.replace(
+      "../",
+      `${baseUrl.replace(/\/$/, "")}/`
+    );
   }
 
   return (
@@ -632,7 +638,7 @@ export const Audio = ({ imgTag, componentId, baseUrl }) => {
       sx={getMediaPositionStyle(audioAttributes.position)}
     >
       <audio controls={"controls"} aria-label={audioAttributes.altValue || ""}>
-        <source src={imgTag.src} type="audio/mpeg"></source>
+        <source src={audioUrl} type="audio/mpeg"></source>
       </audio>
       {getAudioDescription(audioAttributes)}
     </Box>
