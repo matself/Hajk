@@ -92,6 +92,8 @@ var manager = Model.extend({
         return this.get("config").url_arcgislayer_settings;
       case "Vector":
         return this.get("config").url_vectorlayer_settings;
+      case "XYZ":
+        return this.get("config").url_xyzlayer_settings;
       default:
         break;
     }
@@ -124,6 +126,12 @@ var manager = Model.extend({
             l.type = "Vector";
           });
           layers = layers.concat(data.vectorlayers);
+        }
+        if (data && Array.isArray(data.xyzlayers)) {
+          data.xyzlayers.forEach((l) => {
+            l.type = "XYZ";
+          });
+          layers = layers.concat(data.xyzlayers);
         }
 
         layers.sort((a, b) => {

@@ -543,6 +543,18 @@
         ],
         "baselayers": [
           {
+            "id": "osmxyz1",
+            "visibleAtStart": true,
+            "drawOrder": 0,
+            "infobox": ""
+          },
+          {
+            "id": "ex8e3x",
+            "visibleAtStart": false,
+            "drawOrder": 0,
+            "infobox": ""
+          },
+          {
             "id": "2",
             "visibleAtStart": false,
             "drawOrder": 0,
@@ -608,10 +620,10 @@
         "active": true,
         "visibleAtStart": false,
         "visibleAtStartMobile": false,
-        "backgroundSwitcherBlack": true,
-        "backgroundSwitcherWhite": true,
-        "enableOSM": true,
-        "OSMVisibleAtStart": true,
+        "backgroundSwitcherBlack": false,
+        "backgroundSwitcherWhite": false,
+        "enableOSM": false,
+        "OSMVisibleAtStart": false,
         "showBreadcrumbs": true,
         "showDrawOrderView": true,
         "showFilter": true,

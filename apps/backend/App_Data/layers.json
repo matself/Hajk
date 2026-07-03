@@ -1,5 +1,32 @@
 {
   "wmtslayers": [],
+  "xyzlayers": [
+    {
+      "id": "osmxyz1",
+      "caption": "OpenStreetMap (XYZ)",
+      "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+      "opacity": 1
+    },
+    {
+      "id": "ex8e3x",
+      "caption": "Open Topo Map",
+      "internalLayerName": "",
+      "content": "",
+      "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "attribution": "© <a href=\"https://opentopomap.org\">OpenTopoMap</a> contributors",
+      "opacity": 1,
+      "minZoom": -1,
+      "maxZoom": -1,
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": ""
+    }
+  ],
   "wmslayers": [
     {
       "id": "2",

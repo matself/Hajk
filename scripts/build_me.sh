@@ -50,7 +50,7 @@
 # git_dir. Uncomment and set this if you always want to build a specific branch.
 # Common values: "main", "master", or a release tag such as "v4.2.0".
 # -----------------------------------------------------------------------------
-BUILD_BRANCH="master"
+# BUILD_BRANCH="master"
 
 # -----------------------------------------------------------------------------
 # MAPSERVICE BASE URL
@@ -135,8 +135,8 @@ echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
 prompt
 
 echo "Fetching latest code and resetting repository..."
-git fetch --all
-git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+# git fetch --all
+# git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
 
 # =============================================================================
 # Part 1: Backend
@@ -163,6 +163,15 @@ echo "Deploying backend to destination..."
 cp -r dist/* "$DEST_DIR"
 cp package*.json "$DEST_DIR"
 [ -f "$DEST_DIR/.env.bak" ] && mv "$DEST_DIR/.env.bak" "$DEST_DIR/.env"
+
+echo "Deploying App_Data to destination..."
+# App_Data holds map and layer configuration (layers.json, map_*.json, etc).
+# It is not part of the compiled dist/ output so must be copied explicitly.
+# Existing files in dest App_Data are overwritten to keep config in sync with
+# the repo, but any files present only in the destination are left untouched
+# (e.g. extra map configs created via the admin UI).
+mkdir -p "$DEST_DIR/App_Data"
+cp -r "$GIT_DIR/apps/backend/App_Data/." "$DEST_DIR/App_Data"
 
 echo "Installing backend production dependencies in destination..."
 # npm ci is run in the destination directory so that node_modules ends up
@@ -208,12 +217,7 @@ cp -r "$CLIENT_BUILD_DIR/." "$DEST_DIR/static/client"
 # to the correct backend, regardless of what was committed in the repo.
 APPCONFIG="$DEST_DIR/static/client/appConfig.json"
 if [ -f "$APPCONFIG" ]; then
-    node -e "
-        const fs = require('fs');
-        const cfg = JSON.parse(fs.readFileSync('$APPCONFIG', 'utf8'));
-        cfg.mapserviceBase = '$MAPSERVICE_BASE';
-        fs.writeFileSync('$APPCONFIG', JSON.stringify(cfg, null, 2) + '\n');
-    "
+    sed -i "s|\"mapserviceBase\":.*|\"mapserviceBase\": \"${MAPSERVICE_BASE}\",|" "$APPCONFIG"
     echo "Patched mapserviceBase to: ${MAPSERVICE_BASE}"
 else
     echo "WARNING: appConfig.json not found at ${APPCONFIG} - mapserviceBase not patched."

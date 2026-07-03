@@ -742,10 +742,14 @@ class Menu extends Component {
             data.vectorlayers.forEach((l) => {
               l.type = "Vector";
             });
+            (data.xyzlayers || []).forEach((l) => {
+              l.type = "XYZ";
+            });
             layers = data.wmslayers
               .concat(data.wmtslayers)
               .concat(data.arcgislayers)
-              .concat(data.vectorlayers);
+              .concat(data.vectorlayers)
+              .concat(data.xyzlayers || []);
             layers.sort((a, b) => {
               var d1 = parseInt(a.date, 10),
                 d2 = parseInt(b.date, 10);
@@ -2606,30 +2610,6 @@ class Menu extends Component {
               </div>
               <div>
                 <input
-                  id="enableOSM"
-                  name="enableOSM"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.enableOSM}
-                />
-                &nbsp;
-                <label htmlFor="enableOSM">OpenStreetMap</label>
-              </div>
-              <div>
-                <input
-                  id="OSMVisibleAtStart"
-                  name="OSMVisibleAtStart"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.OSMVisibleAtStart}
-                />
-                &nbsp;
-                <label htmlFor="OSMVisibleAtStart">
-                  Ladda kartan med OpenStreetMap synligt vid start
-                </label>
-              </div>
-              <div>
-                <input
                   id="renderSpecialBackgroundsAtBottom"
                   name="renderSpecialBackgroundsAtBottom"
                   type="checkbox"
@@ -2638,7 +2618,7 @@ class Menu extends Component {
                 />
                 &nbsp;
                 <label htmlFor="renderSpecialBackgroundsAtBottom">
-                  Visa lagren "Vit", "Svart" och "OSM" längst ner i listan.
+                  Visa lagren "Vit" och "Svart" längst ner i listan.
                 </label>
               </div>
               <div className="separator">Justera lagerhanteraren</div>
