@@ -224,6 +224,25 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         Express.static(path.join(process.cwd(), "static", "client"))
       );
 
+    // Expose uploaded documents' media (images, videos, audio). In a typical
+    // production setup this is instead handled by a reverse proxy (e.g. nginx)
+    // serving App_Data/Upload directly, but we want a plain `npm run dev`/
+    // `node index.js` instance to work out of the box too. Same path resolution
+    // convention as used for the file listing, see informative.service.js.
+    // Exposed both at the root (/Upload, matching a typical reverse-proxy alias
+    // and any documents using absolute image paths) and under each active API
+    // version (/api/vN/Upload, matching DocumentHandler's default relative
+    // "../Upload/..." resolution against mapserviceBase).
+    const uploadDirPath = path.isAbsolute(
+      process.env.INFORMATIVE_CUSTOM_UPLOAD_DIR_ABSOLUTE_PATH || ""
+    )
+      ? process.env.INFORMATIVE_CUSTOM_UPLOAD_DIR_ABSOLUTE_PATH
+      : path.join(process.cwd(), "App_Data", "Upload");
+    app.use("/Upload", Express.static(uploadDirPath));
+    apiVersions.forEach((v) => {
+      app.use(`/api/v${v}/Upload`, Express.static(uploadDirPath));
+    });
+
     // Optionally, other directories placed in "static" can be exposed.
     this.setupStaticDirs();
 
