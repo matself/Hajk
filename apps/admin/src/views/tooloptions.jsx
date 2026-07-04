@@ -12,6 +12,7 @@ import Edit from "./tools/edit.jsx";
 import FmeServer from "./tools/fmeServer.jsx";
 import Print from "./tools/print.jsx";
 import Infoclick from "./tools/infoclick.jsx";
+import InfoDialog from "./tools/infodialog.jsx";
 import Information from "./tools/information.jsx";
 // import Informative from "./tools/informative.jsx";
 import Location from "./tools/location.jsx";
@@ -93,6 +94,8 @@ class ToolOptions extends Component {
         return <Print parent={this} model={this.props.model} />;
       case "infoclick":
         return <Infoclick parent={this} model={this.props.model} />;
+      case "infodialog":
+        return <InfoDialog parent={this} model={this.props.model} />;
       case "information":
         return <Information parent={this} model={this.props.model} />;
       // case "informative":
@@ -174,6 +177,7 @@ class ToolOptions extends Component {
       fmeserver: "FME-server",
       streetview: "Gatuvy",
       infoclick: "Infoklick",
+      infodialog: "Informationsdialoger (hjälp, nyheter m.m.)",
       layercomparer: "Lagerjämförare",
       measurer: "Mät",
       routing: "Navigation",
