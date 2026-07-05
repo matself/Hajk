@@ -1835,6 +1835,7 @@ const styles = {
     fontFamily: "'Georgia', serif",
     marginRight: 10,
     marginBottom: 8,
+    width: 600,
   },
   editorContainer: {
     border: "1px solid #ccc",
