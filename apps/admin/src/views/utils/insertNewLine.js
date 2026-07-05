@@ -11,12 +11,12 @@ export default function insertNewLine(editorState) {
   const newEditorState = editorState;
   const contentState = newEditorState.getCurrentContent();
   const selectionState = newEditorState.getSelection();
-  const currentBlock = contentState.getBlockForKey(
-    selectionState.getFocusKey()
-  );
 
+  // Only the new empty block belongs in the fragment being inserted at the
+  // current (atomic-block) selection - re-including the current block here
+  // duplicated it (e.g. an inserted image would be rendered twice) since
+  // replaceWithFragment inserts a copy of everything in the fragment.
   const fragmentArray = [
-    currentBlock,
     new ContentBlock({
       key: generateRandomKey(),
       type: "unstyled",
