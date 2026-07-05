@@ -541,10 +541,41 @@ export default class DocumentTextEditor extends React.Component {
     );
   }
 
+  // Map links are only ever entered here to embed a "return to this map
+  // view" link inside a document, which requires the DocumentViewer plugin
+  // to be part of the link's `p` (visible plugins) parameter - otherwise
+  // clicking the link just recenters the map without reopening the
+  // document. Whoever copied the URL from Anchor's share dialog has no way
+  // to know that, and typically won't have the document viewer open at the
+  // moment they generate the link anyway. So guarantee it here instead.
+  _ensureDocumentViewerInMapLink(url) {
+    if (typeof url !== "string" || !url.includes("#")) {
+      return url;
+    }
+    const hashIndex = url.indexOf("#");
+    const base = url.slice(0, hashIndex);
+    const hash = url.slice(hashIndex + 1);
+    const params = new URLSearchParams(hash);
+    const visiblePlugins = (params.get("p") || "")
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (!visiblePlugins.includes("documentviewer")) {
+      visiblePlugins.push("documentviewer");
+    }
+    params.set("p", visiblePlugins.join(","));
+    return `${base}#${params.toString()}`;
+  }
   _confirmLink(e) {
     e.preventDefault();
-    const { editorState, urlValue, imageAlt, urlType, urlTitle, urlTitleId } =
+    const { editorState, imageAlt, urlType, urlTitle, urlTitleId } =
       this.state;
+    let { urlValue } = this.state;
+
+    if (urlType === "maplink") {
+      urlValue = this._ensureDocumentViewerInMapLink(urlValue);
+    }
+
     const data = {
       url: urlValue,
       alt: imageAlt,
