@@ -183,7 +183,7 @@ class MenuConnectionSelector extends React.Component {
       document: type === DOCUMENT ? newDocument : menuItem.document,
       link: type === LINK ? newLink : menuItem.link,
       maplink: type === MAP_LINK ? newMapLink : menuItem.maplink,
-      folder: folder,
+      folder: type === DOCUMENT ? folder : menuItem.folder,
     };
 
     updateMenuItem(treeNodeId, newMenuItem);
