@@ -662,17 +662,46 @@ export default class DocumentTextEditor extends React.Component {
       }
     );
   }
+  _getExistingLinkEntityData() {
+    const { editorState } = this.state;
+    const selection = editorState.getSelection();
+    const contentState = editorState.getCurrentContent();
+    const block = contentState.getBlockForKey(selection.getAnchorKey());
+    // A collapsed selection's anchor offset can land just past the last
+    // character of the link, so also check the character right before it.
+    const offsets = [
+      selection.getAnchorOffset(),
+      Math.max(0, selection.getAnchorOffset() - 1),
+    ];
+    for (const offset of offsets) {
+      const entityKey = block.getEntityAt(offset);
+      if (entityKey) {
+        const entity = contentState.getEntity(entityKey);
+        if (entity.getType() === "LINK") {
+          return entity.getData();
+        }
+      }
+    }
+    return null;
+  }
   _promptForLink(type) {
+    // If the current selection already sits on a saved link, pre-fill its
+    // existing URL (and title-id, for document links) instead of always
+    // opening blank - otherwise editing an existing link looks like it was
+    // erased and has to be retyped from scratch every time.
+    const existingData = this._getExistingLinkEntityData();
     this.setState(
       {
         showURLInput: false,
         showLinkInput: true,
         showTextAreaInput: false,
-        urlValue: this.state.urlValue,
+        urlValue: existingData ? existingData.url || "" : this.state.urlValue,
         imageAlt: this.state.imageAlt,
         urlType: type,
         urlTitle: "",
-        urlTitleId: "",
+        urlTitleId: existingData
+          ? existingData["data-header-identifier"] || ""
+          : "",
       },
       () => {
         setTimeout(() => this.refs.link.focus(), 0);
@@ -680,12 +709,13 @@ export default class DocumentTextEditor extends React.Component {
     );
   }
   _promptForHover() {
+    const existingData = this._getExistingLinkEntityData();
     this.setState(
       {
         showURLInput: false,
         showLinkInput: true,
         showTextAreaInput: false,
-        urlValue: this.state.urlValue,
+        urlValue: existingData ? existingData.url || "" : this.state.urlValue,
         imageAlt: this.state.imageAlt,
         urlType: "",
         urlTitle: "",
