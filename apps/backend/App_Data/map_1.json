@@ -1125,6 +1125,20 @@
         "visibleAtStart": false,
         "icons": ""
       }
+    },
+    {
+      "type": "osmsearch",
+      "index": 5,
+      "options": {
+        "target": "control",
+        "position": "right",
+        "instruction": "",
+        "endpoint": "https://nominatim.openstreetmap.org/search",
+        "limit": 10,
+        "countrycodes": "",
+        "zoomToBoundingBox": true,
+        "visibleForGroups": []
+      }
     }
   ],
   "map": {
