@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: LayerSwitcher - Fixed vertical alignment of list items when using icons in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client: LayerSwitcher - Removed redundant (i) icon next to the "Info" label in the layer details view. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client: LayerSwitcher - The "Inställningar" heading is no longer shown when there are no settings available for a layer. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
+- Admin: MapSettings - Fixed saving a map's settings throwing `Cannot read properties of undefined (reading 'type')` whenever "Visa kartväljare" was unchecked, since the now-unmounted map selector style dropdown's ref was still read unconditionally on save.
 - Client: DocumentHandler - Fixed subscription accumulation in Contents.jsx that caused duplicate print headers [#1773](https://github.com/hajkmap/Hajk/issues/1773)
 - Client: Ensure the Quick Access function respects the cookie setting [Issue #1798](https://github.com/hajkmap/Hajk/issues/1798)
 - Backend: Removed/replaced two unnecessary dependencies, see [commit](https://github.com/hajkmap/Hajk/commit/138e8668326b19a643542330ffef2ec5e3d847a6).

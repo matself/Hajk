@@ -223,7 +223,7 @@ class MapOptions extends Component {
     var input = this.refs["input_" + fieldName],
       value = input ? input.value : "";
 
-    if (input.type === "checkbox") {
+    if (input && input.type === "checkbox") {
       value = input.checked;
     }
 
