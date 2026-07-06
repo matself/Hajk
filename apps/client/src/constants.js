@@ -25,6 +25,7 @@ export const AVAILABLE_TOOLS = [
   "LayerSwitcher",
   "Location",
   "Measurer",
+  "OsmSearch",
   "Print",
   "PropertyChecker",
   "Routing",
