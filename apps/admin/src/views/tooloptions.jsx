@@ -180,7 +180,7 @@ class ToolOptions extends Component {
       fmeserver: "FME-server",
       streetview: "Gatuvy",
       infoclick: "Infoklick",
-      infodialog: "Informationsdialoger (hjälp, nyheter m.m.)",
+      infodialog: "Informationsdialoger",
       layercomparer: "Lagerjämförare",
       measurer: "Mät",
       routing: "Navigation",
