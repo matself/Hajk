@@ -302,9 +302,8 @@ class ToolOptions extends Component {
     // reinterpreting Markdown syntax as literal text in the rich editor.
     return (
       <div>
-        <label htmlFor="text">
-          Text (Markdown-källkod, eftersom dialogen sparats i det äldre
-          formatet)
+        <label className="long-label" htmlFor="text">
+          Text (Markdown-källkod, om det är en äldre dialog)
         </label>
         <textarea
           id="text"
@@ -341,8 +340,8 @@ class ToolOptions extends Component {
       <div key={dialog.name}>
         <div className="separator">Identitet</div>
         <div>
-          <label htmlFor="name">
-            Namn (unikt, styr om användaren redan sett dialogen)
+          <label className="long-label" htmlFor="name">
+            Namn (unikt, styr visning om redan visad en gång)
           </label>
           <input
             id="name"
@@ -352,7 +351,9 @@ class ToolOptions extends Component {
           />
         </div>
         <div>
-          <label htmlFor="title">Titel (visas på knappen)</label>
+          <label className="long-label" htmlFor="title">
+            Titel (visas på knappen)
+          </label>
           <input
             id="title"
             type="text"
@@ -361,7 +362,9 @@ class ToolOptions extends Component {
           />
         </div>
         <div>
-          <label htmlFor="description">Beskrivning (verktygstips)</label>
+          <label className="long-label" htmlFor="description">
+            Beskrivning (verktygstips)
+          </label>
           <input
             id="description"
             type="text"
@@ -389,7 +392,9 @@ class ToolOptions extends Component {
           </select>
         </div>
         <div>
-          <label htmlFor="icon">Ikon (MUI-ikonnamn, t.ex. helpcenter)</label>
+          <label className="long-label" htmlFor="icon">
+            Ikon (MUI-ikonnamn, t.ex. helpcenter)
+          </label>
           <input
             id="icon"
             type="text"
@@ -414,7 +419,7 @@ class ToolOptions extends Component {
 
         <div className="separator">Knappar</div>
         <div>
-          <label htmlFor="buttonText">Text i stängningsknappen</label>
+          <label htmlFor="buttonText">Text i stängknappen</label>
           <input
             id="buttonText"
             type="text"
@@ -425,9 +430,7 @@ class ToolOptions extends Component {
           />
         </div>
         <div>
-          <label htmlFor="primaryButtonVariant">
-            Stängningsknappens utseende
-          </label>
+          <label htmlFor="primaryButtonVariant">Stängknappens utseende</label>
           <select
             id="primaryButtonVariant"
             value={dialog.primaryButtonVariant}
@@ -441,7 +444,7 @@ class ToolOptions extends Component {
           </select>
         </div>
         <div>
-          <label htmlFor="abortText">
+          <label className="long-label" htmlFor="abortText">
             Text i avbryt-knappen (valfritt, lämna tomt för att dölja knappen)
           </label>
           <input
@@ -478,7 +481,7 @@ class ToolOptions extends Component {
           />
           &nbsp;
           <label htmlFor="visibleAtStart">
-            Visa automatiskt när kartan startar
+            Visa automatiskt när kartan öppnas
           </label>
         </div>
         <div>
@@ -496,9 +499,9 @@ class ToolOptions extends Component {
           </label>
         </div>
         <div>
-          <label htmlFor="lastModified">
-            Senast ändrad (ISO-tidsstämpel). Uppdatera detta värde för att visa
-            dialogen igen för alla användare, oavsett inställningen ovan.
+          <label className="long-label" htmlFor="lastModified">
+            Senast ändrad (visar dialogen igen för alla, oavsett övrig
+            synlighet)
           </label>
           <input
             id="lastModified"
