@@ -24,13 +24,13 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     title: "Meny bredvid sökfältet",
     element: "#layerswitcher-actions-menu-button",
     intro:
-      "Klicka på menyknappen (de tre prickarna). <br><br> <b>I menyn finns funktioner för att:</b> dölja alla aktiva lager, hoppa till toppen av lagerlistan eller hoppa till botten av lagerlistan.",
+      "Klicka på menyknappen (de tre prickarna). <br><br> <b>I menyn finns funktioner för att:</b> släcka alla aktiva lager, hoppa till toppen av lagerlistan eller hoppa till botten av lagerlistan.",
   },
   {
     title: "Menyfunktioner",
     element: "#layerswitcher-actions-menu",
     intro:
-      "<b>Dölj alla aktiva lager:</b> stänger av alla lager på kartan. <br><br> <b>Scrolla till toppen:</b> hoppar till början av lagerlistan. <br><br> <b>Scrolla till botten:</b> hoppar till slutet av lagerlistan.",
+      "<b>Släck alla aktiva lager:</b> stänger av alla lager på kartan. <br><br> <b>Scrolla till toppen:</b> hoppar till början av lagerlistan. <br><br> <b>Scrolla till botten:</b> hoppar till slutet av lagerlistan.",
   },
   {
     title: "Lagergrupp",

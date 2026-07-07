@@ -23,6 +23,7 @@ import Preset from "./tools/preset.jsx";
 import Measurer from "./tools/measurer.jsx";
 import Routing from "./tools/routing.jsx";
 import Collector from "./tools/collector.jsx";
+import MailForm from "./tools/mailform.jsx";
 import Dummy from "./tools/dummy.jsx";
 import OsmSearch from "./tools/osmsearch.jsx";
 import MenuEditor from "./tools/MenuEditor/menuEditor.jsx";
@@ -123,6 +124,8 @@ class ToolOptions extends Component {
         return <Routing parent={this} model={this.props.model} />;
       case "collector":
         return <Collector parent={this} model={this.props.model} />;
+      case "mailform":
+        return <MailForm parent={this} model={this.props.model} />;
       case "timeslider":
         return <TimeSlider parent={this} model={this.props.model} />;
       case "documenthandler":
@@ -193,6 +196,7 @@ class ToolOptions extends Component {
       search: "Sök",
       timeslider: "Tidslinje",
       collector: "Tyck till",
+      mailform: "Tyck till (e-post)",
       print: "Utskrift",
       coordinates: "Visa koordinat",
       // draw: "Rita och mäta",

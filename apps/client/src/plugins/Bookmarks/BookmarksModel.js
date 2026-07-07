@@ -231,6 +231,61 @@ class BookmarksModel {
     this.writeToStorage();
   }
 
+  /**
+   * @summary Merges a previously exported set of bookmarks into the
+   * current ones, so bookmarks can be moved between browsers/devices
+   * or restored after the browser storage has been cleared.
+   * @description Bookmarks whose name collides with an existing one are
+   * kept under a renamed key (e.g. "Namn (2)") rather than overwriting
+   * the existing bookmark.
+   *
+   * @param {object} parsedBookmarks Previously exported bookmarks object
+   * @returns {{importedCount: number, renamedCount: number, skippedCount: number}}
+   */
+  importBookmarks(parsedBookmarks) {
+    if (
+      !parsedBookmarks ||
+      typeof parsedBookmarks !== "object" ||
+      Array.isArray(parsedBookmarks)
+    ) {
+      throw new Error("Invalid bookmarks file");
+    }
+
+    let importedCount = 0;
+    let renamedCount = 0;
+    let skippedCount = 0;
+
+    Object.entries(parsedBookmarks).forEach(([name, bookmark]) => {
+      try {
+        // Throws if bookmark.settings isn't valid base64-encoded JSON.
+        const decoded = this.getDecodedBookmark(bookmark);
+        if (typeof decoded?.settings?.l !== "string") {
+          throw new Error("Missing layer information");
+        }
+      } catch (_error) {
+        skippedCount++;
+        return;
+      }
+
+      let targetName = name;
+      if (this.bookmarkWithNameExists(targetName)) {
+        let suffix = 2;
+        while (this.bookmarkWithNameExists(`${name} (${suffix})`)) {
+          suffix++;
+        }
+        targetName = `${name} (${suffix})`;
+        renamedCount++;
+      }
+
+      this.bookmarks[targetName] = { settings: bookmark.settings };
+      importedCount++;
+    });
+
+    this.writeToStorage();
+
+    return { importedCount, renamedCount, skippedCount };
+  }
+
   handleChangeCookieSettingsClick = () => {
     this.globalObserver.publish("core.showCookieBanner");
   };

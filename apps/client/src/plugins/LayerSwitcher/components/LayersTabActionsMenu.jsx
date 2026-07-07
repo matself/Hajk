@@ -92,7 +92,7 @@ const LayersTabActionsMenu = ({ scrollToTop, scrollToBottom }) => {
           <ListItemIcon>
             <VisibilityOffIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Dölj alla aktiva lager</ListItemText>
+          <ListItemText>Släck alla aktiva lager</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={(e) => {

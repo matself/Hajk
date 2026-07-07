@@ -24,6 +24,7 @@ export const AVAILABLE_TOOLS = [
   "LayerComparer",
   "LayerSwitcher",
   "Location",
+  "MailForm",
   "Measurer",
   "OsmSearch",
   "Print",

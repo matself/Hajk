@@ -723,6 +723,19 @@
       "index": 7
     },
     {
+      "type": "mailform",
+      "options": {
+        "target": "toolbar",
+        "title": "Tyck till",
+        "description": "Skicka en synpunkt om kartan",
+        "recipientEmail": "kontakt@example.com",
+        "subject": "Synpunkt från kartan",
+        "instructions": "Fyll i din e-postadress och din synpunkt. Ett e-postmeddelande med en länk till den aktuella vyn öppnas i ditt e-postprogram.",
+        "visibleForGroups": []
+      },
+      "index": 8
+    },
+    {
       "type": "search",
       "options": {
         "layers": [
