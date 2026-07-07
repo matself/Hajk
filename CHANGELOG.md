@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Client + Admin: LayerSwitcher - Added XYZ as a configurable layer type, replacing the hard-coded `enableOSM` background approach. Any XYZ/slippy tile service (OpenStreetMap, OpenTopoMap, ESRI imagery etc.) can now be added and managed via the admin layer GUI.
 - Admin: InfoDialog - Added an admin editor for the `infodialog` tool (used for e.g. "Visa hjälp" and "Visa nyheter"), supporting multiple named dialog instances with add/remove/edit, a rich-text (HTML) editor by default for new dialogs, and a Markdown-source fallback for dialogs already saved in that format. [#1735](https://github.com/hajkmap/Hajk/issues/1735)
 - Client + Admin: LayerSwitcher - Added a new admin setting "Visa teckenförklaring direkt" that forces the legend to be expanded by default in the layer details view, so users don't have to click the legend button. [#1838](https://github.com/hajkmap/Hajk/issues/1838)
 - Client + Admin: DocumentHandler - Added a "Direct Print" setting that prints the currently active document directly without showing the document selection dialog [#1773](https://github.com/hajkmap/Hajk/issues/1773)
