@@ -4,7 +4,6 @@ import Alert from "../views/alert.jsx";
 
 import Edit from "../views/edit.jsx";
 import LayerManager from "../views/layermanager.jsx";
-import InformativeEditor from "../views/informativeeditor.jsx";
 import MapSettings from "../views/mapsettings.jsx";
 import Info from "../views/info.jsx";
 import Release from "../views/release.jsx";
@@ -13,7 +12,6 @@ import DocumentEditor from "../views/documenteditor.jsx";
 
 import editModel from "../models/edit";
 import layerManagerModel from "../models/layermanager";
-import informativeEditorModel from "../models/informativeEditor";
 import mapSettingsModel from "../models/mapsettings";
 import infoModel from "../models/info";
 import releaseModel from "../models/release";
@@ -122,8 +120,6 @@ class Application extends Component {
         return Edit;
       case "layermanager":
         return LayerManager;
-      case "informative":
-        return InformativeEditor;
       case "mapsettings":
         return MapSettings;
       case "info":
@@ -145,8 +141,6 @@ class Application extends Component {
         return new editModel();
       case "layermanager":
         return new layerManagerModel();
-      case "informative":
-        return new informativeEditorModel();
       case "mapsettings":
         return new mapSettingsModel();
       case "info":
