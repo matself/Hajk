@@ -1185,6 +1185,9 @@ class DocumentEditor extends Component {
 
     return (
       <Grid item className={classes.root} id="documentEditor" container xs={7}>
+        <Grid item xs={12}>
+          <h1>Dokumenthanterare</h1>
+        </Grid>
         <Grid className="inset-form" item container>
           <Grid>
             <Typography>

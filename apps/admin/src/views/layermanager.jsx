@@ -815,6 +815,7 @@ class Manager extends Component {
     return (
       <section className="tab-pane active">
         <Alert options={this.getAlertOptions()} />
+        <h1>Lagerlista</h1>
         <aside>
           <input
             placeholder="filtrera"

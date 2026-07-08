@@ -12,7 +12,7 @@
     "url_vectorlayer_settings": "http://localhost:3002/api/v2/settings/vectorlayer",
     "url_xyzlayer_settings": "http://localhost:3002/api/v2/settings/xyzlayer",
     "default_server_type": "geoserver",
-    "url_default_server": "https://opengeodata.goteborg.se/services/stadskarta/wms/v4",
+    "url_default_server": "",
     "owner_options": [
       {
         "value": "Hajk",
@@ -28,13 +28,13 @@
     "url_proxy": "",
     "url_layers": "http://localhost:3002/api/v2/mapconfig/layers",
     "url_layer_settings": "http://localhost:3002/api/v2/settings/wfslayer",
-    "url_default_server": "https://giscloud.se/geoserver/wfs"
+    "url_default_server": ""
   },
   "edit": {
     "url_proxy": "",
     "url_layers": "http://localhost:3002/api/v2/mapconfig/layers",
     "url_layer_settings": "http://localhost:3002/api/v2/settings/wfstlayer",
-    "url_default_server": "https://giscloud.se/geoserver/wfs",
+    "url_default_server": "",
     "projections": ["EPSG:3006", "EPSG:3007", "EPSG:3008"]
   },
   "mapsettings": {
@@ -54,21 +54,6 @@
     "url_client_ui": "http://localhost:3002/",
     "authentication_active": false,
     "use_document_folders": true
-  },
-  "informative": {
-    "url_proxy": "",
-    "url_map": "http://localhost:3002/api/v2/mapconfig",
-    "url_map_list": "http://localhost:3002/api/v2/mapconfig/list",
-    "url_layers": "http://localhost:3002/api/v2/mapconfig/layers",
-    "url_document_list": "http://localhost:3002/api/v2/informative/list",
-    "url_folder_list": "http://localhost:3002/api/v2/informative/folderlist",
-    "url_load": "http://localhost:3002/api/v2/informative/load",
-    "url_save": "http://localhost:3002/api/v2/informative/save",
-    "url_create": "http://localhost:3002/api/v2/informative/create",
-    "url_delete": "http://localhost:3002/api/v2/informative/delete",
-    "default_coordinate": [320564, 6471766],
-    "wms_url": "http://giscloud.se/mapservice/lmproxy/wms/topowebb",
-    "wms_layers": "topowebbkartan"
   },
   "menueditor": {
     "url_proxy": "",
@@ -90,8 +75,8 @@
     "url_create": "http://localhost:3002/api/v2/informative/create",
     "url_delete": "http://localhost:3002/api/v2/informative/delete",
     "default_coordinate": [320564, 6471766],
-    "wms_url": "http://giscloud.se/mapservice/lmproxy/wms/topowebb",
-    "wms_layers": "topowebbkartan",
+    "wms_url": "",
+    "wms_layers": "",
     "list_images": "http://localhost:3002/api/v2/mapconfig/listimage",
     "list_videos": "http://localhost:3002/api/v2/mapconfig/listvideo",
     "list_audios": "http://localhost:3002/api/v2/mapconfig/listaudio",
@@ -118,12 +103,8 @@
       "title": "Kartor"
     },
     {
-      "name": "informative",
-      "title": "Dokumenthanterare"
-    },
-    {
       "name": "documenthandler",
-      "title": "Dokumenthanterare 2.0"
+      "title": "Dokumenthanterare"
     }
   ]
 }
