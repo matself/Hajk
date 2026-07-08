@@ -555,36 +555,7 @@
     {
       "type": "preset",
       "options": {
-        "presetList": [
-          {
-            "name": "Halmstad",
-            "presetUrl": "?m=simpleMapConfig&x=368494.9197547268&y=6282312.7413127115&z=6.7339618545565125&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Alingsås",
-            "presetUrl": "?m=simpleMapConfig&x=354049.24452326825&y=6424217.248216377&z=7.903686478656474&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Göteborg",
-            "presetUrl": "?m=simpleMapConfig&x=315850.5321760868&y=6398503.693206446&z=6.502756678859521&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Jönköping",
-            "presetUrl": "?m=simpleMapConfig&x=450214.34373580024&y=6403315.750951234&z=6.7931556775514546&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Karlstad",
-            "presetUrl": "?m=simpleMapConfig&x=416370.6129169631&y=6583095.470395488&z=6.221222447365537&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Stockholm",
-            "presetUrl": "?m=simpleMapConfig&x=671675.4989296548&y=6570377.474044046&z=4.9236065968776375&l=1&f=%7B%7D&clean=false"
-          },
-          {
-            "name": "Umeå",
-            "presetUrl": "?m=simpleMapConfig&x=758454.9972847599&y=7084504.860998487&z=6.739288215480473&l=1&f=%7B%7D&clean=false"
-          }
-        ],
+        "presetList": [],
         "visibleForGroups": []
       },
       "index": 14
