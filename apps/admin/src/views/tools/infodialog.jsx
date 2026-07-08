@@ -456,19 +456,6 @@ class ToolOptions extends Component {
             }
           />
         </div>
-        <div>
-          <input
-            id="prompt"
-            type="checkbox"
-            checked={dialog.prompt}
-            onChange={(e) => this.updateDialog(i, { prompt: e.target.checked })}
-          />
-          &nbsp;
-          <label className="long-label" htmlFor="prompt">
-            Lägg till ett textfält i dialogen
-          </label>
-        </div>
-
         <div className="separator">Synlighet</div>
         <div>
           <input
