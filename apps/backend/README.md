@@ -82,3 +82,35 @@ Optionally, install PM2 to ensure that the app is run as a service (auto-started
 Optionally, you can make this Node process serve the static client and admin apps as well.
 
 To do that, move the previously compiled (`build` folders) from `client` and `admin` into `/opt/wwwroot/hajk/public`. Or, even better, move `admin` into a directory in `/public`, but let contents of `client/build` be the root of `public`. In this scenario, you can access Hajk's client app on localhost:3002, the API will be running on localhost:3002/api/v1, and `admin` will be available on localhost:3002/admin. Make sure to edit `client/appConfig.json` and `admin/config.json` to talk to the API on correct endpoint.
+
+### Protecting `/admin` without Active Directory
+
+Hajk normally restricts `/admin` and its API (`mapconfig`, `settings`, `ad`) by AD group
+membership (see `RESTRICT_ADMIN_ACCESS_TO_AD_GROUPS` and the `AD_*` settings in `.env`).
+If you don't run AD - e.g. a plain Ubuntu/Nginx deployment - you can instead protect the
+admin interface with a single shared password, changeable at any time:
+
+1. Generate a password hash (run from `apps/backend`):
+
+   ```shell
+   npm run hash-admin-password -- "yourPassword"
+   ```
+
+2. Paste the printed `salt:hash` value into `.env` as `ADMIN_PASSWORD_HASH`.
+3. Make sure `EXPOSE_AND_RESTRICT_STATIC_ADMIN` is set to a non-empty value (the default
+   `GIS_ADMIN` is fine - its actual content is ignored in password mode, but the key must
+   be present for the `/admin` gate to be wired up at all).
+4. Make sure `AD_LOOKUP_ACTIVE` is not `"true"` (password mode only engages when AD is off).
+5. Restart the backend.
+
+Visiting `/admin` (or calling the admin API directly) now requires logging in with the
+shared password first. A successful login grants a signed, 6-hour session cookie -
+no user list, nothing to manage beyond the one password.
+
+To change the password later: repeat steps 1-2 with the new password and restart the
+backend - no code changes needed. To disable password protection again, remove
+`ADMIN_PASSWORD_HASH` from `.env` and restart.
+
+If you're also running Nginx (or another reverse proxy) in front of Hajk, this native gate
+covers both `/admin` and its API in one place, so you can drop any proxy-level Basic Auth
+you may have added for `/admin` alone - just keep the proxy handling TLS termination.
