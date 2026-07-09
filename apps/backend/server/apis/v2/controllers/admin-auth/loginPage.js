@@ -22,7 +22,7 @@ export function adminLoginPageHtml() {
 </head>
 <body>
 <form id="login-form">
-  <h1>Hajk Admin</h1>
+  <h2>HAJK Admin UI</h1>
   <input type="password" id="password" name="password" placeholder="Password" autofocus required />
   <div id="error"></div>
   <button type="submit">Log in</button>
