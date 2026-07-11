@@ -2,29 +2,43 @@
 
 ## Overview
 
-Each Hajk instance needs its own port, hostname, and three config files updated.
-The nginx reverse proxy handles SSL and routing. PM2 manages the Node process as user `mats`.
+Each Hajk instance needs its own port, hostname, and instance name.
+The nginx reverse proxy handles SSL and routing. PM2 manages the Node process, running
+as whichever system user owns the deployed files.
 
 ---
 
-## 1. Files to update
+## 1. Build and install
 
-### `.env`
+Run `scripts/installbuild_me.sh <git_dir> <dest_dir>`. It prompts for this instance's
+hostname, port, and instance name, then writes them into `.env`,
+`static/client/appConfig.json`, and `static/admin/config.json` — no hand-editing of
+those files needed:
+
 ```
-PORT=3004               # unique port for this instance
-NODE_ENV=production     # use 'development' only for local dev
+Hostname the client/admin should use ('localhost' for a local dev/test copy) [localhost]: [hostname]
+Backend port (PORT in .env) [3002]: [port]
+Instance name (HAJK_INSTANCE_ID, also suggested as the PM2 process name) [Hajk-...]: [instancename]
 ```
 
-### `App_Data/appConfig.json`
-```json
-"mapserviceBase": "https://[hostname]/api/v2"
-```
+For `localhost`, URLs keep the port (e.g. `http://localhost:3004/api/v2`) since there's
+no reverse proxy in front — this reproduces a plain local dev/test copy. For any other
+hostname, URLs drop the port (`https://[hostname]/...`) since nginx is assumed to front it.
 
-### `App_Data/adminConfig.json`
-Replace every occurrence of `http://localhost:302` with `https://[hostname]`.
-Quick check after editing:
+The script also writes an `install.sh` into `dest_dir`. On the target server, run it once:
+
 ```bash
-grep "localhost" /var/www/[instancedir]/App_Data/adminConfig.json
+cd /var/www/[instancedir]
+sudo ./install.sh
+```
+
+It prompts for the system user that should own the files and run Hajk via PM2, `chown -R`s
+the deployed folder to that user, and installs backend production dependencies
+(`npm ci --omit=dev`) as that user — so `node_modules` is never left root-owned.
+
+Quick check that nothing still points at localhost (skip this for a `localhost` build):
+```bash
+grep "localhost" /var/www/[instancedir]/static/admin/config.json /var/www/[instancedir]/static/client/appConfig.json
 ```
 Should return nothing.
 
@@ -89,12 +103,13 @@ nslookup [hostname] 8.8.8.8
 
 ---
 
-## 4. PM2 (run as user mats)
+## 4. PM2 (run as the owner set in step 1's install.sh)
+
+`install.sh` already installed dependencies as the owning user, so no `npm install` here.
 
 ```bash
-su mats
+su [owner]
 cd /var/www/[instancedir]
-npm install
 pm2 start index.js --name [instancename]
 pm2 save
 ```
