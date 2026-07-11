@@ -12,17 +12,7 @@
     "url_vectorlayer_settings": "http://localhost:3002/api/v2/settings/vectorlayer",
     "url_xyzlayer_settings": "http://localhost:3002/api/v2/settings/xyzlayer",
     "default_server_type": "geoserver",
-    "url_default_server": "",
-    "owner_options": [
-      {
-        "value": "Hajk",
-        "title": "Hajk"
-      },
-      {
-        "value": "Lantmäterienheten",
-        "title": "Lantmäterienheten"
-      }
-    ]
+    "url_default_server": ""
   },
   "search": {
     "url_proxy": "",
@@ -74,9 +64,6 @@
     "url_save": "http://localhost:3002/api/v2/informative/save",
     "url_create": "http://localhost:3002/api/v2/informative/create",
     "url_delete": "http://localhost:3002/api/v2/informative/delete",
-    "default_coordinate": [320564, 6471766],
-    "wms_url": "",
-    "wms_layers": "",
     "list_images": "http://localhost:3002/api/v2/mapconfig/listimage",
     "list_videos": "http://localhost:3002/api/v2/mapconfig/listvideo",
     "list_audios": "http://localhost:3002/api/v2/mapconfig/listaudio",

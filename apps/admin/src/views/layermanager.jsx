@@ -483,18 +483,6 @@ class Manager extends Component {
     );
   }
 
-  renderOwnerOptions() {
-    if (this.props.config && this.props.config.owner_options) {
-      return this.props.config.owner_options.map((option, i) => (
-        <option value={option.value} key={"owner_" + i}>
-          {option.title}
-        </option>
-      ));
-    } else {
-      return null;
-    }
-  }
-
   filterLayers(e) {
     this.setState({
       filter: e.target.value,
