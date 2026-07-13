@@ -465,7 +465,7 @@ var manager = Model.extend({
     });
   },
 
-  getAllWMTSCapabilities: function (url) {
+  getAllWMTSCapabilities: function (url, auth) {
     var xmlParser = new X2JS({
       attributePrefix: "_",
       arrayAccessFormPaths: [
@@ -478,6 +478,53 @@ var manager = Model.extend({
         "Capabilities.Contents.TileMatrixSet.TileMatrix",
       ],
     });
+
+    var parseCapabilities = function (xmlstr) {
+      var json = xmlParser.xml2js(xmlstr);
+      var capabilitiesKey = Object.keys(json)[0];
+      if (capabilitiesKey === "html") {
+        throw new Error(
+          "Server returns HTML instead of expected WMTS GetCapabilities response"
+        );
+      }
+      return json[capabilitiesKey];
+    };
+
+    // If the service requires Basic auth, the browser cannot fetch its
+    // capabilities directly (the Authorization header triggers a CORS preflight
+    // that authenticated providers such as Lantmäteriet won't answer). Route the
+    // request through the backend instead, which fetches server-side and returns
+    // the raw XML. Unauthenticated services keep the direct browser fetch below.
+    if (auth && auth.username) {
+      var endpoint = this.get("config").url_layers.replace(
+        /\/layers\/?$/,
+        "/wmtscapabilities"
+      );
+      return hfetch(endpoint, {
+        method: "POST",
+        cache: "no-cache",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: url,
+          username: auth.username,
+          password: auth.password,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(
+              "Server-side capabilities request failed (status " +
+                response.status +
+                ")"
+            );
+          }
+          return response.json();
+        })
+        .then((data) => parseCapabilities(data.xml));
+    }
 
     var hasCapabilitiesInUrl = /xml|GetCapabilities/i.test(url);
     var data = hasCapabilitiesInUrl
@@ -495,16 +542,7 @@ var manager = Model.extend({
         typeof value === "string"
           ? value
           : new XMLSerializer().serializeToString(value);
-      var json = xmlParser.xml2js(xmlstr);
-
-      var capabilitiesKey = Object.keys(json)[0];
-      if (capabilitiesKey === "html") {
-        throw new Error(
-          "Server returns HTML instead of expected WMTS GetCapabilities response"
-        );
-      }
-
-      return json[capabilitiesKey];
+      return parseCapabilities(xmlstr);
     });
   },
 

@@ -461,11 +461,31 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     }
   }
 
+  async setupWmtsAuthProxy() {
+    // Each API version gets its own WMTS auth proxy middleware. Unlike the FME
+    // and Sokigo proxies this one isn't gated by a single .env target: it reads
+    // per-layer credentials from App_Data/layers.json at request time, so it's
+    // always mounted and simply does nothing for layers that have no `auth`.
+    for await (const v of app.get("apiVersions")) {
+      try {
+        const { default: wmtsAuthProxy, WMTS_AUTH_PROXY_PATH } = await import(
+          `../apis/v${v}/middlewares/wmts.auth.proxy.js`
+        );
+        app.use(`/api/v${v}/${WMTS_AUTH_PROXY_PATH}`, wmtsAuthProxy());
+        logger.info("Enabling WMTS auth proxy for API V%s", v);
+      } catch {
+        // The middleware only exists for API versions that support it (v2+).
+        logger.debug("WMTS auth proxy not available for API V%s, skipping.", v);
+      }
+    }
+  }
+
   // Since we have to await the setup of the proxies (so that the JSON-parser etc. initiates after the proxies),
   // we'll gather the all the setups here so they are easy to call.
   async setupProxies() {
     await this.setupSokigoProxy();
     await this.setupFmeProxy();
+    await this.setupWmtsAuthProxy();
     this.setupGenericProxy();
   }
 

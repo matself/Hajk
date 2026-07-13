@@ -288,7 +288,58 @@ class ConfigServiceV2 {
    * @returns {object} An object with layers config, map config and a list of user specific maps.
    * @memberof ConfigServiceV2
    */
-  async getMapWithLayers(map, user, washContent = true) {
+  /**
+   * @summary Prepare WMTS layers that require authentication for delivery to the
+   * client.
+   *
+   * @description For any WMTS layer that carries an `auth` block, the credentials
+   * must never reach the browser. Instead we rewrite the layer's `url` so that
+   * tiles are requested (same-origin) from Hajk's own WMTS auth proxy, which
+   * injects the Authorization header server-side. The `auth` block itself is then
+   * stripped from the response.
+   *
+   * This is only ever applied to the client-facing response. The admin UI reads
+   * layers through a different, unwashed path and keeps the real url + auth so it
+   * can edit them.
+   *
+   * @param {object} layersConfig The (already streamlined) layers store
+   * @param {string} publicProxyBase Absolute base up to the API version, e.g.
+   *   "https://example.com/api/v2". If falsy, layers are left untouched apart
+   *   from having their credentials removed (fail closed - never leak auth).
+   * @memberof ConfigServiceV2
+   */
+  #prepareWmtsAuthLayers(layersConfig, publicProxyBase) {
+    if (!Array.isArray(layersConfig?.wmtslayers)) return;
+
+    for (const layer of layersConfig.wmtslayers) {
+      if (!layer || !layer.auth) continue;
+
+      // Rewrite the url to point at our proxy - but only if we could determine
+      // a public base and the original url is valid. If not, we still fall
+      // through to deleting the credentials below, so they are never exposed.
+      if (publicProxyBase && typeof layer.url === "string") {
+        try {
+          const origin = new URL(layer.url).origin;
+          // Slice off the origin from the *original* string so that WMTS REST
+          // template placeholders (e.g. {TileMatrix}) are preserved verbatim.
+          const rest = layer.url.slice(origin.length);
+          layer.url = `${publicProxyBase}/wmtsproxy/${encodeURIComponent(
+            layer.id
+          )}${rest}`;
+        } catch {
+          logger.warn(
+            "[prepareWmtsAuthLayers] Could not rewrite url for WMTS layer %o; leaving it unproxied.",
+            layer.id
+          );
+        }
+      }
+
+      // Always remove the credentials from the client-facing response.
+      delete layer.auth;
+    }
+  }
+
+  async getMapWithLayers(map, user, washContent = true, publicProxyBase = "") {
     logger.debug(
       "[getMapWithLayers] invoked with 'washContent=%s' for user %s. Grabbing '%s' map config and all layers.",
       washContent,
@@ -314,6 +365,10 @@ class ConfigServiceV2 {
         mapConfig,
         layersStore
       );
+
+      // Route authenticated WMTS layers through our server-side auth proxy and
+      // strip their credentials before the config reaches the browser.
+      this.#prepareWmtsAuthLayers(layersConfig, publicProxyBase);
 
       // Next, take a look in LayerSwitcher.options and see
       // whether user specific maps are needed. If so, grab them.
@@ -880,6 +935,58 @@ class ConfigServiceV2 {
     }
 
     return { services: missingLayers, errors };
+  }
+
+  /**
+   * @summary Fetch a WMTS GetCapabilities document server-side, optionally with
+   * Basic auth.
+   *
+   * @description The admin UI runs in a browser, so it cannot fetch capabilities
+   * from an authenticated (and non-CORS) service such as Lantmäteriet's Geotorget
+   * endpoints - the Authorization header triggers a CORS preflight the provider
+   * won't answer. Doing the fetch here (server-side) sidesteps both problems, the
+   * same way a desktop GIS client would. The raw XML is returned to the admin,
+   * which parses it exactly as before. Credentials are used only for this request
+   * and never stored here.
+   *
+   * @param {string} url The capabilities URL (GetCapabilities params optional)
+   * @param {{username?: string, password?: string}} [auth]
+   * @returns {Promise<{xml: string} | {error: string}>}
+   * @memberof ConfigServiceV2
+   */
+  async getWmtsCapabilities(url, auth) {
+    try {
+      if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+        throw new Error("A valid http(s) URL is required.");
+      }
+
+      // Ensure the URL carries GetCapabilities KVP params (mirrors the admin's
+      // own behavior of appending them when absent).
+      let finalUrl = url;
+      if (!/xml|GetCapabilities/i.test(url)) {
+        const glue = url.includes("?") ? "&" : "?";
+        finalUrl = `${url}${glue}service=WMTS&request=GetCapabilities&version=1.0.0`;
+      }
+
+      const headers = {};
+      if (auth && auth.username) {
+        const raw = `${auth.username}:${auth.password ?? ""}`;
+        headers.Authorization = `Basic ${Buffer.from(raw).toString("base64")}`;
+      }
+
+      const response = await fetch(finalUrl, { headers });
+      if (!response.ok) {
+        throw new Error(
+          `Capabilities request failed with status ${response.status}.`
+        );
+      }
+
+      const xml = await response.text();
+      return { xml };
+    } catch (error) {
+      logger.error("[getWmtsCapabilities] %s", error.message);
+      return { error: error.message };
+    }
   }
 
   async verifyLayers(user) {

@@ -395,6 +395,8 @@ class Manager extends Component {
           style: layer.style,
           requestEncoding: layer.requestEncoding || "",
           imageFormat: layer.imageFormat,
+          authUsername: layer.auth?.username || "",
+          authPassword: layer.auth?.password || "",
           projection: layer.projection,
           origins: layer.origins
             ? layer.origins.map((o) => o.join(" ")).join("; ")
