@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import ConfigService from "./config.service.js";
+import { backupBeforeWrite } from "../utils/backupConfig.js";
 
 class SettingsService {
   /**
@@ -114,6 +115,9 @@ class SettingsService {
       // Put the new array of layers into right place in our store
       layersStore[type] = layersTypeWithChanges;
 
+      // Snapshot the current store before overwriting it
+      await backupBeforeWrite(this.getFullPathToFile("layers.json"));
+
       // Stringify using 2 spaces as indentation and write to file
       await fs.promises.writeFile(
         this.getFullPathToFile("layers.json"),
@@ -164,6 +168,9 @@ class SettingsService {
 
         // Put back our modified array of objects to the layers store
         layersStore[type] = layersType;
+
+        // Snapshot the current store before overwriting it
+        await backupBeforeWrite(this.getFullPathToFile("layers.json"));
 
         // Stringify using 2 spaces of indentation and write to file
         await fs.promises.writeFile(
@@ -305,6 +312,9 @@ class SettingsService {
       if (searchOptions !== undefined)
         json.tools[searchToolIndex].options = searchOptions;
 
+      // Snapshot the current map config before overwriting it
+      await backupBeforeWrite("App_Data/" + file + ".json");
+
       // Write changes to file
       await fs.promises.writeFile(
         "App_Data/" + file + ".json",
@@ -351,6 +361,9 @@ class SettingsService {
         default:
           break;
       }
+
+      // Snapshot the current map config before overwriting it
+      await backupBeforeWrite(this.getFullPathToFile(mapFile));
 
       // Write, format with 2 spaces indentation
       await fs.promises.writeFile(
@@ -405,6 +418,9 @@ class SettingsService {
         // with the new ones.
         mapConfig.tools[i].options = incomingOptions;
       }
+
+      // Snapshot the current map config before overwriting it
+      await backupBeforeWrite(this.getFullPathToFile(mapFile));
 
       // Write, format with 2 spaces indentation
       await fs.promises.writeFile(

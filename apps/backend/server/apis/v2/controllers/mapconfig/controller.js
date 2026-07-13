@@ -1,6 +1,8 @@
 import ConfigService from "../../services/config.service.js";
 import InformativeService from "../../services/informative.service.js";
 import handleStandardResponse from "../../utils/handleStandardResponse.js";
+import * as backups from "../../utils/backupConfig.js";
+import { backupsPageHtml } from "./backupsPage.js";
 import log4js from "log4js";
 
 // Create a logger for admin events, those will be saved in a separate log file.
@@ -118,6 +120,52 @@ export class Controller {
       handleStandardResponse(res, data);
       !data.error && ael.info(`deleted map config ${req.params.name}.json`);
     });
+  }
+
+  /**
+   * @summary Serve the self-contained backups/restore page (HTML).
+   * Opened from the admin "Kartor" toolbar with a ?map=<name> query param.
+   */
+  backupsPage(req, res) {
+    res.type("html").send(backupsPageHtml());
+  }
+
+  /**
+   * @summary List available backups for a given map (or "layers"), newest first.
+   */
+  async listBackups(req, res) {
+    try {
+      res.json(await backups.listBackups(req.params.map));
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  /**
+   * @summary Return the parsed contents of a single backup, for preview/diff.
+   */
+  async getBackup(req, res) {
+    try {
+      res.json(await backups.readBackup(req.params.map, req.params.id));
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  /**
+   * @summary Restore a backup over the live config file. The current version
+   * is snapshotted first, so the restore is itself reversible.
+   */
+  async restoreBackup(req, res) {
+    try {
+      const data = await backups.restoreBackup(req.params.map, req.params.id);
+      ael.info(
+        `restored map config ${req.params.map}.json from backup ${req.params.id}`
+      );
+      res.json(data);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
 }
 export default new Controller();

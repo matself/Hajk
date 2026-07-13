@@ -13,6 +13,7 @@ import ControlPointDuplicate from "@material-ui/icons/ControlPointDuplicate";
 import SaveIcon from "@material-ui/icons/SaveSharp";
 import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import RestoreIcon from "@material-ui/icons/Restore";
 import LayersIcon from "@material-ui/icons/Layers";
 import SwapVertIcon from "@material-ui/icons/SwapVert";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -2921,6 +2922,22 @@ class Menu extends Component {
     });
   }
 
+  openBackups() {
+    const mapFile = this.props.model.attributes.mapFile;
+    if (!mapFile) {
+      this.setState({
+        alert: true,
+        alertMessage: "Välj en karta först.",
+      });
+      return;
+    }
+    // Open the self-contained backups/restore page (served by the backend behind
+    // the same admin gate). It is deliberately locked to the selected map.
+    const base = this.props.config.url_map;
+    const url = `${base}/backups-ui?map=${encodeURIComponent(mapFile)}`;
+    window.open(url, "_blank", "noopener");
+  }
+
   duplicateMap() {
     const oldName = this.props.model.attributes.mapFile;
     const newName = this.refs.mapName.value;
@@ -3023,6 +3040,15 @@ class Menu extends Component {
               >
                 Ta bort karta
               </ColorButtonRed>
+              &nbsp;
+              <ColorButtonBlue
+                variant="contained"
+                className="btn"
+                onClick={(e) => this.openBackups()}
+                startIcon={<RestoreIcon />}
+              >
+                Säkerhetskopior
+              </ColorButtonBlue>
             </div>
 
             <Divider orientation="vertical" flexItem />

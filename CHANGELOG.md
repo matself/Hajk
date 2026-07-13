@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend + Admin: Map config backups - Every write to a map config or the layers store now snapshots the previous version first (before overwrite, delete, or restore). A configurable number of backups is kept per file (`MAP_CONFIG_BACKUP_COUNT`, default 100). A new "Säkerhetskopior" button in the admin "Kartor" toolbar opens a dedicated page listing the selected map's backups, where any version can be previewed and restored; restoring snapshots the current version first so it is itself reversible.
 - Client + Admin: LayerSwitcher - Added XYZ as a configurable layer type, replacing the hard-coded `enableOSM` background approach. Any XYZ/slippy tile service (OpenStreetMap, OpenTopoMap, ESRI imagery etc.) can now be added and managed via the admin layer GUI. [#1866](https://github.com/hajkmap/Hajk/discussions/1866)
 - Admin: InfoDialog - Added an admin editor for the `infodialog` tool (used for e.g. "Visa hjälp" and "Visa nyheter"), supporting multiple named dialog instances with add/remove/edit, a rich-text (HTML) editor by default for new dialogs, and a Markdown-source fallback for dialogs already saved in that format. [#1735](https://github.com/hajkmap/Hajk/issues/1735)
 - Client + Admin: LayerSwitcher - Added a new admin setting "Visa teckenförklaring direkt" that forces the legend to be expanded by default in the layer details view, so users don't have to click the legend button. [#1838](https://github.com/hajkmap/Hajk/issues/1838)

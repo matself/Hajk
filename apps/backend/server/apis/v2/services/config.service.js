@@ -7,6 +7,7 @@ import ad from "./activedirectory.service.js";
 import asyncFilter from "../utils/asyncFilter.js";
 import getAnalyticsOptionsFromDotEnv from "../utils/getAnalyticsOptionsFromDotEnv.js";
 import { AccessError } from "../utils/AccessError.js";
+import { backupBeforeWrite } from "../utils/backupConfig.js";
 
 const logger = log4js.getLogger("service.config.v2");
 
@@ -1138,6 +1139,9 @@ class ConfigServiceV2 {
     try {
       // Prepare path
       const filePath = path.join(process.cwd(), "App_Data", name + ".json");
+      // Snapshot the map before deleting it, so an accidental delete is
+      // recoverable from the backups/restore page.
+      await backupBeforeWrite(filePath, { label: "pre-delete" });
       await fs.promises.unlink(filePath);
       return {};
     } catch (error) {

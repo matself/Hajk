@@ -15,6 +15,13 @@ export default express
   .get("/listvideo", controller.listvideo)
   .get("/listaudio", controller.listaudio)
 
+  // Backup/restore of map configs. The UI page must be registered before the
+  // "/:map" catch-all below, or "backups-ui" would be treated as a map name.
+  .get("/backups-ui", controller.backupsPage) // Self-contained backups/restore page
+  .get("/backups/:map", controller.listBackups) // List backups for a map
+  .get("/backups/:map/:id", controller.getBackup) // Preview a single backup
+  .put("/restore/:map/:id", controller.restoreBackup) // Restore a backup
+
   // …but if none of the above matched, let's assume the string
   // provided is a param that should be used as map config name.
   .get("/:map", controller.byMap) // Get specific map config
