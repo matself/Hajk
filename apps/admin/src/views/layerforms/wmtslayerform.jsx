@@ -66,6 +66,8 @@ const defaultState = {
   sizes: "",
   tileSize: "",
   crossOrigin: "",
+  authUsername: "",
+  authPassword: "",
   layerType: "WMTS",
   attribution: "",
   infoVisible: false,
@@ -130,7 +132,10 @@ class WMTSLayerForm extends Component {
 
   fetchCapabilities() {
     return this.props.model
-      .getAllWMTSCapabilities(this.state.capabilitiesUrl)
+      .getAllWMTSCapabilities(this.state.capabilitiesUrl, {
+        username: this.state.authUsername,
+        password: this.state.authPassword,
+      })
       .then((capabilities) => {
         var layers = capabilities.Contents?.Layer || [];
         var tileMatrixSets = capabilities.Contents?.TileMatrixSet || [];
@@ -297,10 +302,24 @@ class WMTSLayerForm extends Component {
   }
 
   getLayer() {
+    // Assemble the (optional) Basic auth block. When no username is provided we
+    // return `undefined`, which JSON.stringify drops entirely - so unauthenticated
+    // layers stay clean. Credentials are only ever used server-side by the WMTS
+    // auth proxy and are stripped before the config reaches the client.
+    const authUsername = this.getValue("authUsername");
+    const auth = authUsername
+      ? {
+          type: "basic",
+          username: authUsername,
+          password: this.getValue("authPassword"),
+        }
+      : undefined;
+
     return {
       type: this.state.layerType,
       id: this.state.id,
       caption: this.getValue("caption"),
+      auth: auth,
       url: this.getValue("url"),
       capabilitiesUrl: this.getValue("capabilitiesUrl"),
       date: this.getValue("date"),
@@ -532,6 +551,36 @@ class WMTSLayerForm extends Component {
           >
             Hämta {loader}
           </span>
+        </div>
+        <div className="separator">
+          Autentisering (Basic){" "}
+          <abbr title="Om tjänsten kräver Basic-autentisering (användarnamn/lösenord), fyll i uppgifterna här INNAN du klickar Hämta. Hajk hämtar capabilities server-side med dessa uppgifter, och lagrar dem i layers.json för att skicka dem server-side till tjänsten via en inbyggd proxy. Uppgifterna skickas aldrig till webbläsaren.">
+            (?)
+          </abbr>
+        </div>
+        <div>
+          <label>Användarnamn</label>
+          <input
+            type="text"
+            autoComplete="off"
+            ref="input_authUsername"
+            value={this.state.authUsername}
+            onChange={(e) => {
+              this.setState({ authUsername: e.target.value });
+            }}
+          />
+        </div>
+        <div>
+          <label>Lösenord</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            ref="input_authPassword"
+            value={this.state.authPassword}
+            onChange={(e) => {
+              this.setState({ authPassword: e.target.value });
+            }}
+          />
         </div>
         <div>
           <label>Lager*</label>

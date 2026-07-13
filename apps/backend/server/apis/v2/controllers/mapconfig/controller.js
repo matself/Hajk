@@ -63,6 +63,22 @@ export class Controller {
   }
 
   /**
+   * @summary Fetch a WMTS GetCapabilities document server-side (with optional
+   * Basic auth) on behalf of the admin UI, which can't do it from the browser
+   * for authenticated/non-CORS services.
+   *
+   * @param {*} req
+   * @param {*} res
+   * @memberof Controller
+   */
+  wmtsCapabilities(req, res) {
+    const { url, username, password } = req.body || {};
+    ConfigService.getWmtsCapabilities(url, { username, password }).then((data) =>
+      handleStandardResponse(res, data)
+    );
+  }
+
+  /**
    * @summary List all available map configs - used in admin
    *
    * @param {*} req
