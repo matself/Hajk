@@ -8,7 +8,7 @@ as whichever system user owns the deployed files.
 
 ---
 
-## 1. Build and install
+## 1. Build
 
 Run `scripts/installbuild_me.sh <git_dir> <dest_dir>`. It prompts for this instance's
 hostname, port, and instance name, then writes them into `.env`,
@@ -18,33 +18,63 @@ those files needed:
 ```
 Hostname the client/admin should use ('localhost' for a local dev/test copy) [localhost]: [hostname]
 Backend port (PORT in .env) [3002]: [port]
-Instance name (HAJK_INSTANCE_ID, also suggested as the PM2 process name) [Hajk-...]: [instancename]
+Instance name (HAJK_INSTANCE_ID, also suggested as the PM2 process name) [[instancedir]]: [instancename]
 ```
 
 For `localhost`, URLs keep the port (e.g. `http://localhost:3004/api/v2`) since there's
 no reverse proxy in front — this reproduces a plain local dev/test copy. For any other
 hostname, URLs drop the port (`https://[hostname]/...`) since nginx is assumed to front it.
 
-The script also writes an `install.sh` into `dest_dir`. On the target server, run it once:
+The instance-name default is the destination folder name (e.g. `hajk44` for
+`/var/www/hajk44`) — **not** the build machine's hostname, so it stays meaningful once
+the build lands on the server.
+
+For a server build, the script produces a single **`<instancedir>.tar.gz`** archive
+**inside `dest_dir` itself** (so it sits next to the files it contains and can't collide
+with a non-writable parent such as a Windows drive root). This one file is the unit you
+deploy — see step 2.
+
+---
+
+## 2. Deploy (drop and run)
+
+Transfer and unpack the **single archive**, never a folder tree. A tree copy
+(WinSCP, `scp -r`, drag-and-drop) can silently drop individual files, producing a
+build that's missing e.g. one service module and crashes on startup with a cryptic
+`ERR_MODULE_NOT_FOUND`. One archive either arrives whole or fails loudly — and it
+preserves the execute bit on `install.sh` that per-file transfers strip.
 
 ```bash
+# 1. Transfer the ONE archive (any method — scp shown; WinSCP a single file is fine too)
+scp <dest_dir>/[instancedir].tar.gz user@server:/tmp/
+
+# 2. Extract into the web root (creates /var/www/[instancedir]/)
+sudo tar xzf /tmp/[instancedir].tar.gz -C /var/www/
+
+# 3. Install: chown to the PM2 user + install backend deps as that user
 cd /var/www/[instancedir]
 sudo ./install.sh
 ```
 
-It prompts for the system user that should own the files and run Hajk via PM2, `chown -R`s
-the deployed folder to that user, and installs backend production dependencies
-(`npm ci --omit=dev`) as that user — so `node_modules` is never left root-owned.
+`install.sh` prompts for the system user that should own the files and run Hajk via PM2,
+`chown -R`s the folder to that user, and runs `npm ci --omit=dev` as that user — so
+`node_modules` is never left root-owned. Because `chown` runs *after* extraction, it does
+not matter that the archive was unpacked as root.
 
-Quick check that nothing still points at localhost (skip this for a `localhost` build):
+Quick check that nothing still points at localhost:
 ```bash
 grep "localhost" /var/www/[instancedir]/static/admin/config.json /var/www/[instancedir]/static/client/appConfig.json
 ```
 Should return nothing.
 
+> Alternative — build on the server: if the git repo and Node toolchain are present on
+> the VPS, run `installbuild_me.sh <git_dir> /var/www/[instancedir]` directly there and
+> skip the transfer entirely (no archive, no `scp`). Then just `cd /var/www/[instancedir]
+> && sudo ./install.sh`.
+
 ---
 
-## 2. nginx
+## 3. nginx
 
 Create `/etc/nginx/sites-available/[hostname]`:
 
@@ -91,7 +121,7 @@ sudo certbot --nginx -d [hostname]
 
 ---
 
-## 3. DNS
+## 4. DNS
 
 Add an A record for `[hostname]` pointing to `193.168.172.66` (webkarta.se IP).
 Wait for propagation before running Certbot.
@@ -103,7 +133,7 @@ nslookup [hostname] 8.8.8.8
 
 ---
 
-## 4. PM2 (run as the owner set in step 1's install.sh)
+## 5. PM2 (run as the owner set in step 2's install.sh)
 
 `install.sh` already installed dependencies as the owning user, so no `npm install` here.
 
@@ -121,7 +151,7 @@ pm2 list
 
 ---
 
-## 5. Lantmäteriet proxy layers
+## 6. Lantmäteriet proxy layers
 
 If the instance uses Lantmäteriet WMTS or WMS layers via the webkarta.se nginx proxy,
 the GeoServer CORS allowlist on geowebb.se must include the new hostname.
@@ -141,7 +171,7 @@ sudo systemctl restart tomcat9
 
 ---
 
-## 6. Verify
+## 7. Verify
 
 - `https://[hostname]` loads the map
 - `https://[hostname]/admin` loads the admin UI with correct layer and map lists

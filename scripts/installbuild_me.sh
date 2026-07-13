@@ -130,8 +130,13 @@ HOSTNAME="${INPUT_HOSTNAME:-localhost}"
 read -p "Backend port (PORT in .env) [3002]: " INPUT_PORT
 PORT="${INPUT_PORT:-3002}"
 
-read -p "Instance name (HAJK_INSTANCE_ID, also suggested as the PM2 process name) [Hajk-$(hostname)]: " INPUT_INSTANCE_NAME
-INSTANCE_NAME="${INPUT_INSTANCE_NAME:-Hajk-$(hostname)}"
+# The default is derived from the destination folder name (e.g. "hajk44" for
+# /var/www/hajk44), NOT from `hostname`. `hostname` would bake the *build*
+# machine's name (e.g. "Hajk-OPTIPLEX9020") into HAJK_INSTANCE_ID and the log
+# file names, which is meaningless once the build is dropped onto the server.
+DEFAULT_INSTANCE_NAME="$(basename "$DEST_DIR")"
+read -p "Instance name (HAJK_INSTANCE_ID, also suggested as the PM2 process name) [${DEFAULT_INSTANCE_NAME}]: " INPUT_INSTANCE_NAME
+INSTANCE_NAME="${INPUT_INSTANCE_NAME:-$DEFAULT_INSTANCE_NAME}"
 
 if [ "$HOSTNAME" = "localhost" ]; then
     ADMIN_BASE="http://localhost:${PORT}"
@@ -327,7 +332,7 @@ cat > "$INSTALL_SCRIPT" <<'EOF'
 # Hajk installation script
 #
 # Run this once on the target server, from inside the deployed folder, after
-# installbuild_me.sh has copied a build here (e.g. /var/www/[instancedir]):
+# the build archive has been extracted here (e.g. /var/www/[instancedir]):
 #   sudo ./install.sh
 #
 # It sets file ownership to the user that will run Hajk via PM2, then installs
@@ -369,6 +374,61 @@ chmod +x "$INSTALL_SCRIPT"
 echo "Wrote installation script: ${INSTALL_SCRIPT}"
 
 # =============================================================================
+# Part 5: Single-archive artifact (server builds only)
+# =============================================================================
+# For a server deployment the build must cross machines (build host -> VPS).
+# Copying the folder as a tree (WinSCP, scp -r, drag-and-drop) can silently
+# drop individual files, producing a deployment that's missing e.g. a single
+# service module and crashes on startup. Packaging the whole build into ONE
+# .tar.gz (written inside dest_dir itself) makes the transfer atomic - it either
+# arrives whole or the extract fails loudly - and preserves the execute bit on
+# install.sh, which per-file transfers routinely strip. node_modules is excluded
+# (install.sh rebuilds it on the server), keeping the archive small.
+#
+# Skipped for localhost builds, which never leave this machine.
+ARCHIVE_PATH=""
+if [ "$HOSTNAME" != "localhost" ]; then
+    echo ""
+    echo "--- Part 5: Packaging single-archive artifact ---"
+    DEST_PARENT="$(dirname "$DEST_DIR")"
+    DEST_BASENAME="$(basename "$DEST_DIR")"
+    ARCHIVE_NAME="${DEST_BASENAME}.tar.gz"
+
+    # The finished archive lives INSIDE dest_dir. Two reasons:
+    #   1. dest_dir is always writable (the build just filled it), which sidesteps
+    #      the failure of writing a sibling next to a dest at e.g. a Windows drive
+    #      root (C:\FOO -> C:\FOO.tar.gz, blocked without admin).
+    #   2. The deployable package lives next to the files it contains, so the
+    #      build output and the thing you copy to the server never drift apart,
+    #      and the package is easy to inspect (tar tzf) right where you built it.
+    # tar reads the tree from the parent so it unpacks as dest_dir/... on the
+    # server, excluding the archive itself and node_modules (install.sh rebuilds
+    # node_modules there).
+    ARCHIVE_PATH="${DEST_DIR}/${ARCHIVE_NAME}"
+    rm -f "$ARCHIVE_PATH"
+
+    # Build the archive in a temp file OUTSIDE dest_dir, then move it in.
+    # Writing it directly inside the folder being archived makes tar warn
+    # "file changed as we read it" and exit non-zero (the directory's contents
+    # change as the archive file grows), even though the archive is fine. A temp
+    # build keeps tar's exit status trustworthy, and the finished package still
+    # lands inside dest_dir. The excludes still drop a stale archive from a
+    # previous run and node_modules.
+    TMP_ARCHIVE="$(mktemp 2>/dev/null || echo "${HOME}/.hajk-pkg.$$.tmp")"
+    if tar czf "$TMP_ARCHIVE" -C "$DEST_PARENT" \
+        --exclude="${DEST_BASENAME}/${ARCHIVE_NAME}" \
+        --exclude="${DEST_BASENAME}/node_modules" \
+        "$DEST_BASENAME"; then
+        mv -f "$TMP_ARCHIVE" "$ARCHIVE_PATH"
+        echo "Wrote deployment archive: ${ARCHIVE_PATH}"
+    else
+        rm -f "$TMP_ARCHIVE" 2>/dev/null
+        echo "WARNING: build in ${DEST_DIR} is complete, but packaging the archive failed." 1>&2
+        ARCHIVE_PATH=""
+    fi
+fi
+
+# =============================================================================
 echo ""
 echo "======================================================="
 echo "Build complete!"
@@ -376,8 +436,14 @@ echo "Destination: ${DEST_DIR}"
 if [ "$HOSTNAME" = "localhost" ]; then
     echo "Local copy - start it directly, no install.sh needed:"
     echo "  cd ${DEST_DIR} && npm ci --omit=dev && node index.js"
+elif [ -n "$ARCHIVE_PATH" ]; then
+    echo "Deployment archive: ${ARCHIVE_PATH}"
+    echo ""
+    echo "Drop-and-run on the target server (as one atomic file - no tree copy):"
+    echo "  1. Transfer the ONE archive:   scp ${ARCHIVE_PATH} user@server:/tmp/"
+    echo "  2. Extract into the site dir:  sudo tar xzf /tmp/${ARCHIVE_NAME} -C /var/www/"
+    echo "  3. Install (chown + deps):     cd /var/www/${DEST_BASENAME} && sudo ./install.sh"
 else
-    echo "Next, on the target server:"
-    echo "  cd ${DEST_DIR} && sudo ./install.sh"
+    echo "Build is complete in ${DEST_DIR}, but the archive was not created (see WARNING above)."
 fi
 echo "======================================================="
