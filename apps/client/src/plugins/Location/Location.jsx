@@ -15,6 +15,7 @@ class Location extends React.PureComponent {
     this.model = new LocationModel({
       ...this.props,
       localObserver: this.localObserver,
+      options: this.props.options,
     });
   }
 

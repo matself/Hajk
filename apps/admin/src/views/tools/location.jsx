@@ -22,6 +22,7 @@ var defaultState = {
   target: "toolbar",
   visibleAtStart: false,
   visibleForGroups: [],
+  zoomScale: 0.5,
 };
 
 class ToolOptions extends Component {
@@ -48,6 +49,7 @@ class ToolOptions extends Component {
         visibleForGroups: tool.options.visibleForGroups
           ? tool.options.visibleForGroups
           : [],
+        zoomScale: tool.options.zoomScale !== undefined ? tool.options.zoomScale : 0.5,
       });
     } else {
       this.setState({
@@ -113,6 +115,7 @@ class ToolOptions extends Component {
           Function.prototype.call,
           String.prototype.trim
         ),
+        zoomScale: this.state.zoomScale,
       },
     };
 
@@ -335,6 +338,29 @@ class ToolOptions extends Component {
             />
             &nbsp;
             <label htmlFor="visibleAtStart">Synlig vid start</label>
+          </div>
+          <div>
+            <label htmlFor="zoomScale">
+              Zoomskala vid positionering{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Värde mellan 0 och 1 som bestämmer zoomnivån när användaren aktiverar positionering. 0 = minimalt zoom, 1 = maximalt zoom, 0.5 = mitt emellan."
+              />
+            </label>
+            <input
+              id="zoomScale"
+              name="zoomScale"
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              value={this.state.zoomScale}
+            />
           </div>
           {this.renderVisibleForGroups()}
         </form>

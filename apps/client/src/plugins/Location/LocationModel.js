@@ -13,6 +13,7 @@ class LocationModel {
     this.map = props.map;
     this.localObserver = props.localObserver;
     this.zoomToLocation = true;
+    this.zoomScale = props.options?.zoomScale ?? 0.5;
 
     // Create source and layer and add to map. Later on we'll draw features to this layer.
     this.source = new VectorSource({ wrapX: false });
@@ -98,7 +99,7 @@ class LocationModel {
     if (this.zoomToLocation) {
       const maxZoom = this.map.getView().getMaxZoom();
       const minZoom = this.map.getView().getMinZoom();
-      const zoom = Math.ceil((maxZoom - minZoom) * 0.5); // Let's end up in the middle zoom
+      const zoom = Math.ceil((maxZoom - minZoom) * this.zoomScale);
       this.map.getView().animate({ duration: 2500, center: coordinates, zoom });
       this.zoomToLocation = false;
     }
