@@ -1,0 +1,10 @@
+=======================================================
+Build complete!
+Destination: /c/GITHUB/SANDBOX/HAJK_TESTWEBKARTA
+Deployment archive: /c/GITHUB/SANDBOX/HAJK_TESTWEBKARTA/HAJK_TESTWEBKARTA.tar.gz
+
+Drop-and-run on the target server (as one atomic file - no tree copy):
+  1. Transfer the ONE archive:   scp /c/GITHUB/SANDBOX/HAJK_TESTWEBKARTA/HAJK_TESTWEBKARTA.tar.gz user@server:/tmp/
+  2. Extract into the site dir:  sudo tar xzf /tmp/HAJK_TESTWEBKARTA.tar.gz -C /var/www/
+  3. Install (chown + deps):     cd /var/www/HAJK_TESTWEBKARTA && sudo ./install.sh
+=======================================================
