@@ -14,7 +14,7 @@ const defaultVersions = [
   WMS_VERSION_1_3_0,
   WMS_VERSION_1_1_1,
   WMS_VERSION_1_1_0,
-  WMS_VERSION_1_0_0
+  WMS_VERSION_1_0_0,
 ];
 
 var manager = Model.extend({
@@ -407,9 +407,7 @@ var manager = Model.extend({
     });
   },
 
-  getAllWMSCapabilities: function (url, versions = defaultVersions) {
-    var promises = [];
-
+  getAllWMSCapabilities: function (url, versions = defaultVersions, auth) {
     var xmlParser = new X2JS({
       attributePrefix: "",
       arrayAccessFormPaths: [
@@ -420,6 +418,73 @@ var manager = Model.extend({
       ],
     });
 
+    var parseCapabilities = function (xmlstr) {
+      var json = xmlParser.xml2js(xmlstr);
+
+      // WMS_Capabilities or WMT_MS_Capabilities
+      // First key in JSON
+      var capabilitiesKey = Object.keys(json)[0];
+      // A HTML document returned is an error but e.g. dev servers can return this on server found, erroneously with HTTP/200 OK
+      if (capabilitiesKey === "html") {
+        throw new Error(
+          "Server returns HTML instead of expected WMS GetCapabilities response, check contents for e.g. proxy errors"
+        );
+      }
+
+      return json[capabilitiesKey];
+    };
+
+    // If the service requires Basic auth, the browser cannot fetch its
+    // capabilities directly (the Authorization header triggers a CORS preflight
+    // that authenticated providers won't answer). Route the request through the
+    // backend instead, which fetches server-side and returns the raw XML.
+    // Unauthenticated services use direct browser fetch.
+    if (auth && auth.username) {
+      var promises = [];
+      var endpoint = this.get("config").url_layers.replace(
+        /\/layers\/?$/,
+        "/wmscapabilities"
+      );
+
+      versions.forEach((version) => {
+        promises.push(
+          hfetch(endpoint, {
+            method: "POST",
+            cache: "no-cache",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: url,
+              version: version,
+              username: auth.username,
+              password: auth.password,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  "Server-side capabilities request failed (status " +
+                    response.status +
+                    ")"
+                );
+              }
+              return response.json();
+            })
+            .then((data) => parseCapabilities(data.xml))
+        );
+      });
+
+      return Promise.all(promises).then((values) =>
+        values.filter(
+          (wms, i, self) =>
+            self.findIndex((w) => w.version === wms.version) === i
+        )
+      );
+    }
+
+    var promises = [];
     versions.forEach((version) => {
       promises.push(
         $.ajax(prepareProxyUrl(url, this.get("config").url_proxy), {
@@ -435,7 +500,7 @@ var manager = Model.extend({
     return Promise.all(promises).then((values) => {
       return values
         .map((value) => {
-          /* 
+          /*
                     Openlayers can not parse all attributes in GetCapabilities response with WMS lower than 1.3.0, see Github issue.
                     https://github.com/openlayers/openlayers/issues/5476
 
@@ -446,17 +511,7 @@ var manager = Model.extend({
             typeof value === "string"
               ? value
               : new XMLSerializer().serializeToString(value);
-          var json = xmlParser.xml2js(xmlstr);
-
-          // WMS_Capabilities or WMT_MS_Capabilities
-          // First key in JSON
-          var capabilitiesKey = Object.keys(json)[0];
-          // A HTML document returned is an error but e.g. dev servers can return this on server found, erroneously with HTTP/200 OK
-          if (capabilitiesKey === "html") {
-            throw new Error("Server returns HTML instead of expected WMS GetCapabilities response, check contents for e.g. proxy errors");
-          }
-
-          return json[capabilitiesKey];
+          return parseCapabilities(xmlstr);
         })
         .filter(
           (wms, i, self) =>
@@ -536,7 +591,7 @@ var manager = Model.extend({
         };
 
     return $.ajax(prepareProxyUrl(url, this.get("config").url_proxy), {
-      data: data
+      data: data,
     }).then((value) => {
       var xmlstr =
         typeof value === "string"
@@ -568,4 +623,10 @@ var manager = Model.extend({
   },
 });
 
-export { manager as default, WMS_VERSION_1_0_0, WMS_VERSION_1_1_0, WMS_VERSION_1_1_1, WMS_VERSION_1_3_0 };
+export {
+  manager as default,
+  WMS_VERSION_1_0_0,
+  WMS_VERSION_1_1_0,
+  WMS_VERSION_1_1_1,
+  WMS_VERSION_1_3_0,
+};

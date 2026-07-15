@@ -339,6 +339,37 @@ class ConfigServiceV2 {
     }
   }
 
+  #prepareWmsAuthLayers(layersConfig, publicProxyBase) {
+    if (!Array.isArray(layersConfig?.wmslayers)) return;
+
+    for (const layer of layersConfig.wmslayers) {
+      if (!layer || !layer.auth) continue;
+
+      // Rewrite the url to point at our proxy - but only if we could determine
+      // a public base and the original url is valid. If not, we still fall
+      // through to deleting the credentials below, so they are never exposed.
+      if (publicProxyBase && typeof layer.url === "string") {
+        try {
+          const origin = new URL(layer.url).origin;
+          // Slice off the origin from the *original* string so that WMS query
+          // parameters are preserved verbatim.
+          const rest = layer.url.slice(origin.length);
+          layer.url = `${publicProxyBase}/wmsproxy/${encodeURIComponent(
+            layer.id
+          )}${rest}`;
+        } catch {
+          logger.warn(
+            "[prepareWmsAuthLayers] Could not rewrite url for WMS layer %o; leaving it unproxied.",
+            layer.id
+          );
+        }
+      }
+
+      // Always remove the credentials from the client-facing response.
+      delete layer.auth;
+    }
+  }
+
   async getMapWithLayers(map, user, washContent = true, publicProxyBase = "") {
     logger.debug(
       "[getMapWithLayers] invoked with 'washContent=%s' for user %s. Grabbing '%s' map config and all layers.",
@@ -366,9 +397,10 @@ class ConfigServiceV2 {
         layersStore
       );
 
-      // Route authenticated WMTS layers through our server-side auth proxy and
-      // strip their credentials before the config reaches the browser.
+      // Route authenticated WMTS and WMS layers through our server-side auth
+      // proxies and strip their credentials before the config reaches the browser.
       this.#prepareWmtsAuthLayers(layersConfig, publicProxyBase);
+      this.#prepareWmsAuthLayers(layersConfig, publicProxyBase);
 
       // Next, take a look in LayerSwitcher.options and see
       // whether user specific maps are needed. If so, grab them.
@@ -985,6 +1017,41 @@ class ConfigServiceV2 {
       return { xml };
     } catch (error) {
       logger.error("[getWmtsCapabilities] %s", error.message);
+      return { error: error.message };
+    }
+  }
+
+  async getWmsCapabilities(url, version, auth) {
+    try {
+      if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+        throw new Error("A valid http(s) URL is required.");
+      }
+
+      // Ensure the URL carries GetCapabilities KVP params (mirrors the admin's
+      // own behavior of appending them when absent).
+      let finalUrl = url;
+      if (!/xml|GetCapabilities/i.test(url)) {
+        const glue = url.includes("?") ? "&" : "?";
+        finalUrl = `${url}${glue}service=WMS&request=GetCapabilities&version=${encodeURIComponent(version)}`;
+      }
+
+      const headers = {};
+      if (auth && auth.username) {
+        const raw = `${auth.username}:${auth.password ?? ""}`;
+        headers.Authorization = `Basic ${Buffer.from(raw).toString("base64")}`;
+      }
+
+      const response = await fetch(finalUrl, { headers });
+      if (!response.ok) {
+        throw new Error(
+          `Capabilities request failed with status ${response.status}.`
+        );
+      }
+
+      const xml = await response.text();
+      return { xml };
+    } catch (error) {
+      logger.error("[getWmsCapabilities] %s", error.message);
       return { error: error.message };
     }
   }

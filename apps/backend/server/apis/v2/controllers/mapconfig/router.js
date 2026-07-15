@@ -8,6 +8,7 @@ export default express
   // First we handle _specific_ routes, so we can catch them…
   .put("/duplicate/:nameFrom/:nameTo", controller.duplicateMap)
   .post("/wmtscapabilities", controller.wmtsCapabilities) // Server-side WMTS GetCapabilities (handles auth + CORS for admin UI)
+  .post("/wmscapabilities", controller.wmsCapabilities) // Server-side WMS GetCapabilities (handles auth + CORS for admin UI)
   .get("/export/:map/:format", controller.exportMapConfig) // Describe all available layers in a human-readable format
   .get("/layers", controller.layers) // Get all layers (from layers.json)
   .get("/layers/verify", controller.layersVerify) // Check which Hajk layers actually exist in their respective services

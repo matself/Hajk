@@ -75,8 +75,24 @@ export class Controller {
    */
   wmtsCapabilities(req, res) {
     const { url, username, password } = req.body || {};
-    ConfigService.getWmtsCapabilities(url, { username, password }).then((data) =>
-      handleStandardResponse(res, data)
+    ConfigService.getWmtsCapabilities(url, { username, password }).then(
+      (data) => handleStandardResponse(res, data)
+    );
+  }
+
+  /**
+   * @summary Fetch a WMS GetCapabilities document server-side (with optional
+   * Basic auth) on behalf of the admin UI, which can't do it from the browser
+   * for authenticated/non-CORS services.
+   *
+   * @param {*} req
+   * @param {*} res
+   * @memberof Controller
+   */
+  wmsCapabilities(req, res) {
+    const { url, version, username, password } = req.body || {};
+    ConfigService.getWmsCapabilities(url, version, { username, password }).then(
+      (data) => handleStandardResponse(res, data)
     );
   }
 
