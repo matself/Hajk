@@ -5,7 +5,6 @@ import {
   EditorState,
   RichUtils,
   Modifier,
-  AtomicBlockUtils,
   getDefaultKeyBinding,
 } from "draft-js";
 //import { Editor } from "draft-extend";
@@ -13,7 +12,6 @@ import { stateToHTML } from "draft-js-export-html";
 import { stateFromHTML } from "draft-js-import-html";
 import Button from "@material-ui/core/Button";
 import DoneIcon from "@material-ui/icons/DoneOutline";
-import AddIcon from "@material-ui/icons/Add";
 import CancelIcon from "@material-ui/icons/Cancel";
 import EditIcon from "@material-ui/icons/Edit";
 import { withStyles } from "@material-ui/core/styles";
@@ -188,74 +186,6 @@ const InlineStyleControls = (props) => {
   );
 };
 
-class ImageButton extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      url: "https://www.kitchentreaty.com/wp-content/uploads/2017/05/vegan-vanilla-bean-waffles-image-660x430.jpg",
-      urlInputVisible: false,
-    };
-  }
-
-  addImage() {
-    this.props.addImage(this.state.url);
-  }
-
-  urlChanged(e) {
-    this.setState({
-      url: e.target.value,
-    });
-  }
-
-  renderUrlInput() {
-    var style = {
-      color: "black",
-      marginBottom: "5px",
-    };
-    if (this.state.urlInputVisible) {
-      return (
-        <div style={style}>
-          <input type="text" name="url" onChange={(e) => this.urlChanged(e)} />
-          &nbsp;
-          <ColorButtonGreen
-            variant="contained"
-            className="btn"
-            onClick={() => {
-              this.addImage();
-            }}
-            startIcon={<AddIcon />}
-          >
-            Lägg till
-          </ColorButtonGreen>
-        </div>
-      );
-    } else {
-      return null;
-    }
-  }
-
-  render() {
-    var style = {
-      color: "black",
-      marginBottom: "5px",
-    };
-
-    return (
-      <div>
-        <span
-          style={style}
-          className="RichEditor-styleButton fa fa-image"
-          onClick={() => {
-            this.setState({
-              urlInputVisible: !this.state.urlInputVisible,
-            });
-          }}
-        />
-        {this.renderUrlInput()}
-      </div>
-    );
-  }
-}
 
 class RichEditor extends Component {
   constructor(props) {
@@ -309,33 +239,6 @@ class RichEditor extends Component {
     );
   }
 
-  addImage(url) {
-    //const url = "https://www.kitchentreaty.com/wp-content/uploads/2017/05/vegan-vanilla-bean-waffles-image-660x430.jpg";
-
-    const { editorState } = this.state;
-    const contentState = editorState.getCurrentContent();
-    const contentStateWithEntity = contentState.createEntity(
-      "image",
-      "IMMUTABLE",
-      { src: url }
-    );
-    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-    const newEditorState = EditorState.set(editorState, {
-      currentContent: contentStateWithEntity,
-    });
-    this.setState(
-      {
-        editorState: AtomicBlockUtils.insertAtomicBlock(
-          newEditorState,
-          entityKey,
-          " "
-        ),
-      },
-      () => {
-        setTimeout(() => this.focus(), 0);
-      }
-    );
-  }
 
   componentDidMount() {}
 
@@ -456,7 +359,6 @@ class RichEditor extends Component {
             Avbryt
           </ColorButtonRed>
           <div className="RichEditor-root">
-            <ImageButton addImage={(url) => this.addImage(url)} />
             <BlockStyleControls
               editorState={editorState}
               onToggle={this.toggleBlockType}
