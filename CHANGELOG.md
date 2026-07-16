@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking
 
 - Client: PropertyChecker got a substantial overhaul, including changing the format requirements for the underlying WMS layer. See [#1761](https://github.com/hajkmap/Hajk/issues/1761) as well as the tool's updated [README.md](https://github.com/hajkmap/Hajk/blob/f1bdbb77aff736df0675dc1e65234ec8be9ed3aa/apps/client/src/plugins/PropertyChecker/readme.md).
-- Client: InfoDialog - because this plugin now internally uses the LocalStorageHelper, existing settings already stored in user's LocalStorage under the old key will not be respected. In practice this means user will (once again) see any dialog where `visibleAtStart` and `showOnlyOnce` are set to `true`. This will happen once only. After this render, the `alreadyShown` value is written using the LocalStorageHelper and is respected in future renders. **Note:** No dialog content is lost; this is a necessary side effect of the enhancement that enables multiple named dialog instances with per-instance visibility tracking. Users require no action.
 
 ### Added
 
@@ -38,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Client: InfoDialog - Refactored to use LocalStorageHelper for visibility state management, enabling multiple named dialog instances with per-instance "show only once" tracking. Existing dialogs configured with `visibleAtStart` and `showOnlyOnce` will appear once more on next load, then persist correctly thereafter. No dialog content is lost; users require no action.
 - Backend: Upgraded `write-excel-file` from 3.x to 4.x.
 - Backend: Enhance detailed request logger with structured output and file logging configuration [#1836](https://github.com/hajkmap/Hajk/pull/1836)
 - Backend: Bumped the [API Explorer](https://github.com/swagger-api/swagger-ui) to v5.32.6.
