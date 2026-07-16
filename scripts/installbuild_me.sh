@@ -401,9 +401,10 @@ if [ "$HOSTNAME" != "localhost" ]; then
     #   2. The deployable package lives next to the files it contains, so the
     #      build output and the thing you copy to the server never drift apart,
     #      and the package is easy to inspect (tar tzf) right where you built it.
-    # tar reads the tree from the parent so it unpacks as dest_dir/... on the
-    # server, excluding the archive itself and node_modules (install.sh rebuilds
-    # node_modules there).
+    # tar reads from INSIDE dest_dir (using ".") so the archive contains just the
+    # file contents (index.js, package.json, apis/, etc.) without wrapping them in
+    # a folder layer. When extracted to /var/www/hajk44/, files go directly into
+    # that folder (no nesting). node_modules is excluded (install.sh rebuilds it).
     ARCHIVE_PATH="${DEST_DIR}/${ARCHIVE_NAME}"
     rm -f "$ARCHIVE_PATH"
 
@@ -412,13 +413,12 @@ if [ "$HOSTNAME" != "localhost" ]; then
     # "file changed as we read it" and exit non-zero (the directory's contents
     # change as the archive file grows), even though the archive is fine. A temp
     # build keeps tar's exit status trustworthy, and the finished package still
-    # lands inside dest_dir. The excludes still drop a stale archive from a
-    # previous run and node_modules.
+    # lands inside dest_dir.
     TMP_ARCHIVE="$(mktemp 2>/dev/null || echo "${HOME}/.hajk-pkg.$$.tmp")"
-    if tar czf "$TMP_ARCHIVE" -C "$DEST_PARENT" \
-        --exclude="${DEST_BASENAME}/${ARCHIVE_NAME}" \
-        --exclude="${DEST_BASENAME}/node_modules" \
-        "$DEST_BASENAME"; then
+    if (cd "$DEST_DIR" && tar czf "$TMP_ARCHIVE" \
+        --exclude=node_modules \
+        --exclude="$ARCHIVE_NAME" \
+        .); then
         mv -f "$TMP_ARCHIVE" "$ARCHIVE_PATH"
         echo "Wrote deployment archive: ${ARCHIVE_PATH}"
     else
@@ -441,7 +441,7 @@ elif [ -n "$ARCHIVE_PATH" ]; then
     echo ""
     echo "Drop-and-run on the target server (as one atomic file - no tree copy):"
     echo "  1. Transfer the ONE archive:   scp ${ARCHIVE_PATH} user@server:/tmp/"
-    echo "  2. Extract into the site dir:  sudo tar xzf /tmp/${ARCHIVE_NAME} -C /var/www/"
+    echo "  2. Create site dir and extract: sudo mkdir -p /var/www/${DEST_BASENAME} && sudo tar xzf /tmp/${ARCHIVE_NAME} -C /var/www/${DEST_BASENAME}/"
     echo "  3. Install (chown + deps):     cd /var/www/${DEST_BASENAME} && sudo ./install.sh"
 else
     echo "Build is complete in ${DEST_DIR}, but the archive was not created (see WARNING above)."

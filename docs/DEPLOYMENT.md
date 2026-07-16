@@ -48,8 +48,9 @@ preserves the execute bit on `install.sh` that per-file transfers strip.
 # 1. Transfer the ONE archive (any method — scp shown; WinSCP a single file is fine too)
 scp <dest_dir>/[instancedir].tar.gz user@server:/tmp/
 
-# 2. Extract into the web root (creates /var/www/[instancedir]/)
-sudo tar xzf /tmp/[instancedir].tar.gz -C /var/www/
+# 2. Create the site directory and extract the archive directly into it
+sudo mkdir -p /var/www/[instancedir]
+sudo tar xzf /tmp/[instancedir].tar.gz -C /var/www/[instancedir]/
 
 # 3. Install: chown to the PM2 user + install backend deps as that user
 cd /var/www/[instancedir]
