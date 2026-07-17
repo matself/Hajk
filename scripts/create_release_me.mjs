@@ -336,6 +336,12 @@ async function assembleSimpleRelease(simpleReleaseDir, clientDistDir) {
 
   const simpleConfig = path.join(simpleReleaseDir, "appConfig.json");
   await updateMapserviceBase(simpleConfig, SIMPLE_MAPSERVICE_BASE);
+
+  // Include the configuration helper script
+  await cp(
+    path.join(ROOT_DIR, "scripts", "configure.mjs"),
+    path.join(simpleReleaseDir, "configure.mjs"),
+  );
 }
 
 /**
@@ -396,6 +402,12 @@ async function assembleNodeRelease(nodeReleaseDir, backendDistDir, adminBuildDir
 
   const nodeConfig = path.join(staticClientDir, "appConfig.json");
   await updateMapserviceBase(nodeConfig, NODE_MAPSERVICE_BASE);
+
+  // Include the configuration helper script
+  await cp(
+    path.join(ROOT_DIR, "scripts", "configure.mjs"),
+    path.join(nodeReleaseDir, "configure.mjs"),
+  );
 }
 
 // ---------------------------------------------------------------------------
