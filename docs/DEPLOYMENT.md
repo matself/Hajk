@@ -10,10 +10,12 @@ as whichever system user owns the deployed files.
 
 ## 1. Build
 
-Run `scripts/installbuild_me.sh <git_dir> <dest_dir>`. It prompts for this instance's
-hostname, port, and instance name, then writes them into `.env`,
-`static/client/appConfig.json`, and `static/admin/config.json` — no hand-editing of
-those files needed:
+### Option A: Build and configure in one step (recommended for single deployments)
+
+Run `scripts/installbuild_me.sh <git_dir> <dest_dir>`. It builds the apps AND prompts for
+this instance's hostname, port, and instance name, then writes them into `.env`,
+`static/client/appConfig.json`, and `static/admin/config.json` — no hand-editing needed.
+It also generates the deployment archive and a helper script for the target server:
 
 ```
 Hostname the client/admin should use ('localhost' for a local dev/test copy) [localhost]: [hostname]
@@ -34,15 +36,26 @@ For a server build, the script produces a single **`<instancedir>.tar.gz`** arch
 with a non-writable parent such as a Windows drive root). This one file is the unit you
 deploy — see step 2.
 
+### Option B: Build separate from configuration (for reusable release packages)
+
+Alternatively, run `scripts/create_release_me.mjs` to build a pre-configured release package
+that includes a `configure.mjs` helper script. This approach is useful if:
+- You want to deploy the same release to different servers (dev, staging, prod)
+- You're building on one machine but deploying to another with different hostname/settings
+- You want the flexibility to reconfigure after deployment (e.g., hostname changes)
+
+Run `create_release_me.mjs`, answer the prompts (version, release type: simple vs nodejs),
+and it outputs release directories in `releases/`. You can then transfer the release
+directory or zip file to your deployment location and run `configure.mjs` on the server
+to set hostname, port, and environment-specific `.env` variables. See step 2 for details.
+
 ---
 
-## 2. Deploy (drop and run)
+## 2. Deploy
 
-Transfer and unpack the **single archive**, never a folder tree. A tree copy
-(WinSCP, `scp -r`, drag-and-drop) can silently drop individual files, producing a
-build that's missing e.g. one service module and crashes on startup with a cryptic
-`ERR_MODULE_NOT_FOUND`. One archive either arrives whole or fails loudly — and it
-preserves the execute bit on `install.sh` that per-file transfers strip.
+### If you used Option A (installbuild_me.sh)
+
+Transfer and unpack the archive (the script already configured everything):
 
 ```bash
 # 1. Transfer the ONE archive (any method — scp shown; WinSCP a single file is fine too)
@@ -57,16 +70,51 @@ cd /var/www/[instancedir]
 sudo ./install.sh
 ```
 
+Skip the `configure.mjs` step below (everything is already configured).
+
+### If you used Option B (create_release_me.mjs)
+
+Transfer the release directory to the server and configure it there:
+
+```bash
+# 1. Transfer the release directory (or .tar.gz if you created one)
+scp -r /path/to/hajk-v*.*.* user@server:/tmp/
+# or if it's a .tar.gz:
+scp /path/to/hajk-*.tar.gz user@server:/tmp/
+tar xzf /tmp/hajk-*.tar.gz -C /tmp/
+
+# 2. Move to deployment location
+sudo mkdir -p /var/www/[instancedir]
+sudo mv /tmp/hajk-*/* /var/www/[instancedir]/
+
+# 3. Configure the release (interactive: hostname, port, environment, .env setup)
+cd /var/www/[instancedir]
+node configure.mjs
+
+# 4. Install: chown to the PM2 user + install backend deps as that user
+sudo ./install.sh
+```
+
+The `configure.mjs` script prompts for:
+- **Hostname** — the public hostname or IP (e.g., `karta.example.com` or the VPS IP)
+- **Port** — backend listening port (should match what nginx will proxy to)
+- **Reverse proxy** — whether nginx sits in front (affects URL scheme and headers)
+- **Environment** — development or production (sets `NODE_ENV` and logging level)
+- **Admin password** — optional single-password protection for `/admin` if not using AD
+
+It updates `appConfig.json`, `admin/config.json`, and critical `.env` variables
+(`SESSION_SECRET`, `EXPRESS_TRUST_PROXY`, `LOG_LEVEL`, etc.) based on your answers.
+
 `install.sh` prompts for the system user that should own the files and run Hajk via PM2,
 `chown -R`s the folder to that user, and runs `npm ci --omit=dev` as that user — so
 `node_modules` is never left root-owned. Because `chown` runs *after* extraction, it does
 not matter that the archive was unpacked as root.
 
-Quick check that nothing still points at localhost:
+Quick check that configuration is correct:
 ```bash
 grep "localhost" /var/www/[instancedir]/static/admin/config.json /var/www/[instancedir]/static/client/appConfig.json
 ```
-Should return nothing.
+Should return nothing (if localhost was not the intended hostname).
 
 > Alternative — build on the server: if the git repo and Node toolchain are present on
 > the VPS, run `installbuild_me.sh <git_dir> /var/www/[instancedir]` directly there and

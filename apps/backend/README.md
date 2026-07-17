@@ -40,15 +40,50 @@ npm run dev:debug
 
 ## Deploy
 
-First compile the application:
+### Using a pre-built release (recommended)
+
+The easiest way to deploy is to use a pre-built release package created by `scripts/create_release_me.mjs`. The release includes a configuration helper:
+
+1. Extract the release to your deployment directory (e.g., `/opt/wwwroot/hajk`)
+2. Run the configuration helper from the release root:
 
 ```shell
+cd /opt/wwwroot/hajk
+node configure.mjs
+```
+
+3. Answer the prompts:
+   - **Hostname** — `localhost` for local dev, your domain for production
+   - **Port** — backend port (default 3002)
+   - **Reverse proxy** — whether nginx/Apache sits in front (affects URL scheme)
+   - **Environment** — development or production
+   - **Admin password** — optional single-password protection for `/admin`
+
+The script will:
+- Update `appConfig.json` and `admin/config.json` with correct API endpoints
+- Set critical `.env` variables (`NODE_ENV`, `SESSION_SECRET`, `EXPRESS_TRUST_PROXY`, `LOG_LEVEL`)
+- Auto-generate a secure `SESSION_SECRET` in production
+- Optionally set up admin password protection
+
+4. Install dependencies and start:
+
+```shell
+npm install
+node index.js
+```
+
+### Manual deployment (from source)
+
+If building and deploying manually:
+
+```shell
+# Compile the application
 npm run compile
 ```
 
 This will create a new folder, `/dist`.
 
-You can now start the app in production mode (`npm start`). But it's preferable to move the contents of `/dist` to some other location, outside of the development branch. Do something like:
+Move the contents to your deployment location:
 
 ```shell
 # Copy the compiled files
@@ -72,6 +107,8 @@ npm i
 # Ready to run
 node index.js
 ```
+
+You will still need to configure `.env` manually in this case. See `apps/backend/.env.example` for all available options.
 
 ### Run as a service
 
