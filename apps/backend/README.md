@@ -65,10 +65,9 @@ The script will:
 - Auto-generate a secure `SESSION_SECRET` in production
 - Optionally set up admin password protection
 
-4. Install dependencies and start:
+4. The configuration helper installs dependencies automatically. Once it completes:
 
 ```shell
-npm install
 node index.js
 ```
 

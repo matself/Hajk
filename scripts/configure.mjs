@@ -448,8 +448,19 @@ async function main() {
       console.log("  - Test the application before going live\n");
     }
 
-    console.log("Configuration complete. Ready to start the backend:");
-    console.log("  npm install  # (if not already done)");
+    console.log("Configuration complete. Installing dependencies...\n");
+
+    // Install dependencies
+    try {
+      execSync("npm install", { stdio: "inherit", cwd: "." });
+      console.log("\n✓ Dependencies installed");
+    } catch (err) {
+      console.log("\n! npm install failed — you may need to run it manually");
+      console.log("  cd " + process.cwd());
+      console.log("  npm install\n");
+    }
+
+    console.log("\nReady to start the backend:");
     console.log("  node index.js\n");
   } catch (error) {
     console.error(`\nConfiguration failed: ${error.message}\n`);
