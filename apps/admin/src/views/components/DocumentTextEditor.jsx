@@ -556,14 +556,7 @@ export default class DocumentTextEditor extends React.Component {
     const base = url.slice(0, hashIndex);
     const hash = url.slice(hashIndex + 1);
     const params = new URLSearchParams(hash);
-    const visiblePlugins = (params.get("p") || "")
-      .split(",")
-      .map((p) => p.trim())
-      .filter(Boolean);
-    if (!visiblePlugins.includes("documentviewer")) {
-      visiblePlugins.push("documentviewer");
-    }
-    params.set("p", visiblePlugins.join(","));
+    params.set("p", "documentviewer");
     return `${base}#${params.toString()}`;
   }
   _confirmLink(e) {
