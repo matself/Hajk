@@ -323,6 +323,8 @@ class Manager extends Component {
           searchShortDisplayName: layer.searchShortDisplayName || "",
           searchOutputFormat: layer.searchOutputFormat || "",
           searchGeometryField: layer.searchGeometryField || "",
+          authUsername: layer.auth?.username || "",
+          authPassword: layer.auth?.password || "",
           infoVisible: layer.infoVisible,
           infoTitle: layer.infoTitle,
           infoText: layer.infoText,

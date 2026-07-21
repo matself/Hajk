@@ -138,13 +138,6 @@ class WMSLayerForm extends Component {
     let _state = { ...defaultState };
     _state.url = this.props.url;
     _state.serverType = this.props.serverType || SERVERTYPE_GEOSERVER;
-
-    // Extract auth credentials from the layer if present
-    if (this.props.layer?.auth?.username) {
-      _state.authUsername = this.props.layer.auth.username;
-      _state.authPassword = this.props.layer.auth.password || "";
-    }
-
     this.setState(_state);
 
     this.props.model.on("change:select-image", () => {
