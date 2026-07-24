@@ -6,6 +6,12 @@ import type { MailFormViewProps } from "./types";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const stripPluginParam = (url: string): string => {
+  const urlObj = new URL(url, window.location.origin);
+  urlObj.searchParams.delete("p");
+  return urlObj.toString().replace(window.location.origin, "");
+};
+
 const MailFormView: React.FC<MailFormViewProps> = ({ app, options }) => {
   const [email, setEmail] = React.useState("");
   const [message, setMessage] = React.useState("");
@@ -14,19 +20,20 @@ const MailFormView: React.FC<MailFormViewProps> = ({ app, options }) => {
 
   // Fetch the current map link on mount, then keep it fresh whenever the
   // map view/layers change - same event Anchor ("Dela") listens to.
+  // Strip the p= parameter so opening the link doesn't re-activate MailForm.
   React.useEffect(() => {
     let cancelled = false;
 
     app.anchorModel.getAnchor().then((url) => {
       if (!cancelled) {
-        setMapLink(url);
+        setMapLink(stripPluginParam(url));
       }
     });
 
     const subscription = app.globalObserver.subscribe(
       "core.mapUpdated",
       ({ url }: { url: string }) => {
-        setMapLink(url);
+        setMapLink(stripPluginParam(url));
       }
     );
 
