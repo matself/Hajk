@@ -343,11 +343,10 @@ class ConfigServiceV2 {
     if (!Array.isArray(layersConfig?.wmslayers)) return;
 
     for (const layer of layersConfig.wmslayers) {
-      if (!layer || !layer.auth) continue;
+      if (!layer) continue;
 
-      // Rewrite the url to point at our proxy - but only if we could determine
-      // a public base and the original url is valid. If not, we still fall
-      // through to deleting the credentials below, so they are never exposed.
+      // Route all WMS through our proxy to bypass browser connection limits.
+      // For authenticated layers, the proxy will inject the auth header.
       if (publicProxyBase && typeof layer.url === "string") {
         try {
           const origin = new URL(layer.url).origin;
@@ -365,8 +364,10 @@ class ConfigServiceV2 {
         }
       }
 
-      // Always remove the credentials from the client-facing response.
-      delete layer.auth;
+      // Remove credentials from the client-facing response (only present if authenticated).
+      if (layer.auth) {
+        delete layer.auth;
+      }
     }
   }
 

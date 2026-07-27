@@ -50,7 +50,7 @@ function buildAuthHeader(auth) {
  * Return the layerId -> { origin, authHeader } index, rebuilding it from
  * layers.json when the file has changed since last read.
  *
- * @returns {Map<string, {origin: string, authHeader: string}>}
+ * @returns {Map<string, {origin: string, authHeader: string|null}>}
  */
 function getIndex() {
   const p = layersFilePath();
@@ -59,7 +59,7 @@ function getIndex() {
   try {
     stat = fs.statSync(p);
   } catch (error) {
-    logger.error("Could not stat layers.json for WMS auth proxy:", error);
+    logger.error("Could not stat layers.json for WMS proxy:", error);
     return index || new Map();
   }
 
@@ -73,32 +73,36 @@ function getIndex() {
     const map = new Map();
 
     for (const layer of json.wmslayers || []) {
-      const authHeader = buildAuthHeader(layer.auth);
-      if (!authHeader || !layer.url) continue;
+      if (!layer.url) continue;
 
       let origin;
       try {
         origin = new URL(layer.url).origin;
       } catch {
         logger.warn(
-          "Skipping WMS layer %o in auth proxy: invalid url %o",
+          "Skipping WMS layer %o in proxy: invalid url %o",
           layer.id,
           layer.url
         );
         continue;
       }
 
+      const authHeader = buildAuthHeader(layer.auth);
       map.set(String(layer.id), { origin, authHeader });
     }
 
     index = map;
     indexMtimeMs = stat.mtimeMs;
+    const authCount = Array.from(map.values()).filter(
+      (e) => e.authHeader
+    ).length;
     logger.debug(
-      "Rebuilt WMS auth proxy index with %d authenticated layer(s).",
-      map.size
+      "Rebuilt WMS proxy index with %d layer(s) (%d authenticated).",
+      map.size,
+      authCount
     );
   } catch (error) {
-    logger.error("Failed to build WMS auth proxy index:", error);
+    logger.error("Failed to build WMS proxy index:", error);
     if (!index) index = new Map();
   }
 
@@ -121,14 +125,16 @@ function layerIdFromReq(req) {
 }
 
 /**
- * @summary Proxy WMS image requests to an upstream service that requires
- * authentication, injecting the credentials server-side.
+ * @summary Proxy all WMS image requests through the backend to bypass browser
+ * connection limits. For authenticated layers, inject credentials server-side.
  *
  * @description Credentials live in App_Data/layers.json (never sent to the
  * browser). The client requests images from /api/v{version}/wmsproxy/<layerId>/…
  * same-origin, so images load as ordinary <img> tags. This middleware looks up
  * the layer by id, forwards the request to the real service and attaches the
- * proper Authorization header — mirroring the pattern in fme.server.proxy.js.
+ * Authorization header if present — enabling both authenticated and
+ * non-authenticated WMS to route server-to-server, eliminating per-origin
+ * connection limits that affect direct browser requests.
  *
  * @returns Express middleware
  */
@@ -150,7 +156,7 @@ export default function wmsAuthProxy() {
       proxyReq: (proxyReq, req) => {
         const id = layerIdFromReq(req);
         const entry = id && getIndex().get(id);
-        if (entry) {
+        if (entry?.authHeader) {
           proxyReq.setHeader("Authorization", entry.authHeader);
         }
         // Never forward the Hajk session cookie to the external provider.
