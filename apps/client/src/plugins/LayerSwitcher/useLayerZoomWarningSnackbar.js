@@ -32,9 +32,11 @@ export const useLayerZoomWarningSnackbar = (
     if (!map) return;
     const view = map.getView();
     const currentZoom = view.getZoom();
+    // OL layer visibility is `zoom > minZoom && zoom <= maxZoom` (minZoom is
+    // exclusive), so zooming in to exactly minZoom still hides the layer.
     const targetZoom =
-      currentZoom < layerMinZoom
-        ? layerMinZoom
+      currentZoom <= layerMinZoom
+        ? layerMinZoom + 0.01
         : currentZoom > layerMaxZoom
           ? layerMaxZoom
           : currentZoom;
