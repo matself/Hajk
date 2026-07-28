@@ -85,12 +85,12 @@ class Manager extends Component {
     let matchedConfigs = [];
 
     function findInBaselayers(baselayers, layerId) {
-      return baselayers.some((l) => l.id === layerId);
+      return (baselayers ?? []).some((l) => l.id === layerId);
     }
 
     function findInGroups(groups, layerId) {
-      for (const group of groups) {
-        if (group.layers.some((l) => l.id === layerId)) return true;
+      for (const group of groups ?? []) {
+        if (group.layers?.some((l) => l.id === layerId)) return true;
         if (group.groups?.length && findInGroups(group.groups, layerId))
           return true;
       }

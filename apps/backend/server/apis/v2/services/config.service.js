@@ -1196,19 +1196,40 @@ class ConfigServiceV2 {
       const dirContents = await fs.promises.readdir(dir, {
         withFileTypes: true,
       });
-      const availableMaps = dirContents
-        .filter(
-          (entry) =>
-            // Filter out only files (we're not interested in directories).
-            entry.isFile() &&
-            // Filter out the special case, layers.json file.
-            entry.name !== "layers.json" &&
-            // Only JSON files
-            entry.name.endsWith(".json")
-        )
-        // Create an array using name of each Dirent object, remove file extension
-        .map((entry) => entry.name.replace(".json", ""));
-      return availableMaps;
+      const candidates = dirContents.filter(
+        (entry) =>
+          // Filter out only files (we're not interested in directories).
+          entry.isFile() &&
+          // Filter out the special case, layers.json file.
+          entry.name !== "layers.json" &&
+          // Only JSON files
+          entry.name.endsWith(".json")
+      );
+
+      // Filename alone doesn't tell us a file is actually a map config -
+      // any stray/backup JSON file dropped in App_Data (e.g. a manual copy
+      // of layers.json under another name) would otherwise be listed and
+      // subsequently served as if it were a real map. Only keep files that
+      // parse as JSON and have the shape of a map config.
+      const validMaps = await asyncFilter(candidates, async (entry) => {
+        try {
+          const contents = await fs.promises.readFile(
+            path.join(dir, entry.name),
+            "utf-8"
+          );
+          const parsed = JSON.parse(contents);
+          return (
+            parsed !== null &&
+            typeof parsed.map === "object" &&
+            Array.isArray(parsed.tools)
+          );
+        } catch {
+          return false;
+        }
+      });
+
+      // Create an array using name of each Dirent object, remove file extension
+      return validMaps.map((entry) => entry.name.replace(".json", ""));
     } catch (error) {
       return { error };
     }
