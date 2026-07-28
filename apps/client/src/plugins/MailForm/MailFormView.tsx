@@ -7,9 +7,14 @@ import type { MailFormViewProps } from "./types";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const stripPluginParam = (url: string): string => {
-  const urlObj = new URL(url, window.location.origin);
-  urlObj.searchParams.delete("p");
-  return urlObj.toString().replace(window.location.origin, "");
+  // Handle hash-based URLs like /#m=demo&x=123&p=mailform
+  const hashIndex = url.indexOf("#");
+  if (hashIndex === -1) return url;
+
+  const hashPart = url.substring(hashIndex + 1);
+  const params = hashPart.split("&");
+  const filtered = params.filter((param) => !param.startsWith("p="));
+  return "#" + filtered.join("&");
 };
 
 const MailFormView: React.FC<MailFormViewProps> = ({ app, options }) => {
