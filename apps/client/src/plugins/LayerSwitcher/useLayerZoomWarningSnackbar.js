@@ -22,7 +22,12 @@ export const useLayerZoomWarningSnackbar = (
   map
 ) => {
   const mapZoom = useMapZoom();
-  const visible = mapZoom >= layerMinZoom && mapZoom <= layerMaxZoom;
+  // A layer with only one bound configured has the other as `undefined`
+  // (meaning "no limit"); normalize so comparisons below don't silently
+  // fail (`x <= undefined` is always false in JS).
+  const minZoomBound = layerMinZoom ?? -Infinity;
+  const maxZoomBound = layerMaxZoom ?? Infinity;
+  const visible = mapZoom >= minZoomBound && mapZoom <= maxZoomBound;
 
   const { addToSnackbar, removeFromSnackbar } = useSnackbar();
   const [prevVisible, setPrevVisible] = useState(visible);
@@ -35,13 +40,13 @@ export const useLayerZoomWarningSnackbar = (
     // OL layer visibility is `zoom > minZoom && zoom <= maxZoom` (minZoom is
     // exclusive), so zooming in to exactly minZoom still hides the layer.
     const targetZoom =
-      currentZoom <= layerMinZoom
-        ? layerMinZoom + 0.01
-        : currentZoom > layerMaxZoom
-          ? layerMaxZoom
+      currentZoom <= minZoomBound
+        ? minZoomBound + 0.01
+        : currentZoom > maxZoomBound
+          ? maxZoomBound
           : currentZoom;
     view.animate({ zoom: targetZoom, duration: 300 });
-  }, [map, layerMinZoom, layerMaxZoom]);
+  }, [map, minZoomBound, maxZoomBound]);
 
   useEffect(() => {
     if (layerUsesMinMaxZoom(layerMinZoom, layerMaxZoom)) {
