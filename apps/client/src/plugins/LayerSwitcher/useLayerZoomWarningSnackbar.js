@@ -38,10 +38,14 @@ export const useLayerZoomWarningSnackbar = (
     const view = map.getView();
     const currentZoom = view.getZoom();
     // OL layer visibility is `zoom > minZoom && zoom <= maxZoom` (minZoom is
-    // exclusive), so zooming in to exactly minZoom still hides the layer.
+    // exclusive). Many Hajk views constrain zoom to a fixed `resolutions`
+    // list, so a tiny fractional nudge above minZoom just gets snapped back
+    // down to minZoom by the view itself. Ask the view for the nearest valid
+    // zoom step that's strictly above minZoom instead (direction 1 = nearest
+    // lower/more-zoomed-in resolution, i.e. never rounds back down to minZoom).
     const targetZoom =
       currentZoom <= minZoomBound
-        ? minZoomBound + 0.01
+        ? view.getConstrainedZoom(minZoomBound + 1e-6, 1)
         : currentZoom > maxZoomBound
           ? maxZoomBound
           : currentZoom;
