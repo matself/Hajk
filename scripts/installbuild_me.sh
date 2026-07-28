@@ -64,6 +64,18 @@
 # BUILD_BRANCH="master"
 
 # -----------------------------------------------------------------------------
+# SYNC TO REMOTE (optional)
+# By default (false) the script builds git_dir exactly as it sits on disk,
+# uncommitted changes included, and does NOT touch git history. Use this for
+# local testing of work you haven't pushed yet.
+# Set to true for a "clean" deploy build: this does `git fetch --all` and
+# `git reset --hard origin/<branch>` first, discarding any local changes and
+# untracked files (via the confirmation prompt) so the build reflects exactly
+# what's on the remote.
+# -----------------------------------------------------------------------------
+SYNC_TO_REMOTE=false
+
+# -----------------------------------------------------------------------------
 # Instance settings (hostname, port, instance name) are no longer hardcoded
 # here. The script prompts for them interactively every run and writes them
 # into .env, appConfig.json and admin's config.json, so they are always
@@ -80,8 +92,15 @@ show_usage() {
 }
 
 prompt() {
-    read -p "Warning: This will RESET ALL LOCAL CHANGES in the git directory.
-Press (y) to continue or any other key to abort: " -n 1 -r
+    if [ "$SYNC_TO_REMOTE" = true ]; then
+        read -p "Warning: SYNC_TO_REMOTE is enabled - this will RESET ALL LOCAL CHANGES
+in the git directory to match the remote. Press (y) to continue or any
+other key to abort: " -n 1 -r
+    else
+        read -p "Building git_dir as-is (uncommitted changes included, if any).
+No fetch/reset will be performed. Press (y) to continue or any other key
+to abort: " -n 1 -r
+    fi
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
@@ -188,9 +207,13 @@ echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
 
 prompt
 
-echo "Fetching latest code and resetting repository..."
-# git fetch --all
-# git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+if [ "$SYNC_TO_REMOTE" = true ]; then
+    echo "Fetching latest code and resetting repository..."
+    git fetch --all
+    git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)"
+else
+    echo "Skipping fetch/reset (SYNC_TO_REMOTE=false) - building git_dir as-is."
+fi
 
 # =============================================================================
 # Part 1: Backend
