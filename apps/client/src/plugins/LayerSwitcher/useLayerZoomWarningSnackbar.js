@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import useSnackbar from "../../hooks/useSnackbar";
 import { useMapZoom } from "./LayerSwitcherProvider";
@@ -18,7 +18,8 @@ export const useLayerZoomWarningSnackbar = (
   toggled,
   minMaxZoomAlertOnToggleOnly,
   layerId,
-  caption
+  caption,
+  map
 ) => {
   const mapZoom = useMapZoom();
   const visible = mapZoom >= layerMinZoom && mapZoom <= layerMaxZoom;
@@ -27,12 +28,25 @@ export const useLayerZoomWarningSnackbar = (
   const [prevVisible, setPrevVisible] = useState(visible);
   const [prevToggled, setPrevToggled] = useState(toggled);
 
+  const zoomToVisibleScale = useCallback(() => {
+    if (!map) return;
+    const view = map.getView();
+    const currentZoom = view.getZoom();
+    const targetZoom =
+      currentZoom < layerMinZoom
+        ? layerMinZoom
+        : currentZoom > layerMaxZoom
+          ? layerMaxZoom
+          : currentZoom;
+    view.animate({ zoom: targetZoom, duration: 300 });
+  }, [map, layerMinZoom, layerMaxZoom]);
+
   useEffect(() => {
     if (layerUsesMinMaxZoom(layerMinZoom, layerMaxZoom)) {
       // show warning on layer toggle
       if (toggled !== prevToggled) {
         if (toggled && !visible) {
-          addToSnackbar(layerId, caption);
+          addToSnackbar(layerId, caption, false, zoomToVisibleScale);
         } else if (!toggled) {
           removeFromSnackbar(layerId, caption);
         }
@@ -45,7 +59,7 @@ export const useLayerZoomWarningSnackbar = (
           removeFromSnackbar(layerId, caption);
         } else {
           if (toggled && !minMaxZoomAlertOnToggleOnly) {
-            addToSnackbar(layerId, caption);
+            addToSnackbar(layerId, caption, false, zoomToVisibleScale);
           }
         }
         setPrevVisible(visible);
@@ -63,5 +77,6 @@ export const useLayerZoomWarningSnackbar = (
     toggled,
     prevToggled,
     minMaxZoomAlertOnToggleOnly,
+    zoomToVisibleScale,
   ]);
 };

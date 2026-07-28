@@ -66,7 +66,7 @@ const MapZoomProvider = ({ map, children }) => {
 // This is a hack to listen on all layers with zoom check
 // This could be moved to the core code or another plugin. It's not really the
 // responsibility of the LayerSwitcher
-const LayerZoomListener = ({ layer }) => {
+const LayerZoomListener = ({ layer, map }) => {
   const layerMinZoom = layer.get("minZoom");
   const layerMaxZoom = layer.get("maxZoom");
   const layerIsToggled = layer.get("visible");
@@ -82,12 +82,13 @@ const LayerZoomListener = ({ layer }) => {
     layerIsToggled,
     layerMinMaxZoomAlertOnToggleOnly,
     layerId,
-    caption
+    caption,
+    map
   );
   return <></>;
 };
 
-const LayerZoomVisibleSnackbarProvider = ({ children, layers }) => {
+const LayerZoomVisibleSnackbarProvider = ({ children, layers, map }) => {
   return (
     <>
       {layers.map((l) => {
@@ -100,7 +101,7 @@ const LayerZoomVisibleSnackbarProvider = ({ children, layers }) => {
           return null;
         }
         if (!id?.includes("plugin")) {
-          return <LayerZoomListener key={id} layer={l} />;
+          return <LayerZoomListener key={id} layer={l} map={map} />;
         } else {
           return null;
         }
@@ -519,6 +520,7 @@ const LayerSwitcherProvider = ({
           layerState={olState}
           options={options}
           layers={map.getAllLayers()}
+          map={map}
         >
           <LayerSwitcherView
             app={app}
