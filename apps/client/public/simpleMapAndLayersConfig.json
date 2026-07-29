@@ -395,18 +395,6 @@
               "infobox": ""
             },
             {
-              "id": "q4hj6j",
-              "visibleAtStart": false,
-              "drawOrder": 0,
-              "infobox": ""
-            },
-            {
-              "id": "a0kzxb",
-              "visibleAtStart": false,
-              "drawOrder": 0,
-              "infobox": ""
-            },
-            {
               "id": "c8r1n0",
               "visibleAtStart": false,
               "drawOrder": 0,
@@ -966,11 +954,6 @@
       {
         "id": "q4hj6j",
         "caption": "Topowebbkarta översiktlig",
-        "auth": {
-          "type": "basic",
-          "username": "elma0002",
-          "password": "S2e7UezkcA4VAe57444E"
-        },
         "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
         "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
         "date": "1784046495631",
@@ -1109,11 +1092,6 @@
       {
         "id": "u3ly93",
         "caption": "Topowebbkarta nedtonad",
-        "auth": {
-          "type": "basic",
-          "username": "elma0002",
-          "password": "S2e7UezkcA4VAe57444E"
-        },
         "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb_nedtonad/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
         "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
         "date": "1784494102209",
@@ -1370,11 +1348,6 @@
       {
         "id": "a0kzxb",
         "caption": "Ortofoto ref. år 1960",
-        "auth": {
-          "type": "basic",
-          "username": "elma0002",
-          "password": "S2e7UezkcA4VAe57444E"
-        },
         "internalLayerName": "",
         "url": "https://maps.lantmateriet.se/historiska-ortofoton/wms/v1?",
         "customGetMapUrl": "",
