@@ -896,7 +896,7 @@ class MapOptions extends Component {
                 className="long-label"
                 htmlFor="input_confirmOnWindowClose"
               >
-                Beta: fråga användaren om Hajk verkligen ska stängas
+                Beta: varna om osparade ritningar/mätningar vid stängning
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
