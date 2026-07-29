@@ -962,6 +962,410 @@
     }
   },
   "layersConfig": {
+    "wmtslayers": [
+      {
+        "id": "q4hj6j",
+        "caption": "Topowebbkarta översiktlig",
+        "auth": {
+          "type": "basic",
+          "username": "elma0002",
+          "password": "S2e7UezkcA4VAe57444E"
+        },
+        "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+        "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
+        "date": "1784046495631",
+        "content": "",
+        "legend": "",
+        "legendIcon": "",
+        "layer": "topowebb",
+        "matrixSet": "3006",
+        "style": "default",
+        "requestEncoding": "REST",
+        "imageFormat": "image/png",
+        "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
+        "origins": [
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ]
+        ],
+        "resolutions": [
+          "4096",
+          "2048",
+          "1024",
+          "512",
+          "256",
+          "128",
+          "64",
+          "32",
+          "16",
+          "8"
+        ],
+        "matrixIds": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ],
+        "sizes": [
+          [
+            4,
+            4
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            16,
+            16
+          ],
+          [
+            32,
+            32
+          ],
+          [
+            64,
+            64
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            256,
+            256
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            1024,
+            1024
+          ],
+          [
+            2048,
+            2048
+          ]
+        ],
+        "tileSize": 256,
+        "attribution": "",
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": "",
+        "timeSliderVisible": false,
+        "timeSliderStart": "",
+        "timeSliderEnd": "",
+        "maxZoom": -1,
+        "minZoom": -1
+      },
+      {
+        "id": "u3ly93",
+        "caption": "Topowebbkarta nedtonad",
+        "auth": {
+          "type": "basic",
+          "username": "elma0002",
+          "password": "S2e7UezkcA4VAe57444E"
+        },
+        "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb_nedtonad/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+        "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
+        "date": "1784494102209",
+        "content": "",
+        "legend": "",
+        "legendIcon": "",
+        "layer": "topowebb_nedtonad",
+        "matrixSet": "3006",
+        "style": "default",
+        "requestEncoding": "REST",
+        "imageFormat": "image/png",
+        "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
+        "origins": [
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ],
+          [
+            "-1200000.000000",
+            "8500000.000000"
+          ]
+        ],
+        "resolutions": [
+          "4096",
+          "2048",
+          "1024",
+          "512",
+          "256",
+          "128",
+          "64",
+          "32",
+          "16",
+          "8"
+        ],
+        "matrixIds": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ],
+        "sizes": [
+          [
+            4,
+            4
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            16,
+            16
+          ],
+          [
+            32,
+            32
+          ],
+          [
+            64,
+            64
+          ],
+          [
+            128,
+            128
+          ],
+          [
+            256,
+            256
+          ],
+          [
+            512,
+            512
+          ],
+          [
+            1024,
+            1024
+          ],
+          [
+            2048,
+            2048
+          ]
+        ],
+        "tileSize": 256,
+        "attribution": "",
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": "",
+        "timeSliderVisible": false,
+        "timeSliderStart": "",
+        "timeSliderEnd": "",
+        "maxZoom": -1,
+        "minZoom": -1
+      }
+    ],
+    "xyzlayers": [
+      {
+        "id": "c8r1n0",
+        "caption": "Google satellite",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1783451105173",
+        "url": "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        "attribution": "",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      },
+      {
+        "id": "h747so",
+        "caption": "Google hybrid",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1783452304658",
+        "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        "attribution": "",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      },
+      {
+        "id": "ex8e3x",
+        "caption": "Open Topo Map",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1784024102051",
+        "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "attribution": "© <a href=\"https://opentopomap.org\">OpenTopoMap</a> contributors",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      },
+      {
+        "id": "jupop6",
+        "caption": "Thunderforest Landscape",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1784046232415",
+        "url": "https://api.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=4a5e39798b584d1294dd047075c8f68d",
+        "attribution": "",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      },
+      {
+        "id": "57yenl",
+        "caption": "Esri World Street Map",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1784572214153",
+        "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}/MapServer/tile/{z}/{y}/{x}",
+        "attribution": "Tiles (C) Esri -- Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      },
+      {
+        "id": "osmxyz1",
+        "caption": "Open Street Map ",
+        "internalLayerName": "",
+        "content": "",
+        "date": "1785318628273",
+        "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+        "opacity": 1,
+        "minZoom": -1,
+        "maxZoom": -1,
+        "infoVisible": false,
+        "infoTitle": "",
+        "infoText": "",
+        "infoUrl": "",
+        "infoUrlText": "",
+        "infoOpenDataLink": "",
+        "infoOwner": ""
+      }
+    ],
     "wmslayers": [
       {
         "id": "a0kzxb",
@@ -1376,297 +1780,9 @@
         "zIndex": null
       }
     ],
-    "wmtslayers": [
-      {
-        "id": "q4hj6j",
-        "caption": "Topowebbkarta översiktlig",
-        "auth": {
-          "type": "basic",
-          "username": "elma0002",
-          "password": "S2e7UezkcA4VAe57444E"
-        },
-        "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
-        "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
-        "date": "1784046495631",
-        "content": "",
-        "legend": "",
-        "legendIcon": "",
-        "layer": "topowebb",
-        "matrixSet": "3006",
-        "style": "default",
-        "requestEncoding": "REST",
-        "imageFormat": "image/png",
-        "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
-        "origins": [
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ]
-        ],
-        "resolutions": [
-          "4096",
-          "2048",
-          "1024",
-          "512",
-          "256",
-          "128",
-          "64",
-          "32",
-          "16",
-          "8"
-        ],
-        "matrixIds": [
-          "0",
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9"
-        ],
-        "sizes": [
-          [
-            4,
-            4
-          ],
-          [
-            8,
-            8
-          ],
-          [
-            16,
-            16
-          ],
-          [
-            32,
-            32
-          ],
-          [
-            64,
-            64
-          ],
-          [
-            128,
-            128
-          ],
-          [
-            256,
-            256
-          ],
-          [
-            512,
-            512
-          ],
-          [
-            1024,
-            1024
-          ],
-          [
-            2048,
-            2048
-          ]
-        ],
-        "tileSize": 256,
-        "attribution": "",
-        "infoVisible": false,
-        "infoTitle": "",
-        "infoText": "",
-        "infoUrl": "",
-        "infoUrlText": "",
-        "infoOpenDataLink": "",
-        "infoOwner": "",
-        "timeSliderVisible": false,
-        "timeSliderStart": "",
-        "timeSliderEnd": "",
-        "maxZoom": -1,
-        "minZoom": -1
-      },
-      {
-        "id": "u3ly93",
-        "caption": "Topowebbkarta nedtonad",
-        "auth": {
-          "type": "basic",
-          "username": "elma0002",
-          "password": "S2e7UezkcA4VAe57444E"
-        },
-        "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb_nedtonad/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
-        "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
-        "date": "1784494102209",
-        "content": "",
-        "legend": "",
-        "legendIcon": "",
-        "layer": "topowebb_nedtonad",
-        "matrixSet": "3006",
-        "style": "default",
-        "requestEncoding": "REST",
-        "imageFormat": "image/png",
-        "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
-        "origins": [
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ],
-          [
-            "-1200000.000000",
-            "8500000.000000"
-          ]
-        ],
-        "resolutions": [
-          "4096",
-          "2048",
-          "1024",
-          "512",
-          "256",
-          "128",
-          "64",
-          "32",
-          "16",
-          "8"
-        ],
-        "matrixIds": [
-          "0",
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9"
-        ],
-        "sizes": [
-          [
-            4,
-            4
-          ],
-          [
-            8,
-            8
-          ],
-          [
-            16,
-            16
-          ],
-          [
-            32,
-            32
-          ],
-          [
-            64,
-            64
-          ],
-          [
-            128,
-            128
-          ],
-          [
-            256,
-            256
-          ],
-          [
-            512,
-            512
-          ],
-          [
-            1024,
-            1024
-          ],
-          [
-            2048,
-            2048
-          ]
-        ],
-        "tileSize": 256,
-        "attribution": "",
-        "infoVisible": false,
-        "infoTitle": "",
-        "infoText": "",
-        "infoUrl": "",
-        "infoUrlText": "",
-        "infoOpenDataLink": "",
-        "infoOwner": "",
-        "timeSliderVisible": false,
-        "timeSliderStart": "",
-        "timeSliderEnd": "",
-        "maxZoom": -1,
-        "minZoom": -1
-      }
-    ],
-    "arcgislayers": [],
-    "vectorlayers": [],
     "wfslayers": [],
-    "wfstlayers": []
+    "vectorlayers": [],
+    "wfstlayers": [],
+    "arcgislayers": []
   }
 }
