@@ -487,55 +487,58 @@ class WMSLayerForm extends Component {
           </div>
         </div>
 
-        <div className="form-row split0">
-          <div>
-            <label>Stil</label>
+        <div className="form-row-pair">
+          <div className="form-row split0">
+            <div>
+              <label>Stil</label>
+            </div>
+            <div>
+              <select
+                value={layerInfo.style}
+                className="control-fixed-width"
+                onChange={(e) => {
+                  let addedLayersInfo = this.state.addedLayersInfo;
+                  addedLayersInfo[layerInfo.id].style = e.target.value;
+                  this.setState(
+                    {
+                      addedLayersInfo: addedLayersInfo,
+                    },
+                    () => {
+                      this.renderLayerInfoDialog(layerInfo);
+                    }
+                  );
+                }}
+              >
+                <option value={""}>{"<default>"}</option>
+                {styles}
+              </select>
+            </div>
           </div>
-          <div>
-            <select
-              value={layerInfo.style}
-              className="control-fixed-width"
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].style = e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            >
-              <option value={""}>{"<default>"}</option>
-              {styles}
-            </select>
-          </div>
-        </div>
 
-        <div className="form-row split0">
-          <div>
-            <label>Har etikettstil (se issue #1842)</label>
-          </div>
-          <div>
-            <input
-              id="hasLabelStyle"
-              type="checkbox"
-              checked={layerInfo.hasLabelStyle || false}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].hasLabelStyle = e.target.checked;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
+          <div className="form-row split0">
+            <div>
+              <label>Har etikettstil (se issue #1842)</label>
+            </div>
+            <div>
+              <input
+                id="hasLabelStyle"
+                type="checkbox"
+                checked={layerInfo.hasLabelStyle || false}
+                onChange={(e) => {
+                  let addedLayersInfo = this.state.addedLayersInfo;
+                  addedLayersInfo[layerInfo.id].hasLabelStyle =
+                    e.target.checked;
+                  this.setState(
+                    {
+                      addedLayersInfo: addedLayersInfo,
+                    },
+                    () => {
+                      this.renderLayerInfoDialog(layerInfo);
+                    }
+                  );
+                }}
+              />
+            </div>
           </div>
         </div>
 

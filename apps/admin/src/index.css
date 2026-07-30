@@ -889,7 +889,19 @@ figure img {
 
 .modal-content {
   max-height: calc(100vh - 2rem);
-  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.modal-header,
+.modal-footer {
+  flex: 0 0 auto;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 .layerDialog label,
@@ -902,11 +914,21 @@ figure img {
 .layerDialog textarea.infoClick {
   font-family: monospace;
   font-size: 0.8rem;
-  height: 180px;
+  height: 100px;
 }
 
 .layerDialog .form-row {
   margin-bottom: 0.8rem;
+}
+
+.layerDialog .form-row-pair {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 0.8rem;
+}
+
+.layerDialog .form-row-pair .form-row {
+  margin-bottom: 0;
 }
 
 .layerDialog div[class*="split"] {
