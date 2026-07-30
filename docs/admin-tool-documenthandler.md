@@ -2,7 +2,7 @@
 
 Konfigurationsformulär: `apps/admin/src/views/tools/MenuEditor/menuEditor.jsx` + fyra hjälpkomponenter i samma mapp (`treerow.jsx`, `settingspopover.jsx`, `menuconnectionselector.jsx`, `warningModal.jsx`, `custombuttons.jsx`), codename `documenthandler`. Se [admin-tooloptions.md](admin-tooloptions.md) för det gemensamma mönstret — det här verktyget avviker dock rejält: ingen Verktygsplacering/Fönsterplacering/Synlig vid start/Instruktion/Tillträde på toppnivå, eftersom verktyget bygger upp en egen menystruktur snarare än att vara en enda knapp.
 
-Visar dokument (skrivna i klientens dokumenteditor, se [Redigera → hantera dokument]) och/eller länkar i en egen menyträdstruktur, separat från den vanliga lagermenyn. Det här är verktyget bakom "Multidialog"-liknande innehåll: hjälptexter, nyhetsdokument, produktblad m.m., med möjlighet att länka till andra dokument, kartländer eller externa webbsidor.
+Visar dokument (skrivna i Admins egen flik "Dokumenthanterare" — se [admin-documenteditor.md](admin-documenteditor.md), inte att förväxla med det här verktyget som har samma namn) och/eller länkar i en egen menyträdstruktur, separat från den vanliga lagermenyn. Det här är verktyget bakom "Multidialog"-liknande innehåll: hjälptexter, nyhetsdokument, produktblad m.m., med möjlighet att länka till andra dokument, kartlänkar eller externa webbsidor.
 
 ## Aktiverad + Redigera meny
 
