@@ -81,8 +81,8 @@ class Manual extends Component {
           requested && files.includes(requested)
             ? requested
             : index.length > 0
-              ? index[0].file
-              : null;
+            ? index[0].file
+            : null;
         if (initial) {
           this.loadFile(initial, { updateHash: false });
         } else {
@@ -165,7 +165,14 @@ class Manual extends Component {
 
     return (
       <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: 320, flexShrink: 0, display: "flex", flexDirection: "column" }}>
+        <div
+          style={{
+            width: 320,
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <div style={{ padding: "8px 16px" }}>
             <TextField
               fullWidth
