@@ -9,6 +9,7 @@ import Info from "../views/info.jsx";
 import Release from "../views/release.jsx";
 import Search from "../views/search.jsx";
 import DocumentEditor from "../views/documenteditor.jsx";
+import Manual from "../views/manual.jsx";
 
 import editModel from "../models/edit";
 import layerManagerModel from "../models/layermanager";
@@ -130,6 +131,8 @@ class Application extends Component {
         return Search;
       case "documenthandler":
         return DocumentEditor;
+      case "manual":
+        return Manual;
       default:
         return null;
     }

@@ -9,7 +9,9 @@
   },
   "license": "MIT",
   "scripts": {
+    "prestart": "node scripts/sync-manual.js",
     "start": "react-scripts --openssl-legacy-provider start",
+    "prebuild": "node scripts/sync-manual.js",
     "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
@@ -34,9 +36,11 @@
     "react": "^16.13.1",
     "react-color": "^2.19.3",
     "react-dom": "^16.13.1",
+    "react-markdown": "^6.0.3",
     "react-modal": "^3.16.3",
     "react-scripts": "^3.4.3",
     "react-smooth-dnd": "^0.11.1",
+    "remark-gfm": "^1.0.0",
     "typescript": "^3.9.10",
     "x2js": "^3.4.4"
   },

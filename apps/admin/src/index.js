@@ -42,6 +42,11 @@ wrapJqueryAjax($);
         route_settings.routes[""] = route.name;
       }
       route_settings.routes["!/" + route.name] = route.name;
+      // Lets a tab register its own sub-pages (e.g. "!/manual/some-doc.md")
+      // as real, bookmarkable URLs. The tab itself reads the extra path
+      // segment back out of location.hash; the router here only needs to
+      // activate the right tab.
+      route_settings.routes["!/" + route.name + "/*rest"] = route.name;
       route_settings[route.name] = () => {
         application_model.set("content", route.name);
       };

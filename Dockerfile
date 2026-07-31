@@ -40,6 +40,13 @@ RUN apk del git
 # Next, go on with Admin UI
 WORKDIR /tmp/build/admin
 COPY /apps/admin .
+
+# The admin manual (scripts/sync-manual.js, run via the "prebuild" npm
+# script below) mirrors docs/*.md into public/manual/ at build time. Since
+# this build stage only COPYs apps/admin, docs/ needs its own COPY so that
+# script has something to find.
+COPY /docs /tmp/docs
+
 RUN npm ci
 RUN rm ./public/config.json
 RUN mv ./public/config.docker.json ./public/config.json 

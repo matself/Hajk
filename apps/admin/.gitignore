@@ -9,6 +9,9 @@
 # production
 /build
 
+# generated mirror of docs/admin-*.md, see scripts/sync-manual.js
+/public/manual
+
 # misc
 .DS_Store
 .env.local

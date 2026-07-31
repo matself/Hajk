@@ -92,6 +92,10 @@
     {
       "name": "documenthandler",
       "title": "Dokumenthanterare"
+    },
+    {
+      "name": "manual",
+      "title": "Manual"
     }
   ]
 }
