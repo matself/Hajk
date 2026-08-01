@@ -250,6 +250,15 @@ echo "Deploying App_Data to destination..."
 mkdir -p "$DEST_DIR/App_Data"
 cp -r "$GIT_DIR/apps/backend/App_Data/." "$DEST_DIR/App_Data"
 
+echo "Deploying API Explorer to destination..."
+# api-explorer is a static dev/diagnostic UI, not part of the compiled dist/
+# output (npm run compile only copies server/ -> dist/), so - like App_Data -
+# it must be copied explicitly. Whether it's actually served is still gated
+# by EXPOSE_AND_RESTRICT_STATIC_API_EXPLORER in .env (set in .env.example by
+# default), this just makes sure the folder exists to be exposed.
+mkdir -p "$DEST_DIR/static/api-explorer"
+cp -r "$GIT_DIR/apps/backend/static/api-explorer/." "$DEST_DIR/static/api-explorer"
+
 # Backend production dependencies (npm ci --omit=dev) are intentionally NOT
 # installed here. On a real deployment, dest_dir is typically owned by root
 # (or whoever ran this script) at this point, but PM2 needs to run as a
