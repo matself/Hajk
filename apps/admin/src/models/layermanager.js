@@ -17,6 +17,72 @@ const defaultVersions = [
   WMS_VERSION_1_0_0,
 ];
 
+// Recursively finds the first "leaf" object in a parsed GetFeatureInfo
+// response - one whose own properties are all primitive values - and
+// returns its keys. This is a generic, server-agnostic way to locate a
+// feature's attribute bag, since GML/XML GetFeatureInfo responses nest
+// the actual attributes at wildly different depths/names depending on
+// the WMS vendor (GeoServer, MapServer, QGIS Server, ArcGIS...).
+function findFirstFeatureAttributeKeys(node) {
+  if (!node || typeof node !== "object") {
+    return null;
+  }
+  if (Array.isArray(node)) {
+    for (let i = 0; i < node.length; i++) {
+      const found = findFirstFeatureAttributeKeys(node[i]);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+  const keys = Object.keys(node).filter((k) => k.indexOf("_") !== 0);
+  if (keys.length === 0) {
+    return null;
+  }
+  const allPrimitive = keys.every((k) => {
+    const v = node[k];
+    return (
+      v === null ||
+      typeof v === "string" ||
+      typeof v === "number" ||
+      typeof v === "boolean"
+    );
+  });
+  if (allPrimitive) {
+    return keys;
+  }
+  for (let i = 0; i < keys.length; i++) {
+    const found = findFirstFeatureAttributeKeys(node[keys[i]]);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
+function extractAttributeNamesFromFeatureInfo(data, infoFormat) {
+  try {
+    if (
+      infoFormat === "application/json" ||
+      infoFormat === "application/geo+json"
+    ) {
+      if (data && Array.isArray(data.features) && data.features.length > 0) {
+        return Object.keys(data.features[0].properties || {});
+      }
+      return null;
+    }
+    const parser = new X2JS();
+    const xmlstr = data.xml
+      ? data.xml
+      : new XMLSerializer().serializeToString(data);
+    const json = parser.xml2js(xmlstr);
+    return findFirstFeatureAttributeKeys(json);
+  } catch (e) {
+    return null;
+  }
+}
+
 var manager = Model.extend({
   defaults: {
     layers: [],
@@ -269,6 +335,75 @@ var manager = Model.extend({
         callback(false);
       },
     });
+  },
+
+  // Fallback for WMS-only services that don't expose WFS DescribeFeatureType
+  // (which is most public/open WMS services, deliberately, since WFS would
+  // let anyone download the underlying data). Since GetCapabilities never
+  // contains attribute/field names for any WMS version, the only remaining
+  // option is a real GetFeatureInfo request - so this probes a handful of
+  // points inside the layer's own bounding box (in EPSG:4326, using the
+  // WMS 1.1.1 request dialect to sidestep the 1.3.0 axis-order pitfall)
+  // and stops at the first one that actually returns a feature.
+  probeWmsFeatureAttributes: function (
+    url,
+    layerName,
+    bbox,
+    infoFormat,
+    callback
+  ) {
+    const probeUrl = prepareProxyUrl(url, this.get("config").url_proxy);
+    const width = 256;
+    const height = 256;
+    // Center + the four quadrant centers - a small, fixed set of probes
+    // that covers most of the bbox without issuing an unbounded number of
+    // requests against someone else's server.
+    const points = [
+      [128, 128],
+      [64, 64],
+      [192, 64],
+      [64, 192],
+      [192, 192],
+    ];
+
+    const tryPoint = (index) => {
+      if (index >= points.length) {
+        callback(false);
+        return;
+      }
+      const [x, y] = points[index];
+      $.ajax(probeUrl, {
+        data: {
+          service: "WMS",
+          version: "1.1.1",
+          request: "GetFeatureInfo",
+          layers: layerName,
+          query_layers: layerName,
+          info_format: infoFormat,
+          feature_count: 1,
+          width,
+          height,
+          x,
+          y,
+          srs: "EPSG:4326",
+          bbox: [bbox.minx, bbox.miny, bbox.maxx, bbox.maxy].join(","),
+        },
+        dataType: infoFormat === "application/json" ? "json" : "xml",
+        success: (data) => {
+          const names = extractAttributeNamesFromFeatureInfo(data, infoFormat);
+          if (names && names.length > 0) {
+            callback(names.map((name) => ({ name, localType: "" })));
+          } else {
+            tryPoint(index + 1);
+          }
+        },
+        error: () => {
+          tryPoint(index + 1);
+        },
+      });
+    };
+
+    tryPoint(0);
   },
 
   parseWFSCapabilitesTypes: function (data) {
