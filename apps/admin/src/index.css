@@ -244,9 +244,7 @@ article fieldset > span > div {
   cursor: pointer;
   font-size: 20px;
   margin-right: 10px;
-  transition:
-    color 0.15s ease,
-    transform 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .config-layer-list li i.fa-info {
@@ -915,6 +913,68 @@ figure img {
   font-family: monospace;
   font-size: 0.8rem;
   height: 100px;
+}
+
+.InfoclickEditor {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.InfoclickEditor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.InfoclickEditor-modeToggle button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-modeToggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.InfoclickEditor-modeToggle button.active {
+  color: #fff;
+  background: #33a6dc;
+}
+
+.InfoclickEditor-attributePicker button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-attributePicker select {
+  margin-left: 6px;
+}
+
+.InfoclickEditor-fetchError {
+  margin-left: 8px;
+  color: #b71c1c;
+  font-size: 0.85rem;
+}
+
+.InfoclickEditor-editor {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-height: 100px;
+}
+
+.ic-token-chip {
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-family: monospace;
 }
 
 .layerDialog .form-row {
