@@ -493,7 +493,7 @@ class WMSLayerForm extends Component {
               maxy: parseFloat(bbox.maxy),
             },
             infoFormat,
-            (probeResult) => {
+            (probeResult, reason) => {
               if (Array.isArray(probeResult)) {
                 this.setState(
                   (prevState) => ({
@@ -518,7 +518,9 @@ class WMSLayerForm extends Component {
                     attributesErrors: {
                       ...prevState.attributesErrors,
                       [subLayerName]:
-                        "Kunde inte hämta attributlista automatiskt (varken WFS eller testklick gav träff). Ange platshållare manuellt.",
+                        (reason ||
+                          "Kunde inte hämta attributlista automatiskt.") +
+                        " Ange platshållare manuellt.",
                     },
                   }),
                   refreshDialog

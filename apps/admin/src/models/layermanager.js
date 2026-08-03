@@ -341,10 +341,12 @@ var manager = Model.extend({
   // (which is most public/open WMS services, deliberately, since WFS would
   // let anyone download the underlying data). Since GetCapabilities never
   // contains attribute/field names for any WMS version, the only remaining
-  // option is a real GetFeatureInfo request - so this probes a handful of
-  // points inside the layer's own bounding box (in EPSG:4326, using the
-  // WMS 1.1.1 request dialect to sidestep the 1.3.0 axis-order pitfall)
-  // and stops at the first one that actually returns a feature.
+  // option is a real GetFeatureInfo request - and blindly guessing a
+  // coordinate inside the layer's bbox has near-zero odds of landing on a
+  // feature for sparse data (e.g. a few dozen small polygons scattered
+  // across an entire country). Instead: render the layer, find an actual
+  // painted pixel, and query exactly that spot - guaranteed to hit a real
+  // feature if the layer draws anything at all in view.
   probeWmsFeatureAttributes: function (
     url,
     layerName,
@@ -352,27 +354,32 @@ var manager = Model.extend({
     infoFormat,
     callback
   ) {
-    const probeUrl = prepareProxyUrl(url, this.get("config").url_proxy);
-    const width = 256;
-    const height = 256;
-    // Center + the four quadrant centers - a small, fixed set of probes
-    // that covers most of the bbox without issuing an unbounded number of
-    // requests against someone else's server.
-    const points = [
-      [128, 128],
-      [64, 64],
-      [192, 64],
-      [64, 192],
-      [192, 192],
-    ];
+    const proxyUrl = prepareProxyUrl(url, this.get("config").url_proxy);
+    const width = 1024;
+    const height = 1024;
+    const bboxParam = [bbox.minx, bbox.miny, bbox.maxx, bbox.maxy].join(",");
 
-    const tryPoint = (index) => {
-      if (index >= points.length) {
-        callback(false);
-        return;
-      }
-      const [x, y] = points[index];
-      $.ajax(probeUrl, {
+    const buildUrl = (params) => {
+      const query = $.param(params);
+      return proxyUrl + (proxyUrl.indexOf("?") > -1 ? "&" : "?") + query;
+    };
+
+    const getMapUrl = buildUrl({
+      service: "WMS",
+      version: "1.1.1",
+      request: "GetMap",
+      layers: layerName,
+      styles: "",
+      format: "image/png",
+      transparent: "true",
+      width,
+      height,
+      srs: "EPSG:4326",
+      bbox: bboxParam,
+    });
+
+    const queryFeatureInfoAt = (px, py) => {
+      $.ajax(proxyUrl, {
         data: {
           service: "WMS",
           version: "1.1.1",
@@ -383,10 +390,10 @@ var manager = Model.extend({
           feature_count: 1,
           width,
           height,
-          x,
-          y,
+          x: px,
+          y: py,
           srs: "EPSG:4326",
-          bbox: [bbox.minx, bbox.miny, bbox.maxx, bbox.maxy].join(","),
+          bbox: bboxParam,
         },
         dataType: infoFormat === "application/json" ? "json" : "xml",
         success: (data) => {
@@ -394,16 +401,62 @@ var manager = Model.extend({
           if (names && names.length > 0) {
             callback(names.map((name) => ({ name, localType: "" })));
           } else {
-            tryPoint(index + 1);
+            callback(
+              false,
+              "Testklicket gav ingen tolkningsbar attributlista."
+            );
           }
         },
         error: () => {
-          tryPoint(index + 1);
+          callback(false, "GetFeatureInfo-anropet misslyckades.");
         },
       });
     };
 
-    tryPoint(0);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+
+    img.onload = () => {
+      let px = null;
+      let py = null;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const { data } = ctx.getImageData(0, 0, width, height);
+        // Scan the alpha channel (every 4th byte) for the first painted
+        // pixel. A low threshold (rather than requiring fully opaque)
+        // still catches thin/anti-aliased edges of small polygons.
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] > 10) {
+            const pixelIndex = (i - 3) / 4;
+            px = pixelIndex % width;
+            py = Math.floor(pixelIndex / width);
+            break;
+          }
+        }
+      } catch (e) {
+        // Tainted canvas - the proxied image response didn't allow
+        // cross-origin pixel reads. Nothing more we can do automatically.
+        callback(false, "Kunde inte läsa av testbildens pixlar (CORS).");
+        return;
+      }
+
+      if (px === null) {
+        callback(false, "Hittade ingen synlig feature i lagrets utbredning.");
+        return;
+      }
+
+      queryFeatureInfoAt(px, py);
+    };
+
+    img.onerror = () => {
+      callback(false, "Kunde inte hämta en testbild (GetMap) för lagret.");
+    };
+
+    img.src = getMapUrl;
   },
 
   parseWFSCapabilitesTypes: function (data) {
