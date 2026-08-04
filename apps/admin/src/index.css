@@ -883,6 +883,13 @@ figure img {
 .modal-dialog {
   margin-top: 1rem;
   margin-bottom: 1rem;
+  /* Bootstrap's own @media(min-width:576px) rule caps this at 500px,
+     which is far too cramped for the layer settings dialog (Infoklick's
+     toolbar/editor in particular). max-width (a longhand we didn't
+     previously set here) wins over that rule since this stylesheet loads
+     after bootstrap.min.css - horizontal centering still comes from
+     Bootstrap's own margin-left/right:auto, untouched above. */
+  max-width: min(900px, 92vw);
 }
 
 .modal-content {
