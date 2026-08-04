@@ -5,8 +5,9 @@ Det här dokumentet beskriver skalet runt lagerformulären i Admin — fliken **
 - [admin-wms-layer-form.md](admin-wms-layer-form.md) + [admin-wms-layer-settings.md](admin-wms-layer-settings.md) (WMS)
 - [admin-wmts-layer-form.md](admin-wmts-layer-form.md) (WMTS)
 - [admin-xyz-layer-form.md](admin-xyz-layer-form.md) (XYZ)
+- [admin-vector-layer-form.md](admin-vector-layer-form.md) (Vektor)
 
-ArcGIS och Vektor har egna formulärkomponenter (`arcgislayerform.jsx`, `vectorlayerform.jsx`) men delar samma skal och samma Metadata/Infodokument/Tidslinjedatum-mönster som redan beskrivits för WMS/WMTS/XYZ — inte ännu dokumenterade var för sig.
+ArcGIS har en egen formulärkomponent (`arcgislayerform.jsx`) men delar samma skal och samma Metadata/Infodokument/Tidslinjedatum-mönster som redan beskrivits för WMS/WMTS/XYZ/Vektor — inte ännu dokumenterad separat.
 
 ## Layout
 
@@ -51,4 +52,4 @@ Vissa lagerformulär (Vektor/WFS) kan anropa `describeLayer`, som hämtar attrib
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-08-04. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*

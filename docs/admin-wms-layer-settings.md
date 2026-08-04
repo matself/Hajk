@@ -10,7 +10,15 @@ Formuläret där du kommer ifrån (anslutning, request-inställningar, val av su
 Namnet som visas för lagret i Lagerhanterarens lagerlista i Klienten. Påverkar inte vilket lager som hämtas från WMS-tjänsten (det styrs av lagrets tekniska namn/id, satt när lagret lades till).
 
 **Inforuta**
-Fri text (kan innehålla enkel formatering) som visas när användaren klickar på informationsikonen (i) bredvid lagret i lagerlistan. Används för att beskriva vad lagret innehåller, källa, aktualitet etc. Fältet skickas som `infobox` till klienten.
+HTML-mallen som visas i infoklick-popupen när användaren klickar på ett objekt i lagret i kartan (inte att förväxla med informationsikonen (i) i lagerlistan, se Infodokument i [admin-wms-layer-form.md](admin-wms-layer-form.md)). Fältet skickas som `infobox` till Klienten och kan innehålla `{attributnamn}`-platshållare som ersätts med det klickade objektets attributvärden, se [admin-tool-infoclick.md](admin-tool-infoclick.md).
+
+Redigeras med en WYSIWYG-editor (`InfoclickEditor`-komponenten, delad med [admin-vector-layer-form.md](admin-vector-layer-form.md) och den motsvarande Infobox-mallen per karta, se [admin-mapsettings.md](admin-mapsettings.md)):
+
+- **Visuell/Kod** — växlar mellan formaterad redigering och rå HTML-text. Innehåll med `{{if}}...{{/if}}`-villkorsblock låser automatiskt till Kod-läge, eftersom sådana block kan innehålla godtycklig HTML som en WYSIWYG-rundtripp riskerar att korrumpera.
+- **Hämta attribut** — hämtar det aktuella sublagrets attributnamn via WFS `DescribeFeatureType` mot samma URL som redan är konfigurerad för lagret, och fyller "Infoga attribut"-listan. Fungerar bara om tjänsten även exponerar WFS på samma URL — vilket många öppna WMS-tjänster medvetet inte gör (WFS möjliggör nedladdning av rådata). Ger tjänsten inget svar visas "Vektorlager saknas. Attribut måste väljas manuellt." och platshållare måste skrivas för hand istället.
+- **Infoga attribut** — infogar valt attribut som `{attributnamn}` vid markörens position. Infogade platshållare visas som en skyddad "chip" som formatering inte kan splitta av misstag.
+
+Notera att detta fält gäller per sublager (WMS-lager kan ha flera sublager, varje sublager har sin egen Inforuta) — jämför med den karta-specifika Infobox-mallen i [admin-mapsettings.md](admin-mapsettings.md), som istället gäller för hela lagret på en gång och skriver över samtliga sublagers Inforuta när den fylls i.
 
 **Teckenförklaringsikon**
 En bild-URL eller en fil vald via "Välj fil" som visas som liten ikon i lagerlistan, som ett alternativ till/komplement till den automatiska GetLegendGraphic-bilden från WMS-tjänsten.
@@ -60,4 +68,4 @@ Namnet på geometri-kolumnen i den underliggande datakällan, så att sök-/info
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-08-04. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*

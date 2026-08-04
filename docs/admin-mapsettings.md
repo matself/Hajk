@@ -107,7 +107,9 @@ Klicka på ett **lagernamn** i trädet för att redigera dess placering i just d
 |---|---|
 | Synlig vid start | Om lagret är tänt när kartan laddas. |
 | Tillträde | Endast synligt när AD-autentisering är aktiv. Kommaseparerad lista av AD-grupper som får se just detta lager i den här menyplaceringen. |
-| Infobox | Fri text — skriver över lagrets egen Inforuta (se [admin-wms-layer-settings.md](admin-wms-layer-settings.md)) specifikt för den här menyplaceringen, utan att ändra lagrets grundinställning. |
+| Infoklick (åsidosätter lagrets egen) | Samma WYSIWYG-editor som lagrets egen Inforuta (se [admin-wms-layer-settings.md](admin-wms-layer-settings.md)), men gäller bara för den här kartan. Lämnas den ifylld skriver den över lagrets egen mall specifikt för denna karta, utan att ändra lagrets grundinställning i `layers.json`. Fältet lagras som `infobox` i kartans konfiguration (samma namn som i koden, trots att etiketten i UI:t säger "Infoklick" för terminologikonsekvens). |
+
+Till skillnad från lagrets egen Inforuta, som gäller per sublager, är detta fält **ett enda fält för hela lagret**. Om det fylls i för ett WMS-lager med flera sublager skriver det över samtliga sublagers Inforuta med samma text, inte bara ett. Eftersom "Hämta attribut" då behöver veta vilket sublagers attributschema den ska visa, dyker en extra sublager-väljare upp ovanför editorn när lagret har mer än ett sublager — den styr bara vad "Hämta attribut" hämtar, inte vilket sublager mallen faktiskt gäller för (den gäller alltid alla).
 
 Röda minus-ikonen (till vänster om namnet) tar bort noden — för en grupp tas alla undergrupper och lager i den bort samtidigt, efter bekräftelse.
 
@@ -125,4 +127,4 @@ Listan till vänster visar befintliga teman (filtrerbar); klick på ett tema vä
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `mapsettings.jsx` ändras bör denna guide uppdateras i samma PR. Verktyg (`tooloptions.jsx` + `views/tools/*`) är inte täckt här — hör av dig om det behövs som egna dokument.*
+*Detta dokument beskriver läget i koden per 2026-08-04. Om `mapsettings.jsx` ändras bör denna guide uppdateras i samma PR. Verktyg (`tooloptions.jsx` + `views/tools/*`) är inte täckt här — hör av dig om det behövs som egna dokument.*
