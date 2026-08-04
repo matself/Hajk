@@ -71,10 +71,11 @@ class MapInfoboxEditor extends Component {
     return (
       <div className="MapInfoboxEditor">
         <p className="MapInfoboxEditor-note">
-          Denna infobox gäller för hela lagret i just den här kartan. Om den
-          fylls i skriver den över lagrets vanliga infoklick-mall (inklusive
-          alla sublagers egna mallar, om det är ett WMS-lager) - bara för denna
-          karta. Lämna tom för att använda lagrets egna infoklick-inställningar.
+          Detta är en Infoklick-mall som bara gäller för hela lagret i just den
+          här kartan - ett åsidosättande av lagrets egen Infoklick. Om den fylls
+          i skriver den över lagrets vanliga Infoklick-mall (inklusive alla
+          sublagers egna mallar, om det är ett WMS-lager). Lämna tom för att
+          använda lagrets egna Infoklick-inställningar.
         </p>
         {sublayers.length > 1 && (
           <div className="MapInfoboxEditor-sublayerPicker">

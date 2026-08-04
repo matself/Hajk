@@ -195,7 +195,9 @@ $.fn.editable = function (component) {
       label3 = $(`<label for="${id3}">Synlig vid start&nbsp;</label><br />`),
       label4 = $(`<label for="${id4}">Redigera snabbval&nbsp;</label><br />`),
       label5 = $(`<br /><label for="${id6}">Tillträde</label><br />`),
-      label6 = $(`<label for="${id7}">Infobox</label><br />`),
+      label6 = $(
+        `<label for="${id7}">Infoklick (åsidosätter lagrets egen)</label><br />`
+      ),
       label7 = $(`<label for="${id8}">Infodokument&nbsp;</label>`).css(
         groupCheckboxLabelStyle
       ),
