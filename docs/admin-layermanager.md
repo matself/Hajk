@@ -45,7 +45,7 @@ Visas bara i redigeringsläge. Återställer hela vyn till tillägg-läge utan a
 
 ## Beskriv lager (attributtabell)
 
-Både Vektor/WFS- och ArcGIS-formulären har en egen `describeLayer`-funktion (info-ikonen bredvid varje rad i "Tillgängliga lager") som hämtar attributnamn och -typer för ett valt lager — via WFS `DescribeFeatureType` för Vektor, via tjänstens egen beskrivnings-API för ArcGIS — och visar dem i högerspalten. Praktiskt för att hitta rätt attributnamn till fält som Sökfält, Geometrifält eller Visningsfält (Vektor), eller bara för att skriva `{attributnamn}`-platshållare i Inforuta för hand (ArcGIS, som saknar "Hämta attribut" i själva Inforuta-fältet, se [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md)) — utan att behöva slå upp det i en extern GIS-klient.
+Både Vektor/WFS- och ArcGIS-formulären har en egen `describeLayer`-funktion (info-ikonen bredvid varje rad i "Tillgängliga lager") som hämtar attributnamn och -typer för ett valt lager — via WFS `DescribeFeatureType` för Vektor, via tjänstens egen beskrivnings-API för ArcGIS — och visar dem i högerspalten. Praktiskt för att hitta rätt attributnamn till fält som Sökfält, Geometrifält eller Visningsfält (Vektor), eller bara för att skriva [`{attributnamn}`-platshållare](admin-infoklick-mallformat.md) i Inforuta för hand (ArcGIS, som saknar "Hämta attribut" i själva Inforuta-fältet, se [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md)) — utan att behöva slå upp det i en extern GIS-klient.
 
 ## Bilduppladdning (Teckenförklaring/-ikon)
 

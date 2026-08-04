@@ -50,7 +50,7 @@ Styr OpenLayers `attributions` för lagret, visas i kartan.
 Om lagret är klickbart för GetFeatureInfo/infoklick i Klienten — motsvarar "Infoklick"-kryssrutan i WMS-lagrets Inställningar-dialog.
 
 **Inforuta**
-Samma WYSIWYG-editor (Visuell/Kod-lägen, "Hämta attribut", `{attribut}`-platshållare) som WMS-lagrens Inforuta — se [admin-wms-layer-settings.md](admin-wms-layer-settings.md), avsnittet "Allmänt", för hela beskrivningen, den gäller identiskt här. Skillnaden: här finns bara ett lager att hämta attribut ifrån (inga sublager), så "Hämta attribut" använder alltid det valda lagret ovan direkt, utan någon sublager-väljare.
+Samma WYSIWYG-editor (Visuell/Kod-lägen, "Hämta attribut", `{attribut}`-platshållare — hela syntaxen i [admin-infoklick-mallformat.md](admin-infoklick-mallformat.md)) som WMS-lagrens Inforuta — se [admin-wms-layer-settings.md](admin-wms-layer-settings.md), avsnittet "Allmänt", för hela beskrivningen, den gäller identiskt här. Skillnaden: här finns bara ett lager att hämta attribut ifrån (inga sublager), så "Hämta attribut" använder alltid det valda lagret ovan direkt, utan någon sublager-väljare.
 
 **Ikon i infoclick-lista (?)**
 Namnet på en Material Icon eller URL till en kvadratisk SVG-ikon som visas i infoklick-resultatet, för att visuellt särskilja lagrets träffar.
