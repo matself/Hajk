@@ -449,14 +449,14 @@ var manager = Model.extend({
     // backend instead, which fetches server-side and returns the raw XML.
     // Unauthenticated services use direct browser fetch.
     if (auth && auth.username) {
-      var promises = [];
+      var authPromises = [];
       var endpoint = this.get("config").url_layers.replace(
         /\/layers\/?$/,
         "/wmscapabilities"
       );
 
       versions.forEach((version) => {
-        promises.push(
+        authPromises.push(
           hfetch(endpoint, {
             method: "POST",
             cache: "no-cache",
@@ -485,7 +485,7 @@ var manager = Model.extend({
         );
       });
 
-      return Promise.all(promises).then((values) =>
+      return Promise.all(authPromises).then((values) =>
         values.filter(
           (wms, i, self) =>
             self.findIndex((w) => w.version === wms.version) === i
