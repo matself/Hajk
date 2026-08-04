@@ -503,6 +503,16 @@ $.fn.editable = function (component) {
   };
 
   var onClick = (e) => {
+    // Don't intercept clicks that originate inside our React-mounted
+    // Infoklick/Infobox editor (infoboxContainer, class
+    // "infoclick-editor-mount"). React 16's synthetic event system relies
+    // on the native click bubbling all the way up to `document`, and
+    // stopPropagation() here would silently swallow every button/select
+    // interaction inside it (Hämta attribut, Visuell/Kod, formatting
+    // buttons, the attribute picker) with no visible error at all.
+    if ($(e.target).closest(".infoclick-editor-mount").length) {
+      return;
+    }
     enableEdit(e);
     e.stopPropagation();
   };
