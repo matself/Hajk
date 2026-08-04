@@ -44,7 +44,18 @@ class MapInfoboxEditor extends Component {
   fetchAttributes = () => {
     const { model, layer } = this.props;
     const { selectedSublayer } = this.state;
-    if (!model || !layer || !selectedSublayer) {
+    if (!model || !layer) {
+      this.setState({
+        fetchError:
+          "Kunde inte slå upp lagrets uppgifter i denna karta - ange platshållare manuellt.",
+      });
+      return;
+    }
+    if (!selectedSublayer) {
+      this.setState({
+        fetchError:
+          "Attributhämtning stöds bara för WMS- och Vektor-lager - ange platshållare manuellt.",
+      });
       return;
     }
     this.setState({ fetchingAttributes: true, fetchError: null });

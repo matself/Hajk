@@ -214,12 +214,19 @@ var menu = Model.extend({
         typename: layer,
       },
       success: (data) => {
-        var parser = new X2JS(),
-          xmlstr = data.xml
-            ? data.xml
-            : new XMLSerializer().serializeToString(data),
-          apa = parser.xml2js(xmlstr);
+        // Not every WMS also exposes WFS DescribeFeatureType on the same
+        // endpoint - some servers ignore the service/request params
+        // entirely and just return their normal WMS GetCapabilities
+        // document instead. That means `data` may not even be a
+        // parseable XML Node, so the whole thing - not just the schema
+        // navigation below - needs to be guarded. (Mirrors the same fix
+        // in models/layermanager.js's copy of this method.)
         try {
+          var parser = new X2JS(),
+            xmlstr = data.xml
+              ? data.xml
+              : new XMLSerializer().serializeToString(data),
+            apa = parser.xml2js(xmlstr);
           var props =
             apa.schema.complexType.complexContent.extension.sequence.element.map(
               (a) => {
@@ -239,6 +246,9 @@ var menu = Model.extend({
         } catch (e) {
           callback(false);
         }
+      },
+      error: () => {
+        callback(false);
       },
     });
   },
