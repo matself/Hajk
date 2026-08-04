@@ -88,6 +88,25 @@ const infoGroupInputStyle = {
   marginTop: "10px",
 };
 
+// jquery-sortable's default onMousedown calls event.preventDefault() for
+// every mousedown except ones targeting an <input>/<select>/<textarea>,
+// which blocks the browser's native focus/cursor-placement behavior for
+// anything else nested inside a sortable tree item - including a
+// contentEditable region such as the Infoklick/Infobox WYSIWYG editor's
+// Draft.js <div contenteditable>. Extend the same allowlist to also cover
+// contentEditable elements, so clicking inside the editor actually places
+// a cursor instead of silently being swallowed as a drag-start attempt.
+function sortableOnMousedown($item, _super, event) {
+  const isFormControl = /^(input|select|textarea)$/i.test(
+    event.target.nodeName
+  );
+  if (isFormControl || event.target.isContentEditable) {
+    return;
+  }
+  event.preventDefault();
+  return true;
+}
+
 $.fn.editable = function (component) {
   function edit(node, e) {
     function reset() {
@@ -652,7 +671,7 @@ class Menu extends Component {
             this.state.renderSpecialBackgroundsAtBottom,
         });
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       });
     });
 
@@ -674,7 +693,7 @@ class Menu extends Component {
       }, 0);
 
       $(".tree-view li").editable(this);
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
     });
 
     defaultState.layers = this.props.model.get("layers");
@@ -686,7 +705,7 @@ class Menu extends Component {
    */
   update() {
     $(".tree-view li").editable(this);
-    $(".tree-view > ul").sortable();
+    $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
   }
 
   /**
@@ -1053,7 +1072,7 @@ class Menu extends Component {
         });
 
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
 
         this.setState({
           content: "mapsettings",
@@ -1474,7 +1493,7 @@ class Menu extends Component {
     });
 
     setTimeout(() => {
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       this.setState({
         drawOrder: true,
       });
