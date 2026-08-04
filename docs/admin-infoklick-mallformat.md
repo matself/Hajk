@@ -48,7 +48,7 @@ Kedjar en eller flera bearbetningssteg på ett attributvärde (eller en citerad 
 | `datetime` | — | Datum+tid, lokalt format | `{'2021-06-03T13:04:12Z'|datetime}` |
 | `date` | — | Bara datum (tolkar även `ÅÅÅÅMMDD` utan bindestreck) | `{'20210603'|date}` → `2021-06-03` |
 | `time` | — | Bara klockslag | `{'2021-06-03T13:04:12Z'|time}` |
-| `dateAddDays` | antal dagar (kan vara negativt) | Lägger till/drar bort dagar, kedja med `\|datetime` för att formatera | `{d|dateAddDays(1)|datetime}` |
+| `dateAddDays` | antal dagar (kan vara negativt) | Lägger till/drar bort dagar, kedja med `|datetime` för att formatera | `{d|dateAddDays(1)|datetime}` |
 | `dateAddHours` | antal timmar | Samma, för timmar | `{d|dateAddHours(-2)|datetime}` |
 | `formatNumber` | — | Lokalformaterar med tusentalsavgränsare | `{'98000'|formatNumber}` → `98 000` |
 | `multiplyBy` | multiplikator | Multiplicerar värdet | `{'0.08'|multiplyBy(100)}` → `8` |
