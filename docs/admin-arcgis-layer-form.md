@@ -39,7 +39,7 @@ Namnet som visas för hela lagret i Klientens lagerlista.
 Ett alternativt namn som bara visas i Admin, för att skilja lager åt internt. Visas inte i Klienten.
 
 **Inforuta**
-Fri text (ingen WYSIWYG-editor ännu, se OBS-rutan högst upp) som visas i infoklick-popupen när användaren klickar på ett objekt i lagret. Kan innehålla `{attributnamn}`-platshållare som ersätts med det klickade objektets attributvärden, precis som för WMS/Vektor — se [admin-tool-infoclick.md](admin-tool-infoclick.md) — men måste skrivas för hand, det finns ingen "Hämta attribut"-hjälp här. Använd info-ikonen i lagerlistan ovan för att slå upp attributnamnen först.
+Fri text (ingen WYSIWYG-editor ännu, se OBS-rutan högst upp) som visas i infoklick-popupen när användaren klickar på ett objekt i lagret. Kan innehålla `{attributnamn}`-platshållare och övrig syntax precis som för WMS/Vektor — se [admin-infoklick-mallformat.md](admin-infoklick-mallformat.md) — men måste skrivas för hand, det finns ingen "Hämta attribut"-hjälp här. Använd info-ikonen i lagerlistan ovan för att slå upp attributnamnen först.
 
 **Teckenförklaring (?)**
 En bild-URL eller fil vald via "Välj fil" som visas som lagrets teckenförklaringsbild i lagerlistan. Hämtas/uppdateras även automatiskt (om fältet är tomt eller redan innehåller en `data:`-URL) varje gång ett lager kryssas i eller ur, via tjänstens `/legend`-endpoint.

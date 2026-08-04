@@ -10,7 +10,7 @@ Formuläret där du kommer ifrån (anslutning, request-inställningar, val av su
 Namnet som visas för lagret i Lagerhanterarens lagerlista i Klienten. Påverkar inte vilket lager som hämtas från WMS-tjänsten (det styrs av lagrets tekniska namn/id, satt när lagret lades till).
 
 **Inforuta**
-HTML-mallen som visas i infoklick-popupen när användaren klickar på ett objekt i lagret i kartan (inte att förväxla med informationsikonen (i) i lagerlistan, se Infodokument i [admin-wms-layer-form.md](admin-wms-layer-form.md)). Fältet skickas som `infobox` till Klienten och kan innehålla `{attributnamn}`-platshållare som ersätts med det klickade objektets attributvärden, se [admin-tool-infoclick.md](admin-tool-infoclick.md).
+HTML-mallen som visas i infoklick-popupen när användaren klickar på ett objekt i lagret i kartan (inte att förväxla med informationsikonen (i) i lagerlistan, se Infodokument i [admin-wms-layer-form.md](admin-wms-layer-form.md)). Fältet skickas som `infobox` till Klienten och kan innehålla `{attributnamn}`-platshållare, villkorsblock, filter m.m. — se [admin-infoklick-mallformat.md](admin-infoklick-mallformat.md) för hela syntaxen.
 
 Redigeras med en WYSIWYG-editor (`InfoclickEditor`-komponenten, delad med [admin-vector-layer-form.md](admin-vector-layer-form.md) och den motsvarande Infobox-mallen per karta, se [admin-mapsettings.md](admin-mapsettings.md)):
 
