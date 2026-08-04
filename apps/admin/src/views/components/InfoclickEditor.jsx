@@ -39,7 +39,11 @@ function customInlineFn(element, { Entity }) {
     element.tagName === "SPAN" &&
     element.getAttribute("data-ic-token") === "1"
   ) {
-    return Entity.create("TOKEN", "IMMUTABLE", { raw: element.textContent });
+    // draft-js-import-html's Entity here is a plain function - Entity(type,
+    // data, mutability) - returning an { type: 'ENTITY', entityKey } marker,
+    // not a class with a static .create() like the (removed) legacy
+    // draft-js Entity module.
+    return Entity("TOKEN", { raw: element.textContent }, "IMMUTABLE");
   }
   return undefined;
 }

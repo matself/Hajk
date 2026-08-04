@@ -11,54 +11,6 @@ import InfoclickEditor from "../components/InfoclickEditor";
 
 var solpop;
 
-// Picks a usable GetFeatureInfo INFO_FORMAT from a parsed capabilities
-// document's Capability.Request.GetFeatureInfo node, preferring formats we
-// know how to parse for attribute names. Handles both the modern (1.1.1/
-// 1.3.0) style where Format is a MIME-type string/array, and the older
-// 1.0.0 style where formats are given as child element names instead
-// (e.g. <Format><GML.2/></Format>).
-function pickInfoFormat(getFeatureInfoNode) {
-  if (!getFeatureInfoNode || !getFeatureInfoNode.Format) {
-    return null;
-  }
-  const format = getFeatureInfoNode.Format;
-  let tokens = [];
-  if (typeof format === "string") {
-    tokens = [format];
-  } else if (Array.isArray(format)) {
-    tokens = format;
-  } else if (typeof format === "object") {
-    tokens = Object.keys(format);
-  }
-  const normalized = tokens
-    .map((t) => {
-      if (t.indexOf("/") > -1) {
-        return t;
-      }
-      if (/^GML/i.test(t)) {
-        return "application/vnd.ogc.gml";
-      }
-      if (/^(XML|WMS_XML)$/i.test(t)) {
-        return "text/xml";
-      }
-      return null;
-    })
-    .filter(Boolean);
-
-  const preferenceOrder = [
-    "application/json",
-    "application/geo+json",
-    "application/vnd.ogc.gml",
-    "text/xml",
-  ];
-  for (const preferred of preferenceOrder) {
-    if (normalized.includes(preferred)) {
-      return preferred;
-    }
-  }
-  return normalized[0] || null;
-}
-
 // Suported Hajk WMS Server types, in the client is this re-mapped to support OpenLayers server types:
 //  GeoServer
 const SERVERTYPE_GEOSERVER = "geoserver";
@@ -455,78 +407,26 @@ class WMSLayerForm extends Component {
             refreshDialog
           );
         } else {
-          // Most public/open WMS services deliberately don't expose WFS
-          // (that would let anyone download the raw data), so this is the
-          // common case rather than an edge case. Fall back to probing the
-          // layer with a real GetFeatureInfo request - the only mechanism
-          // that works on a WMS-only service, since GetCapabilities never
-          // contains attribute names for any WMS version.
-          const currentLayer = this.findInCapabilities(subLayerName);
-          const bbox = currentLayer?.LatLonBoundingBox;
-          const infoFormat = pickInfoFormat(
-            this.state.capabilities?.Capability?.Request?.GetFeatureInfo
-          );
-          if (!bbox || !infoFormat) {
-            this.setState(
-              (prevState) => ({
-                attributesFetching: {
-                  ...prevState.attributesFetching,
-                  [subLayerName]: false,
-                },
-                attributesErrors: {
-                  ...prevState.attributesErrors,
-                  [subLayerName]:
-                    "Kunde inte hämta attributlista automatiskt (varken WFS eller testklick gav träff). Ange platshållare manuellt.",
-                },
-              }),
-              refreshDialog
-            );
-            return;
-          }
-          this.props.model.probeWmsFeatureAttributes(
-            this.state.url,
-            subLayerName,
-            {
-              minx: parseFloat(bbox.minx),
-              miny: parseFloat(bbox.miny),
-              maxx: parseFloat(bbox.maxx),
-              maxy: parseFloat(bbox.maxy),
-            },
-            infoFormat,
-            (probeResult, reason) => {
-              if (Array.isArray(probeResult)) {
-                this.setState(
-                  (prevState) => ({
-                    attributesCache: {
-                      ...prevState.attributesCache,
-                      [subLayerName]: probeResult,
-                    },
-                    attributesFetching: {
-                      ...prevState.attributesFetching,
-                      [subLayerName]: false,
-                    },
-                  }),
-                  refreshDialog
-                );
-              } else {
-                this.setState(
-                  (prevState) => ({
-                    attributesFetching: {
-                      ...prevState.attributesFetching,
-                      [subLayerName]: false,
-                    },
-                    attributesErrors: {
-                      ...prevState.attributesErrors,
-                      [subLayerName]:
-                        (reason ||
-                          "Kunde inte hämta attributlista automatiskt.") +
-                        " Ange platshållare manuellt.",
-                    },
-                  }),
-                  refreshDialog
-                );
-              }
-            }
+          // No WFS on this URL - most public/open WMS services deliberately
+          // don't expose one (that would let anyone download the raw data).
+          // GetCapabilities never contains attribute names for any WMS
+          // version, and there's no reliable way to guess them otherwise
+          // (see git history for the GetFeatureInfo-probing attempts that
+          // were tried and dropped), so there's nothing left to automate -
+          // the admin has to type placeholders manually.
+          this.setState(
+            (prevState) => ({
+              attributesFetching: {
+                ...prevState.attributesFetching,
+                [subLayerName]: false,
+              },
+              attributesErrors: {
+                ...prevState.attributesErrors,
+                [subLayerName]:
+                  "Vektorlager saknas. Attribut måste väljas manuellt.",
+              },
+            }),
+            refreshDialog
           );
         }
       }
