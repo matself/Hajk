@@ -1,11 +1,13 @@
 import React from "react";
 import { Component } from "react";
+import ReactDOM from "react-dom";
 import MapOptions from "./mapoptions.jsx";
 import ToolOptions from "./tooloptions.jsx";
 import Button from "@material-ui/core/Button";
 import $ from "jquery";
 import Alert from "../views/alert.jsx";
 import ListProperties from "../views/listproperties.jsx";
+import MapInfoboxEditor from "./components/MapInfoboxEditor.jsx";
 import Divider from "@material-ui/core/Divider";
 import DeleteIcon from "@material-ui/icons/DeleteForever";
 import AddIcon from "@material-ui/icons/Add";
@@ -89,6 +91,7 @@ const infoGroupInputStyle = {
 $.fn.editable = function (component) {
   function edit(node, e) {
     function reset() {
+      ReactDOM.unmountComponentAtNode(infoboxContainer[0]);
       ok.remove();
       abort.remove();
       remove.remove();
@@ -144,7 +147,7 @@ $.fn.editable = function (component) {
       if (component.state.authActive) {
         node.parent().attr("data-visibleforgroups", input3.val());
       }
-      node.parent().attr("data-infobox", input4.val());
+      node.parent().attr("data-infobox", infoboxValue);
       node.parent().attr("data-visibleatstart", visible);
       if (visible) {
         node.parent().addClass("visible");
@@ -227,7 +230,9 @@ $.fn.editable = function (component) {
       input = $("<input />"),
       input2 = $(`<input id="${id5}" type="text" placeholder="Ny länk"/>`),
       input3 = $(`<input id="${id6}" type="text" />`),
-      input4 = $(`<textarea id="${id7}" type="text"></textarea>`),
+      infoboxContainer = $(
+        `<div id="${id7}" class="infoclick-editor-mount"></div>`
+      ),
       input5 = $(`<input id="${id9}" type="text"/>`).css(infoGroupLabelStyle),
       input6 = $(`<textarea id="${id10}" type="text"></textarea>`).css(
         infoGroupInputStyle
@@ -253,6 +258,8 @@ $.fn.editable = function (component) {
       editPreset = $('<div class=""></div>'),
       elem = node.get(0) || {};
 
+    let infoboxValue = node.parent().attr("data-infobox") || "";
+
     ok.css(btnCSS).click(store);
 
     layerOk.css(btnCSS).click(saveLayer);
@@ -276,7 +283,10 @@ $.fn.editable = function (component) {
       checkbox2.attr("checked", JSON.parse(node.parent().attr("data-toggled")));
     }
     if (node.parent().attr("data-exclusive")) {
-      checkbox6.attr("checked", JSON.parse(node.parent().attr("data-exclusive")));
+      checkbox6.attr(
+        "checked",
+        JSON.parse(node.parent().attr("data-exclusive"))
+      );
     }
 
     if (node.parent().attr("data-infogroupvisible")) {
@@ -295,10 +305,6 @@ $.fn.editable = function (component) {
     if (node.parent().attr("data-visibleforgroups")) {
       input3.val(node.parent().attr("data-visibleforgroups"));
     }
-    if (node.parent().attr("data-infobox")) {
-      input4.val(node.parent().attr("data-infobox"));
-    }
-
     if (node.parent().attr("data-infogrouptitle")) {
       input5.val(node.parent().attr("data-infogrouptitle"));
     }
@@ -375,7 +381,7 @@ $.fn.editable = function (component) {
       visible.append(label5, input3);
     }
 
-    visible.append(label6, input4);
+    visible.append(label6, infoboxContainer);
     editPreset.append(label4, checkbox4, input2);
 
     remove.css({ color: "red", marginRight: "4px" }).click((e) => {
@@ -434,6 +440,23 @@ $.fn.editable = function (component) {
     if (node.hasClass("layer-name") && !elem.editing) {
       elem.editing = true;
       node.before(remove).after(layerTools);
+
+      const layerId = node.parent().attr("data-id");
+      const fullLayer = component.props.model
+        .get("layers")
+        .find((l) => l.id === layerId);
+
+      ReactDOM.render(
+        <MapInfoboxEditor
+          model={component.props.model}
+          layer={fullLayer}
+          initialValue={infoboxValue}
+          onChange={(html) => {
+            infoboxValue = html;
+          }}
+        />,
+        infoboxContainer[0]
+      );
     }
 
     if (node.hasClass("preset-name") && !elem.editing) {
@@ -620,7 +643,8 @@ class Menu extends Component {
           cqlFilterVisible:
             existingConfig.cqlFilterVisible ?? this.state.cqlFilterVisible,
           showLegendByDefault:
-            existingConfig.showLegendByDefault ?? this.state.showLegendByDefault,
+            existingConfig.showLegendByDefault ??
+            this.state.showLegendByDefault,
           renderSpecialBackgroundsAtBottom:
             existingConfig.renderSpecialBackgroundsAtBottom ??
             this.state.renderSpecialBackgroundsAtBottom,

@@ -982,6 +982,19 @@ figure img {
   min-height: 100px;
 }
 
+.MapInfoboxEditor-note {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  margin: 0 0 8px 0;
+}
+
+.MapInfoboxEditor-sublayerPicker {
+  margin-bottom: 8px;
+}
+
 .ic-token-chip {
   background: #e3f2fd;
   border: 1px solid #90caf9;
