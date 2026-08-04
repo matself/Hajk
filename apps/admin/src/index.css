@@ -883,12 +883,18 @@ figure img {
 .modal-dialog {
   margin-top: 1rem;
   margin-bottom: 1rem;
-  /* Bootstrap's own @media(min-width:576px) rule caps this at 500px,
-     which is far too cramped for the layer settings dialog (Infoklick's
-     toolbar/editor in particular). max-width (a longhand we didn't
-     previously set here) wins over that rule since this stylesheet loads
-     after bootstrap.min.css - horizontal centering still comes from
-     Bootstrap's own margin-left/right:auto, untouched above. */
+}
+
+/* Bootstrap's own @media(min-width:576px) rule caps every .modal-dialog at
+   500px, which suits short confirm/settings dialogs fine but is far too
+   cramped for a dialog hosting arbitrary form content (e.g. the layer
+   settings dialog with Infoklick's toolbar/editor). alert.jsx adds this
+   class only to its "react content" dialog branch - confirm dialogs and
+   the style/queryable-only settings popup keep Bootstrap's narrower
+   default. max-width here wins over Bootstrap's rule since this
+   stylesheet loads after bootstrap.min.css; horizontal centering still
+   comes from Bootstrap's own margin-left/right:auto on .modal-dialog. */
+.modal-dialog-wide {
   max-width: min(900px, 92vw);
 }
 

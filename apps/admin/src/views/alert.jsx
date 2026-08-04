@@ -178,7 +178,12 @@ class Alert extends Component {
         false
       ) : (
         <div className="modal">
-          <div className="modal-dialog">
+          <div
+            className={
+              "modal-dialog" +
+              (options.contentType === "react" ? " modal-dialog-wide" : "")
+            }
+          >
             <div className="modal-content">
               <div className="modal-header">
                 <h4 className="modal-title">
