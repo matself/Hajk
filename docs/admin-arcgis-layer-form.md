@@ -63,7 +63,9 @@ Styr OpenLayers `attributions` för lagret, visas i kartan.
 
 ### Infodokument (valfri expanderbar sektion)
 
-Samma fält (Rubrik, Text, Länk, Länktext, Länk till öppna data, Ägare) som i WMS-formuläret, se [admin-wms-layer-form.md](admin-wms-layer-form.md) — med en särskild kvirk: **Ägare** faller tillbaka på ett `owner`-fält om `infoOwner` är tomt (`this.state.infoOwner ? this.state.infoOwner : this.state.owner`), men `owner` finns inte med i `defaultState` eller något annat inputfält i den här filen, så fallbacket är i praktiken dött i nuvarande kod.
+Samma fält (Rubrik, Text, Länk, Länktext, Länk till öppna data, Ägare) som i WMS-formuläret, se [admin-wms-layer-form.md](admin-wms-layer-form.md) — med en särskild kvirk: **Ägare** faller tillbaka på ett `owner`-fält om `infoOwner` är tomt (`this.state.infoOwner ? this.state.infoOwner : this.state.owner`). Det fältet finns inte i formulärets egen `defaultState` eller något inputfält här, men är inte dött — `layermanager.jsx` (`loadLayer`, raden med `owner: layer.owner`) läser in det direkt från `layers.json` när ett *befintligt* ArcGIS-lager öppnas för redigering, som en bakåtkompatibel visning av ett äldre fält som fanns innan `infoOwner` infördes.
+
+**Fallgrop:** eftersom `getLayer()` aldrig skickar med `owner` vid sparning, och backend (`settings.service.js`) ersätter hela lagerobjektet istället för att slå ihop det, försvinner ett gammalt `owner`-värde permanent ur `layers.json` vid *första* sparningen av ett sådant lager — om inte samma text redan skrivits in i Ägare/`infoOwner` innan man sparar.
 
 **OBS:** ArcGIS-formuläret saknar Tidslinjedatum-sektionen som finns i WMS/Vektor.
 
