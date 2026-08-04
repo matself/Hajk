@@ -1,6 +1,6 @@
 # Verktyg: Infoklick (infoclick) — fältguide
 
-Konfigurationsformulär: `apps/admin/src/views/tools/infoclick.jsx`, codename `infoclick`. Se [admin-tooloptions.md](admin-tooloptions.md) för det gemensamma mönstret. Detta styr själva infoklick-mekanismen (popup vid GetFeatureInfo-klick i kartan) — inte om ett enskilt lager är klickbart, det sätts per lager (se [admin-wms-layer-form.md](admin-wms-layer-form.md)).
+Konfigurationsformulär: `apps/admin/src/views/tools/infoclick.jsx`, codename `infoclick`. Se [admin-tooloptions.md](admin-tooloptions.md) för det gemensamma mönstret. Detta styr själva infoklick-mekanismen (popup vid GetFeatureInfo-klick i kartan) — inte om ett enskilt lager är klickbart, det sätts per lager i "Infoklick"-kryssrutan i lagrets Inställningar-dialog (se [admin-wms-layer-settings.md](admin-wms-layer-settings.md), inte huvudformuläret [admin-wms-layer-form.md](admin-wms-layer-form.md) som bara har det liknande men orelaterade `INFO_FORMAT`-fältet "Infoklick-format").
 
 Avviker från det gemensamma mönstret: **saknar helt Sorteringsordning** i formuläret (finns inget UI för `index`, trots att fältet läses/sparas) — rimligt eftersom infoklick inte är en positionerbar knapp i verktygsfältet utan en global bakomliggande funktion. Saknar också Verktygsplacering (`target`) och Instruktion.
 
@@ -12,7 +12,7 @@ Avviker från det gemensamma mönstret: **saknar helt Sorteringsordning** i form
 ## Generella inställningar
 
 - Tillträde.
-- **Tillåt HTML i infoclick** (`allowDangerousHtml`) — tillåter rå HTML i infoklick-innehållet (styrs annars av lagrets Infoklick-format, se [admin-wms-layer-form.md](admin-wms-layer-form.md)).
+- **Tillåt HTML i infoclick** (`allowDangerousHtml`) — styr om `react-markdown`s `rehype-raw`-plugin är aktiverad vid rendering av infoklick-innehållet (`FeaturePropsParsing.jsx`). Är den **av**, tolkas inte inbäddade HTML-taggar som markup utan visas som escapad text (t.ex. syns `&lt;h3&gt;` bokstavligt istället för en rubrik). Detta måste vara **på** för att lagrens Inforuta-mallar (byggda med den nya WYSIWYG-editorn, som exporterar riktig HTML — se [admin-wms-layer-settings.md](admin-wms-layer-settings.md)) ska visas korrekt formaterade i popupen. Orelaterat till lagrets "Infoklick-format" (`INFO_FORMAT`, se [admin-wms-layer-form.md](admin-wms-layer-form.md)) — det styr bara vilket svarsformat som begärs från WMS-tjänsten, inte hur klientens Markdown-rendering hanterar HTML.
 - **Använd ny Infoclick-variant** (`useNewInfoclick`) — experimentell, se [issue #1034](https://github.com/hajkmap/Hajk/issues/1034).
 - **Tillåt fler tecken, bl a MarkDown, som del av infoclicks placeholder** (`useNewPlaceholderMatching`) — se [issue #1368](https://github.com/hajkmap/Hajk/issues/1368).
 - **Markera features på nivå 1 (grupper)** (`useLevel1FeatureHighlight`) — se [issue #1472](https://github.com/hajkmap/Hajk/issues/1472). Kan ge prestandaproblem vid många features.
@@ -34,4 +34,4 @@ Markören/highlighten som visas på kartan för det klickade objektet:
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30.*
+*Detta dokument beskriver läget i koden per 2026-08-04.*
