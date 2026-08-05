@@ -10,6 +10,7 @@
 
 <p align="center">
   An open source web GIS solution based on React, Material UI and OpenLayers. Developed in Sweden and used by various municipalities and government agencies, as well as by public and private enterprises.
+  This is an experimental edition forked and developed by me @matself.
   <br>
   <br>
   <a href="https://hajkmap.github.io/Hajk/"><strong>Learn more »</strong></a>
