@@ -163,7 +163,7 @@ const QuickAccessView = ({
 
             <ListItemSecondaryAction sx={{ right: "4px" }}>
               {enableQuickAccessPresets && (
-                <HajkTooltip title="Teman">
+                <HajkTooltip title="Färdiga teman">
                   <LsIconButton
                     id="quick-access-theme-button"
                     onClick={handleQuickAccessPresetsToggle}

@@ -260,7 +260,7 @@ class ToolOptions extends Component {
                   ref="editName"
                   type="text"
                   defaultValue={t.name}
-                  placeholder="Namn på snabbval"
+                  placeholder="Namn på genväg"
                 />
                 <br />
                 <input
@@ -514,13 +514,13 @@ class ToolOptions extends Component {
           {this.renderVisibleForGroups()}
           <div>
             <div>
-              <h4>Lägg till snabbval</h4>
+              <h4>Lägg till genväg</h4>
               <div>
                 <label>Namn*</label>
                 <input
                   name="name"
                   type="text"
-                  placeholder="Namn på snabbval"
+                  placeholder="Namn på genväg"
                   required
                   ref="preset_name"
                 />
@@ -547,7 +547,7 @@ class ToolOptions extends Component {
                 Lägg till
               </ColorButtonGreen>
             </div>
-            <h4>Lista över aktiva snabbval</h4>
+            <h4>Lista över aktiva genvägar</h4>
             <fieldset className="tree-view">
               <ul>{this.renderPresets()}</ul>
             </fieldset>

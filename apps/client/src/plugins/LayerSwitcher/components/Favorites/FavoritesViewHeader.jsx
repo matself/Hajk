@@ -73,9 +73,9 @@ function FavoritesViewHeader({
             importFavoritesCallback(parsedFavorites);
           }
         } catch (error) {
-          console.error(`Favorite could not be parsed. Error: ${error}`);
+          console.error(`Theme could not be parsed. Error: ${error}`);
           enqueueSnackbar(
-            "Favoriten kunde inte laddas, kontrollera att .json filen ser korrekt ut.",
+            "Temat kunde inte laddas, kontrollera att .json filen ser korrekt ut.",
             {
               variant: "error",
               anchorOrigin: { vertical: "bottom", horizontal: "center" },
@@ -119,7 +119,7 @@ function FavoritesViewHeader({
           </IconButton>
         </HajkToolTip>
         <Box sx={{ flexGrow: 1, textAlign: "center" }}>
-          <Typography variant="subtitle1">Mina favoriter</Typography>
+          <Typography variant="subtitle1">Mina teman</Typography>
         </Box>
         <input
           ref={fileInputRef}

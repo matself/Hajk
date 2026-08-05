@@ -190,7 +190,7 @@ $.fn.editable = function (component) {
         groupCheckboxLabelStyle
       ),
       label3 = $(`<label for="${id3}">Synlig vid start&nbsp;</label><br />`),
-      label4 = $(`<label for="${id4}">Redigera snabbval&nbsp;</label><br />`),
+      label4 = $(`<label for="${id4}">Redigera genväg&nbsp;</label><br />`),
       label5 = $(`<br /><label for="${id6}">Tillträde</label><br />`),
       label6 = $(`<label for="${id7}">Infobox</label><br />`),
       label7 = $(`<label for="${id8}">Infodokument&nbsp;</label>`).css(
@@ -2494,20 +2494,20 @@ class Menu extends Component {
                   className="long-label"
                   htmlFor="enableQuickAccessPresets"
                 >
-                  Ladda tema{" "}
+                  Färdiga teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren ladda fördefinierade teman till snabbåtkomst."
+                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till snabbåtkomst."
                   />
                 </label>
               </div>
               <div className="text-input-label">
-                Infotext Ladda tema{" "}
+                Infotext Färdiga teman{" "}
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för att ladda tema."
+                  title="Ange en text som ska visas i panelen för färdiga teman."
                 />
                 &nbsp;
                 <input
@@ -2531,20 +2531,20 @@ class Menu extends Component {
                   className="long-label"
                   htmlFor="enableUserQuickAccessFavorites"
                 >
-                  Mina favoriter{" "}
+                  Mina teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren spara snabbåtkomst till mina favoriter för att kunna ladda vid senare tillfälle."
+                    title="När rutan är ikryssad kan användaren spara sin egen snabbåtkomst som ett tema för att kunna ladda vid senare tillfälle."
                   />
                 </label>
               </div>
               <div className="text-input-label">
-                Infotext Mina favoriter{" "}
+                Infotext Mina teman{" "}
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för mina favoriter."
+                  title="Ange en text som ska visas i panelen för mina teman."
                 />
                 &nbsp;
                 <input
