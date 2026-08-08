@@ -7,6 +7,7 @@ import {
   WMS_VERSION_1_1_1,
   WMS_VERSION_1_3_0,
 } from "models/layermanager";
+import InfoclickEditor from "../components/InfoclickEditor";
 
 var solpop;
 
@@ -88,6 +89,9 @@ const defaultState = {
   workspaceList: [],
   authUsername: "",
   authPassword: "",
+  attributesCache: {},
+  attributesFetching: {},
+  attributesErrors: {},
 };
 
 const supportedProjections = [
@@ -355,6 +359,80 @@ class WMSLayerForm extends Component {
     return match;
   }
 
+  // Fetches available attribute names for a WMS sublayer, so they can be
+  // picked in the Infoklick-editor's "Infoga attribut" dropdown instead of
+  // being typed blindly. Assumes the layer is already configured (this.state.url
+  // is a known-working endpoint) and that it exposes WFS DescribeFeatureType
+  // on the same URL - the same assumption/mechanism already used by
+  // VectorLayerForm for vector layers.
+  fetchAttributesForLayer(subLayerName) {
+    const refreshDialog = () => {
+      const layerInfo = this.state.addedLayersInfo[subLayerName];
+      if (layerInfo) {
+        this.renderLayerInfoDialog(layerInfo);
+      }
+    };
+    this.setState(
+      (prevState) => ({
+        attributesFetching: {
+          ...prevState.attributesFetching,
+          [subLayerName]: true,
+        },
+        attributesErrors: {
+          ...prevState.attributesErrors,
+          [subLayerName]: null,
+        },
+      }),
+      refreshDialog
+    );
+    this.props.model.getWFSLayerDescription(
+      this.state.url,
+      subLayerName,
+      (result) => {
+        if (Array.isArray(result)) {
+          this.setState(
+            (prevState) => ({
+              attributesCache: {
+                ...prevState.attributesCache,
+                [subLayerName]: result.map((r) => ({
+                  name: r.name,
+                  type: r.localType,
+                })),
+              },
+              attributesFetching: {
+                ...prevState.attributesFetching,
+                [subLayerName]: false,
+              },
+            }),
+            refreshDialog
+          );
+        } else {
+          // No WFS on this URL - most public/open WMS services deliberately
+          // don't expose one (that would let anyone download the raw data).
+          // GetCapabilities never contains attribute names for any WMS
+          // version, and there's no reliable way to guess them otherwise
+          // (see git history for the GetFeatureInfo-probing attempts that
+          // were tried and dropped), so there's nothing left to automate -
+          // the admin has to type placeholders manually.
+          this.setState(
+            (prevState) => ({
+              attributesFetching: {
+                ...prevState.attributesFetching,
+                [subLayerName]: false,
+              },
+              attributesErrors: {
+                ...prevState.attributesErrors,
+                [subLayerName]:
+                  "Vektorlager saknas. Attribut måste väljas manuellt.",
+              },
+            }),
+            refreshDialog
+          );
+        }
+      }
+    );
+  }
+
   renderLayerInfoInput(layerInfo) {
     var currentLayer = this.findInCapabilities(layerInfo.id);
 
@@ -415,23 +493,20 @@ class WMSLayerForm extends Component {
             <label>Inforuta</label>
           </div>
 
-          <textarea
-            className="infoClick"
-            style={{ width: "100%" }}
-            value={layerInfo.infobox}
-            onChange={(e) => {
+          <InfoclickEditor
+            key={layerInfo.id}
+            initialValue={layerInfo.infobox}
+            onChange={(html) => {
               let addedLayersInfo = this.state.addedLayersInfo;
-              addedLayersInfo[layerInfo.id].infobox = e.target.value;
-              this.setState(
-                {
-                  addedLayersInfo: addedLayersInfo,
-                },
-                () => {
-                  this.renderLayerInfoDialog(layerInfo);
-                }
-              );
+              addedLayersInfo[layerInfo.id].infobox = html;
+              this.setState({
+                addedLayersInfo: addedLayersInfo,
+              });
             }}
-            type="text"
+            availableAttributes={this.state.attributesCache[layerInfo.id]}
+            fetchingAttributes={!!this.state.attributesFetching[layerInfo.id]}
+            fetchError={this.state.attributesErrors[layerInfo.id]}
+            onFetchAttributes={() => this.fetchAttributesForLayer(layerInfo.id)}
           />
         </div>
         <div className="form-row split0">

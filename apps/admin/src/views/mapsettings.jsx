@@ -1,11 +1,13 @@
 import React from "react";
 import { Component } from "react";
+import ReactDOM from "react-dom";
 import MapOptions from "./mapoptions.jsx";
 import ToolOptions from "./tooloptions.jsx";
 import Button from "@material-ui/core/Button";
 import $ from "jquery";
 import Alert from "../views/alert.jsx";
 import ListProperties from "../views/listproperties.jsx";
+import MapInfoboxEditor from "./components/MapInfoboxEditor.jsx";
 import Divider from "@material-ui/core/Divider";
 import DeleteIcon from "@material-ui/icons/DeleteForever";
 import AddIcon from "@material-ui/icons/Add";
@@ -86,9 +88,29 @@ const infoGroupInputStyle = {
   marginTop: "10px",
 };
 
+// jquery-sortable's default onMousedown calls event.preventDefault() for
+// every mousedown except ones targeting an <input>/<select>/<textarea>,
+// which blocks the browser's native focus/cursor-placement behavior for
+// anything else nested inside a sortable tree item - including a
+// contentEditable region such as the Infoklick/Infobox WYSIWYG editor's
+// Draft.js <div contenteditable>. Extend the same allowlist to also cover
+// contentEditable elements, so clicking inside the editor actually places
+// a cursor instead of silently being swallowed as a drag-start attempt.
+function sortableOnMousedown($item, _super, event) {
+  const isFormControl = /^(input|select|textarea)$/i.test(
+    event.target.nodeName
+  );
+  if (isFormControl || event.target.isContentEditable) {
+    return;
+  }
+  event.preventDefault();
+  return true;
+}
+
 $.fn.editable = function (component) {
   function edit(node, e) {
     function reset() {
+      ReactDOM.unmountComponentAtNode(infoboxContainer[0]);
       ok.remove();
       abort.remove();
       remove.remove();
@@ -144,7 +166,7 @@ $.fn.editable = function (component) {
       if (component.state.authActive) {
         node.parent().attr("data-visibleforgroups", input3.val());
       }
-      node.parent().attr("data-infobox", input4.val());
+      node.parent().attr("data-infobox", infoboxValue);
       node.parent().attr("data-visibleatstart", visible);
       if (visible) {
         node.parent().addClass("visible");
@@ -192,7 +214,9 @@ $.fn.editable = function (component) {
       label3 = $(`<label for="${id3}">Synlig vid start&nbsp;</label><br />`),
       label4 = $(`<label for="${id4}">Redigera genväg&nbsp;</label><br />`),
       label5 = $(`<br /><label for="${id6}">Tillträde</label><br />`),
-      label6 = $(`<label for="${id7}">Infobox</label><br />`),
+      label6 = $(
+        `<label for="${id7}">Infoklick (åsidosätter lagrets egen)</label><br />`
+      ),
       label7 = $(`<label for="${id8}">Infodokument&nbsp;</label>`).css(
         groupCheckboxLabelStyle
       ),
@@ -227,7 +251,9 @@ $.fn.editable = function (component) {
       input = $("<input />"),
       input2 = $(`<input id="${id5}" type="text" placeholder="Ny länk"/>`),
       input3 = $(`<input id="${id6}" type="text" />`),
-      input4 = $(`<textarea id="${id7}" type="text"></textarea>`),
+      infoboxContainer = $(
+        `<div id="${id7}" class="infoclick-editor-mount"></div>`
+      ),
       input5 = $(`<input id="${id9}" type="text"/>`).css(infoGroupLabelStyle),
       input6 = $(`<textarea id="${id10}" type="text"></textarea>`).css(
         infoGroupInputStyle
@@ -253,6 +279,8 @@ $.fn.editable = function (component) {
       editPreset = $('<div class=""></div>'),
       elem = node.get(0) || {};
 
+    let infoboxValue = node.parent().attr("data-infobox") || "";
+
     ok.css(btnCSS).click(store);
 
     layerOk.css(btnCSS).click(saveLayer);
@@ -276,7 +304,10 @@ $.fn.editable = function (component) {
       checkbox2.attr("checked", JSON.parse(node.parent().attr("data-toggled")));
     }
     if (node.parent().attr("data-exclusive")) {
-      checkbox6.attr("checked", JSON.parse(node.parent().attr("data-exclusive")));
+      checkbox6.attr(
+        "checked",
+        JSON.parse(node.parent().attr("data-exclusive"))
+      );
     }
 
     if (node.parent().attr("data-infogroupvisible")) {
@@ -295,10 +326,6 @@ $.fn.editable = function (component) {
     if (node.parent().attr("data-visibleforgroups")) {
       input3.val(node.parent().attr("data-visibleforgroups"));
     }
-    if (node.parent().attr("data-infobox")) {
-      input4.val(node.parent().attr("data-infobox"));
-    }
-
     if (node.parent().attr("data-infogrouptitle")) {
       input5.val(node.parent().attr("data-infogrouptitle"));
     }
@@ -375,7 +402,7 @@ $.fn.editable = function (component) {
       visible.append(label5, input3);
     }
 
-    visible.append(label6, input4);
+    visible.append(label6, infoboxContainer);
     editPreset.append(label4, checkbox4, input2);
 
     remove.css({ color: "red", marginRight: "4px" }).click((e) => {
@@ -434,6 +461,23 @@ $.fn.editable = function (component) {
     if (node.hasClass("layer-name") && !elem.editing) {
       elem.editing = true;
       node.before(remove).after(layerTools);
+
+      const layerId = node.parent().attr("data-id");
+      const fullLayer = component.props.model
+        .get("layers")
+        .find((l) => l.id === layerId);
+
+      ReactDOM.render(
+        <MapInfoboxEditor
+          model={component.props.model}
+          layer={fullLayer}
+          initialValue={infoboxValue}
+          onChange={(html) => {
+            infoboxValue = html;
+          }}
+        />,
+        infoboxContainer[0]
+      );
     }
 
     if (node.hasClass("preset-name") && !elem.editing) {
@@ -459,6 +503,16 @@ $.fn.editable = function (component) {
   };
 
   var onClick = (e) => {
+    // Don't intercept clicks that originate inside our React-mounted
+    // Infoklick/Infobox editor (infoboxContainer, class
+    // "infoclick-editor-mount"). React 16's synthetic event system relies
+    // on the native click bubbling all the way up to `document`, and
+    // stopPropagation() here would silently swallow every button/select
+    // interaction inside it (Hämta attribut, Visuell/Kod, formatting
+    // buttons, the attribute picker) with no visible error at all.
+    if ($(e.target).closest(".infoclick-editor-mount").length) {
+      return;
+    }
     enableEdit(e);
     e.stopPropagation();
   };
@@ -620,13 +674,14 @@ class Menu extends Component {
           cqlFilterVisible:
             existingConfig.cqlFilterVisible ?? this.state.cqlFilterVisible,
           showLegendByDefault:
-            existingConfig.showLegendByDefault ?? this.state.showLegendByDefault,
+            existingConfig.showLegendByDefault ??
+            this.state.showLegendByDefault,
           renderSpecialBackgroundsAtBottom:
             existingConfig.renderSpecialBackgroundsAtBottom ??
             this.state.renderSpecialBackgroundsAtBottom,
         });
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       });
     });
 
@@ -648,7 +703,7 @@ class Menu extends Component {
       }, 0);
 
       $(".tree-view li").editable(this);
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
     });
 
     defaultState.layers = this.props.model.get("layers");
@@ -660,7 +715,7 @@ class Menu extends Component {
    */
   update() {
     $(".tree-view li").editable(this);
-    $(".tree-view > ul").sortable();
+    $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
   }
 
   /**
@@ -1027,7 +1082,7 @@ class Menu extends Component {
         });
 
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
 
         this.setState({
           content: "mapsettings",
@@ -1448,7 +1503,7 @@ class Menu extends Component {
     });
 
     setTimeout(() => {
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       this.setState({
         drawOrder: true,
       });

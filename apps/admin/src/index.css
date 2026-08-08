@@ -244,9 +244,7 @@ article fieldset > span > div {
   cursor: pointer;
   font-size: 20px;
   margin-right: 10px;
-  transition:
-    color 0.15s ease,
-    transform 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .config-layer-list li i.fa-info {
@@ -887,6 +885,19 @@ figure img {
   margin-bottom: 1rem;
 }
 
+/* Bootstrap's own @media(min-width:576px) rule caps every .modal-dialog at
+   500px, which suits short confirm/settings dialogs fine but is far too
+   cramped for a dialog hosting arbitrary form content (e.g. the layer
+   settings dialog with Infoklick's toolbar/editor). alert.jsx adds this
+   class only to its "react content" dialog branch - confirm dialogs and
+   the style/queryable-only settings popup keep Bootstrap's narrower
+   default. max-width here wins over Bootstrap's rule since this
+   stylesheet loads after bootstrap.min.css; horizontal centering still
+   comes from Bootstrap's own margin-left/right:auto on .modal-dialog. */
+.modal-dialog-wide {
+  max-width: min(900px, 92vw);
+}
+
 .modal-content {
   max-height: calc(100vh - 2rem);
   display: flex;
@@ -915,6 +926,81 @@ figure img {
   font-family: monospace;
   font-size: 0.8rem;
   height: 100px;
+}
+
+.InfoclickEditor {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.InfoclickEditor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.InfoclickEditor-modeToggle button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-modeToggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.InfoclickEditor-modeToggle button.active {
+  color: #fff;
+  background: #33a6dc;
+}
+
+.InfoclickEditor-attributePicker button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-attributePicker select {
+  margin-left: 6px;
+}
+
+.InfoclickEditor-fetchError {
+  margin-left: 8px;
+  color: #b71c1c;
+  font-size: 0.85rem;
+}
+
+.InfoclickEditor-editor {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-height: 100px;
+}
+
+.MapInfoboxEditor-note {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  margin: 0 0 8px 0;
+}
+
+.MapInfoboxEditor-sublayerPicker {
+  margin-bottom: 8px;
+}
+
+.ic-token-chip {
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-family: monospace;
 }
 
 .layerDialog .form-row {

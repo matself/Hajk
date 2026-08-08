@@ -5,8 +5,10 @@ Det här dokumentet beskriver skalet runt lagerformulären i Admin — fliken **
 - [admin-wms-layer-form.md](admin-wms-layer-form.md) + [admin-wms-layer-settings.md](admin-wms-layer-settings.md) (WMS)
 - [admin-wmts-layer-form.md](admin-wmts-layer-form.md) (WMTS)
 - [admin-xyz-layer-form.md](admin-xyz-layer-form.md) (XYZ)
+- [admin-vector-layer-form.md](admin-vector-layer-form.md) (Vektor)
+- [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md) (ArcGIS)
 
-ArcGIS och Vektor har egna formulärkomponenter (`arcgislayerform.jsx`, `vectorlayerform.jsx`) men delar samma skal och samma Metadata/Infodokument/Tidslinjedatum-mönster som redan beskrivits för WMS/WMTS/XYZ — inte ännu dokumenterade var för sig.
+Alla fem delar samma skal och samma Metadata/Infodokument-mönster (Tidslinjedatum finns bara för WMS/Vektor).
 
 ## Layout
 
@@ -43,7 +45,7 @@ Visas bara i redigeringsläge. Återställer hela vyn till tillägg-läge utan a
 
 ## Beskriv lager (attributtabell)
 
-Vissa lagerformulär (Vektor/WFS) kan anropa `describeLayer`, som hämtar attributnamn och -typer för ett valt lager via WFS `DescribeFeatureType` och visar dem i högerspalten. Praktiskt för att hitta rätt attributnamn till fält som Sökfält, Geometrifält eller Visningsfält utan att behöva slå upp det i en extern GIS-klient.
+Både Vektor/WFS- och ArcGIS-formulären har en egen `describeLayer`-funktion (info-ikonen bredvid varje rad i "Tillgängliga lager") som hämtar attributnamn och -typer för ett valt lager — via WFS `DescribeFeatureType` för Vektor, via tjänstens egen beskrivnings-API för ArcGIS — och visar dem i högerspalten. Praktiskt för att hitta rätt attributnamn till fält som Sökfält, Geometrifält eller Visningsfält (Vektor), eller bara för att skriva [`{attributnamn}`-platshållare](admin-infoklick-mallformat.md) i Inforuta för hand (ArcGIS, som saknar "Hämta attribut" i själva Inforuta-fältet, se [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md)) — utan att behöva slå upp det i en extern GIS-klient.
 
 ## Bilduppladdning (Teckenförklaring/-ikon)
 
@@ -51,4 +53,4 @@ Vissa lagerformulär (Vektor/WFS) kan anropa `describeLayer`, som hämtar attrib
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-08-04. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*

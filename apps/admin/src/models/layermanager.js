@@ -233,12 +233,18 @@ var manager = Model.extend({
         typename: layer,
       },
       success: (data) => {
-        var parser = new X2JS(),
-          xmlstr = data.xml
-            ? data.xml
-            : new XMLSerializer().serializeToString(data),
-          apa = parser.xml2js(xmlstr);
+        // Not every WMS also exposes WFS DescribeFeatureType on the same
+        // endpoint - some servers (e.g. Naturvårdsregistret) ignore the
+        // service/request params entirely and just return their normal
+        // WMS GetCapabilities document instead. That means `data` may not
+        // even be a parseable XML Node, so the whole thing - not just the
+        // schema navigation below - needs to be guarded.
         try {
+          var parser = new X2JS(),
+            xmlstr = data.xml
+              ? data.xml
+              : new XMLSerializer().serializeToString(data),
+            apa = parser.xml2js(xmlstr);
           var props =
             apa.schema.complexType.complexContent.extension.sequence.element.map(
               (a) => {
@@ -258,6 +264,9 @@ var manager = Model.extend({
         } catch (e) {
           callback(false);
         }
+      },
+      error: () => {
+        callback(false);
       },
     });
   },
@@ -440,14 +449,14 @@ var manager = Model.extend({
     // backend instead, which fetches server-side and returns the raw XML.
     // Unauthenticated services use direct browser fetch.
     if (auth && auth.username) {
-      var promises = [];
+      var authPromises = [];
       var endpoint = this.get("config").url_layers.replace(
         /\/layers\/?$/,
         "/wmscapabilities"
       );
 
       versions.forEach((version) => {
-        promises.push(
+        authPromises.push(
           hfetch(endpoint, {
             method: "POST",
             cache: "no-cache",
@@ -476,7 +485,7 @@ var manager = Model.extend({
         );
       });
 
-      return Promise.all(promises).then((values) =>
+      return Promise.all(authPromises).then((values) =>
         values.filter(
           (wms, i, self) =>
             self.findIndex((w) => w.version === wms.version) === i
