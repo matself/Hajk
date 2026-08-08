@@ -28,7 +28,7 @@ class Info extends Component {
             koordinatsystem
           </li>
           <li>
-            <b>Favorit/Bokmärkesverktyg</b> - skapa personliga bokmärken
+            <b>Platser</b> - spara personliga platser i kartan
           </li>
           <li>
             <b>Utskrift</b>

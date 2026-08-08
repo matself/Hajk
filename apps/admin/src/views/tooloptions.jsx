@@ -174,7 +174,7 @@ class ToolOptions extends Component {
 
   render() {
     var toolTypes = {
-      bookmarks: "Bokmärken",
+      bookmarks: "Platser",
       buffer: "Buffra",
       anchor: "Dela",
       documenthandler: "Dokumenthanterare",
@@ -192,7 +192,7 @@ class ToolOptions extends Component {
       location: "Positionera",
       edit: "Redigera",
       sketch: "Rita",
-      preset: "Snabbval",
+      preset: "Genvägar",
       search: "Sök",
       timeslider: "Tidslinje",
       collector: "Tyck till",

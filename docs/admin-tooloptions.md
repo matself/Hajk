@@ -12,7 +12,7 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 
 | Codename | Visningsnamn | Formulärfil |
 |---|---|---|
-| bookmarks | Bokmärken | `tools/bookmarks.jsx` |
+| bookmarks | Platser | `tools/bookmarks.jsx` |
 | buffer | Buffra | `tools/buffer.jsx` |
 | anchor | Dela | `tools/anchor.jsx` |
 | documenthandler | Dokumenthanterare | `tools/MenuEditor/menuEditor.jsx` |
@@ -30,7 +30,7 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 | location | Positionera | `tools/location.jsx` |
 | edit | Redigera | `tools/edit.jsx` |
 | sketch | Rita | `tools/sketch.jsx` |
-| preset | Snabbval | `tools/preset.jsx` |
+| preset | Genvägar | `tools/preset.jsx` |
 | search | Sök | `tools/search.jsx` |
 | timeslider | Tidslinje | `tools/timeslider.jsx` |
 | collector | Tyck till | `tools/collector.jsx` |
@@ -75,9 +75,9 @@ Färdiga hittills:
 - [Om kartan (information)](admin-tool-information.md)
 - [Dela (anchor)](admin-tool-anchor.md)
 - [Positionera (location)](admin-tool-location.md)
-- [Bokmärken (bookmarks)](admin-tool-bookmarks.md)
+- [Platser (bookmarks)](admin-tool-bookmarks.md)
 - [Tyck till e-post (mailform)](admin-tool-mailform.md)
-- [Snabbval (preset)](admin-tool-preset.md)
+- [Genvägar (preset)](admin-tool-preset.md)
 - [Visa koordinat (coordinates)](admin-tool-coordinates.md)
 - [Lagerjämförare (layercomparer)](admin-tool-layercomparer.md)
 - [OSM-sökning (osmsearch)](admin-tool-osmsearch.md)

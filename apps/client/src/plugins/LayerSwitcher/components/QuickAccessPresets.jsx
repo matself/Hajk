@@ -509,7 +509,7 @@ function QuickAccessPresets({
               </LsIconButton>
             </HajkToolTip>
             <Box sx={{ flexGrow: 1, textAlign: "center" }}>
-              <Typography variant="subtitle1">Teman</Typography>
+              <Typography variant="subtitle1">Färdiga teman</Typography>
             </Box>
             <LsIconButton onClick={handleInfoButtonClick}>
               <HajkToolTip title={infoIsActive ? "Dölj info" : "Visa info"}>

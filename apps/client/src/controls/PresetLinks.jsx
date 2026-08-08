@@ -35,7 +35,7 @@ class Preset extends React.PureComponent {
     // Else, if we're still here, go on.
     this.options = this.config.options;
     this.map = props.appModel.getMap();
-    this.title = this.options.title || "Snabbval";
+    this.title = this.options.title || "Genvägar";
 
     this.location = null;
     this.zoom = null;
@@ -105,7 +105,7 @@ class Preset extends React.PureComponent {
         }
       );
       console.error(
-        "Fel i verktyget Snabbval. Länken til : \n" +
+        "Fel i verktyget Genvägar. Länken til : \n" +
           item.name +
           "\n" +
           item.presetUrl +
@@ -190,8 +190,8 @@ class Preset extends React.PureComponent {
       return createPortal(
         <Dialog
           options={{
-            text: "Alla tända lager i kartan, inklusive bakgrundskartan, kommer nu att släckas. Snabbvalets fördefinierade lager tänds istället.",
-            headerText: "Visa snabbval",
+            text: "Alla tända lager i kartan, inklusive bakgrundskartan, kommer nu att släckas. Genvägens fördefinierade lager tänds istället.",
+            headerText: "Visa genväg",
             buttonText: "OK",
             abortText: "Avbryt",
             useLegacyNonMarkdownRenderer: true,

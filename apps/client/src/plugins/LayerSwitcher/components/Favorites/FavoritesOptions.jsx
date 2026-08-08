@@ -21,6 +21,7 @@ export default function FavoritesOptions({
   addFavoriteCallback,
   favorites,
   functionalCookiesOk,
+  currentMapConfigName,
 }) {
   // Element that we will anchor the options menu to is
   // held in state. If it's null (unanchored), we can tell
@@ -88,7 +89,7 @@ export default function FavoritesOptions({
           functionalCookiesOk ? handleShowMoreOptionsClick : handleEditFavorites
         }
       >
-        <HajkToolTip title="Mina favoriter">
+        <HajkToolTip title="Mina teman">
           <PersonOutlinedIcon />
         </HajkToolTip>
       </IconButton>
@@ -110,16 +111,19 @@ export default function FavoritesOptions({
           <ListItemIcon>
             <LibraryAddOutlinedIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Spara till favoriter</ListItemText>
+          <ListItemText>Spara till mina teman</ListItemText>
         </MenuItem>
         <MenuItem id="edit-favorites" onClick={handleEditFavorites}>
           <ListItemIcon>
             <EditOutlinedIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Redigera favoriter</ListItemText>
+          <ListItemText>Redigera mina teman</ListItemText>
         </MenuItem>
         {favorites.length > 0 && <Divider />}
         {favorites.map((favorite) => {
+          const isOtherMap =
+            favorite.metadata.mapConfigName &&
+            favorite.metadata.mapConfigName !== currentMapConfigName;
           return (
             <MenuItem
               key={favorite.metadata.title}
@@ -128,7 +132,20 @@ export default function FavoritesOptions({
               <ListItemIcon>
                 <LayersOutlinedIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText>{favorite.metadata.title}</ListItemText>
+              <ListItemText
+                slotProps={{
+                  primary: {
+                    sx: (theme) => ({
+                      color: isOtherMap
+                        ? theme.palette.warning.main
+                        : undefined,
+                    }),
+                  },
+                }}
+              >
+                {favorite.metadata.title}
+                {isOtherMap && ` (${favorite.metadata.mapConfigName})`}
+              </ListItemText>
             </MenuItem>
           );
         })}

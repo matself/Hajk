@@ -48,7 +48,7 @@ Om LayerSwitcher-verktyget överhuvudtaget ska vara aktivt i kartan.
 | Visa brödsmulor | Visar små kort längst ner på skärmen, ett per aktivt lager. |
 | Visa en flik med ritordning | Lägger till en flik i lagerhanterarens gränssnitt (i Klienten) för att låta slutanvändaren själv ändra ritordning på tända lager — se egen sektion nedan. |
 | Visa filter | Visar ett textfilter i lagerhanteraren. |
-| Visa en grupp med snabbåtkomst | Visar snabbåtkomst-gruppen (teman/favoriter) i lagerhanteraren — se "Teman" nedan. |
+| Visa en grupp med snabbåtkomst | Visar snabbåtkomst-gruppen (teman) i lagerhanteraren — se "Teman" nedan. |
 | Försök göra teckenförklaring transparent (Experimentell) | Försöker göra GetLegendGraphic transparent och lägger till bakgrund; text blir vit i dark mode för GeoServer. |
 | Försök hämta teckenförklaring i 180dpi (Experimentell) | Begär legend-bilder i högre upplösning. |
 | Visa transparensreglage | Global på/av-switch. Måste vara ikryssad för att transparensreglage ska kunna visas för *något* lager, oavsett per-lager-inställning. |
@@ -67,10 +67,10 @@ Gäller "Visa en flik med ritordning" ovan — en flik i Klientens lagerhanterar
 
 ### Inställningar för grupp med snabbåtkomst
 
-- **Ladda tema** — om användaren får ladda fördefinierade teman (se "Teman" nedan) till sin snabbåtkomst.
-- **Infotext Ladda tema** — instruktionstext i den panelen.
-- **Mina favoriter** — om användaren får spara egna favoritval av lager/bakgrund till senare.
-- **Infotext Mina favoriter** — instruktionstext i den panelen.
+- **Färdiga teman** — om användaren får ladda administratörens fördefinierade teman (se "Teman" nedan) till sin snabbåtkomst.
+- **Infotext Färdiga teman** — instruktionstext i den panelen.
+- **Mina teman** — om användaren får spara sina egna lager-/bakgrundsval som teman, för att kunna ladda dem senare. Sparas lokalt i webbläsaren, inte i Hajks backend.
+- **Infotext Mina teman** — instruktionstext i den panelen.
 
 ### Kartinställningar (temakarta)
 
@@ -113,7 +113,7 @@ Röda minus-ikonen (till vänster om namnet) tar bort noden — för en grupp ta
 
 ## Teman (snabbåtkomst)
 
-Hanterar färdiga "teman" — fördefinierade uppsättningar av tända/släckta lager plus bakgrund — som slutanvändare kan ladda via snabbåtkomst-gruppen i lagerhanteraren (se kryssrutan "Ladda tema" ovan).
+Hanterar färdiga teman — administratörsdefinierade uppsättningar av tända/släckta lager plus bakgrund — som slutanvändare kan ladda via snabbåtkomst-gruppen i lagerhanteraren (se kryssrutan "Färdiga teman" ovan). Skiljer sig från slutanvändarens egna "Mina teman", som sparas lokalt i webbläsaren och inte redigeras här.
 
 - **JSON-fil\*** — en exporterad temafil (lagerdefinitioner) att importera.
 - **Titel\*** — namnet som visas för temat i Klienten.
