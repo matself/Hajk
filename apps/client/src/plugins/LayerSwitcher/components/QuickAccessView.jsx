@@ -84,7 +84,7 @@ const QuickAccessView = ({
 
     // Show snackbar
     enqueueSnackbar &&
-      enqueueSnackbar(`Tända lager har nu lagts till i snabbåtkomst.`, {
+      enqueueSnackbar(`Tända lager har nu lagts till i teman.`, {
         variant: "success",
         anchorOrigin: { vertical: "bottom", horizontal: "center" },
       });
@@ -152,7 +152,7 @@ const QuickAccessView = ({
             </LsIconButton>
 
             <ListItemText
-              primary="Snabbåtkomst"
+              primary="Teman"
               slotProps={{
                 primary: {
                   variant: "body1",
@@ -207,7 +207,7 @@ const QuickAccessView = ({
         <ConfirmationDialog
           open={showDeleteConfirmation === true}
           titleName="Rensa allt"
-          contentDescription="Alla lager i snabbåtkomst kommer nu att tas bort."
+          contentDescription="Alla lager i teman kommer nu att tas bort."
           cancel="Avbryt"
           confirm="Rensa"
           handleConfirm={handleClearQuickAccessLayers}

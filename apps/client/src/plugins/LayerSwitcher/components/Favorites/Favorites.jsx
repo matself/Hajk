@@ -178,7 +178,7 @@ function Favorites({
       });
     }
 
-    enqueueSnackbar(`${title} har nu laddats till snabbåtkomst.`, {
+    enqueueSnackbar(`${title} har nu laddats till teman.`, {
       variant: "success",
       anchorOrigin: { vertical: "bottom", horizontal: "center" },
     });
@@ -258,7 +258,7 @@ function Favorites({
 
     if (layers.length === 0) {
       enqueueSnackbar(
-        "Inga lager i snabbåtkomst tillagda, därmed inget att spara.",
+        "Inga lager i teman tillagda, därmed inget att spara.",
         {
           variant: "warning",
           anchorOrigin: { vertical: "bottom", horizontal: "center" },
@@ -535,8 +535,8 @@ function Favorites({
         </DialogTitle>
         <DialogContent>
           <Typography id="save-favorite-dialog-description" sx={{ mb: 1 }}>
-            Spara aktuell snabbåtkomst som ett tema lokalt på din enhet så att
-            du kan använda det senare.
+            Spara det aktuella innehållet i Teman som ett eget tema lokalt på
+            din enhet så att du kan använda det senare.
           </Typography>
           <TextField
             fullWidth
@@ -597,7 +597,7 @@ function Favorites({
       <ConfirmationDialog
         open={loadDialog}
         titleName={"Ladda tema"}
-        contentDescription="Vid laddning ersätts lagren i snabbåtkomst. Alla tända lager i
+        contentDescription="Vid laddning ersätts lagren i teman. Alla tända lager i
 				kartan släcks och ersätts med temats tända lager."
         cancel={"Avbryt"}
         confirm={"Ladda"}
@@ -609,7 +609,7 @@ function Favorites({
       <ConfirmationDialog
         open={openNoLayersAlert}
         titleName={"Spara till mina teman"}
-        contentDescription="Det finns inga lager i snabbåtkomst. Vänligen lägg till lager för att spara till mina teman."
+        contentDescription="Det finns inga lager i teman. Vänligen lägg till lager för att spara till mina teman."
         cancel={"Stäng"}
         handleAbort={() => {
           setOpenNoLayersAlert(false);

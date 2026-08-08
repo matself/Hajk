@@ -67,10 +67,10 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     intro: "Använd reglaget för att ändra lagrets transparens.",
   },
   {
-    title: "Snabbåtkomst-knapp",
+    title: "Teman-knapp",
     element: "#layer-details-quick-access-button",
     intro:
-      "<b>Lägg till i snabbåtkomst:</b> lagret läggs till i snabbåtkomstmenyn under fliken Kartlager. <br><br> <b>Ta bort från snabbåtkomst:</b> lagret tas bort från snabbåtkomstmenyn under fliken Kartlager.",
+      "<b>Lägg till i teman:</b> lagret läggs till i temamenyn under fliken Kartlager. <br><br> <b>Ta bort från teman:</b> lagret tas bort från temamenyn under fliken Kartlager.",
   },
   {
     title: "Flikar i " + layerSwitcherPlugin.options.title,
@@ -100,21 +100,21 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
       "Här kan du se och ändra ordningen för systemlager. <br><br> Dra och släpp lager för att ändra ordningen.",
   },
   {
-    title: "Snabbåtkomst",
+    title: "Teman",
     element: "#quick-access-view",
-    intro: "Här listas och hanteras sparade lager för snabbåtkomst.",
+    intro: "Här listas och hanteras sparade lager för teman.",
   },
   {
-    title: "Snabbåtkomst-meny",
+    title: "Teman-meny",
     element: "#quick-access-menu-button",
     intro:
-      "Klicka på menyknappen (de tre prickarna) i snabbåtkomst. <br><br> <b>I menyn finns funktioner för att:</b> <br> - lägga till aktiverade lager <br> - rensa allt",
+      "Klicka på menyknappen (de tre prickarna) i teman. <br><br> <b>I menyn finns funktioner för att:</b> <br> - lägga till aktiverade lager <br> - rensa allt",
   },
   {
-    title: "Alternativ för snabbåtkomst",
+    title: "Alternativ för teman",
     element: "#quick-access-menu-content",
     intro:
-      "<b>Lägg till aktiverade lager:</b> lägger till alla aktiverade lager i snabbåtkomst. <br><br> <b>Rensa allt:</b> tar bort alla lager från snabbåtkomst.",
+      "<b>Lägg till aktiverade lager:</b> lägger till alla aktiverade lager i teman. <br><br> <b>Rensa allt:</b> tar bort alla lager från teman.",
   },
   {
     title: "Mina teman",

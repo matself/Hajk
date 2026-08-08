@@ -553,7 +553,7 @@ class Menu extends Component {
         "Här kan du ändra ritordning på tända lager i kartan. Dra lagret upp eller ner i listan och släpp på önskad plats.",
       enableQuickAccessPresets: false,
       quickAccessTopicsInfoText:
-        "Här kan du ladda färdiga teman till snabbåtkomst. Teman innehåller tända och släckta lager, samt bakgrund.",
+        "Här kan du ladda färdiga teman till temagruppen. Teman innehåller tända och släckta lager, samt bakgrund.",
       enableUserQuickAccessFavorites: false,
       userQuickAccessFavoritesInfoText:
         "Här kan du hantera och redigera dina sparade favoriter.",
@@ -644,7 +644,7 @@ class Menu extends Component {
             this.state.enableQuickAccessPresets,
           quickAccessTopicsInfoText:
             existingConfig.quickAccessTopicsInfoText ||
-            "Här kan du ladda färdiga teman till snabbåtkomst. Teman innehåller tända och släckta lager, samt bakgrund.",
+            "Här kan du ladda färdiga teman till temagruppen. Teman innehåller tända och släckta lager, samt bakgrund.",
           enableUserQuickAccessFavorites:
             existingConfig.enableUserQuickAccessFavorites ??
             this.state.enableUserQuickAccessFavorites,
@@ -2359,11 +2359,11 @@ class Menu extends Component {
                 />
                 &nbsp;
                 <label className="long-label" htmlFor="showQuickAccess">
-                  Visa en grupp med snabbåtkomst{" "}
+                  Visa en grupp med teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad visas en grupp för snabbåtkomst i lagerhanteraren."
+                    title="När rutan är ikryssad visas en grupp för teman i lagerhanteraren."
                   />
                 </label>
               </div>
@@ -2534,7 +2534,7 @@ class Menu extends Component {
                 />
               </div>
               <div className="separator">
-                Inställningar för grupp med snabbåtkomst
+                Inställningar för grupp med teman
               </div>
               <div>
                 <input
@@ -2553,7 +2553,7 @@ class Menu extends Component {
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till snabbåtkomst."
+                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till temagruppen."
                   />
                 </label>
               </div>
@@ -2590,7 +2590,7 @@ class Menu extends Component {
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren spara sin egen snabbåtkomst som ett tema för att kunna ladda vid senare tillfälle."
+                    title="När rutan är ikryssad kan användaren spara sitt eget innehåll i temagruppen som ett tema för att kunna ladda vid senare tillfälle."
                   />
                 </label>
               </div>
@@ -2742,7 +2742,7 @@ class Menu extends Component {
           </aside>
           <article>
             <fieldset className="tree-view">
-              <legend>Hantera teman för snabbåtkomst</legend>
+              <legend>Hantera teman för temagruppen</legend>
               <div className="row">
                 <div className="col-sm-12">
                   <label htmlFor="title">

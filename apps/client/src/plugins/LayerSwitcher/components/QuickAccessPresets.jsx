@@ -193,7 +193,7 @@ function QuickAccessPresets({
       }
     });
 
-    enqueueSnackbar(`${title} har nu laddats till snabbåtkomst.`, {
+    enqueueSnackbar(`${title} har nu laddats till teman.`, {
       variant: "success",
       anchorOrigin: { vertical: "bottom", horizontal: "center" },
     });
@@ -353,7 +353,7 @@ function QuickAccessPresets({
           </Stack>
           <Divider sx={{ mt: 2 }} />
           <Typography sx={{ mt: 2, mb: 1 }}>
-            Vid laddning kommer aktuella lager i snabbåtkomst att ersättas med
+            Vid laddning kommer aktuella lager i teman att ersättas med
             temat. Alla tända lager i kartan släcks och ersätts med temats tända
             lager.
           </Typography>
@@ -387,7 +387,7 @@ function QuickAccessPresets({
         <DialogContent>
           <Typography>
             {loadLpConfirmation
-              ? `Aktuella lager i snabbåtkomst kommer nu att ersättas med tema "${loadLpConfirmation.title}". Alla tända lager i kartan släcks och ersätts med temats tända lager.`
+              ? `Aktuella lager i teman kommer nu att ersättas med tema "${loadLpConfirmation.title}". Alla tända lager i kartan släcks och ersätts med temats tända lager.`
               : ""}
             <br></br>
           </Typography>
