@@ -1,6 +1,6 @@
 # Verktyg: Dela (anchor) — fältguide
 
-Konfigurationsformulär: `apps/admin/src/views/tools/anchor.jsx`, codename `anchor`. Se [admin-tooloptions.md](admin-tooloptions.md) för det gemensamma mönstret. Skapar en delbar länk till kartans aktuella vy (lager, zoom, position).
+Konfigurationsformulär: `apps/admin/src/views/tools/anchor.jsx`, codename `anchor`. Se [admin-tooloptions.md](admin-tooloptions.md) för det gemensamma mönstret. Skapar en delbar länk till kartans aktuella vy (lager, zoom, position). Se [client-url-parameters.md](client-url-parameters.md) för fullständig referens över vilka parametrar länken kan innehålla.
 
 - Aktiverad, Sorteringsordning
 - Verktygsplacering (saknar Fönsterplacering/-bredd/-höjd — verktyget har inget eget fönsterinnehåll att storleksätta på det sättet)

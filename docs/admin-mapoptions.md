@@ -27,7 +27,7 @@ Dessa motsvarar direkt OpenLayers `View`-parametrar.
 
 **Tillåt nedladdning av WMS-lager** (`enableDownloadLink`) — visar en nedladdningsknapp bredvid varje lager i lagerhanteraren.
 
-**Beta: aktivera liveuppdatering av hashparametrar i URL-fältet** (`enableAppStateInHash`) — håller kartans tillstånd ständigt uppdaterat i URL:ens `#`-parametrar. Se [issue #1252](https://github.com/hajkmap/Hajk/issues/1252).
+**Beta: aktivera liveuppdatering av hashparametrar i URL-fältet** (`enableAppStateInHash`) — håller kartans tillstånd ständigt uppdaterat i URL:ens `#`-parametrar. Se [issue #1252](https://github.com/hajkmap/Hajk/issues/1252) och [client-url-parameters.md](client-url-parameters.md) för vad som ingår i URL:en.
 
 **Beta: varna om osparade ritningar/mätningar vid stängning** (`confirmOnWindowClose`) — visar en bekräftelseruta om det finns osparade ändringar (t.ex. pågående ritning) när fönstret ska stängas. Se [issue #1403](https://github.com/hajkmap/Hajk/issues/1403).
 
@@ -64,7 +64,7 @@ Styr OpenLayers standardinteraktioner direkt, se [OpenLayers-dokumentationen](ht
 |---|---|
 | Visa kartväljare | Väljare för att byta mellan flera tillgängliga kartor (bara om det finns fler än en). Undermeny styr om den visas som knapp eller som rullista i sidhuvudet (endast desktop). |
 | Visa knapp för att rensa kartan | Knapp som nollställer allt användaren ritat/lagt till. |
-| Visa en hemknapp som återställer kartans innehåll till startläge | Återställer synliga lager, zoom och position till kartans ursprungsläge. |
+| Visa en hemknapp som återställer kartans innehåll till startläge | Återställer zoom och centrumkoordinat till administratörens konfigurerade standardvärden ovan — oavsett hur kartan öppnades (t.ex. via en länk med `x`/`y`/`z`, se [client-url-parameters.md](client-url-parameters.md)). Återställer **inte** vilka lager som är synliga. |
 | Visa knapp för att byta mellan ljust och mörkt tema | — |
 | Visa en knapp med användarens initialer intill zoomknapparna | Kräver att AD-koppling är aktiv. |
 | Visa en snabbväljare med de senast använda verktygen | En liten kontroll som vid hover/touch visar senast använda verktyg — särskilt användbar i mobilläge. |

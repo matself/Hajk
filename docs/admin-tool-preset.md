@@ -6,7 +6,7 @@ Administratörsdefinierade genvägar (till skillnad från [Platser](admin-tool-b
 
 - Aktiverad, Sorteringsordning
 - Tillträde
-- **Lägg till genväg** — Namn\* och Url\* (t.ex. `?m=map_1&x=147325.27&y=6398754.17&z=4&l=10`), läggs till i listan under.
+- **Lägg till genväg** — Namn\* och Url\* (t.ex. `?m=map_1&x=147325.27&y=6398754.17&z=4&l=10`), läggs till i listan under. Se [client-url-parameters.md](client-url-parameters.md) för fullständig referens över URL-syntaxen, inklusive vilka parametrar som är obligatoriska för just genvägar.
 - **Lista över aktiva genvägar** — varje rad kan redigeras (pennikon) eller raderas inline.
 
 ---
