@@ -376,6 +376,9 @@ async function assembleNodeRelease(nodeReleaseDir, backendDistDir, adminBuildDir
   await cp(path.join(backendDistDir, "common"), path.join(nodeReleaseDir, "common"), {
     recursive: true,
   });
+  await cp(path.join(backendDistDir, "utils"), path.join(nodeReleaseDir, "utils"), {
+    recursive: true,
+  });
   await cp(path.join(backendDistDir, "index.js"), path.join(nodeReleaseDir, "index.js"));
   await cp(path.join(backendDistDir, "routes.js"), path.join(nodeReleaseDir, "routes.js"));
 
