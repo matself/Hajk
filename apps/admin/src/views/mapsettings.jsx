@@ -2533,9 +2533,7 @@ class Menu extends Component {
                   value={this.state.drawOrderViewInfoText}
                 />
               </div>
-              <div className="separator">
-                Inställningar för grupp med teman
-              </div>
+              <div className="separator">Inställningar för grupp med teman</div>
               <div>
                 <input
                   id="enableQuickAccessPresets"

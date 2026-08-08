@@ -182,8 +182,8 @@ function FavoritesList({
           )}
           <Divider sx={{ mt: 2 }} />
           <Typography sx={{ mt: 2, mb: 1 }}>
-            Vid laddning ersätts lagren i teman. Alla tända lager i
-            kartan släcks och ersätts med temats tända lager.
+            Vid laddning ersätts lagren i teman. Alla tända lager i kartan
+            släcks och ersätts med temats tända lager.
           </Typography>
         </DialogContent>
         <DialogActions>

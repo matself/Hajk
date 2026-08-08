@@ -257,13 +257,10 @@ function Favorites({
     });
 
     if (layers.length === 0) {
-      enqueueSnackbar(
-        "Inga lager i teman tillagda, därmed inget att spara.",
-        {
-          variant: "warning",
-          anchorOrigin: { vertical: "bottom", horizontal: "center" },
-        }
-      );
+      enqueueSnackbar("Inga lager i teman tillagda, därmed inget att spara.", {
+        variant: "warning",
+        anchorOrigin: { vertical: "bottom", horizontal: "center" },
+      });
       return;
     }
 

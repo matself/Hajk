@@ -353,9 +353,8 @@ function QuickAccessPresets({
           </Stack>
           <Divider sx={{ mt: 2 }} />
           <Typography sx={{ mt: 2, mb: 1 }}>
-            Vid laddning kommer aktuella lager i teman att ersättas med
-            temat. Alla tända lager i kartan släcks och ersätts med temats tända
-            lager.
+            Vid laddning kommer aktuella lager i teman att ersättas med temat.
+            Alla tända lager i kartan släcks och ersätts med temats tända lager.
           </Typography>
         </DialogContent>
         <DialogActions>
