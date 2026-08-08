@@ -78,11 +78,15 @@ cd apps/admin && npm run build
 
 1. Always branch from `develop`
 2. Branch naming: `feature/ISSUE_NUM-description` (e.g., `feature/1234-blue-button`)
-3. Update CHANGELOG.md under "Unreleased" with format:
+3. Update the changelog under "Unreleased" with format:
 
    ```markdown
    - area: Description. [#issue-number](https://github.com/hajkmap/Hajk/issues/issue-number)
    ```
+
+   This fork (`matself/Hajk`) tracks two changelogs so it can still be diffed/merged cleanly against `upstream/develop`:
+   - `CHANGELOG.md` — mirrors upstream exactly. Only touch this for changes that also exist in / are intended for `hajkmap/Hajk`.
+   - `CHANGELOG.fork.md` — fork-only changes (not upstreamed, e.g. the admin password gate, WMTS auth proxy). This is where most work on this fork should be recorded.
 
 ## Code Patterns
 
