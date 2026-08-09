@@ -209,11 +209,15 @@ const createDispatch = (map, staticLayerConfig, staticLayerTree) => {
     },
     setSubLayersVisible(layerId, subLayers) {
       const olLayer = map.getAllLayers().find((l) => l.get("name") === layerId);
-      const allSubLayers = olLayer.get("allSublayers");
+      const allSubLayers = olLayer.get("allSubLayers");
 
-      const subLayersToShow = Array.isArray(subLayers)
-        ? subLayers
-        : allSubLayers;
+      // An empty (or missing) subLayers list means "no specific selection was
+      // saved" (e.g. an older export, or the group was toggled fully on) —
+      // fall back to showing every sub-layer instead of hiding the group.
+      const subLayersToShow =
+        Array.isArray(subLayers) && subLayers.length > 0
+          ? subLayers
+          : allSubLayers;
       setOLSubLayers(olLayer, subLayersToShow);
     },
     setGroupVisibility(groupId, visible) {

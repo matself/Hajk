@@ -247,10 +247,21 @@ function Favorites({
     // Grab layers to be saved by…
     const layers = getQuickAccessLayers().map((l) => {
       // Create an array of objects. For each layer, we want to read its…
+      const currentSubLayers = l.get("subLayers");
       return {
         id: l.get("name"),
         visible: l.getVisible(),
-        subLayers: l.get("layerType") === "group" ? l.get("subLayers") : [],
+        // Fall back to all sub-layers if the group is visible but its
+        // sub-layer selection is (unexpectedly) empty, so we never save a
+        // self-contradictory visible:true + subLayers:[] combination.
+        subLayers:
+          l.get("layerType") === "group"
+            ? currentSubLayers?.length > 0
+              ? currentSubLayers
+              : l.get("visible")
+                ? l.get("allSubLayers")
+                : []
+            : [],
         opacity: l.getOpacity(),
         drawOrder: l.getZIndex(),
       }; // …name as id, visibility and potentially sublayers.
