@@ -250,10 +250,14 @@ class CoordinatesModel {
       const noDataValue = feature?.properties?.nodatavalue;
       const height = typeof z === "number" && z !== noDataValue ? z : null;
 
-      this.localObserver.publish("newHeight", { height });
+      this.localObserver.publish("newHeight", { height, failed: false });
     } catch (error) {
+      // Distinguish a failed call (e.g. proxy not enabled in backend .env,
+      // wrong credentials, network error) from a successful response that
+      // simply lacks elevation data for the given point - otherwise both
+      // cases would look identical ("Ingen höjddata") to the user.
       console.error("Kunde inte hämta markhöjd.", error);
-      this.localObserver.publish("newHeight", { height: null });
+      this.localObserver.publish("newHeight", { height: null, failed: true });
     }
   };
 
