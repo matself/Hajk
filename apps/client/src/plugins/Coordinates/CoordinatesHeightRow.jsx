@@ -20,6 +20,7 @@ const StyledIconButton = styled(IconButton)(({ _theme }) => ({
 class CoordinatesHeightRow extends React.PureComponent {
   state = {
     height: undefined,
+    failed: false,
   };
 
   constructor(props) {
@@ -27,14 +28,17 @@ class CoordinatesHeightRow extends React.PureComponent {
     this.model = this.props.model;
     this.localObserver = this.props.model.localObserver;
 
-    this.localObserver.subscribe("newHeight", ({ height }) => {
-      this.setState({ height });
+    this.localObserver.subscribe("newHeight", ({ height, failed }) => {
+      this.setState({ height, failed: failed ?? false });
     });
   }
 
   formatHeight() {
-    return typeof this.state.height === "number"
-      ? this.state.height.toFixed(2)
+    if (typeof this.state.height === "number") {
+      return this.state.height.toFixed(2);
+    }
+    return this.state.failed
+      ? "Kunde inte hämta markhöjd"
       : "Ingen höjddata";
   }
 
