@@ -2,6 +2,10 @@ node_modules/
 releases/*
 !releases/.gitkeep
 
+### Claude Code ###
+# Local session state, settings, and agent worktrees - never repo content.
+.claude/
+
 ### VS Code ###
 .vscode/*
 !.vscode/settings.json
