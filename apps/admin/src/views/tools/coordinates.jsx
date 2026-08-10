@@ -52,6 +52,9 @@ var defaultState = {
   anchorX: 0.5,
   anchorY: 1,
   visibleForGroups: [],
+  markhojdActive: false,
+  markhojdUsername: "",
+  markhojdPassword: "",
 };
 
 class ToolOptions extends Component {
@@ -89,6 +92,9 @@ class ToolOptions extends Component {
         visibleForGroups: tool.options.visibleForGroups
           ? tool.options.visibleForGroups
           : [],
+        markhojdActive: tool.options.markhojdActive || false,
+        markhojdUsername: tool.options.markhojdUsername || "",
+        markhojdPassword: tool.options.markhojdPassword || "",
       });
     } else {
       this.setState({
@@ -105,7 +111,10 @@ class ToolOptions extends Component {
     var target = event.target;
     var name = target.name;
     var value = target.type === "checkbox" ? target.checked : target.value;
-    if (typeof value === "string" && value.trim() !== "") {
+    const keepAsString = ["markhojdUsername", "markhojdPassword"].includes(
+      name
+    );
+    if (!keepAsString && typeof value === "string" && value.trim() !== "") {
       value = !isNaN(Number(value)) ? Number(value) : value;
     }
 
@@ -145,7 +154,36 @@ class ToolOptions extends Component {
     });
   }
 
+  validate() {
+    const validationErrors = [];
+    if (this.state.markhojdActive) {
+      if (!this.state.markhojdUsername) {
+        validationErrors.push("markhojdUsername");
+      }
+      if (!this.state.markhojdPassword) {
+        validationErrors.push("markhojdPassword");
+      }
+    }
+    this.setState({ validationErrors });
+    return validationErrors.length === 0;
+  }
+
+  getValidationClass(fieldName) {
+    return this.state.validationErrors.includes(fieldName)
+      ? "validation-error"
+      : "";
+  }
+
   save() {
+    if (!this.validate()) {
+      this.props.parent.props.parent.setState({
+        alert: true,
+        alertMessage:
+          "Användarnamn och lösenord för markhöjd måste anges när funktionen är aktiverad.",
+      });
+      return;
+    }
+
     var tool = {
       type: this.type,
       index: this.state.index,
@@ -166,6 +204,9 @@ class ToolOptions extends Component {
           Function.prototype.call,
           String.prototype.trim
         ),
+        markhojdActive: this.state.markhojdActive,
+        markhojdUsername: this.state.markhojdUsername,
+        markhojdPassword: this.state.markhojdPassword,
       },
     };
 
@@ -561,6 +602,57 @@ class ToolOptions extends Component {
             />
           </div>
           {this.renderVisibleForGroups()}
+          <div className="separator">Markhöjd (Lantmäteriet)</div>
+          <div>
+            <input
+              id="markhojdActive"
+              name="markhojdActive"
+              type="checkbox"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              checked={this.state.markhojdActive}
+            />
+            &nbsp;
+            <label htmlFor="markhojdActive">
+              Visa markhöjd vid klick i kartan{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Hämtar markhöjd från Lantmäteriets Markhöjd Direkt via backend-proxyn. Kräver ett konto hos Lantmäteriet."
+              />
+            </label>
+          </div>
+          {this.state.markhojdActive && (
+            <>
+              <div>
+                <label htmlFor="markhojdUsername">Användarnamn*</label>
+                <input
+                  id="markhojdUsername"
+                  name="markhojdUsername"
+                  type="text"
+                  className={this.getValidationClass("markhojdUsername")}
+                  onChange={(e) => {
+                    this.handleInputChange(e);
+                  }}
+                  value={this.state.markhojdUsername}
+                />
+              </div>
+              <div>
+                <label htmlFor="markhojdPassword">Lösenord*</label>
+                <input
+                  id="markhojdPassword"
+                  name="markhojdPassword"
+                  type="password"
+                  className={this.getValidationClass("markhojdPassword")}
+                  onChange={(e) => {
+                    this.handleInputChange(e);
+                  }}
+                  value={this.state.markhojdPassword}
+                />
+              </div>
+            </>
+          )}
           <div>
             <div>Transformationer</div>
             {this.renderTransformations()}
