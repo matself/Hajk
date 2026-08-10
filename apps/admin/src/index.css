@@ -1,7 +1,12 @@
 body {
-  padding: 20px;
-  font-size: 12pt !important;
+  padding: 12px;
+  font-size: 10.5pt !important;
   color: #373d3f;
+}
+
+h1 {
+  font-size: 18pt;
+  margin: 0 0 12px 0;
 }
 
 input[type="text"]:not(#documentEditor input):not(#fmeGroupArea input) {
@@ -27,7 +32,7 @@ aside input[type="text"] {
 
 article {
   float: left;
-  margin: 50px;
+  margin: 20px;
   margin-top: -5px;
   max-width: 1000px;
 }
@@ -68,7 +73,7 @@ article input[type="text"]:not(#fmeGroupArea input) {
 form > div,
 article fieldset > div,
 article fieldset > span > div {
-  margin: 7px;
+  margin: 4px;
 }
 
 .btn {
@@ -639,37 +644,6 @@ figure img {
   max-width: 567px;
 }
 
-.chapters {
-  display: inline-block;
-  background-color: #f4f4f4;
-}
-
-.chapter {
-  margin: 5px;
-  margin: 5px;
-  margin-left: 15px;
-  padding: 4px;
-}
-
-.toc {
-  cursor: pointer;
-  font-size: 14pt;
-}
-
-.toc-container {
-  height: 95%;
-  overflow: auto;
-}
-
-.chapterHeader {
-  font-size: 16pt;
-  margin: 0;
-  padding: 10px;
-  margin-bottom: 5px;
-  font-style: italic;
-  cursor: pointer;
-}
-
 .padded {
   padding: 5px;
 }
@@ -709,11 +683,6 @@ figure img {
 
 .pointer {
   cursor: pointer;
-}
-
-.chapter p {
-  margin: 0;
-  padding: 0;
 }
 
 .layer-list-container {
@@ -757,7 +726,7 @@ figure img {
   margin: 5px;
   padding: 10px;
   cursor: pointer;
-  font-size: 12pt;
+  font-size: 10.5pt;
   user-select: none;
 }
 
@@ -786,9 +755,9 @@ figure img {
 }
 
 .pages {
-  max-height: calc(100vh - 20px);
+  max-height: calc(100vh - 12px);
   overflow: auto;
-  margin: 20px 0px;
+  margin: 12px 0px;
 }
 
 .page {
@@ -816,7 +785,7 @@ figure img {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 20px 0;
+  margin: 12px 0;
 }
 .separator::before,
 .separator::after {
@@ -911,56 +880,165 @@ figure img {
   background: rgba(0, 0, 0, 0.4);
 }
 
-.modal-dialog{
+.modal-dialog {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-.modal-content{
+/* Bootstrap's own @media(min-width:576px) rule caps every .modal-dialog at
+   500px, which suits short confirm/settings dialogs fine but is far too
+   cramped for a dialog hosting arbitrary form content (e.g. the layer
+   settings dialog with Infoklick's toolbar/editor). alert.jsx adds this
+   class only to its "react content" dialog branch - confirm dialogs and
+   the style/queryable-only settings popup keep Bootstrap's narrower
+   default. max-width here wins over Bootstrap's rule since this
+   stylesheet loads after bootstrap.min.css; horizontal centering still
+   comes from Bootstrap's own margin-left/right:auto on .modal-dialog. */
+.modal-dialog-wide {
+  max-width: min(900px, 92vw);
+}
+
+.modal-content {
   max-height: calc(100vh - 2rem);
-  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.modal-header,
+.modal-footer {
+  flex: 0 0 auto;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 .layerDialog label,
-.layerDialog input{
+.layerDialog input {
   margin: 0;
   margin-bottom: 0;
   margin-top: 0;
 }
 
-.layerDialog textarea.infoClick{
+.layerDialog textarea.infoClick {
   font-family: monospace;
   font-size: 0.8rem;
-  height: 180px;
+  height: 100px;
 }
 
-.layerDialog .form-row{
+.InfoclickEditor {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.InfoclickEditor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.InfoclickEditor-modeToggle button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-modeToggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.InfoclickEditor-modeToggle button.active {
+  color: #fff;
+  background: #33a6dc;
+}
+
+.InfoclickEditor-attributePicker button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.InfoclickEditor-attributePicker select {
+  margin-left: 6px;
+}
+
+.InfoclickEditor-fetchError {
+  margin-left: 8px;
+  color: #b71c1c;
+  font-size: 0.85rem;
+}
+
+.InfoclickEditor-editor {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-height: 100px;
+}
+
+.MapInfoboxEditor-note {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  margin: 0 0 8px 0;
+}
+
+.MapInfoboxEditor-sublayerPicker {
+  margin-bottom: 8px;
+}
+
+.ic-token-chip {
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-family: monospace;
+}
+
+.layerDialog .form-row {
   margin-bottom: 0.8rem;
 }
 
+.layerDialog .form-row-pair {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 0.8rem;
+}
 
-.layerDialog div[class*="split"]{
+.layerDialog .form-row-pair .form-row {
+  margin-bottom: 0;
+}
+
+.layerDialog div[class*="split"] {
   display: flex;
   align-items: center;
 }
 
-.layerDialog div[class*="split"] > div:first-child{
+.layerDialog div[class*="split"] > div:first-child {
   padding-right: 1rem;
 }
 
-.layerDialog .split50 > div{
+.layerDialog .split50 > div {
   flex: 0 0 50%;
 }
 
-.layerDialog .split0 > div{
+.layerDialog .split0 > div {
   flex: 0 0 auto;
 }
 
-.layerDialog .split3070 > div:first-child{
+.layerDialog .split3070 > div:first-child {
   flex: 0 0 30%;
 }
 
-.layerDialog .split3070 > div:last-child{
+.layerDialog .split3070 > div:last-child {
   flex: 0 0 70%;
 }
 

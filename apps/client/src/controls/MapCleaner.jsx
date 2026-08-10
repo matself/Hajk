@@ -16,7 +16,7 @@ const MapCleaner = React.memo((props) => {
   return (
     props.appModel.config.mapConfig.map.mapcleaner && (
       <ControlButton
-        tooltip="Dölj alla aktiva lager"
+        tooltip="Släck alla aktiva lager"
         ariaLabel="Rensa kartan"
         onClick={() => {
           props.appModel.clear();

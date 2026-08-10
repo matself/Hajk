@@ -1,5 +1,10 @@
 import log4js from "log4js";
 import ad from "../services/activedirectory.service.js";
+import {
+  isPasswordModeActive,
+  hasValidAdminSession,
+} from "../utils/adminPassword.js";
+import { adminLoginPageHtml } from "../controllers/admin-auth/loginPage.js";
 
 const logger = log4js.getLogger("hajk.static.restrict.v2");
 /**
@@ -19,6 +24,21 @@ const logger = log4js.getLogger("hajk.static.restrict.v2");
  * @returns
  */
 export default async function restrictStatic(req, res, next) {
+  // Grab dir name, required to find the correct .env variable
+  const dir = req.baseUrl.replace(/\//g, "");
+
+  // The "admin" static directory can optionally be protected by a single
+  // native password instead of AD group membership. Serve a small login
+  // page when unauthenticated, rather than a bare 401, since this is
+  // consumed directly in the browser.
+  if (dir === "admin" && isPasswordModeActive()) {
+    if (hasValidAdminSession(req)) {
+      return next();
+    }
+    logger.debug("Serving admin login page: no valid admin session.");
+    return res.status(401).type("html").send(adminLoginPageHtml());
+  }
+
   // If AD lookup isn't active, there's no way for us to find
   // out if access should be granted.
   if (process.env.AD_LOOKUP_ACTIVE !== "true") {
@@ -27,9 +47,6 @@ export default async function restrictStatic(req, res, next) {
     );
     return next();
   }
-
-  // Grab dir name, required to find the correct .env variable
-  const dir = req.baseUrl.replace(/\//g, "");
 
   // Get allowed groups from the .env variable, split string to array
   const restrictedToGroups =

@@ -1,6 +1,7 @@
 import React from "react";
 import { SketchPicker } from "react-color";
 import $ from "jquery";
+import InfoclickEditor from "../components/InfoclickEditor";
 
 class VectorLayerForm extends React.Component {
   state = {
@@ -27,6 +28,9 @@ class VectorLayerForm extends React.Component {
     infoOpenDataLink: "",
     infoVisible: false,
     infobox: "",
+    availableAttributes: [],
+    attributesFetching: false,
+    attributesError: null,
     displayFields: "",
     secondaryLabelFields: "",
     shortDisplayFields: "",
@@ -92,6 +96,38 @@ class VectorLayerForm extends React.Component {
     this.props.model.off("change:legendIcon");
   }
 
+  // Fetches available attribute names for the currently selected layer, so
+  // they can be picked in the Infoklick-editor's "Infoga attribut" dropdown
+  // instead of being typed blindly.
+  fetchAttributes = () => {
+    const layerName = this.state.addedLayers && this.state.addedLayers[0];
+    if (!layerName) {
+      return;
+    }
+    this.setState({ attributesFetching: true, attributesError: null });
+    this.props.model.getWFSLayerDescription(
+      this.state.url,
+      layerName,
+      (result) => {
+        if (Array.isArray(result)) {
+          this.setState({
+            availableAttributes: result.map((r) => ({
+              name: r.name,
+              type: r.localType,
+            })),
+            attributesFetching: false,
+          });
+        } else {
+          this.setState({
+            attributesFetching: false,
+            attributesError:
+              "Kunde inte hämta attributlista automatiskt. Ange platshållare manuellt.",
+          });
+        }
+      }
+    );
+  };
+
   describeLayer(layer) {
     this.props.model.getWFSLayerDescription(
       this.state.url,
@@ -132,7 +168,7 @@ class VectorLayerForm extends React.Component {
       infoUrlText: this.getValue("infoUrlText"),
       infoOpenDataLink: this.getValue("infoOpenDataLink"),
       infoVisible: this.getValue("infoVisible"),
-      infobox: this.getValue("infobox"),
+      infobox: this.state.infobox,
       displayFields: this.getValue("displayFields"),
       shortDisplayFields: this.getValue("shortDisplayFields"),
       secondaryLabelFields: this.getValue("secondaryLabelFields"),
@@ -759,10 +795,14 @@ class VectorLayerForm extends React.Component {
         </div>
         <div>
           <label>Inforuta</label>
-          <textarea
-            ref="input_infobox"
-            value={this.state.infobox}
-            onChange={(e) => this.setState({ infobox: e.target.value })}
+          <InfoclickEditor
+            key={this.state.id || "new"}
+            initialValue={this.state.infobox}
+            onChange={(html) => this.setState({ infobox: html })}
+            availableAttributes={this.state.availableAttributes}
+            fetchingAttributes={this.state.attributesFetching}
+            fetchError={this.state.attributesError}
+            onFetchAttributes={this.fetchAttributes}
           />
         </div>
         <div>

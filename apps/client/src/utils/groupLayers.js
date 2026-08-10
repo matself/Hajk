@@ -25,7 +25,7 @@ export const setOLSubLayers = (olLayer, visibleSubLayersArray) => {
         .filter(([k]) => visibleSubLayersArray.indexOf(k) !== -1)
         .map(([name, info]) => {
           const labeled = olLayer.get("labeledSubLayers");
-          return labeled?.has(name) ? `${name}_labels` : (info.style || "");
+          return labeled?.has(name) ? `${name}_labels` : info.style || "";
         })
         .join(","),
       CQL_FILTER: layerInfo?.params?.CQL_FILTER || null,

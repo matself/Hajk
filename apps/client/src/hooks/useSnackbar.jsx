@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { useSnackbar as useNotistackSnackbar } from "notistack";
-import { IconButton } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { SnackbarContext } from "../components/SnackbarProvider";
 
@@ -35,7 +35,7 @@ const useSnackbar = () => {
     if (keys.length === 0) return "";
 
     const mostRecentKey = keys[keys.length - 1];
-    const mostRecentLayer = items[mostRecentKey];
+    const mostRecentLayer = items[mostRecentKey].caption;
     const otherLayersCount = keys.length - 1;
 
     return otherLayersCount > 0
@@ -45,18 +45,40 @@ const useSnackbar = () => {
 
   // Function to display the snackbar.
   const displaySnackbar = useCallback(() => {
-    const message = formatMessage(messageItemsRef.current);
+    const items = messageItemsRef.current;
+    const keys = Object.keys(items);
+    const message = formatMessage(items);
     if (!message) return;
 
-    // Action to display a close button on the snackbar.
+    // Only offer a "zoom to visible scale" shortcut when there's a single,
+    // unambiguous layer to zoom to.
+    const mostRecentKey = keys[keys.length - 1];
+    const onZoomToVisible =
+      keys.length === 1 ? items[mostRecentKey].onZoomToVisible : undefined;
+
+    // Action to display a "zoom to visible scale" and close button on the snackbar.
     const action = (key) => (
-      <IconButton
-        size="small"
-        color="inherit"
-        onClick={() => closeSnackbar(key)}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
+      <>
+        {onZoomToVisible && (
+          <Button
+            size="small"
+            color="inherit"
+            onClick={() => {
+              onZoomToVisible();
+              closeSnackbar(key);
+            }}
+          >
+            Zooma till synlig skala
+          </Button>
+        )}
+        <IconButton
+          size="small"
+          color="inherit"
+          onClick={() => closeSnackbar(key)}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </>
     );
 
     enqueueSnackbar(message, {
@@ -84,13 +106,13 @@ const useSnackbar = () => {
 
   // Function to update the snackbar messages and type.
   const updateSnackbar = useCallback(
-    (type, id, caption) => {
+    (type, id, caption, onZoomToVisible) => {
       if (!id || !caption) return;
       const key = generateCompositeKey(id, caption);
 
       setMessageItems((prevItems) => {
         if ([ADD, ADD_ONLY].includes(type)) {
-          return { ...prevItems, [key]: caption };
+          return { ...prevItems, [key]: { caption, onZoomToVisible } };
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [key]: _, ...rest } = prevItems;
@@ -105,8 +127,8 @@ const useSnackbar = () => {
   );
 
   // Function to add a new message to the snackbar.
-  const addToSnackbar = (id, caption, addOnly = false) => {
-    updateSnackbar(addOnly ? ADD_ONLY : ADD, id, caption);
+  const addToSnackbar = (id, caption, addOnly = false, onZoomToVisible) => {
+    updateSnackbar(addOnly ? ADD_ONLY : ADD, id, caption, onZoomToVisible);
   };
 
   // Function to remove a message from the snackbar.

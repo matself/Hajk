@@ -40,15 +40,49 @@ npm run dev:debug
 
 ## Deploy
 
-First compile the application:
+### Using a pre-built release (recommended)
+
+The easiest way to deploy is to use a pre-built release package created by `scripts/create_release_me.mjs`. The release includes a configuration helper:
+
+1. Extract the release to your deployment directory (e.g., `/opt/wwwroot/hajk`)
+2. Run the configuration helper from the release root:
 
 ```shell
+cd /opt/wwwroot/hajk
+node configure.mjs
+```
+
+3. Answer the prompts:
+   - **Hostname** — `localhost` for local dev, your domain for production
+   - **Port** — backend port (default 3002)
+   - **Reverse proxy** — whether nginx/Apache sits in front (affects URL scheme)
+   - **Environment** — development or production
+   - **Admin password** — optional single-password protection for `/admin`
+
+The script will:
+- Update `appConfig.json` and `admin/config.json` with correct API endpoints
+- Set critical `.env` variables (`NODE_ENV`, `SESSION_SECRET`, `EXPRESS_TRUST_PROXY`, `LOG_LEVEL`)
+- Auto-generate a secure `SESSION_SECRET` in production
+- Optionally set up admin password protection
+
+4. The configuration helper installs dependencies automatically. Once it completes:
+
+```shell
+node index.js
+```
+
+### Manual deployment (from source)
+
+If building and deploying manually:
+
+```shell
+# Compile the application
 npm run compile
 ```
 
 This will create a new folder, `/dist`.
 
-You can now start the app in production mode (`npm start`). But it's preferable to move the contents of `/dist` to some other location, outside of the development branch. Do something like:
+Move the contents to your deployment location:
 
 ```shell
 # Copy the compiled files
@@ -73,6 +107,8 @@ npm i
 node index.js
 ```
 
+You will still need to configure `.env` manually in this case. See `apps/backend/.env.example` for all available options.
+
 ### Run as a service
 
 Optionally, install PM2 to ensure that the app is run as a service (auto-started on server reboots, etc).
@@ -82,3 +118,35 @@ Optionally, install PM2 to ensure that the app is run as a service (auto-started
 Optionally, you can make this Node process serve the static client and admin apps as well.
 
 To do that, move the previously compiled (`build` folders) from `client` and `admin` into `/opt/wwwroot/hajk/public`. Or, even better, move `admin` into a directory in `/public`, but let contents of `client/build` be the root of `public`. In this scenario, you can access Hajk's client app on localhost:3002, the API will be running on localhost:3002/api/v1, and `admin` will be available on localhost:3002/admin. Make sure to edit `client/appConfig.json` and `admin/config.json` to talk to the API on correct endpoint.
+
+### Protecting `/admin` without Active Directory
+
+Hajk normally restricts `/admin` and its API (`mapconfig`, `settings`, `ad`) by AD group
+membership (see `RESTRICT_ADMIN_ACCESS_TO_AD_GROUPS` and the `AD_*` settings in `.env`).
+If you don't run AD - e.g. a plain Ubuntu/Nginx deployment - you can instead protect the
+admin interface with a single shared password, changeable at any time:
+
+1. Generate a password hash (run from `apps/backend`):
+
+   ```shell
+   npm run hash-admin-password -- "yourPassword"
+   ```
+
+2. Paste the printed `salt:hash` value into `.env` as `ADMIN_PASSWORD_HASH`.
+3. Make sure `EXPOSE_AND_RESTRICT_STATIC_ADMIN` is set to a non-empty value (the default
+   `GIS_ADMIN` is fine - its actual content is ignored in password mode, but the key must
+   be present for the `/admin` gate to be wired up at all).
+4. Make sure `AD_LOOKUP_ACTIVE` is not `"true"` (password mode only engages when AD is off).
+5. Restart the backend.
+
+Visiting `/admin` (or calling the admin API directly) now requires logging in with the
+shared password first. A successful login grants a signed, 6-hour session cookie -
+no user list, nothing to manage beyond the one password.
+
+To change the password later: repeat steps 1-2 with the new password and restart the
+backend - no code changes needed. To disable password protection again, remove
+`ADMIN_PASSWORD_HASH` from `.env` and restart.
+
+If you're also running Nginx (or another reverse proxy) in front of Hajk, this native gate
+covers both `/admin` and its API in one place, so you can drop any proxy-level Basic Auth
+you may have added for `/admin` alone - just keep the proxy handling TLS termination.

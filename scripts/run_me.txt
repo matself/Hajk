@@ -1,0 +1,3 @@
+ ./build_me.sh C:/GITHUB/Hajk C:/HAJK
+ 
+ 

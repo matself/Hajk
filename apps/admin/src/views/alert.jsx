@@ -178,19 +178,17 @@ class Alert extends Component {
         false
       ) : (
         <div className="modal">
-          <div className="modal-dialog">
+          <div
+            className={
+              "modal-dialog" +
+              (options.contentType === "react" ? " modal-dialog-wide" : "")
+            }
+          >
             <div className="modal-content">
               <div className="modal-header">
                 <h4 className="modal-title">
                   {options.caption || "Meddelande"}
                 </h4>
-                <ColorButtonGreen
-                  variant="contained"
-                  className="btn"
-                  onClick={options.onClick}
-                >
-                  OK
-                </ColorButtonGreen>
               </div>
               <div className="modal-body">
                 {options.contentType === "react" ? (

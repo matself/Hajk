@@ -2,6 +2,7 @@ import ConfigMapper from "../../utils/ConfigMapper";
 import WMSLayer from "../layers/WMSLayer";
 import WMTSLayer from "../layers/WMTSLayer";
 import WFSVectorLayer from "../layers/VectorLayer";
+import XYZLayer from "../layers/XYZLayer";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Icon, Fill, Stroke, Style } from "ol/style";
@@ -71,6 +72,12 @@ export function addMapLayer(appModel, layer) {
         appModel.config.appConfig.proxy,
         appModel.map
       );
+      appModel.map.addLayer(layerItem.layer);
+      break;
+    case "xyz":
+      // XYZ bypasses ConfigMapper, so map visibleAtStart → visible here as ConfigMapper does for other types.
+      layer.visible = layer.visibleAtStart;
+      layerItem = new XYZLayer(layer);
       appModel.map.addLayer(layerItem.layer);
       break;
     // case "arcgis":

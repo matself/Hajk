@@ -178,7 +178,7 @@ function Favorites({
       });
     }
 
-    enqueueSnackbar(`${title} har nu laddats till snabbåtkomst.`, {
+    enqueueSnackbar(`${title} har nu laddats till teman.`, {
       variant: "success",
       anchorOrigin: { vertical: "bottom", horizontal: "center" },
     });
@@ -257,13 +257,10 @@ function Favorites({
     });
 
     if (layers.length === 0) {
-      enqueueSnackbar(
-        "Inga lager i snabbåtkomst tillagda, därmed inget att spara.",
-        {
-          variant: "warning",
-          anchorOrigin: { vertical: "bottom", horizontal: "center" },
-        }
-      );
+      enqueueSnackbar("Inga lager i teman tillagda, därmed inget att spara.", {
+        variant: "warning",
+        anchorOrigin: { vertical: "bottom", horizontal: "center" },
+      });
       return;
     }
 
@@ -315,6 +312,7 @@ function Favorites({
       numberOfLayers: layers.length,
       title: title,
       description: description,
+      mapConfigName: app?.config?.activeMap, // Which map config file this theme was saved for.
       ...(mapName && { mapName }), // …if we have a map name, let's add it too.
     };
 
@@ -326,7 +324,7 @@ function Favorites({
     setTitle("");
     setDescription("");
 
-    enqueueSnackbar(`${metadata.title} har lagts till i favoriter.`, {
+    enqueueSnackbar(`${metadata.title} har lagts till i mina teman.`, {
       variant: "success",
       anchorOrigin: { vertical: "bottom", horizontal: "center" },
     });
@@ -380,7 +378,7 @@ function Favorites({
     // And set to state
     handleSetFavorites(favoritesArray);
 
-    enqueueSnackbar(`Favoriten uppdaterades utan problem`, {
+    enqueueSnackbar(`Temat uppdaterades utan problem`, {
       variant: "success",
       anchorOrigin: { vertical: "bottom", horizontal: "center" },
     });
@@ -395,10 +393,22 @@ function Favorites({
     const favoritesArray = [...favorites];
     favoritesArray.push(parsedFavorites);
     handleSetFavorites(favoritesArray);
-    enqueueSnackbar(`Favoriten importerades utan problem`, {
-      variant: "success",
-      anchorOrigin: { vertical: "bottom", horizontal: "center" },
-    });
+
+    const importedMap = parsedFavorites.metadata?.mapConfigName;
+    if (importedMap && importedMap !== app?.config?.activeMap) {
+      enqueueSnackbar(
+        `Temat importerades, men sparades ursprungligen för kartan "${importedMap}" och kan innehålla lager som inte finns här.`,
+        {
+          variant: "warning",
+          anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        }
+      );
+    } else {
+      enqueueSnackbar(`Temat importerades utan problem`, {
+        variant: "success",
+        anchorOrigin: { vertical: "bottom", horizontal: "center" },
+      });
+    }
   };
 
   const renderFavoritesView = () => {
@@ -440,6 +450,7 @@ function Favorites({
             removeCallback={handleRemoveFavorite}
             functionalCookiesOk={functionalCookiesOk}
             cookieSettingCallback={changeCookieSetting}
+            currentMapConfigName={app?.config?.activeMap}
           ></FavoritesList>
         </Box>
       </Box>,
@@ -473,7 +484,7 @@ function Favorites({
           </ul>
           <Typography>
             {missingLayersConfirmation &&
-              `Det kan bero på att lagret har utgått. Vänligen kontrollera och uppdatera favoriten.`}
+              `Det kan bero på att lagret har utgått. Vänligen kontrollera och uppdatera temat.`}
             <br></br>
           </Typography>
         </DialogContent>
@@ -517,12 +528,12 @@ function Favorites({
         }}
       >
         <DialogTitle id="saveFavorite-dialog-title">
-          Spara till favoriter
+          Spara till mina teman
         </DialogTitle>
         <DialogContent>
           <Typography id="save-favorite-dialog-description" sx={{ mb: 1 }}>
-            Spara aktuell snabbåtkomst som en favorit lokalt på din enhet så att
-            du kan använda den senare.
+            Spara det aktuella innehållet i Teman som ett eget tema lokalt på
+            din enhet så att du kan använda det senare.
           </Typography>
           <TextField
             fullWidth
@@ -577,13 +588,14 @@ function Favorites({
         addFavoriteCallback={handleAddFavoriteClick}
         loadFavoriteCallback={handleLoadFavorite}
         functionalCookiesOk={functionalCookiesOk}
+        currentMapConfigName={app?.config?.activeMap}
       ></FavoritesOptions>
       {domReady && renderFavoritesView()}
       <ConfirmationDialog
         open={loadDialog}
-        titleName={"Ladda favorit"}
-        contentDescription="Vid laddning ersätts lagren i snabbåtkomst. Alla tända lager i
-				kartan släcks och ersätts med favoritens tända lager."
+        titleName={"Ladda tema"}
+        contentDescription="Vid laddning ersätts lagren i teman. Alla tända lager i
+				kartan släcks och ersätts med temats tända lager."
         cancel={"Avbryt"}
         confirm={"Ladda"}
         handleConfirm={loadFavorite}
@@ -593,8 +605,8 @@ function Favorites({
       />
       <ConfirmationDialog
         open={openNoLayersAlert}
-        titleName={"Spara till favoriter"}
-        contentDescription="Det finns inga lager i snabbåtkomst. Vänligen lägg till lager för att spara till favoriter."
+        titleName={"Spara till mina teman"}
+        contentDescription="Det finns inga lager i teman. Vänligen lägg till lager för att spara till mina teman."
         cancel={"Stäng"}
         handleAbort={() => {
           setOpenNoLayersAlert(false);

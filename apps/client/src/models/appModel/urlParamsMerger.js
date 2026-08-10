@@ -38,6 +38,12 @@ export function mergeConfigWithValuesFromParams(
     }
   }
 
+  // Remember admin's configured start position before it gets overwritten
+  // by any x/y/z URL params below. MapResetter uses these to always return
+  // to the admin-defined default, regardless of how the map was loaded.
+  mapConfig.map.defaultCenter = [...mapConfig.map.center];
+  mapConfig.map.defaultZoom = mapConfig.map.zoom;
+
   if (Number.isNaN(x)) {
     x = mapConfig.map.center[0];
   }

@@ -34,6 +34,7 @@ function FavoritesList({
   editCallback,
   functionalCookiesOk,
   cookieSettingCallback,
+  currentMapConfigName,
 }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [removeAlert, setRemoveAlert] = useState(false);
@@ -165,10 +166,24 @@ function FavoritesList({
               {selectedItem && getBaseLayerName(selectedItem.layers)}
             </Typography>
           </Stack>
+          {selectedItem?.metadata.mapConfigName && (
+            <Typography
+              sx={(theme) => ({
+                mt: 1,
+                color:
+                  selectedItem.metadata.mapConfigName !== currentMapConfigName
+                    ? theme.palette.warning.main
+                    : theme.palette.text.secondary,
+              })}
+            >
+              Sparad för kartan &quot;{selectedItem.metadata.mapConfigName}
+              &quot;
+            </Typography>
+          )}
           <Divider sx={{ mt: 2 }} />
           <Typography sx={{ mt: 2, mb: 1 }}>
-            Vid laddning ersätts lagren i snabbåtkomst. Alla tända lager i
-            kartan släcks och ersätts med favoritens tända lager.
+            Vid laddning ersätts lagren i teman. Alla tända lager i kartan
+            släcks och ersätts med temats tända lager.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -263,8 +278,8 @@ function FavoritesList({
       <Stack spacing={2} sx={{ p: 2 }}>
         <Typography variant="body2">
           Det ser ut som att du har valt att inte tillåta funktionella kakor. På
-          grund av detta så kan du inte se dina sparade favoriter eller lägga
-          till nya.
+          grund av detta så kan du inte se dina sparade teman eller lägga till
+          nya.
         </Typography>
         <Typography variant="body2">
           Klicka nedan för att ändra inställningarna.
@@ -288,9 +303,15 @@ function FavoritesList({
       {functionalCookiesOk ? (
         <List id="favorites-list-view" dense sx={{ p: 0 }}>
           {!favorites.length ? (
-            <Typography sx={{ p: 2 }}>Inga favoriter finns sparade</Typography>
+            <Typography sx={{ p: 2 }}>Inga teman finns sparade</Typography>
           ) : (
             favorites.map((favorite, index) => {
+              const isOtherMap =
+                favorite.metadata.mapConfigName &&
+                favorite.metadata.mapConfigName !== currentMapConfigName;
+              const secondaryText = isOtherMap
+                ? `${parseDate(favorite.metadata.savedAt)} · Sparad för kartan "${favorite.metadata.mapConfigName}"`
+                : parseDate(favorite.metadata.savedAt);
               return (
                 <ListItemButton
                   disableRipple
@@ -307,7 +328,7 @@ function FavoritesList({
                   </ListItemIcon>
                   <ListItemText
                     primary={favorite.metadata.title}
-                    secondary={parseDate(favorite.metadata.savedAt)}
+                    secondary={secondaryText}
                     slotProps={{
                       primary: {
                         sx: {
@@ -317,11 +338,14 @@ function FavoritesList({
                         },
                       },
                       secondary: {
-                        sx: {
+                        sx: (theme) => ({
                           pr: 5,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
-                        },
+                          color: isOtherMap
+                            ? theme.palette.warning.main
+                            : undefined,
+                        }),
                       },
                     }}
                   />

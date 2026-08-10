@@ -1,10 +1,27 @@
 import log4js from "log4js";
 import ad from "../services/activedirectory.service.js";
+import {
+  isPasswordModeActive,
+  hasValidAdminSession,
+} from "../utils/adminPassword.js";
 
 const logger = log4js.getLogger("router.v2");
 
 export default async function restrictAdmin(req, res, next) {
   logger.debug("Attempt to access admin-only API endpoint");
+
+  // If a native admin password is configured (and AD is off), that takes
+  // precedence over the "allow everyone" fallback below: require a valid
+  // signed session cookie, obtained via POST /api/v2/admin-auth/login.
+  if (isPasswordModeActive()) {
+    if (hasValidAdminSession(req)) {
+      return next();
+    }
+    logger.warn(
+      "Access to admin-only endpoint denied: no valid admin session."
+    );
+    return res.sendStatus(401);
+  }
 
   // If AD lookup isn't active, there's no way for us to find
   // out if access should be granted. If there are no access group

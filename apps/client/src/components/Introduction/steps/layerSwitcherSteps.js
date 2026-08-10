@@ -24,13 +24,13 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     title: "Meny bredvid sökfältet",
     element: "#layerswitcher-actions-menu-button",
     intro:
-      "Klicka på menyknappen (de tre prickarna). <br><br> <b>I menyn finns funktioner för att:</b> dölja alla aktiva lager, hoppa till toppen av lagerlistan eller hoppa till botten av lagerlistan.",
+      "Klicka på menyknappen (de tre prickarna). <br><br> <b>I menyn finns funktioner för att:</b> släcka alla aktiva lager, hoppa till toppen av lagerlistan eller hoppa till botten av lagerlistan.",
   },
   {
     title: "Menyfunktioner",
     element: "#layerswitcher-actions-menu",
     intro:
-      "<b>Dölj alla aktiva lager:</b> stänger av alla lager på kartan. <br><br> <b>Scrolla till toppen:</b> hoppar till början av lagerlistan. <br><br> <b>Scrolla till botten:</b> hoppar till slutet av lagerlistan.",
+      "<b>Släck alla aktiva lager:</b> stänger av alla lager på kartan. <br><br> <b>Scrolla till toppen:</b> hoppar till början av lagerlistan. <br><br> <b>Scrolla till botten:</b> hoppar till slutet av lagerlistan.",
   },
   {
     title: "Lagergrupp",
@@ -67,10 +67,10 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     intro: "Använd reglaget för att ändra lagrets transparens.",
   },
   {
-    title: "Snabbåtkomst-knapp",
+    title: "Teman-knapp",
     element: "#layer-details-quick-access-button",
     intro:
-      "<b>Lägg till i snabbåtkomst:</b> lagret läggs till i snabbåtkomstmenyn under fliken Kartlager. <br><br> <b>Ta bort från snabbåtkomst:</b> lagret tas bort från snabbåtkomstmenyn under fliken Kartlager.",
+      "<b>Lägg till i teman:</b> lagret läggs till i temamenyn under fliken Kartlager. <br><br> <b>Ta bort från teman:</b> lagret tas bort från temamenyn under fliken Kartlager.",
   },
   {
     title: "Flikar i " + layerSwitcherPlugin.options.title,
@@ -100,35 +100,35 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
       "Här kan du se och ändra ordningen för systemlager. <br><br> Dra och släpp lager för att ändra ordningen.",
   },
   {
-    title: "Snabbåtkomst",
+    title: "Teman",
     element: "#quick-access-view",
-    intro: "Här listas och hanteras sparade lager för snabbåtkomst.",
+    intro: "Här listas och hanteras sparade lager för teman.",
   },
   {
-    title: "Snabbåtkomst-meny",
+    title: "Teman-meny",
     element: "#quick-access-menu-button",
     intro:
-      "Klicka på menyknappen (de tre prickarna) i snabbåtkomst. <br><br> <b>I menyn finns funktioner för att:</b> <br> - lägga till aktiverade lager <br> - rensa allt",
+      "Klicka på menyknappen (de tre prickarna) i teman. <br><br> <b>I menyn finns funktioner för att:</b> <br> - lägga till aktiverade lager <br> - rensa allt",
   },
   {
-    title: "Alternativ för snabbåtkomst",
+    title: "Alternativ för teman",
     element: "#quick-access-menu-content",
     intro:
-      "<b>Lägg till aktiverade lager:</b> lägger till alla aktiverade lager i snabbåtkomst. <br><br> <b>Rensa allt:</b> tar bort alla lager från snabbåtkomst.",
+      "<b>Lägg till aktiverade lager:</b> lägger till alla aktiverade lager i teman. <br><br> <b>Rensa allt:</b> tar bort alla lager från teman.",
   },
   {
-    title: "Favoriter",
+    title: "Mina teman",
     element: "#favorites-menu-button",
     intro: () => {
       const savedLayers =
         LocalStorageHelper.get("layerswitcher").savedLayers?.length || 0;
       const baseIntro =
-        "Klicka på favoriter-knappen. <br><br> Här kan du spara, redigera och ladda favoriter.";
+        "Klicka på knappen för mina teman. <br><br> Här kan du spara, redigera och ladda dina egna teman.";
 
       if (savedLayers === 0) {
         return (
           baseIntro +
-          "<br><br><i>Inga favoriter finns just nu. Lägg till en favorit för att aktivera den här delen av guiden.</i>"
+          "<br><br><i>Inga teman finns just nu. Lägg till ett tema för att aktivera den här delen av guiden.</i>"
         );
       }
 
@@ -136,50 +136,50 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     },
   },
   {
-    title: "Favoritmeny",
+    title: "Menyn för mina teman",
     element: "#favorites-menu",
     intro:
-      "- <b>Spara till favoriter:</b> sparar en grupp av lager som favorit. Du kan anpassa titel och beskrivning. <br><br> - <b>Redigera favoriter:</b> hantera dina sparade favoriter. <br><br> - <b>Ladda favorit:</b> laddar vald favorit. Alla aktiva lager ersätts med favoritens lager.",
+      "- <b>Spara till mina teman:</b> sparar en grupp av lager som ett tema. Du kan anpassa titel och beskrivning. <br><br> - <b>Redigera mina teman:</b> hantera dina sparade teman. <br><br> - <b>Ladda tema:</b> laddar valt tema. Alla aktiva lager ersätts med temats lager.",
   },
   {
-    title: "Redigera favoriter",
+    title: "Redigera mina teman",
     element: "#edit-favorites",
-    intro: "Knappen öppnar en vy där du kan hantera sparade favoriter.",
+    intro: "Knappen öppnar en vy där du kan hantera sparade teman.",
   },
   {
-    title: "Importera favoriter",
+    title: "Importera teman",
     element: "#import-favorites-button",
-    intro: "Klicka för att importera favoriter från en .json-fil.",
+    intro: "Klicka för att importera teman från en .json-fil.",
   },
   {
-    title: "Favoritlista",
+    title: "Mina sparade teman",
     element: "#favorites-list-view",
     intro:
-      "Här visas dina sparade favoriter. Klicka på en favorit för att ersätta befintliga lager med den.",
+      "Här visas dina sparade teman. Klicka på ett tema för att ersätta befintliga lager med det.",
   },
   {
-    title: "Alternativ för favoriter",
+    title: "Alternativ för mina teman",
     element: "#favorites-list-options-button",
     intro:
-      "<b>I menyn kan du:</b> visa information om favoriten, redigera den, ta bort den eller exportera den som en .json-fil.",
+      "<b>I menyn kan du:</b> visa information om temat, redigera det, ta bort det eller exportera det som en .json-fil.",
   },
   {
-    title: "Meny för favoritens alternativ",
+    title: "Meny för temats alternativ",
     element: "#favorites-list-options-menu",
     intro:
-      "<b>Redigera:</b> ändra titel och beskrivning <br><br> <b>Ta bort:</b> tar bort favoriten från listan <br><br> <b>Exportera:</b> sparar favoriten som en .json-fil",
+      "<b>Redigera:</b> ändra titel och beskrivning <br><br> <b>Ta bort:</b> tar bort temat från listan <br><br> <b>Exportera:</b> sparar temat som en .json-fil",
   },
   {
-    title: "Teman",
+    title: "Färdiga teman",
     element: "#quick-access-theme-button",
     intro: () => {
       const baseIntro =
-        "Klicka på knappen för att visa teman. <br> Teman är fördefinierade lagergrupper skapade av administratörer.";
+        "Klicka på knappen för att visa färdiga teman. <br> Färdiga teman är fördefinierade lagergrupper skapade av administratörer.";
 
       if (layerSwitcherPlugin.options.quickAccessPresets?.length === 0) {
         return (
           baseIntro +
-          "<br><br><i>Inga teman finns tillgängliga. Be en administratör att skapa teman för att använda den här funktionen.</i>"
+          "<br><br><i>Inga färdiga teman finns tillgängliga. Be en administratör att skapa teman för att använda den här funktionen.</i>"
         );
       }
 
@@ -187,10 +187,10 @@ export const getLayerSwitcherSteps = (layerSwitcherPlugin) => [
     },
   },
   {
-    title: "Temalista",
+    title: "Lista över färdiga teman",
     element: "#quick-access-presets-view",
     intro:
-      "Här ser du de teman som finns i kartan. <br><br> Klicka på ett tema för att aktivera alla dess lager. <br><br> Du kan också söka efter teman i sökfältet.",
+      "Här ser du de färdiga teman som finns i kartan. <br><br> Klicka på ett tema för att aktivera alla dess lager. <br><br> Du kan också söka efter teman i sökfältet.",
   },
   {
     title: "Introduktion avslutad 🎉",

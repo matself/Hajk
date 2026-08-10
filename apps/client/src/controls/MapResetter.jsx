@@ -15,8 +15,15 @@ class MapResetter extends React.PureComponent {
     const { map } = this.props;
     if (map !== undefined) {
       const view = map.getView();
-      const { zoom, center } = this.props.mapConfig.map;
-      view.animate({ zoom, center });
+      // Prefer admin's originally configured start position over the
+      // current (possibly URL-param-derived) zoom/center, so the reset
+      // always goes to the same place regardless of how the map was opened.
+      const { defaultZoom, defaultCenter, zoom, center } =
+        this.props.mapConfig.map;
+      view.animate({
+        zoom: defaultZoom ?? zoom,
+        center: defaultCenter ?? center,
+      });
     }
   };
 

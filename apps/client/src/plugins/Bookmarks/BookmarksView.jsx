@@ -1,18 +1,24 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useSnackbar } from "notistack";
+import { saveAs } from "file-saver";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutlined";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import BookmarkOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 
 import ConfirmationDialog from "../../components/ConfirmationDialog";
+import HajkToolTip from "../../components/HajkToolTip";
 
 // Hooks
 import useUpdateEffect from "../../hooks/useUpdateEffect";
@@ -107,6 +113,13 @@ const ItemNameSpan = styled("span")(() => ({
   textTransform: "none",
 }));
 
+const OtherMapSpan = styled("span")(({ theme }) => ({
+  display: "block",
+  fontSize: "0.75rem",
+  fontWeight: "normal",
+  color: theme.palette.warning.main,
+}));
+
 const StyledDeleteIcon = styled(DeleteIcon)(() => ({
   display: "block",
   width: "24px",
@@ -117,6 +130,8 @@ const StyledDeleteIcon = styled(DeleteIcon)(() => ({
 const BookmarksView = (props) => {
   const { globalObserver } = props;
   const { functionalCookiesOk } = useCookieStatus(globalObserver);
+  const { enqueueSnackbar } = useSnackbar();
+  const fileInputRef = React.useRef(null);
 
   const [name, setName] = React.useState("");
   const [error, setError] = React.useState(false);
@@ -137,6 +152,7 @@ const BookmarksView = (props) => {
     }
 
     props.model.addBookmark(name, true);
+    setBookmarks({ ...props.model.bookmarks });
 
     setName("");
     checkBookmarkName("");
@@ -164,7 +180,7 @@ const BookmarksView = (props) => {
 
     if (exists) {
       setError(true);
-      setHelperText(`Namnet upptaget. Ersätt bokmärke "${trimmedName}"?`);
+      setHelperText(`Namnet upptaget. Ersätt plats "${trimmedName}"?`);
       return false;
     } else {
       setError(false);
@@ -188,6 +204,7 @@ const BookmarksView = (props) => {
   const handleRemoveConfirmation = () => {
     setShowRemovalConfirmation(false);
     props.model.deleteBookmark(bookmarkToDelete);
+    setBookmarks({ ...props.model.bookmarks });
     setBookmarkToDelete(null);
   };
 
@@ -195,11 +212,84 @@ const BookmarksView = (props) => {
     setShowRemovalConfirmation(false);
   };
 
+  // Downloads all current bookmarks as a JSON file, so they can be
+  // moved to another browser/device or restored if storage is cleared.
+  const handleExportClick = () => {
+    const blobData = new Blob(
+      [JSON.stringify(props.model.bookmarks, null, 2)],
+      {
+        type: "application/json",
+      }
+    );
+    saveAs(blobData, `platser - ${new Date().toLocaleString()}.json`);
+  };
+
+  const handleImportButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Reads a previously exported bookmarks file and merges it into the
+  // current bookmarks.
+  const handleFileInputChange = (event) => {
+    const file = event.target.files?.[0];
+    // Allow selecting the same file again later.
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsedBookmarks = JSON.parse(e.target?.result);
+        const { importedCount, renamedCount, skippedCount, otherMapCount } =
+          props.model.importBookmarks(parsedBookmarks);
+        setBookmarks({ ...props.model.bookmarks });
+
+        if (importedCount === 0) {
+          enqueueSnackbar("Inga platser kunde importeras från filen.", {
+            variant: "warning",
+            anchorOrigin: { vertical: "bottom", horizontal: "center" },
+          });
+          return;
+        }
+
+        let message = `${importedCount} plats${
+          importedCount === 1 ? "" : "er"
+        } importerades.`;
+        if (renamedCount > 0) {
+          message += ` ${renamedCount} bytte namn på grund av namnkrock.`;
+        }
+        if (skippedCount > 0) {
+          message += ` ${skippedCount} kunde inte läsas in.`;
+        }
+        if (otherMapCount > 0) {
+          message += ` ${otherMapCount} sparades ursprungligen för en annan karta.`;
+        }
+
+        enqueueSnackbar(message, {
+          variant: otherMapCount > 0 ? "warning" : "success",
+          anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        });
+      } catch (error) {
+        console.error(`Platser could not be imported. Error: ${error}`);
+        enqueueSnackbar(
+          "Platserna kunde inte läsas in, kontrollera att filen ser korrekt ut.",
+          {
+            variant: "error",
+            anchorOrigin: { vertical: "bottom", horizontal: "center" },
+          }
+        );
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const renderCookiesWarning = () => {
     return (
       <div>
         <Typography sx={{ marginBottom: 1 }}>
-          Du har inte tillåtit funktionella kakor. För att kunna spara bokmärken
+          Du har inte tillåtit funktionella kakor. För att kunna spara platser
           måste du tillåta funktionella kakor.
         </Typography>
         <Button
@@ -215,9 +305,41 @@ const BookmarksView = (props) => {
 
   return functionalCookiesOk ? (
     <div>
+      <Stack
+        direction="row"
+        sx={{ justifyContent: "flex-end", marginBottom: 1 }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: "none" }}
+          onChange={handleFileInputChange}
+        />
+        <HajkToolTip title="Importera platser från fil">
+          <IconButton
+            aria-label="Importera platser"
+            size="small"
+            onClick={handleImportButtonClick}
+          >
+            <FileUploadOutlinedIcon fontSize="small" />
+          </IconButton>
+        </HajkToolTip>
+        <HajkToolTip title="Exportera platser till fil">
+          <span>
+            <IconButton
+              aria-label="Exportera platser"
+              size="small"
+              disabled={Object.keys(bookmarks).length === 0}
+              onClick={handleExportClick}
+            >
+              <FileDownloadOutlinedIcon fontSize="small" />
+            </IconButton>
+          </span>
+        </HajkToolTip>
+      </Stack>
       <Typography sx={{ marginBottom: 1 }}>
-        Skapa ett bokmärke med kartans synliga lager, aktuella zoomnivå och
-        utbredning.
+        Skapa en plats med kartans aktuella zoomnivå och utbredning.
       </Typography>
       <Box
         sx={{
@@ -227,7 +349,7 @@ const BookmarksView = (props) => {
         }}
       >
         <TextField
-          placeholder="Skriv bokmärkets namn"
+          placeholder="Skriv platsens namn"
           label="Namn"
           value={name}
           onChange={handleChange}
@@ -252,6 +374,10 @@ const BookmarksView = (props) => {
       <List>
         {Object.keys(bookmarks).map((id) => {
           const bookmark = bookmarks[id];
+          const bookmarkMap =
+            props.model.getDecodedBookmark(bookmark)?.settings?.m;
+          const isOtherMap =
+            bookmarkMap && bookmarkMap !== props.model.app.config.activeMap;
           return (
             <ListItem key={id}>
               <BookmarkButton onClick={() => openBookmark(bookmark)}>
@@ -259,7 +385,14 @@ const BookmarksView = (props) => {
                   <BookmarkOutlinedIcon />
                   <BookmarkIcon className="on" />
                 </BookmarkIconSpan>
-                <ItemNameSpan>{id}</ItemNameSpan>
+                <ItemNameSpan>
+                  {id}
+                  {isOtherMap && (
+                    <OtherMapSpan>
+                      Sparad för kartan &quot;{bookmarkMap}&quot;
+                    </OtherMapSpan>
+                  )}
+                </ItemNameSpan>
               </BookmarkButton>
               <DeleteButton
                 aria-label="Ta bort"
@@ -273,8 +406,8 @@ const BookmarksView = (props) => {
         })}
         <ConfirmationDialog
           open={showRemovalConfirmation === true}
-          titleName={"Radera bokmärke"}
-          contentDescription={`Är du säker på att du vill radera bokmärket "${bookmarkToDelete}"?`}
+          titleName={"Radera plats"}
+          contentDescription={`Är du säker på att du vill radera platsen "${bookmarkToDelete}"?`}
           cancel={"Avbryt"}
           confirm={"Radera"}
           handleConfirm={handleRemoveConfirmation}

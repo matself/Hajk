@@ -6,6 +6,7 @@ import WMSLayerForm from "./layerforms/wmslayerform.jsx";
 import WMTSLayerForm from "./layerforms/wmtslayerform.jsx";
 import ArcGISLayerForm from "./layerforms/arcgislayerform.jsx";
 import VectorLayerForm from "./layerforms/vectorlayerform.jsx";
+import XYZLayerForm from "./layerforms/xyzlayerform.jsx";
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/SaveSharp";
 import AddIcon from "@material-ui/icons/Add";
@@ -84,12 +85,12 @@ class Manager extends Component {
     let matchedConfigs = [];
 
     function findInBaselayers(baselayers, layerId) {
-      return baselayers.some((l) => l.id === layerId);
+      return (baselayers ?? []).some((l) => l.id === layerId);
     }
 
     function findInGroups(groups, layerId) {
-      for (const group of groups) {
-        if (group.layers.some((l) => l.id === layerId)) return true;
+      for (const group of groups ?? []) {
+        if (group.layers?.some((l) => l.id === layerId)) return true;
         if (group.groups?.length && findInGroups(group.groups, layerId))
           return true;
       }
@@ -322,6 +323,8 @@ class Manager extends Component {
           searchShortDisplayName: layer.searchShortDisplayName || "",
           searchOutputFormat: layer.searchOutputFormat || "",
           searchGeometryField: layer.searchGeometryField || "",
+          authUsername: layer.auth?.username || "",
+          authPassword: layer.auth?.password || "",
           infoVisible: layer.infoVisible,
           infoTitle: layer.infoTitle,
           infoText: layer.infoText,
@@ -336,6 +339,36 @@ class Manager extends Component {
 
         this.refs["WMSLayerForm"].loadLayers(layer, () => {
           this.refs["WMSLayerForm"].validate();
+        });
+      }, 0);
+    }
+
+    if (layer.type === "XYZ") {
+      this.setState({
+        mode: "edit",
+        layerType: "XYZ",
+      });
+
+      setTimeout(() => {
+        this.refs["XYZLayerForm"].setState({
+          id: layer.id,
+          caption: layer.caption,
+          internalLayerName: layer.internalLayerName || "",
+          content: layer.content || "",
+          date: layer.date,
+          url: layer.url,
+          attribution: layer.attribution || "",
+          opacity: layer.opacity ?? 1,
+          minZoom: layer.minZoom ?? -1,
+          maxZoom: layer.maxZoom ?? -1,
+          layerType: "XYZ",
+          infoVisible: layer.infoVisible || false,
+          infoTitle: layer.infoTitle || "",
+          infoText: layer.infoText || "",
+          infoUrl: layer.infoUrl || "",
+          infoUrlText: layer.infoUrlText || "",
+          infoOpenDataLink: layer.infoOpenDataLink || "",
+          infoOwner: layer.infoOwner || "",
         });
       }, 0);
     }
@@ -364,6 +397,8 @@ class Manager extends Component {
           style: layer.style,
           requestEncoding: layer.requestEncoding || "",
           imageFormat: layer.imageFormat,
+          authUsername: layer.auth?.username || "",
+          authPassword: layer.auth?.password || "",
           projection: layer.projection,
           origins: layer.origins
             ? layer.origins.map((o) => o.join(" ")).join("; ")
@@ -452,18 +487,6 @@ class Manager extends Component {
     );
   }
 
-  renderOwnerOptions() {
-    if (this.props.config && this.props.config.owner_options) {
-      return this.props.config.owner_options.map((option, i) => (
-        <option value={option.value} key={"owner_" + i}>
-          {option.title}
-        </option>
-      ));
-    } else {
-      return null;
-    }
-  }
-
   filterLayers(e) {
     this.setState({
       filter: e.target.value,
@@ -539,6 +562,9 @@ class Manager extends Component {
           break;
         case "Vector":
           displayType = "(Vektor)";
+          break;
+        case "XYZ":
+          displayType = "(XYZ)";
           break;
         default:
           break;
@@ -717,6 +743,15 @@ class Manager extends Component {
             serverType={this.props.config.default_server_type}
           />
         );
+      case "XYZ":
+        return (
+          <XYZLayerForm
+            ref="XYZLayerForm"
+            model={this.props.model}
+            layer={this.state.layer}
+            parent={this}
+          />
+        );
       default:
         return <WMSLayerForm model={this.props.model} parent={this} />;
     }
@@ -772,6 +807,7 @@ class Manager extends Component {
     return (
       <section className="tab-pane active">
         <Alert options={this.getAlertOptions()} />
+        <h1>Lagerlista</h1>
         <aside>
           <input
             placeholder="filtrera"
@@ -847,6 +883,7 @@ class Manager extends Component {
                 <option>WMTS</option>
                 <option>ArcGIS</option>
                 <option value="Vector">Vektor</option>
+                <option>XYZ</option>
               </select>
             </p>
             {this.state.mode === "edit" ? (

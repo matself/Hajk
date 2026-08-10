@@ -18,6 +18,12 @@ tags:
     description: Proxy specified in working with Sokigo's FB API
   - name: FME-server Proxy
     description: Proxy for tunneling authenticated requests against FME server
+  - name: Admin - Auth
+    description: Session-based login/logout for the optional single-password protection of /admin
+  - name: WMTS Auth Proxy
+    description: Proxy that injects server-side credentials when forwarding requests to an authenticated WMTS service
+  - name: WMS Auth Proxy
+    description: Proxy that injects server-side credentials when forwarding requests to an authenticated WMS service
   - name: Specification
     description: The OpenAPI specification
 paths:
@@ -588,6 +594,105 @@ paths:
         200:
           description: Result will vary depending on response from the API.
           content: {}
+  /admin-auth/login:
+    post:
+      tags:
+        - Admin - Auth
+      description: >
+        Authenticate against the single admin password (set via ADMIN_PASSWORD_HASH in .env)
+        and, on success, set the admin session cookie. Only active when password mode is
+        enabled; returns 404 otherwise. A small in-memory rate limiter locks out an IP for
+        15 minutes after 5 failed attempts.
+      requestBody:
+        description: The admin password to verify
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginBody"
+        required: true
+      responses:
+        200:
+          description: Login successful, admin session cookie set
+          content: {}
+        400:
+          description: Missing or empty password
+          content: {}
+        401:
+          description: Incorrect password
+          content: {}
+        404:
+          description: Password mode is not active
+          content: {}
+        429:
+          description: Too many failed attempts from this IP, locked out
+          content: {}
+  /admin-auth/logout:
+    post:
+      tags:
+        - Admin - Auth
+      description: Clear the admin session cookie.
+      responses:
+        200:
+          description: Logout successful
+          content: {}
+  /wmtsproxy/{layerId}/{query}:
+    get:
+      tags:
+        - WMTS Auth Proxy
+      parameters:
+        - name: layerId
+          in: path
+          description: The Hajk layer id (matching an entry under wmtslayers in layers.json) whose configured credentials should be used
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: path
+          description: The remaining WMTS request path/template placeholders and query string, forwarded verbatim to the upstream service
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy a WMTS tile request to the upstream service configured for the given layer id,
+        injecting the Basic/Bearer credentials from that layer's `auth` entry in
+        App_Data/layers.json server-side. Credentials are never sent to the browser. Layers
+        without an `auth` entry are not proxyable through this endpoint.
+      responses:
+        200:
+          description: The proxied tile response from the upstream service
+          content: {}
+        502:
+          description: The upstream request failed
+          content: {}
+  /wmsproxy/{layerId}/{query}:
+    get:
+      tags:
+        - WMS Auth Proxy
+      parameters:
+        - name: layerId
+          in: path
+          description: The Hajk layer id (matching an entry under wmslayers in layers.json) whose configured credentials should be used
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: path
+          description: The remaining WMS query string (e.g. GetMap/GetCapabilities parameters), forwarded verbatim to the upstream service
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy a WMS request to the upstream service configured for the given layer id,
+        injecting the Basic/Bearer credentials from that layer's `auth` entry in
+        App_Data/layers.json server-side. Credentials are never sent to the browser. Layers
+        without an `auth` entry are not proxyable through this endpoint.
+      responses:
+        200:
+          description: The proxied response from the upstream service
+          content: {}
+        502:
+          description: The upstream request failed
+          content: {}
   /spec:
     get:
       tags:
@@ -823,6 +928,14 @@ components:
         code:
           type: string
           example: ENOENT
+    AdminLoginBody:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          example: hunter2
     DocumentBody:
       type: object
       properties:

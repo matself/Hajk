@@ -7,6 +7,7 @@ import {
   WMS_VERSION_1_1_1,
   WMS_VERSION_1_3_0,
 } from "models/layermanager";
+import InfoclickEditor from "../components/InfoclickEditor";
 
 var solpop;
 
@@ -86,6 +87,11 @@ const defaultState = {
   hideExpandArrow: false,
   style: [],
   workspaceList: [],
+  authUsername: "",
+  authPassword: "",
+  attributesCache: {},
+  attributesFetching: {},
+  attributesErrors: {},
 };
 
 const supportedProjections = [
@@ -194,7 +200,7 @@ class WMSLayerForm extends Component {
   loadLayersInfoLegendIcon(e) {
     $("#select-layers-info-legend-icon").attr(
       "caller",
-      "select-layers-info-legend-icon",
+      "select-layers-info-legend-icon"
     );
     $("#select-layers-info-legend-icon").trigger("click");
   }
@@ -296,7 +302,7 @@ class WMSLayerForm extends Component {
           addedLayers: [...this.state.addedLayers, checkedLayer],
           addedLayersInfo: addedLayersInfo,
         },
-        () => this.validateLayers(opts),
+        () => this.validateLayers(opts)
       );
     } else {
       // unchecked..
@@ -317,10 +323,10 @@ class WMSLayerForm extends Component {
         {
           addedLayersInfo: addedLayersInfo,
           addedLayers: this.state.addedLayers.filter(
-            (layer) => layer !== checkedLayer,
+            (layer) => layer !== checkedLayer
           ),
         },
-        () => this.validateLayers(opts),
+        () => this.validateLayers(opts)
       );
     }
   }
@@ -339,7 +345,7 @@ class WMSLayerForm extends Component {
     layerName,
     arrayToSearchIn = this.state.capabilities?.Capability?.Layer?.Layer
       ? this.state.capabilities.Capability.Layer.Layer
-      : [this.state.capabilities?.Capability?.Layer],
+      : [this.state.capabilities?.Capability?.Layer]
   ) {
     if (!arrayToSearchIn) return null;
 
@@ -351,6 +357,80 @@ class WMSLayerForm extends Component {
       return l.Name === layerName;
     });
     return match;
+  }
+
+  // Fetches available attribute names for a WMS sublayer, so they can be
+  // picked in the Infoklick-editor's "Infoga attribut" dropdown instead of
+  // being typed blindly. Assumes the layer is already configured (this.state.url
+  // is a known-working endpoint) and that it exposes WFS DescribeFeatureType
+  // on the same URL - the same assumption/mechanism already used by
+  // VectorLayerForm for vector layers.
+  fetchAttributesForLayer(subLayerName) {
+    const refreshDialog = () => {
+      const layerInfo = this.state.addedLayersInfo[subLayerName];
+      if (layerInfo) {
+        this.renderLayerInfoDialog(layerInfo);
+      }
+    };
+    this.setState(
+      (prevState) => ({
+        attributesFetching: {
+          ...prevState.attributesFetching,
+          [subLayerName]: true,
+        },
+        attributesErrors: {
+          ...prevState.attributesErrors,
+          [subLayerName]: null,
+        },
+      }),
+      refreshDialog
+    );
+    this.props.model.getWFSLayerDescription(
+      this.state.url,
+      subLayerName,
+      (result) => {
+        if (Array.isArray(result)) {
+          this.setState(
+            (prevState) => ({
+              attributesCache: {
+                ...prevState.attributesCache,
+                [subLayerName]: result.map((r) => ({
+                  name: r.name,
+                  type: r.localType,
+                })),
+              },
+              attributesFetching: {
+                ...prevState.attributesFetching,
+                [subLayerName]: false,
+              },
+            }),
+            refreshDialog
+          );
+        } else {
+          // No WFS on this URL - most public/open WMS services deliberately
+          // don't expose one (that would let anyone download the raw data).
+          // GetCapabilities never contains attribute names for any WMS
+          // version, and there's no reliable way to guess them otherwise
+          // (see git history for the GetFeatureInfo-probing attempts that
+          // were tried and dropped), so there's nothing left to automate -
+          // the admin has to type placeholders manually.
+          this.setState(
+            (prevState) => ({
+              attributesFetching: {
+                ...prevState.attributesFetching,
+                [subLayerName]: false,
+              },
+              attributesErrors: {
+                ...prevState.attributesErrors,
+                [subLayerName]:
+                  "Vektorlager saknas. Attribut måste väljas manuellt.",
+              },
+            }),
+            refreshDialog
+          );
+        }
+      }
+    );
   }
 
   renderLayerInfoInput(layerInfo) {
@@ -401,7 +481,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
               type="text"
@@ -413,23 +493,20 @@ class WMSLayerForm extends Component {
             <label>Inforuta</label>
           </div>
 
-          <textarea
-            className="infoClick"
-            style={{ width: "100%" }}
-            value={layerInfo.infobox}
-            onChange={(e) => {
+          <InfoclickEditor
+            key={layerInfo.id}
+            initialValue={layerInfo.infobox}
+            onChange={(html) => {
               let addedLayersInfo = this.state.addedLayersInfo;
-              addedLayersInfo[layerInfo.id].infobox = e.target.value;
-              this.setState(
-                {
-                  addedLayersInfo: addedLayersInfo,
-                },
-                () => {
-                  this.renderLayerInfoDialog(layerInfo);
-                },
-              );
+              addedLayersInfo[layerInfo.id].infobox = html;
+              this.setState({
+                addedLayersInfo: addedLayersInfo,
+              });
             }}
-            type="text"
+            availableAttributes={this.state.attributesCache[layerInfo.id]}
+            fetchingAttributes={!!this.state.attributesFetching[layerInfo.id]}
+            fetchError={this.state.attributesErrors[layerInfo.id]}
+            onFetchAttributes={() => this.fetchAttributesForLayer(layerInfo.id)}
           />
         </div>
         <div className="form-row split0">
@@ -450,7 +527,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -470,11 +547,11 @@ class WMSLayerForm extends Component {
                       () => {
                         this.renderLayerInfoDialog(layerInfo);
                         this.props.model.off(
-                          "change:select-layers-info-legend-icon",
+                          "change:select-layers-info-legend-icon"
                         );
-                      },
+                      }
                     );
-                  },
+                  }
                 );
                 this.loadLayersInfoLegendIcon(e);
               }}
@@ -485,55 +562,58 @@ class WMSLayerForm extends Component {
           </div>
         </div>
 
-        <div className="form-row split0">
-          <div>
-            <label>Stil</label>
+        <div className="form-row-pair">
+          <div className="form-row split0">
+            <div>
+              <label>Stil</label>
+            </div>
+            <div>
+              <select
+                value={layerInfo.style}
+                className="control-fixed-width"
+                onChange={(e) => {
+                  let addedLayersInfo = this.state.addedLayersInfo;
+                  addedLayersInfo[layerInfo.id].style = e.target.value;
+                  this.setState(
+                    {
+                      addedLayersInfo: addedLayersInfo,
+                    },
+                    () => {
+                      this.renderLayerInfoDialog(layerInfo);
+                    }
+                  );
+                }}
+              >
+                <option value={""}>{"<default>"}</option>
+                {styles}
+              </select>
+            </div>
           </div>
-          <div>
-            <select
-              value={layerInfo.style}
-              className="control-fixed-width"
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].style = e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  },
-                );
-              }}
-            >
-              <option value={""}>{"<default>"}</option>
-              {styles}
-            </select>
-          </div>
-        </div>
 
-        <div className="form-row split0">
-          <div>
-            <label>Har etikettstil (se issue #1842)</label>
-          </div>
-          <div>
-            <input
-              id="hasLabelStyle"
-              type="checkbox"
-              checked={layerInfo.hasLabelStyle || false}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].hasLabelStyle = e.target.checked;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  },
-                );
-              }}
-            />
+          <div className="form-row split0">
+            <div>
+              <label>Har etikettstil (se issue #1842)</label>
+            </div>
+            <div>
+              <input
+                id="hasLabelStyle"
+                type="checkbox"
+                checked={layerInfo.hasLabelStyle || false}
+                onChange={(e) => {
+                  let addedLayersInfo = this.state.addedLayersInfo;
+                  addedLayersInfo[layerInfo.id].hasLabelStyle =
+                    e.target.checked;
+                  this.setState(
+                    {
+                      addedLayersInfo: addedLayersInfo,
+                    },
+                    () => {
+                      this.renderLayerInfoDialog(layerInfo);
+                    }
+                  );
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -557,7 +637,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -591,7 +671,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
               type="text"
@@ -625,7 +705,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -655,7 +735,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -685,7 +765,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -712,7 +792,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -742,7 +822,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -768,7 +848,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -793,7 +873,7 @@ class WMSLayerForm extends Component {
                   },
                   () => {
                     this.renderLayerInfoDialog(layerInfo);
-                  },
+                  }
                 );
               }}
             />
@@ -822,7 +902,7 @@ class WMSLayerForm extends Component {
             checked: false,
           },
         },
-        layer,
+        layer
       );
       // Don't assume there is something to uncheck - the layer might have been deleted from WMS server,
       // and hence non existing in layers list and impossible to uncheck.
@@ -892,7 +972,7 @@ class WMSLayerForm extends Component {
         addedLayers: [...layerNames],
         addedLayersInfo: addedLayersInfo,
       },
-      () => this.validateLayers(opts),
+      () => this.validateLayers(opts)
     );
   }
 
@@ -1014,7 +1094,7 @@ class WMSLayerForm extends Component {
 
       var addedLayersInfo = {};
       var capabilities = this.state.capabilitiesList.find(
-        (capabilities) => capabilities.version === layer.version,
+        (capabilities) => capabilities.version === layer.version
       );
       if (layer.layersInfo) {
         addedLayersInfo = layer.layersInfo.reduce((c, l) => {
@@ -1068,7 +1148,7 @@ class WMSLayerForm extends Component {
           this.validate();
 
           if (callback) callback();
-        },
+        }
       );
     });
   }
@@ -1140,6 +1220,10 @@ class WMSLayerForm extends Component {
     var capabilitiesPromise = this.props.model.getAllWMSCapabilities(
       this.state.url,
       versions,
+      {
+        username: this.state.authUsername,
+        password: this.state.authPassword,
+      }
     );
 
     capabilitiesPromise
@@ -1162,10 +1246,10 @@ class WMSLayerForm extends Component {
                 () => {
                   this.setLayerOpts(capabilities);
                   this.setServerType();
-                },
+                }
               );
             }
-          },
+          }
         );
       })
       .catch((err) => {
@@ -1186,7 +1270,7 @@ class WMSLayerForm extends Component {
   selectVersion(e) {
     var version = e.target.value;
     var capabilities = this.state.capabilitiesList.find(
-      (capabilities) => capabilities.version === version,
+      (capabilities) => capabilities.version === version
     );
 
     var singleTile = this.state.singleTile;
@@ -1278,7 +1362,7 @@ class WMSLayerForm extends Component {
       }
 
       projections = projections.map((projection) =>
-        projection ? projection.toUpperCase() : null,
+        projection ? projection.toUpperCase() : null
       );
     }
 
@@ -1289,7 +1373,7 @@ class WMSLayerForm extends Component {
           } else {
             console.log(
               "Unsupported spatial reference system found in WMS capabilities document, ignoring:",
-              proj,
+              proj
             );
             return null;
           }
@@ -1368,10 +1452,24 @@ class WMSLayerForm extends Component {
   getLayer() {
     const cql = this.getValue("defaultCqlFilter");
 
+    // Assemble the (optional) Basic auth block. When no username is provided we
+    // return `undefined`, which JSON.stringify drops entirely - so unauthenticated
+    // layers stay clean. Credentials are only ever used server-side by the WMS
+    // auth proxy and are stripped before the config reaches the client.
+    const authUsername = this.getValue("authUsername");
+    const auth = authUsername
+      ? {
+          type: "basic",
+          username: authUsername,
+          password: this.getValue("authPassword"),
+        }
+      : undefined;
+
     const o = {
       type: this.state.layerType,
       id: this.state.id,
       caption: this.getValue("caption"),
+      auth: auth,
       internalLayerName: this.getValue("internalLayerName"),
       url: this.getValue("url"),
       customGetMapUrl: this.getValue("customGetMapUrl"),
@@ -1566,7 +1664,7 @@ class WMSLayerForm extends Component {
       } else {
         this.setState({
           validationErrors: this.state.validationErrors.filter(
-            (v) => v !== fieldName,
+            (v) => v !== fieldName
           ),
         });
       }
@@ -1588,7 +1686,7 @@ class WMSLayerForm extends Component {
       }
       const json = await res.json();
       var sortedWorkspaces = json.workspaces.workspace.sort(
-        GetSortOrder("name"),
+        GetSortOrder("name")
       ); //Pass the attribute to be sorted on
 
       function GetSortOrder(prop) {
@@ -1621,7 +1719,7 @@ class WMSLayerForm extends Component {
 
     if (e.target.value.includes(".") || e.target.value.includes(",")) {
       kv[key] = parseFloat(
-        parseFloat(e.target.value.replace(",", ".")).toFixed(1),
+        parseFloat(e.target.value.replace(",", ".")).toFixed(1)
       );
     } else {
       kv[key] = parseInt(e.target.value);
@@ -1715,6 +1813,36 @@ class WMSLayerForm extends Component {
             </span>
           )}
         </div>
+        <div className="separator">
+          Autentisering (Basic){" "}
+          <abbr title="Om tjänsten kräver Basic-autentisering (användarnamn/lösenord), fyll i uppgifterna här INNAN du klickar Ladda. Hajk hämtar capabilities server-side med dessa uppgifter, och lagrar dem i layers.json för att skicka dem server-side till tjänsten via en inbyggd proxy. Uppgifterna skickas aldrig till webbläsaren.">
+            (?)
+          </abbr>
+        </div>
+        <div>
+          <label>Användarnamn</label>
+          <input
+            type="text"
+            autoComplete="off"
+            ref="input_authUsername"
+            value={this.state.authUsername}
+            onChange={(e) => {
+              this.setState({ authUsername: e.target.value });
+            }}
+          />
+        </div>
+        <div>
+          <label>Lösenord</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            ref="input_authPassword"
+            value={this.state.authPassword}
+            onChange={(e) => {
+              this.setState({ authPassword: e.target.value });
+            }}
+          />
+        </div>
 
         {this.state.workspaceSelectorVisible && (
           <div id="availableWorkspaces">
@@ -1728,7 +1856,7 @@ class WMSLayerForm extends Component {
                   url:
                     this.state.url.substring(
                       0,
-                      this.state.url.lastIndexOf("geoserver/") + 10,
+                      this.state.url.lastIndexOf("geoserver/") + 10
                     ) + e.target.value,
                 })
               }
@@ -2208,7 +2336,7 @@ class WMSLayerForm extends Component {
             onChange={(e) => {
               const v = e.target.value;
               this.setState({ maxZoom: v }, () =>
-                this.validateField("maxZoom"),
+                this.validateField("maxZoom")
               );
             }}
           />

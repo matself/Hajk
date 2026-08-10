@@ -223,7 +223,7 @@ class MapOptions extends Component {
     var input = this.refs["input_" + fieldName],
       value = input ? input.value : "";
 
-    if (input.type === "checkbox") {
+    if (input && input.type === "checkbox") {
       value = input.checked;
     }
 
@@ -896,7 +896,7 @@ class MapOptions extends Component {
                 className="long-label"
                 htmlFor="input_confirmOnWindowClose"
               >
-                Beta: fråga användaren om Hajk verkligen ska stängas
+                Beta: varna om osparade ritningar/mätningar vid stängning
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"

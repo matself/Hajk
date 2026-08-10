@@ -725,6 +725,7 @@ class Search extends Component {
     return (
       <section className="tab-pane active">
         <Alert options={this.getAlertOptions()} />
+        <h1>Söklager</h1>
         <aside>
           <input
             placeholder="filtrera"

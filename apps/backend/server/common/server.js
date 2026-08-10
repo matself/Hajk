@@ -224,6 +224,25 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         Express.static(path.join(process.cwd(), "static", "client"))
       );
 
+    // Expose uploaded documents' media (images, videos, audio). In a typical
+    // production setup this is instead handled by a reverse proxy (e.g. nginx)
+    // serving App_Data/Upload directly, but we want a plain `npm run dev`/
+    // `node index.js` instance to work out of the box too. Same path resolution
+    // convention as used for the file listing, see informative.service.js.
+    // Exposed both at the root (/Upload, matching a typical reverse-proxy alias
+    // and any documents using absolute image paths) and under each active API
+    // version (/api/vN/Upload, matching DocumentHandler's default relative
+    // "../Upload/..." resolution against mapserviceBase).
+    const uploadDirPath = path.isAbsolute(
+      process.env.INFORMATIVE_CUSTOM_UPLOAD_DIR_ABSOLUTE_PATH || ""
+    )
+      ? process.env.INFORMATIVE_CUSTOM_UPLOAD_DIR_ABSOLUTE_PATH
+      : path.join(process.cwd(), "App_Data", "Upload");
+    app.use("/Upload", Express.static(uploadDirPath));
+    apiVersions.forEach((v) => {
+      app.use(`/api/v${v}/Upload`, Express.static(uploadDirPath));
+    });
+
     // Optionally, other directories placed in "static" can be exposed.
     this.setupStaticDirs();
 
@@ -466,12 +485,51 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     }
   }
 
+  async setupWmtsAuthProxy() {
+    // Each API version gets its own WMTS auth proxy middleware. Unlike the FME
+    // and Sokigo proxies this one isn't gated by a single .env target: it reads
+    // per-layer credentials from App_Data/layers.json at request time, so it's
+    // always mounted and simply does nothing for layers that have no `auth`.
+    for await (const v of app.get("apiVersions")) {
+      try {
+        const { default: wmtsAuthProxy, WMTS_AUTH_PROXY_PATH } = await import(
+          `../apis/v${v}/middlewares/wmts.auth.proxy.js`
+        );
+        app.use(`/api/v${v}/${WMTS_AUTH_PROXY_PATH}`, wmtsAuthProxy());
+        logger.info("Enabling WMTS auth proxy for API V%s", v);
+      } catch {
+        // The middleware only exists for API versions that support it (v2+).
+        logger.debug("WMTS auth proxy not available for API V%s, skipping.", v);
+      }
+    }
+  }
+
+  async setupWmsAuthProxy() {
+    // Each API version gets its own WMS auth proxy middleware. Like WMTS, it reads
+    // per-layer credentials from App_Data/layers.json at request time, so it's
+    // always mounted and simply does nothing for layers that have no `auth`.
+    for await (const v of app.get("apiVersions")) {
+      try {
+        const { default: wmsAuthProxy, WMS_AUTH_PROXY_PATH } = await import(
+          `../apis/v${v}/middlewares/wms.auth.proxy.js`
+        );
+        app.use(`/api/v${v}/${WMS_AUTH_PROXY_PATH}`, wmsAuthProxy());
+        logger.info("Enabling WMS auth proxy for API V%s", v);
+      } catch {
+        // The middleware only exists for API versions that support it (v2+).
+        logger.debug("WMS auth proxy not available for API V%s, skipping.", v);
+      }
+    }
+  }
+
   // Since we have to await the setup of the proxies (so that the JSON-parser etc. initiates after the proxies),
   // we'll gather the all the setups here so they are easy to call.
   async setupProxies() {
     await this.setupSokigoProxy();
     await this.setupFmeProxy();
     await this.setupMarkhojdProxy();
+    await this.setupWmtsAuthProxy();
+    await this.setupWmsAuthProxy();
     this.setupGenericProxy();
   }
 

@@ -57,7 +57,7 @@ export default function QuickAccessOptions({
         aria-expanded={optionsMenuIsOpen ? "true" : undefined}
         onClick={handleShowMoreOptionsClick}
       >
-        <HajkToolTip title="Fler val för snabbåtkomst">
+        <HajkToolTip title="Fler val för teman">
           <MoreVertOutlinedIcon />
         </HajkToolTip>
       </LsIconButton>
@@ -78,7 +78,7 @@ export default function QuickAccessOptions({
             setAnchorEl(null);
             if (!functionalOk()) {
               enqueueSnackbar(
-                "Du har inte tillåtit funktionella kakor. För att använda snabbåtkomst så måste du tillåta funktionella kakor.",
+                "Du har inte tillåtit funktionella kakor. För att använda teman så måste du tillåta funktionella kakor.",
                 {
                   variant: "warning",
                   anchorOrigin: { vertical: "bottom", horizontal: "center" },

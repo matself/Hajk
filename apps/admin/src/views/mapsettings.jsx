@@ -1,11 +1,13 @@
 import React from "react";
 import { Component } from "react";
+import ReactDOM from "react-dom";
 import MapOptions from "./mapoptions.jsx";
 import ToolOptions from "./tooloptions.jsx";
 import Button from "@material-ui/core/Button";
 import $ from "jquery";
 import Alert from "../views/alert.jsx";
 import ListProperties from "../views/listproperties.jsx";
+import MapInfoboxEditor from "./components/MapInfoboxEditor.jsx";
 import Divider from "@material-ui/core/Divider";
 import DeleteIcon from "@material-ui/icons/DeleteForever";
 import AddIcon from "@material-ui/icons/Add";
@@ -13,6 +15,7 @@ import ControlPointDuplicate from "@material-ui/icons/ControlPointDuplicate";
 import SaveIcon from "@material-ui/icons/SaveSharp";
 import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import RestoreIcon from "@material-ui/icons/Restore";
 import LayersIcon from "@material-ui/icons/Layers";
 import SwapVertIcon from "@material-ui/icons/SwapVert";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -85,9 +88,29 @@ const infoGroupInputStyle = {
   marginTop: "10px",
 };
 
+// jquery-sortable's default onMousedown calls event.preventDefault() for
+// every mousedown except ones targeting an <input>/<select>/<textarea>,
+// which blocks the browser's native focus/cursor-placement behavior for
+// anything else nested inside a sortable tree item - including a
+// contentEditable region such as the Infoklick/Infobox WYSIWYG editor's
+// Draft.js <div contenteditable>. Extend the same allowlist to also cover
+// contentEditable elements, so clicking inside the editor actually places
+// a cursor instead of silently being swallowed as a drag-start attempt.
+function sortableOnMousedown($item, _super, event) {
+  const isFormControl = /^(input|select|textarea)$/i.test(
+    event.target.nodeName
+  );
+  if (isFormControl || event.target.isContentEditable) {
+    return;
+  }
+  event.preventDefault();
+  return true;
+}
+
 $.fn.editable = function (component) {
   function edit(node, e) {
     function reset() {
+      ReactDOM.unmountComponentAtNode(infoboxContainer[0]);
       ok.remove();
       abort.remove();
       remove.remove();
@@ -143,7 +166,7 @@ $.fn.editable = function (component) {
       if (component.state.authActive) {
         node.parent().attr("data-visibleforgroups", input3.val());
       }
-      node.parent().attr("data-infobox", input4.val());
+      node.parent().attr("data-infobox", infoboxValue);
       node.parent().attr("data-visibleatstart", visible);
       if (visible) {
         node.parent().addClass("visible");
@@ -189,9 +212,11 @@ $.fn.editable = function (component) {
         groupCheckboxLabelStyle
       ),
       label3 = $(`<label for="${id3}">Synlig vid start&nbsp;</label><br />`),
-      label4 = $(`<label for="${id4}">Redigera snabbval&nbsp;</label><br />`),
+      label4 = $(`<label for="${id4}">Redigera genväg&nbsp;</label><br />`),
       label5 = $(`<br /><label for="${id6}">Tillträde</label><br />`),
-      label6 = $(`<label for="${id7}">Infobox</label><br />`),
+      label6 = $(
+        `<label for="${id7}">Infoklick (åsidosätter lagrets egen)</label><br />`
+      ),
       label7 = $(`<label for="${id8}">Infodokument&nbsp;</label>`).css(
         groupCheckboxLabelStyle
       ),
@@ -226,7 +251,9 @@ $.fn.editable = function (component) {
       input = $("<input />"),
       input2 = $(`<input id="${id5}" type="text" placeholder="Ny länk"/>`),
       input3 = $(`<input id="${id6}" type="text" />`),
-      input4 = $(`<textarea id="${id7}" type="text"></textarea>`),
+      infoboxContainer = $(
+        `<div id="${id7}" class="infoclick-editor-mount"></div>`
+      ),
       input5 = $(`<input id="${id9}" type="text"/>`).css(infoGroupLabelStyle),
       input6 = $(`<textarea id="${id10}" type="text"></textarea>`).css(
         infoGroupInputStyle
@@ -252,6 +279,8 @@ $.fn.editable = function (component) {
       editPreset = $('<div class=""></div>'),
       elem = node.get(0) || {};
 
+    let infoboxValue = node.parent().attr("data-infobox") || "";
+
     ok.css(btnCSS).click(store);
 
     layerOk.css(btnCSS).click(saveLayer);
@@ -275,7 +304,10 @@ $.fn.editable = function (component) {
       checkbox2.attr("checked", JSON.parse(node.parent().attr("data-toggled")));
     }
     if (node.parent().attr("data-exclusive")) {
-      checkbox6.attr("checked", JSON.parse(node.parent().attr("data-exclusive")));
+      checkbox6.attr(
+        "checked",
+        JSON.parse(node.parent().attr("data-exclusive"))
+      );
     }
 
     if (node.parent().attr("data-infogroupvisible")) {
@@ -294,10 +326,6 @@ $.fn.editable = function (component) {
     if (node.parent().attr("data-visibleforgroups")) {
       input3.val(node.parent().attr("data-visibleforgroups"));
     }
-    if (node.parent().attr("data-infobox")) {
-      input4.val(node.parent().attr("data-infobox"));
-    }
-
     if (node.parent().attr("data-infogrouptitle")) {
       input5.val(node.parent().attr("data-infogrouptitle"));
     }
@@ -374,7 +402,7 @@ $.fn.editable = function (component) {
       visible.append(label5, input3);
     }
 
-    visible.append(label6, input4);
+    visible.append(label6, infoboxContainer);
     editPreset.append(label4, checkbox4, input2);
 
     remove.css({ color: "red", marginRight: "4px" }).click((e) => {
@@ -433,6 +461,23 @@ $.fn.editable = function (component) {
     if (node.hasClass("layer-name") && !elem.editing) {
       elem.editing = true;
       node.before(remove).after(layerTools);
+
+      const layerId = node.parent().attr("data-id");
+      const fullLayer = component.props.model
+        .get("layers")
+        .find((l) => l.id === layerId);
+
+      ReactDOM.render(
+        <MapInfoboxEditor
+          model={component.props.model}
+          layer={fullLayer}
+          initialValue={infoboxValue}
+          onChange={(html) => {
+            infoboxValue = html;
+          }}
+        />,
+        infoboxContainer[0]
+      );
     }
 
     if (node.hasClass("preset-name") && !elem.editing) {
@@ -458,6 +503,16 @@ $.fn.editable = function (component) {
   };
 
   var onClick = (e) => {
+    // Don't intercept clicks that originate inside our React-mounted
+    // Infoklick/Infobox editor (infoboxContainer, class
+    // "infoclick-editor-mount"). React 16's synthetic event system relies
+    // on the native click bubbling all the way up to `document`, and
+    // stopPropagation() here would silently swallow every button/select
+    // interaction inside it (Hämta attribut, Visuell/Kod, formatting
+    // buttons, the attribute picker) with no visible error at all.
+    if ($(e.target).closest(".infoclick-editor-mount").length) {
+      return;
+    }
     enableEdit(e);
     e.stopPropagation();
   };
@@ -498,7 +553,7 @@ class Menu extends Component {
         "Här kan du ändra ritordning på tända lager i kartan. Dra lagret upp eller ner i listan och släpp på önskad plats.",
       enableQuickAccessPresets: false,
       quickAccessTopicsInfoText:
-        "Här kan du ladda färdiga teman till snabbåtkomst. Teman innehåller tända och släckta lager, samt bakgrund.",
+        "Här kan du ladda färdiga teman till temagruppen. Teman innehåller tända och släckta lager, samt bakgrund.",
       enableUserQuickAccessFavorites: false,
       userQuickAccessFavoritesInfoText:
         "Här kan du hantera och redigera dina sparade favoriter.",
@@ -589,7 +644,7 @@ class Menu extends Component {
             this.state.enableQuickAccessPresets,
           quickAccessTopicsInfoText:
             existingConfig.quickAccessTopicsInfoText ||
-            "Här kan du ladda färdiga teman till snabbåtkomst. Teman innehåller tända och släckta lager, samt bakgrund.",
+            "Här kan du ladda färdiga teman till temagruppen. Teman innehåller tända och släckta lager, samt bakgrund.",
           enableUserQuickAccessFavorites:
             existingConfig.enableUserQuickAccessFavorites ??
             this.state.enableUserQuickAccessFavorites,
@@ -619,13 +674,14 @@ class Menu extends Component {
           cqlFilterVisible:
             existingConfig.cqlFilterVisible ?? this.state.cqlFilterVisible,
           showLegendByDefault:
-            existingConfig.showLegendByDefault ?? this.state.showLegendByDefault,
+            existingConfig.showLegendByDefault ??
+            this.state.showLegendByDefault,
           renderSpecialBackgroundsAtBottom:
             existingConfig.renderSpecialBackgroundsAtBottom ??
             this.state.renderSpecialBackgroundsAtBottom,
         });
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       });
     });
 
@@ -647,7 +703,7 @@ class Menu extends Component {
       }, 0);
 
       $(".tree-view li").editable(this);
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
     });
 
     defaultState.layers = this.props.model.get("layers");
@@ -659,7 +715,7 @@ class Menu extends Component {
    */
   update() {
     $(".tree-view li").editable(this);
-    $(".tree-view > ul").sortable();
+    $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
   }
 
   /**
@@ -742,10 +798,14 @@ class Menu extends Component {
             data.vectorlayers.forEach((l) => {
               l.type = "Vector";
             });
+            (data.xyzlayers || []).forEach((l) => {
+              l.type = "XYZ";
+            });
             layers = data.wmslayers
               .concat(data.wmtslayers)
               .concat(data.arcgislayers)
-              .concat(data.vectorlayers);
+              .concat(data.vectorlayers)
+              .concat(data.xyzlayers || []);
             layers.sort((a, b) => {
               var d1 = parseInt(a.date, 10),
                 d2 = parseInt(b.date, 10);
@@ -1022,7 +1082,7 @@ class Menu extends Component {
         });
 
         $(".tree-view li").editable(this);
-        $(".tree-view > ul").sortable();
+        $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
 
         this.setState({
           content: "mapsettings",
@@ -1443,7 +1503,7 @@ class Menu extends Component {
     });
 
     setTimeout(() => {
-      $(".tree-view > ul").sortable();
+      $(".tree-view > ul").sortable({ onMousedown: sortableOnMousedown });
       this.setState({
         drawOrder: true,
       });
@@ -2299,11 +2359,11 @@ class Menu extends Component {
                 />
                 &nbsp;
                 <label className="long-label" htmlFor="showQuickAccess">
-                  Visa en grupp med snabbåtkomst{" "}
+                  Visa en grupp med teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad visas en grupp för snabbåtkomst i lagerhanteraren."
+                    title="När rutan är ikryssad visas en grupp för teman i lagerhanteraren."
                   />
                 </label>
               </div>
@@ -2473,9 +2533,7 @@ class Menu extends Component {
                   value={this.state.drawOrderViewInfoText}
                 />
               </div>
-              <div className="separator">
-                Inställningar för grupp med snabbåtkomst
-              </div>
+              <div className="separator">Inställningar för grupp med teman</div>
               <div>
                 <input
                   id="enableQuickAccessPresets"
@@ -2489,20 +2547,20 @@ class Menu extends Component {
                   className="long-label"
                   htmlFor="enableQuickAccessPresets"
                 >
-                  Ladda tema{" "}
+                  Färdiga teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren ladda fördefinierade teman till snabbåtkomst."
+                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till temagruppen."
                   />
                 </label>
               </div>
               <div className="text-input-label">
-                Infotext Ladda tema{" "}
+                Infotext Färdiga teman{" "}
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för att ladda tema."
+                  title="Ange en text som ska visas i panelen för färdiga teman."
                 />
                 &nbsp;
                 <input
@@ -2526,20 +2584,20 @@ class Menu extends Component {
                   className="long-label"
                   htmlFor="enableUserQuickAccessFavorites"
                 >
-                  Mina favoriter{" "}
+                  Mina teman{" "}
                   <i
                     className="fa fa-question-circle"
                     data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren spara snabbåtkomst till mina favoriter för att kunna ladda vid senare tillfälle."
+                    title="När rutan är ikryssad kan användaren spara sitt eget innehåll i temagruppen som ett tema för att kunna ladda vid senare tillfälle."
                   />
                 </label>
               </div>
               <div className="text-input-label">
-                Infotext Mina favoriter{" "}
+                Infotext Mina teman{" "}
                 <i
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för mina favoriter."
+                  title="Ange en text som ska visas i panelen för mina teman."
                 />
                 &nbsp;
                 <input
@@ -2606,30 +2664,6 @@ class Menu extends Component {
               </div>
               <div>
                 <input
-                  id="enableOSM"
-                  name="enableOSM"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.enableOSM}
-                />
-                &nbsp;
-                <label htmlFor="enableOSM">OpenStreetMap</label>
-              </div>
-              <div>
-                <input
-                  id="OSMVisibleAtStart"
-                  name="OSMVisibleAtStart"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.OSMVisibleAtStart}
-                />
-                &nbsp;
-                <label htmlFor="OSMVisibleAtStart">
-                  Ladda kartan med OpenStreetMap synligt vid start
-                </label>
-              </div>
-              <div>
-                <input
                   id="renderSpecialBackgroundsAtBottom"
                   name="renderSpecialBackgroundsAtBottom"
                   type="checkbox"
@@ -2638,7 +2672,7 @@ class Menu extends Component {
                 />
                 &nbsp;
                 <label htmlFor="renderSpecialBackgroundsAtBottom">
-                  Visa lagren "Vit", "Svart" och "OSM" längst ner i listan.
+                  Visa lagren "Vit" och "Svart" längst ner i listan.
                 </label>
               </div>
               <div className="separator">Justera lagerhanteraren</div>
@@ -2706,7 +2740,7 @@ class Menu extends Component {
           </aside>
           <article>
             <fieldset className="tree-view">
-              <legend>Hantera teman för snabbåtkomst</legend>
+              <legend>Hantera teman för temagruppen</legend>
               <div className="row">
                 <div className="col-sm-12">
                   <label htmlFor="title">
@@ -2941,6 +2975,22 @@ class Menu extends Component {
     });
   }
 
+  openBackups() {
+    const mapFile = this.props.model.attributes.mapFile;
+    if (!mapFile) {
+      this.setState({
+        alert: true,
+        alertMessage: "Välj en karta först.",
+      });
+      return;
+    }
+    // Open the self-contained backups/restore page (served by the backend behind
+    // the same admin gate). It is deliberately locked to the selected map.
+    const base = this.props.config.url_map;
+    const url = `${base}/backups-ui?map=${encodeURIComponent(mapFile)}`;
+    window.open(url, "_blank", "noopener");
+  }
+
   duplicateMap() {
     const oldName = this.props.model.attributes.mapFile;
     const newName = this.refs.mapName.value;
@@ -3043,6 +3093,15 @@ class Menu extends Component {
               >
                 Ta bort karta
               </ColorButtonRed>
+              &nbsp;
+              <ColorButtonBlue
+                variant="contained"
+                className="btn"
+                onClick={(e) => this.openBackups()}
+                startIcon={<RestoreIcon />}
+              >
+                Säkerhetskopior
+              </ColorButtonBlue>
             </div>
 
             <Divider orientation="vertical" flexItem />

@@ -164,7 +164,7 @@ function LayerItemDetails({
   const handleQuickAccess = () => {
     if (!functionalOk()) {
       enqueueSnackbar(
-        "Du har inte tillåtit funktionella kakor. För att använda snabbåtkomst så måste du tillåta funktionella kakor.",
+        "Du har inte tillåtit funktionella kakor. För att använda teman så måste du tillåta funktionella kakor.",
         {
           variant: "warning",
           anchorOrigin: { vertical: "bottom", horizontal: "center" },
@@ -175,9 +175,9 @@ function LayerItemDetails({
 
     let snackbarMessage = "";
     if (!quickAccess) {
-      snackbarMessage = `${renderDetailTitle()} har nu lagts till i snabbåtkomst.`;
+      snackbarMessage = `${renderDetailTitle()} har nu lagts till i teman.`;
     } else {
-      snackbarMessage = `${renderDetailTitle()} har nu tagits bort från snabbåtkomst.`;
+      snackbarMessage = `${renderDetailTitle()} har nu tagits bort från teman.`;
     }
     enqueueSnackbar(snackbarMessage, {
       variant: "success",
@@ -430,12 +430,12 @@ function LayerItemDetails({
                   {!quickAccess ? (
                     <>
                       <StarOutlineOutlinedIcon sx={{ marginRight: 1 }} />
-                      Lägg till i snabbåtkomst
+                      Lägg till i teman
                     </>
                   ) : (
                     <>
                       <DeleteOutlinedIcon sx={{ marginRight: 1 }} />
-                      Ta bort från snabbåtkomst
+                      Ta bort från teman
                     </>
                   )}
                 </Button>

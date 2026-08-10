@@ -10,7 +10,6 @@
  * In future we might want to create backwardcompatibility if we add functionality.
  */
 
-import { isValidLayerId } from "../../utils/Validator";
 import LocalStorageHelper from "../../utils/LocalStorageHelper";
 
 class BookmarksModel {
@@ -24,106 +23,15 @@ class BookmarksModel {
     this.#storageKey = settings.storageKey || "bookmarks";
   }
 
-  getVisibleLayers() {
-    const layers = this.map
-      .getLayers()
-      .getArray()
-      .filter(
-        (layer) =>
-          layer.getVisible() &&
-          layer.getProperties().name &&
-          isValidLayerId(layer.getProperties().name)
-      );
-
-    const result = layers
-      .map((layer) => {
-        const layerId = layer.getProperties().name;
-        const useLabelStyle = layer.get("useLabelStyle");
-        const hasLabelStyle = layer.get("hasLabelStyle");
-
-        // Add _l suffix if label layer is active and supported
-        if (useLabelStyle && hasLabelStyle) {
-          return `${layerId}_l`;
-        }
-        return layerId;
-      })
-      .join(",");
-
-    return result;
-  }
-
-  setVisibleLayers(strLayers) {
-    let layers = strLayers.split(",");
-    this.map
-      .getLayers()
-      .getArray()
-      .filter(
-        (layer) =>
-          layer.getProperties().name &&
-          isValidLayerId(layer.getProperties().name)
-      )
-      .forEach((layer) => {
-        layer.setVisible(layers.indexOf(layer.getProperties().name) > -1);
-      });
-  }
-
-  getPartlyToggledGroupLayers() {
-    const partlyToggledGroupLayers = {};
-
-    const allLayers =
-      typeof this.map.getAllLayers === "function"
-        ? this.map.getAllLayers()
-        : this.map.getLayers().getArray();
-
-    allLayers
-      .filter((layer) => {
-        const layerId = layer.getProperties().name;
-        if (!layer.getVisible() || !layerId || !isValidLayerId(layerId)) {
-          return false;
-        }
-        if (layer.getProperties().layerType !== "group") {
-          return false;
-        }
-
-        const allSubLayers = layer.get("allSubLayers");
-        const visibleSubLayers = layer.get("subLayers");
-
-        return (
-          Array.isArray(allSubLayers) &&
-          Array.isArray(visibleSubLayers) &&
-          visibleSubLayers.length > 0 &&
-          visibleSubLayers.length !== allSubLayers.length
-        );
-      })
-      .forEach((layer) => {
-        partlyToggledGroupLayers[layer.getProperties().name] = layer
-          .get("subLayers")
-          .join(",");
-      });
-
-    return partlyToggledGroupLayers;
-  }
-
   getMapState() {
     const view = this.map.getView();
     const viewCenter = view.getCenter();
-    const pos = {
-      x: viewCenter[0],
-      y: viewCenter[1],
-      z: view.getZoom(),
-    };
-
-    const partlyToggledGroupLayers = this.getPartlyToggledGroupLayers();
-    const gl =
-      Object.keys(partlyToggledGroupLayers).length > 0
-        ? partlyToggledGroupLayers
-        : undefined;
 
     return {
       m: this.app.config.activeMap,
-      l: this.getVisibleLayers(),
-      gl,
-      ...pos,
+      x: viewCenter[0],
+      y: viewCenter[1],
+      z: view.getZoom(),
     };
   }
 
@@ -132,10 +40,6 @@ class BookmarksModel {
       return;
     }
     bookmark = this.getDecodedBookmark(bookmark);
-    const layers = bookmark?.settings?.l ?? "";
-    const groupLayers = JSON.stringify(bookmark?.settings?.gl ?? {});
-
-    this.app.setLayerVisibilityFromParams(layers, groupLayers);
 
     let view = this.map.getView();
     view.setCenter([bookmark.settings.x, bookmark.settings.y]);
@@ -229,6 +133,74 @@ class BookmarksModel {
   deleteBookmark(name) {
     delete this.bookmarks[name];
     this.writeToStorage();
+  }
+
+  /**
+   * @summary Merges a previously exported set of bookmarks into the
+   * current ones, so bookmarks can be moved between browsers/devices
+   * or restored after the browser storage has been cleared.
+   * @description Bookmarks whose name collides with an existing one are
+   * kept under a renamed key (e.g. "Namn (2)") rather than overwriting
+   * the existing bookmark.
+   *
+   * @param {object} parsedBookmarks Previously exported bookmarks object
+   * @returns {{importedCount: number, renamedCount: number, skippedCount: number, otherMapCount: number}}
+   */
+  importBookmarks(parsedBookmarks) {
+    if (
+      !parsedBookmarks ||
+      typeof parsedBookmarks !== "object" ||
+      Array.isArray(parsedBookmarks)
+    ) {
+      throw new Error("Invalid bookmarks file");
+    }
+
+    let importedCount = 0;
+    let renamedCount = 0;
+    let skippedCount = 0;
+    let otherMapCount = 0;
+
+    Object.entries(parsedBookmarks).forEach(([name, bookmark]) => {
+      let decoded;
+      try {
+        // Throws if bookmark.settings isn't valid base64-encoded JSON.
+        decoded = this.getDecodedBookmark(bookmark);
+        if (
+          typeof decoded?.settings?.x !== "number" ||
+          typeof decoded?.settings?.y !== "number" ||
+          typeof decoded?.settings?.z !== "number"
+        ) {
+          throw new Error("Missing position information");
+        }
+      } catch (_error) {
+        skippedCount++;
+        return;
+      }
+
+      let targetName = name;
+      if (this.bookmarkWithNameExists(targetName)) {
+        let suffix = 2;
+        while (this.bookmarkWithNameExists(`${name} (${suffix})`)) {
+          suffix++;
+        }
+        targetName = `${name} (${suffix})`;
+        renamedCount++;
+      }
+
+      if (
+        decoded.settings.m &&
+        decoded.settings.m !== this.app.config.activeMap
+      ) {
+        otherMapCount++;
+      }
+
+      this.bookmarks[targetName] = { settings: bookmark.settings };
+      importedCount++;
+    });
+
+    this.writeToStorage();
+
+    return { importedCount, renamedCount, skippedCount, otherMapCount };
   }
 
   handleChangeCookieSettingsClick = () => {

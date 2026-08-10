@@ -1188,6 +1188,7 @@ class Edit extends Component {
     return (
       <section className="tab-pane active">
         <Alert options={this.getAlertOptions()} />
+        <h1>Redigeringslager</h1>
         <aside>
           <input
             placeholder="filtrera"
