@@ -37,9 +37,7 @@ class CoordinatesHeightRow extends React.PureComponent {
     if (typeof this.state.height === "number") {
       return this.state.height.toFixed(2);
     }
-    return this.state.failed
-      ? "Kunde inte hämta markhöjd"
-      : "Ingen höjddata";
+    return this.state.failed ? "Kunde inte hämta markhöjd" : "Ingen höjddata";
   }
 
   handleCopyToClipBoard() {

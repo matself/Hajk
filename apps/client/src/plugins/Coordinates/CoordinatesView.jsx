@@ -117,7 +117,9 @@ class CoordinatesView extends React.PureComponent {
             inverseAxis={transformation.inverseAxis}
           />
         ))}
-        {this.model.markhojdActive && <CoordinatesHeightRow model={this.model} />}
+        {this.model.markhojdActive && (
+          <CoordinatesHeightRow model={this.model} />
+        )}
       </>
     );
   }
