@@ -289,6 +289,30 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     });
   }
 
+  async setupMarkhojdProxy() {
+    // Each API version has its own Lantmateriet Markhojd proxy middleware. Let's iterate them.
+    for await (const v of app.get("apiVersions")) {
+      // Don't enable the Markhojd proxy unless explicitly activated
+      if (process.env.LANTMATERIET_MARKHOJD_ACTIVE === "true") {
+        const { default: lantmaterietMarkhojdProxy } = await import(
+          `../apis/v${v}/middlewares/lantmateriet.markhojd.proxy.js`
+        );
+
+        app.use(`/api/v${v}/markhojdproxy`, lantmaterietMarkhojdProxy());
+        logger.info(
+          "LANTMATERIET_MARKHOJD_ACTIVE is set to %o in .env. Enabling Lantmateriet Markhojd proxy for API V%s",
+          process.env.LANTMATERIET_MARKHOJD_ACTIVE,
+          v
+        );
+      } else
+        logger.info(
+          "LANTMATERIET_MARKHOJD_ACTIVE is set to %o in .env. Not enabling Lantmateriet Markhojd proxy for API V%s",
+          process.env.LANTMATERIET_MARKHOJD_ACTIVE,
+          v
+        );
+    }
+  }
+
   /**
    * @description Utility function to grab boolean values from .env, with a default fallback.
    * Handles the different ways users can setup their .envs (e.g. "true"/"1"/"false"/"0", case insensitively).
@@ -503,6 +527,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
   async setupProxies() {
     await this.setupSokigoProxy();
     await this.setupFmeProxy();
+    await this.setupMarkhojdProxy();
     await this.setupWmtsAuthProxy();
     await this.setupWmsAuthProxy();
     this.setupGenericProxy();

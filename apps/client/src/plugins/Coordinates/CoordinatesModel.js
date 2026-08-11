@@ -18,6 +18,10 @@ class CoordinatesModel {
     this.src = settings.options.src ?? "marker.png";
 
     this.coordinates = undefined;
+    this.mapServiceBase = settings.app.config.appConfig.mapserviceBase;
+    this.markhojdActive = settings.options.markhojdActive ?? false;
+    this.markhojdUsername = settings.options.markhojdUsername ?? "";
+    this.markhojdPassword = settings.options.markhojdPassword ?? "";
     this.transformations = settings.options.transformations;
     if (!this.transformations || this.transformations.length === 0) {
       this.transformations = [
@@ -163,6 +167,7 @@ class CoordinatesModel {
             proj: this.map.getView().getProjection().getCode(),
             force: true,
           });
+          this.fetchMarkhojd(this.coordinates);
           this.map.getView().setCenter(point.getCoordinates());
         },
         (error) => {
@@ -184,6 +189,7 @@ class CoordinatesModel {
   resetCoords = () => {
     this.vector.getSource().clear();
     this.localObserver.publish("resetCoordinates");
+    this.localObserver.publish("newHeight", { height: undefined });
     this.coordinates = undefined;
   };
 
@@ -203,7 +209,56 @@ class CoordinatesModel {
       force: true,
     });
 
+    this.fetchMarkhojd(this.coordinates);
+
     this.localObserver.publish("hideSnackbar");
+  };
+
+  /**
+   * @summary Fetches the ground elevation (markhöjd) for the given
+   * coordinates, in the map's current projection, from Lantmäteriet
+   * (via the backend proxy) and publishes the result.
+   * @memberof CoordinatesModel
+   */
+  fetchMarkhojd = async (coordinates) => {
+    if (!this.markhojdActive) {
+      return;
+    }
+
+    const srid = this.map.getView().getProjection().getCode().split(":")[1];
+    const [e, n] = coordinates;
+
+    try {
+      const response = await fetch(
+        `${this.mapServiceBase}/markhojdproxy/hojd?srid=${srid}&e=${e}&n=${n}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Basic ${btoa(
+              `${this.markhojdUsername}:${this.markhojdPassword}`
+            )}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Anropet misslyckades med status ${response.status}`);
+      }
+
+      const feature = await response.json();
+      const z = feature?.geometry?.coordinates?.[2];
+      const noDataValue = feature?.properties?.nodatavalue;
+      const height = typeof z === "number" && z !== noDataValue ? z : null;
+
+      this.localObserver.publish("newHeight", { height, failed: false });
+    } catch (error) {
+      // Distinguish a failed call (e.g. proxy not enabled in backend .env,
+      // wrong credentials, network error) from a successful response that
+      // simply lacks elevation data for the given point - otherwise both
+      // cases would look identical ("Ingen höjddata") to the user.
+      console.error("Kunde inte hämta markhöjd.", error);
+      this.localObserver.publish("newHeight", { height: null, failed: true });
+    }
   };
 
   addInteraction() {
