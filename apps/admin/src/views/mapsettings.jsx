@@ -1166,6 +1166,43 @@ class Menu extends Component {
   }
 
   /**
+   * Saves the settings for the "temagrupp" (quickAccess) checkboxes/infotexts
+   * that live on the "Teman" tab. Deliberately does NOT go through
+   * saveSettings()/parseSettings() - that rebuilds groups/baselayers by
+   * scraping the layer-tree DOM (".tree-view > ul > li"), which only exists
+   * on the "Lagerväljare" tab. Calling it from here would silently wipe the
+   * map's entire layer tree.
+   */
+  saveQuickAccessSettings() {
+    // Get the current configuration.
+    var config = this.props.model.get("layerMenuConfig");
+
+    config.showQuickAccess = this.state.showQuickAccess;
+    config.enableQuickAccessPresets = this.state.enableQuickAccessPresets;
+    config.quickAccessTopicsInfoText = this.state.quickAccessTopicsInfoText;
+    config.enableUserQuickAccessFavorites =
+      this.state.enableUserQuickAccessFavorites;
+    config.userQuickAccessFavoritesInfoText =
+      this.state.userQuickAccessFavoritesInfoText;
+
+    // Save the updated configuration.
+    this.props.model.updateConfig(config, (success) => {
+      if (success) {
+        this.setState({
+          content: "mapsettings",
+          alert: true,
+          alertMessage: "Uppdateringen lyckades.",
+        });
+      } else {
+        this.setState({
+          alert: true,
+          alertMessage: "Uppdateringen misslyckades.",
+        });
+      }
+    });
+  }
+
+  /**
    *
    */
   saveLayerEdits = () => {
@@ -2351,24 +2388,6 @@ class Menu extends Component {
               </div>
               <div>
                 <input
-                  id="showQuickAccess"
-                  name="showQuickAccess"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.showQuickAccess}
-                />
-                &nbsp;
-                <label className="long-label" htmlFor="showQuickAccess">
-                  Visa en grupp med teman{" "}
-                  <i
-                    className="fa fa-question-circle"
-                    data-toggle="tooltip"
-                    title="När rutan är ikryssad visas en grupp för teman i lagerhanteraren."
-                  />
-                </label>
-              </div>
-              <div>
-                <input
                   id="legendForceTransparency"
                   name="legendForceTransparency"
                   type="checkbox"
@@ -2533,81 +2552,6 @@ class Menu extends Component {
                   value={this.state.drawOrderViewInfoText}
                 />
               </div>
-              <div className="separator">Inställningar för grupp med teman</div>
-              <div>
-                <input
-                  id="enableQuickAccessPresets"
-                  name="enableQuickAccessPresets"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.enableQuickAccessPresets}
-                />
-                &nbsp;
-                <label
-                  className="long-label"
-                  htmlFor="enableQuickAccessPresets"
-                >
-                  Färdiga teman{" "}
-                  <i
-                    className="fa fa-question-circle"
-                    data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till temagruppen."
-                  />
-                </label>
-              </div>
-              <div className="text-input-label">
-                Infotext Färdiga teman{" "}
-                <i
-                  className="fa fa-question-circle"
-                  data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för färdiga teman."
-                />
-                &nbsp;
-                <input
-                  id="quickAccessTopicsInfoText"
-                  name="quickAccessTopicsInfoText"
-                  type="text"
-                  onChange={this.handleInputChange}
-                  value={this.state.quickAccessTopicsInfoText}
-                />
-              </div>
-              <div>
-                <input
-                  id="enableUserQuickAccessFavorites"
-                  name="enableUserQuickAccessFavorites"
-                  type="checkbox"
-                  onChange={this.handleInputChange}
-                  checked={this.state.enableUserQuickAccessFavorites}
-                />
-                &nbsp;
-                <label
-                  className="long-label"
-                  htmlFor="enableUserQuickAccessFavorites"
-                >
-                  Mina teman{" "}
-                  <i
-                    className="fa fa-question-circle"
-                    data-toggle="tooltip"
-                    title="När rutan är ikryssad kan användaren spara sitt eget innehåll i temagruppen som ett tema för att kunna ladda vid senare tillfälle."
-                  />
-                </label>
-              </div>
-              <div className="text-input-label">
-                Infotext Mina teman{" "}
-                <i
-                  className="fa fa-question-circle"
-                  data-toggle="tooltip"
-                  title="Ange en text som ska visas i panelen för mina teman."
-                />
-                &nbsp;
-                <input
-                  id="userQuickAccessFavoritesInfoText"
-                  name="userQuickAccessFavoritesInfoText"
-                  type="text"
-                  onChange={this.handleInputChange}
-                  value={this.state.userQuickAccessFavoritesInfoText}
-                />
-              </div>
               <div className="separator">Kartinställningar</div>
               {this.renderThemeMapCheckbox()}
               {this.renderThemeMapHeaderInput()}
@@ -2739,6 +2683,111 @@ class Menu extends Component {
             <ul className="config-layer-list">{this.renderQuickLayers()}</ul>
           </aside>
           <article>
+            <fieldset className="tree-view">
+              <legend>Inställningar för temagruppen</legend>
+              <div>
+                <input
+                  id="showQuickAccess"
+                  name="showQuickAccess"
+                  type="checkbox"
+                  onChange={this.handleInputChange}
+                  checked={this.state.showQuickAccess}
+                />
+                &nbsp;
+                <label className="long-label" htmlFor="showQuickAccess">
+                  Visa en grupp med teman{" "}
+                  <i
+                    className="fa fa-question-circle"
+                    data-toggle="tooltip"
+                    title="När rutan är ikryssad visas en grupp för teman i lagerhanteraren."
+                  />
+                </label>
+              </div>
+              <div>
+                <input
+                  id="enableQuickAccessPresets"
+                  name="enableQuickAccessPresets"
+                  type="checkbox"
+                  onChange={this.handleInputChange}
+                  checked={this.state.enableQuickAccessPresets}
+                />
+                &nbsp;
+                <label
+                  className="long-label"
+                  htmlFor="enableQuickAccessPresets"
+                >
+                  Färdiga teman{" "}
+                  <i
+                    className="fa fa-question-circle"
+                    data-toggle="tooltip"
+                    title="När rutan är ikryssad kan användaren ladda administratörens fördefinierade teman till temagruppen."
+                  />
+                </label>
+              </div>
+              <div className="text-input-label">
+                Infotext Färdiga teman{" "}
+                <i
+                  className="fa fa-question-circle"
+                  data-toggle="tooltip"
+                  title="Ange en text som ska visas i panelen för färdiga teman."
+                />
+                &nbsp;
+                <input
+                  id="quickAccessTopicsInfoText"
+                  name="quickAccessTopicsInfoText"
+                  type="text"
+                  onChange={this.handleInputChange}
+                  value={this.state.quickAccessTopicsInfoText}
+                />
+              </div>
+              <div>
+                <input
+                  id="enableUserQuickAccessFavorites"
+                  name="enableUserQuickAccessFavorites"
+                  type="checkbox"
+                  onChange={this.handleInputChange}
+                  checked={this.state.enableUserQuickAccessFavorites}
+                />
+                &nbsp;
+                <label
+                  className="long-label"
+                  htmlFor="enableUserQuickAccessFavorites"
+                >
+                  Mina teman{" "}
+                  <i
+                    className="fa fa-question-circle"
+                    data-toggle="tooltip"
+                    title="När rutan är ikryssad kan användaren spara sitt eget innehåll i temagruppen som ett tema för att kunna ladda vid senare tillfälle."
+                  />
+                </label>
+              </div>
+              <div className="text-input-label">
+                Infotext Mina teman{" "}
+                <i
+                  className="fa fa-question-circle"
+                  data-toggle="tooltip"
+                  title="Ange en text som ska visas i panelen för mina teman."
+                />
+                &nbsp;
+                <input
+                  id="userQuickAccessFavoritesInfoText"
+                  name="userQuickAccessFavoritesInfoText"
+                  type="text"
+                  onChange={this.handleInputChange}
+                  value={this.state.userQuickAccessFavoritesInfoText}
+                />
+              </div>
+              <div className="margined">
+                <ColorButtonBlue
+                  variant="contained"
+                  className="btn"
+                  onClick={() => this.saveQuickAccessSettings()}
+                  startIcon={<SaveIcon />}
+                >
+                  Spara
+                </ColorButtonBlue>
+              </div>
+            </fieldset>
             <fieldset className="tree-view">
               <legend>Hantera teman för temagruppen</legend>
               <div className="row">

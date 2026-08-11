@@ -245,16 +245,30 @@ function Favorites({
   // Handles save favorite
   const handleSaveFavorite = () => {
     // Grab layers to be saved by…
-    const layers = getQuickAccessLayers().map((l) => {
-      // Create an array of objects. For each layer, we want to read its…
-      return {
-        id: l.get("name"),
-        visible: l.getVisible(),
-        subLayers: l.get("layerType") === "group" ? l.get("subLayers") : [],
-        opacity: l.getOpacity(),
-        drawOrder: l.getZIndex(),
-      }; // …name as id, visibility and potentially sublayers.
-    });
+    // Only layers that are actually visible right now should be included -
+    // the quickAccess flag can linger on a layer after it's been switched off,
+    // which would otherwise sneak stale, invisible layers into the saved theme.
+    const layers = getQuickAccessLayers()
+      .filter((l) => l.getVisible())
+      .map((l) => {
+        // Create an array of objects. For each layer, we want to read its…
+        const currentSubLayers = l.get("subLayers");
+        return {
+          id: l.get("name"),
+          visible: l.getVisible(),
+          // Fall back to all sub-layers if the group is visible but its
+          // sub-layer selection is (unexpectedly) empty, so we never save a
+          // self-contradictory visible:true + subLayers:[] combination.
+          subLayers:
+            l.get("layerType") === "group"
+              ? currentSubLayers?.length > 0
+                ? currentSubLayers
+                : l.get("allSubLayers")
+              : [],
+          opacity: l.getOpacity(),
+          drawOrder: l.getZIndex(),
+        }; // …name as id, visibility and potentially sublayers.
+      });
 
     if (layers.length === 0) {
       enqueueSnackbar("Inga lager i teman tillagda, därmed inget att spara.", {
