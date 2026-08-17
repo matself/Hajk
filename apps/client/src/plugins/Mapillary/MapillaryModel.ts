@@ -111,16 +111,24 @@ class MapillaryModel {
       return;
     }
     this.mapWithClickLock.clickLock.add("mapillary");
-    document
-      .querySelector(".ol-viewport")
-      ?.setAttribute("style", "cursor: crosshair");
+    // Mutate only the cursor property. OL itself sets position/overflow/
+    // width/height inline on this element at construction time (see
+    // node_modules/ol/Map.js); setAttribute("style", ...) would replace the
+    // whole attribute and wipe those out, breaking the map's layout.
+    const viewportEl = document.querySelector<HTMLElement>(".ol-viewport");
+    if (viewportEl) {
+      viewportEl.style.cursor = "crosshair";
+    }
     this.map.on("singleclick", this.onSingleClick);
     this.activated = true;
   };
 
   deactivate = () => {
     this.mapWithClickLock.clickLock.delete("mapillary");
-    document.querySelector(".ol-viewport")?.setAttribute("style", "");
+    const viewportEl = document.querySelector<HTMLElement>(".ol-viewport");
+    if (viewportEl) {
+      viewportEl.style.cursor = "";
+    }
     this.map.un("singleclick", this.onSingleClick);
     this.activated = false;
     this.hasShownImage = false;
