@@ -273,6 +273,23 @@ class MapillaryModel {
     }
 
     if (!this.viewer) {
+      // The container is still `display: none` (0x0) right now - the View
+      // only switches it to `flex` in response to "locationChanged". Reveal
+      // it and wait for a real, non-zero size *before* constructing the
+      // Viewer at all: mapillary-js sets up its WebGL render targets for
+      // the very first frame against whatever size the container has at
+      // construction time, and a later resize() to the real size doesn't
+      // reliably make it repaint if that initial setup happened at 0x0.
+      if (!this.hasShownImage) {
+        this.hasShownImage = true;
+        this.localObserver.publish("locationChanged");
+        await this.waitForNonZeroSize(containerEl);
+        if (!this.activated) {
+          // Window was closed (deactivate()) while waiting for the reveal.
+          return;
+        }
+      }
+
       this.viewer = new Viewer({
         accessToken: this.accessToken,
         container: containerEl,
@@ -286,28 +303,10 @@ class MapillaryModel {
       });
       this.viewer.on("image", this.onViewerImage);
 
-      // The container is still `display: none` (0x0) right now - the View
-      // only switches it to `flex` in response to the "locationChanged"
-      // event published below, and mapillary-js only auto-tracks *window*
-      // resizes, not a container's own box changing. A ResizeObserver
-      // catches every case that matters here - this initial reveal, the
-      // user manually dragging the window's edge, anything - with no
-      // frame-counting guesswork about when a display change actually
-      // committed and painted.
-      //
-      // ResizeObserver fires immediately on observe() with the box's
-      // *current* size, which is 0x0 right now since the container is still
-      // hidden. Feeding that straight into viewer.resize() corrupts
-      // mapillary-js's internal camera/projection state badly enough that a
-      // later, correctly-sized resize() doesn't recover from it - the image
-      // never renders even once the container becomes visible. Only ever
-      // resize to a genuinely non-zero size.
-      this.resizeObserver = new ResizeObserver((entries) => {
-        const { width, height } = entries[0].contentRect;
-        if (width > 0 && height > 0) {
-          this.viewer?.resize();
-        }
-      });
+      // Handles later resizes (the user dragging the window's edge). The
+      // container already has a real size by the time we get here, so
+      // there's no need to guard against an initial 0x0 callback anymore.
+      this.resizeObserver = new ResizeObserver(() => this.viewer?.resize());
       this.resizeObserver.observe(containerEl);
     }
 
@@ -321,11 +320,23 @@ class MapillaryModel {
 
     this.addMarker(candidate.lngLat, candidate.compassAngle);
     this.publishImageDate(candidate.capturedAt);
+  }
 
-    if (!this.hasShownImage) {
-      this.hasShownImage = true;
-      this.localObserver.publish("locationChanged");
+  /** Resolves once `el` has a non-zero rendered size (e.g. after a display:none -> flex reveal). */
+  private waitForNonZeroSize(el: HTMLElement): Promise<void> {
+    if (el.clientWidth > 0 && el.clientHeight > 0) {
+      return Promise.resolve();
     }
+    return new Promise((resolve) => {
+      const observer = new ResizeObserver((entries) => {
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          observer.disconnect();
+          resolve();
+        }
+      });
+      observer.observe(el);
+    });
   }
 
   /** Keeps the marker/heading in sync when the user navigates inside the viewer itself. */
