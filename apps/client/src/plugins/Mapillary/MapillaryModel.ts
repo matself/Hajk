@@ -8,7 +8,7 @@ import VectorSource from "ol/source/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type MapBrowserEvent from "ol/MapBrowserEvent";
 import type OlMap from "ol/Map";
-import { Viewer, type ViewerImageEvent } from "mapillary-js";
+import { RenderMode, Viewer, type ViewerImageEvent } from "mapillary-js";
 
 import type { MapillaryImageResult, MapillaryModelSettings } from "./types";
 
@@ -278,6 +278,12 @@ class MapillaryModel {
         accessToken: this.accessToken,
         container: containerEl,
         component: { cover: false },
+        // Default is RenderMode.Fill, which crops/recomputes field-of-view
+        // to fill whatever aspect ratio the window happens to have -
+        // perceived as the image "stretching" when the window is resized.
+        // Letterbox always shows the full image at its true aspect ratio,
+        // adding bars on whichever axis doesn't match instead.
+        renderMode: RenderMode.Letterbox,
       });
       this.viewer.on("image", this.onViewerImage);
     }
