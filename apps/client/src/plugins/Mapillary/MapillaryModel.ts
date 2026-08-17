@@ -288,6 +288,17 @@ class MapillaryModel {
     if (!this.hasShownImage) {
       this.hasShownImage = true;
       this.localObserver.publish("locationChanged");
+      // The container was still `display: none` (0x0) when the Viewer above
+      // was constructed, since the View only switches it to `flex` in
+      // response to the "locationChanged" event just published. mapillary-js
+      // only auto-tracks *window* resizes, not a container going from 0x0 to
+      // its real size, so without an explicit resize() its WebGL canvas
+      // stays stuck rendering into a 0x0 buffer. Defer past React's render
+      // + the browser's next layout pass (single rAF is not reliably enough
+      // for a state update to have committed and painted) before resizing.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.viewer?.resize());
+      });
     }
   }
 
