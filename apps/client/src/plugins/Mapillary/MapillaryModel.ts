@@ -70,6 +70,7 @@ class MapillaryModel {
 
   private markerLayer: Vector<VectorSource<Feature<Geometry>>>;
   private viewer?: Viewer;
+  private resizeObserver?: ResizeObserver;
   private activated = false;
   private hasShownImage = false;
 
@@ -136,16 +137,14 @@ class MapillaryModel {
     this.abortController?.abort();
     this.abortController = undefined;
 
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
+
     this.viewer?.off("image", this.onViewerImage);
     this.viewer?.remove();
     this.viewer = undefined;
 
     this.markerLayer.getSource()?.clear();
-  };
-
-  /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
-  resize = () => {
-    this.viewer?.resize();
   };
 
   private async handleClick(e: MapBrowserEvent) {
@@ -286,6 +285,17 @@ class MapillaryModel {
         renderMode: RenderMode.Letterbox,
       });
       this.viewer.on("image", this.onViewerImage);
+
+      // The container is still `display: none` (0x0) right now - the View
+      // only switches it to `flex` in response to the "locationChanged"
+      // event published below, and mapillary-js only auto-tracks *window*
+      // resizes, not a container's own box changing. A ResizeObserver
+      // catches every case that matters here - this initial reveal, the
+      // user manually dragging the window's edge, anything - with no
+      // frame-counting guesswork about when a display change actually
+      // committed and painted.
+      this.resizeObserver = new ResizeObserver(() => this.viewer?.resize());
+      this.resizeObserver.observe(containerEl);
     }
 
     try {
@@ -302,17 +312,6 @@ class MapillaryModel {
     if (!this.hasShownImage) {
       this.hasShownImage = true;
       this.localObserver.publish("locationChanged");
-      // The container was still `display: none` (0x0) when the Viewer above
-      // was constructed, since the View only switches it to `flex` in
-      // response to the "locationChanged" event just published. mapillary-js
-      // only auto-tracks *window* resizes, not a container going from 0x0 to
-      // its real size, so without an explicit resize() its WebGL canvas
-      // stays stuck rendering into a 0x0 buffer. Defer past React's render
-      // + the browser's next layout pass (single rAF is not reliably enough
-      // for a state update to have committed and painted) before resizing.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => this.viewer?.resize());
-      });
     }
   }
 
