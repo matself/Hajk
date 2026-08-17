@@ -8,12 +8,7 @@ import VectorSource from "ol/source/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type MapBrowserEvent from "ol/MapBrowserEvent";
 import type OlMap from "ol/Map";
-import {
-  RenderMode,
-  Viewer,
-  type ViewerImageEvent,
-  type ViewerNavigableEvent,
-} from "mapillary-js";
+import { RenderMode, Viewer, type ViewerImageEvent } from "mapillary-js";
 
 import type { MapillaryImageResult, MapillaryModelSettings } from "./types";
 
@@ -75,22 +70,14 @@ class MapillaryModel {
 
   private markerLayer: Vector<VectorSource<Feature<Geometry>>>;
   private viewer?: Viewer;
-  private resizeObserver?: ResizeObserver;
   private activated = false;
   private hasShownImage = false;
-  // Set when moveTo() is called before the viewer has reached its
-  // "navigable" state (see mapillary-js's own api-demo for this pattern -
-  // a freshly-constructed viewer isn't necessarily ready to navigate yet).
-  // Retried once the "navigable" event fires with navigable:true.
-  private pendingCandidate?: MapillaryImageResult;
 
   private abortController?: AbortController;
   private resultCache = new Map<string, MapillaryImageResult[]>();
 
   private onSingleClick = (e: MapBrowserEvent) => this.handleClick(e);
   private onViewerImage = (e: ViewerImageEvent) => this.handleViewerImage(e);
-  private onViewerNavigable = (e: ViewerNavigableEvent) =>
-    this.handleViewerNavigable(e);
 
   constructor(settings: MapillaryModelSettings) {
     this.map = settings.map;
@@ -145,20 +132,20 @@ class MapillaryModel {
     this.map.un("singleclick", this.onSingleClick);
     this.activated = false;
     this.hasShownImage = false;
-    this.pendingCandidate = undefined;
 
     this.abortController?.abort();
     this.abortController = undefined;
 
-    this.resizeObserver?.disconnect();
-    this.resizeObserver = undefined;
-
     this.viewer?.off("image", this.onViewerImage);
-    this.viewer?.off("navigable", this.onViewerNavigable);
     this.viewer?.remove();
     this.viewer = undefined;
 
     this.markerLayer.getSource()?.clear();
+  };
+
+  /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
+  resize = () => {
+    this.viewer?.resize();
   };
 
   private async handleClick(e: MapBrowserEvent) {
@@ -299,51 +286,11 @@ class MapillaryModel {
         renderMode: RenderMode.Letterbox,
       });
       this.viewer.on("image", this.onViewerImage);
-      this.viewer.on("navigable", this.onViewerNavigable);
-
-      // The container is still `display: none` (0x0) right now - the View
-      // only switches it to `flex` in response to "locationChanged" below.
-      // mapillary-js only auto-tracks *window* resizes, not a container's
-      // own box changing, so a ResizeObserver is needed to catch this
-      // reveal (and later drag-resizes). Its very first callback always
-      // fires immediately with the box's *current* size, which is 0x0 here;
-      // feeding that straight into resize() corrupts the viewer's internal
-      // render state badly enough that a later, correctly-sized resize()
-      // doesn't recover from it. Only ever resize to a genuinely non-zero
-      // size.
-      this.resizeObserver = new ResizeObserver((entries) => {
-        const { width, height } = entries[0].contentRect;
-        if (width > 0 && height > 0) {
-          this.viewer?.resize();
-        }
-      });
-      this.resizeObserver.observe(containerEl);
-    }
-
-    if (!this.hasShownImage) {
-      this.hasShownImage = true;
-      this.localObserver.publish("locationChanged");
-    }
-
-    await this.moveToImage(candidate);
-  }
-
-  private async moveToImage(candidate: MapillaryImageResult) {
-    if (!this.viewer) {
-      return;
     }
 
     try {
       await this.viewer.moveTo(candidate.id);
     } catch (err) {
-      const message = String((err as Error)?.message ?? err);
-      if (message.toLowerCase().includes("navigable")) {
-        // The viewer hasn't finished initializing yet - retry once it
-        // signals it's ready via the "navigable" event, instead of
-        // treating this as "no image found here".
-        this.pendingCandidate = candidate;
-        return;
-      }
       console.warn("Mapillary: could not move to image:", err);
       this.localObserver.publish("noImageFound");
       return;
@@ -351,13 +298,21 @@ class MapillaryModel {
 
     this.addMarker(candidate.lngLat, candidate.compassAngle);
     this.publishImageDate(candidate.capturedAt);
-  }
 
-  private handleViewerNavigable(e: ViewerNavigableEvent) {
-    if (e.navigable && this.pendingCandidate) {
-      const candidate = this.pendingCandidate;
-      this.pendingCandidate = undefined;
-      this.moveToImage(candidate);
+    if (!this.hasShownImage) {
+      this.hasShownImage = true;
+      this.localObserver.publish("locationChanged");
+      // The container was still `display: none` (0x0) when the Viewer above
+      // was constructed, since the View only switches it to `flex` in
+      // response to the "locationChanged" event just published. mapillary-js
+      // only auto-tracks *window* resizes, not a container going from 0x0 to
+      // its real size, so without an explicit resize() its WebGL canvas
+      // stays stuck rendering into a 0x0 buffer. Defer past React's render
+      // + the browser's next layout pass (single rAF is not reliably enough
+      // for a state update to have committed and painted) before resizing.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.viewer?.resize());
+      });
     }
   }
 

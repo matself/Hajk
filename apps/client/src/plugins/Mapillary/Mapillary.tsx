@@ -36,6 +36,10 @@ const Mapillary: React.FC<MapillaryProps> = (props) => {
     setDisplayViewer(false);
   };
 
+  const onResize = () => {
+    model.resize();
+  };
+
   return (
     <BaseWindowPlugin
       {...props}
@@ -51,6 +55,7 @@ const Mapillary: React.FC<MapillaryProps> = (props) => {
         left: undefined,
         onWindowShow,
         onWindowHide,
+        onResize,
         disablePadding: true,
       }}
     >
