@@ -294,7 +294,20 @@ class MapillaryModel {
       // user manually dragging the window's edge, anything - with no
       // frame-counting guesswork about when a display change actually
       // committed and painted.
-      this.resizeObserver = new ResizeObserver(() => this.viewer?.resize());
+      //
+      // ResizeObserver fires immediately on observe() with the box's
+      // *current* size, which is 0x0 right now since the container is still
+      // hidden. Feeding that straight into viewer.resize() corrupts
+      // mapillary-js's internal camera/projection state badly enough that a
+      // later, correctly-sized resize() doesn't recover from it - the image
+      // never renders even once the container becomes visible. Only ever
+      // resize to a genuinely non-zero size.
+      this.resizeObserver = new ResizeObserver((entries) => {
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          this.viewer?.resize();
+        }
+      });
       this.resizeObserver.observe(containerEl);
     }
 
