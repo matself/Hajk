@@ -8,7 +8,12 @@ import VectorSource from "ol/source/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type MapBrowserEvent from "ol/MapBrowserEvent";
 import type OlMap from "ol/Map";
-import { RenderMode, Viewer, type ViewerImageEvent } from "mapillary-js";
+import {
+  RenderMode,
+  Viewer,
+  type ViewerImageEvent,
+  type ViewerNavigableEvent,
+} from "mapillary-js";
 
 import type { MapillaryImageResult, MapillaryModelSettings } from "./types";
 
@@ -73,12 +78,19 @@ class MapillaryModel {
   private resizeObserver?: ResizeObserver;
   private activated = false;
   private hasShownImage = false;
+  // Set when moveTo() is called before the viewer has reached its
+  // "navigable" state (see mapillary-js's own api-demo for this pattern -
+  // a freshly-constructed viewer isn't necessarily ready to navigate yet).
+  // Retried once the "navigable" event fires with navigable:true.
+  private pendingCandidate?: MapillaryImageResult;
 
   private abortController?: AbortController;
   private resultCache = new Map<string, MapillaryImageResult[]>();
 
   private onSingleClick = (e: MapBrowserEvent) => this.handleClick(e);
   private onViewerImage = (e: ViewerImageEvent) => this.handleViewerImage(e);
+  private onViewerNavigable = (e: ViewerNavigableEvent) =>
+    this.handleViewerNavigable(e);
 
   constructor(settings: MapillaryModelSettings) {
     this.map = settings.map;
@@ -133,6 +145,7 @@ class MapillaryModel {
     this.map.un("singleclick", this.onSingleClick);
     this.activated = false;
     this.hasShownImage = false;
+    this.pendingCandidate = undefined;
 
     this.abortController?.abort();
     this.abortController = undefined;
@@ -141,6 +154,7 @@ class MapillaryModel {
     this.resizeObserver = undefined;
 
     this.viewer?.off("image", this.onViewerImage);
+    this.viewer?.off("navigable", this.onViewerNavigable);
     this.viewer?.remove();
     this.viewer = undefined;
 
@@ -273,23 +287,6 @@ class MapillaryModel {
     }
 
     if (!this.viewer) {
-      // The container is still `display: none` (0x0) right now - the View
-      // only switches it to `flex` in response to "locationChanged". Reveal
-      // it and wait for a real, non-zero size *before* constructing the
-      // Viewer at all: mapillary-js sets up its WebGL render targets for
-      // the very first frame against whatever size the container has at
-      // construction time, and a later resize() to the real size doesn't
-      // reliably make it repaint if that initial setup happened at 0x0.
-      if (!this.hasShownImage) {
-        this.hasShownImage = true;
-        this.localObserver.publish("locationChanged");
-        await this.waitForNonZeroSize(containerEl);
-        if (!this.activated) {
-          // Window was closed (deactivate()) while waiting for the reveal.
-          return;
-        }
-      }
-
       this.viewer = new Viewer({
         accessToken: this.accessToken,
         container: containerEl,
@@ -302,17 +299,51 @@ class MapillaryModel {
         renderMode: RenderMode.Letterbox,
       });
       this.viewer.on("image", this.onViewerImage);
+      this.viewer.on("navigable", this.onViewerNavigable);
 
-      // Handles later resizes (the user dragging the window's edge). The
-      // container already has a real size by the time we get here, so
-      // there's no need to guard against an initial 0x0 callback anymore.
-      this.resizeObserver = new ResizeObserver(() => this.viewer?.resize());
+      // The container is still `display: none` (0x0) right now - the View
+      // only switches it to `flex` in response to "locationChanged" below.
+      // mapillary-js only auto-tracks *window* resizes, not a container's
+      // own box changing, so a ResizeObserver is needed to catch this
+      // reveal (and later drag-resizes). Its very first callback always
+      // fires immediately with the box's *current* size, which is 0x0 here;
+      // feeding that straight into resize() corrupts the viewer's internal
+      // render state badly enough that a later, correctly-sized resize()
+      // doesn't recover from it. Only ever resize to a genuinely non-zero
+      // size.
+      this.resizeObserver = new ResizeObserver((entries) => {
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          this.viewer?.resize();
+        }
+      });
       this.resizeObserver.observe(containerEl);
+    }
+
+    if (!this.hasShownImage) {
+      this.hasShownImage = true;
+      this.localObserver.publish("locationChanged");
+    }
+
+    await this.moveToImage(candidate);
+  }
+
+  private async moveToImage(candidate: MapillaryImageResult) {
+    if (!this.viewer) {
+      return;
     }
 
     try {
       await this.viewer.moveTo(candidate.id);
     } catch (err) {
+      const message = String((err as Error)?.message ?? err);
+      if (message.toLowerCase().includes("navigable")) {
+        // The viewer hasn't finished initializing yet - retry once it
+        // signals it's ready via the "navigable" event, instead of
+        // treating this as "no image found here".
+        this.pendingCandidate = candidate;
+        return;
+      }
       console.warn("Mapillary: could not move to image:", err);
       this.localObserver.publish("noImageFound");
       return;
@@ -322,21 +353,12 @@ class MapillaryModel {
     this.publishImageDate(candidate.capturedAt);
   }
 
-  /** Resolves once `el` has a non-zero rendered size (e.g. after a display:none -> flex reveal). */
-  private waitForNonZeroSize(el: HTMLElement): Promise<void> {
-    if (el.clientWidth > 0 && el.clientHeight > 0) {
-      return Promise.resolve();
+  private handleViewerNavigable(e: ViewerNavigableEvent) {
+    if (e.navigable && this.pendingCandidate) {
+      const candidate = this.pendingCandidate;
+      this.pendingCandidate = undefined;
+      this.moveToImage(candidate);
     }
-    return new Promise((resolve) => {
-      const observer = new ResizeObserver((entries) => {
-        const { width, height } = entries[0].contentRect;
-        if (width > 0 && height > 0) {
-          observer.disconnect();
-          resolve();
-        }
-      });
-      observer.observe(el);
-    });
   }
 
   /** Keeps the marker/heading in sync when the user navigates inside the viewer itself. */
