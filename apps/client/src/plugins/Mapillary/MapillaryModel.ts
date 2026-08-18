@@ -153,7 +153,26 @@ class MapillaryModel {
       const container = document.getElementById(CONTAINER_ID);
       const canvas = container?.querySelector("canvas.mapillary-canvas");
       const rect = container?.getBoundingClientRect();
-      const offsetParent = container?.offsetParent as HTMLElement | null;
+      // Walk every ancestor up to the window chrome, logging position/
+      // transform/height for each - offsetParent alone can disagree with
+      // the real CSS containing block when an ancestor uses `transform`
+      // (react-rnd commonly does, for drag/resize performance), so this
+      // is the only way to see the true picture instead of guessing.
+      const ancestors: unknown[] = [];
+      let el: HTMLElement | null = container?.parentElement ?? null;
+      let depth = 0;
+      while (el && depth < 8) {
+        const cs = getComputedStyle(el);
+        ancestors.push({
+          tag: el.tagName,
+          class: el.className,
+          position: cs.position,
+          transform: cs.transform,
+          height: el.getBoundingClientRect().height,
+        });
+        el = el.parentElement;
+        depth++;
+      }
       console.log(`Mapillary: ${label}`, {
         containerWidth: rect?.width,
         containerHeight: rect?.height,
@@ -161,15 +180,7 @@ class MapillaryModel {
         canvasAttrHeight: canvas?.getAttribute("height"),
         canvasCssWidth: canvas ? getComputedStyle(canvas).width : undefined,
         canvasCssHeight: canvas ? getComputedStyle(canvas).height : undefined,
-        // The actual containing block position:absolute resolves against -
-        // settles which ancestor is really constraining the container.
-        offsetParentTag: offsetParent?.tagName,
-        offsetParentId: offsetParent?.id,
-        offsetParentClass: offsetParent?.className,
-        offsetParentHeight: offsetParent?.getBoundingClientRect().height,
-        offsetParentPosition: offsetParent
-          ? getComputedStyle(offsetParent).position
-          : undefined,
+        ancestors,
       });
     };
     logSizes("resize() called");
