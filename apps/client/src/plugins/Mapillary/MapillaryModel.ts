@@ -153,6 +153,7 @@ class MapillaryModel {
       const container = document.getElementById(CONTAINER_ID);
       const canvas = container?.querySelector("canvas.mapillary-canvas");
       const rect = container?.getBoundingClientRect();
+      const offsetParent = container?.offsetParent as HTMLElement | null;
       console.log(`Mapillary: ${label}`, {
         containerWidth: rect?.width,
         containerHeight: rect?.height,
@@ -160,6 +161,15 @@ class MapillaryModel {
         canvasAttrHeight: canvas?.getAttribute("height"),
         canvasCssWidth: canvas ? getComputedStyle(canvas).width : undefined,
         canvasCssHeight: canvas ? getComputedStyle(canvas).height : undefined,
+        // The actual containing block position:absolute resolves against -
+        // settles which ancestor is really constraining the container.
+        offsetParentTag: offsetParent?.tagName,
+        offsetParentId: offsetParent?.id,
+        offsetParentClass: offsetParent?.className,
+        offsetParentHeight: offsetParent?.getBoundingClientRect().height,
+        offsetParentPosition: offsetParent
+          ? getComputedStyle(offsetParent).position
+          : undefined,
       });
     };
     logSizes("resize() called");
