@@ -323,7 +323,28 @@ class MapillaryModel {
       const resizeAttempts = [0, 100, 250, 500, 1000];
       for (const delay of resizeAttempts) {
         setTimeout(() => {
-          requestAnimationFrame(() => this.viewer?.resize());
+          requestAnimationFrame(() => {
+            this.viewer?.resize();
+            // TEMPORARY DIAGNOSTIC - remove once the sizing issue is
+            // understood. Logs the real container size and the actual
+            // <canvas> element mapillary-js renders into at the moment
+            // each resize() call fires, so we can see directly whether
+            // the container is the right size but the canvas isn't
+            // picking it up, or the container itself is still wrong.
+            const canvas = containerEl.querySelector("canvas");
+            const canvasRect = canvas?.getBoundingClientRect();
+            console.log(`[Mapillary diag @${delay}ms]`, {
+              containerOffsetWidth: containerEl.offsetWidth,
+              containerOffsetHeight: containerEl.offsetHeight,
+              canvasAttrWidth: canvas?.width,
+              canvasAttrHeight: canvas?.height,
+              canvasCssWidth: canvas ? getComputedStyle(canvas).width : null,
+              canvasCssHeight: canvas ? getComputedStyle(canvas).height : null,
+              canvasBoundingRect: canvasRect
+                ? { width: canvasRect.width, height: canvasRect.height }
+                : null,
+            });
+          });
         }, delay);
       }
     }
