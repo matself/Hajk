@@ -158,30 +158,22 @@ class MapillaryModel {
       // the real CSS containing block when an ancestor uses `transform`
       // (react-rnd commonly does, for drag/resize performance), so this
       // is the only way to see the true picture instead of guessing.
-      const ancestors: unknown[] = [];
+      console.log(
+        `Mapillary: ${label} | containerWidth=${rect?.width} containerHeight=${rect?.height} ` +
+          `canvasAttrW=${canvas?.getAttribute("width")} canvasAttrH=${canvas?.getAttribute("height")} ` +
+          `canvasCssW=${canvas ? getComputedStyle(canvas).width : undefined} canvasCssH=${canvas ? getComputedStyle(canvas).height : undefined}`
+      );
       let el: HTMLElement | null = container?.parentElement ?? null;
       let depth = 0;
       while (el && depth < 8) {
         const cs = getComputedStyle(el);
-        ancestors.push({
-          tag: el.tagName,
-          class: el.className,
-          position: cs.position,
-          transform: cs.transform,
-          height: el.getBoundingClientRect().height,
-        });
+        console.log(
+          `  ancestor[${depth}] <${el.tagName} class="${el.className}"> ` +
+            `position=${cs.position} transform=${cs.transform} height=${el.getBoundingClientRect().height}`
+        );
         el = el.parentElement;
         depth++;
       }
-      console.log(`Mapillary: ${label}`, {
-        containerWidth: rect?.width,
-        containerHeight: rect?.height,
-        canvasAttrWidth: canvas?.getAttribute("width"),
-        canvasAttrHeight: canvas?.getAttribute("height"),
-        canvasCssWidth: canvas ? getComputedStyle(canvas).width : undefined,
-        canvasCssHeight: canvas ? getComputedStyle(canvas).height : undefined,
-        ancestors,
-      });
     };
     logSizes("resize() called");
     // Window.jsx calls this synchronously inside its onResizeStop handler,
