@@ -145,15 +145,24 @@ class MapillaryModel {
 
   /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
   resize = () => {
-    // TEMPORARY diagnostic - confirms whether this handler is actually
-    // invoked on drag-resize, and what size the container reports at
-    // each attempt. Remove once the resize bug is root-caused.
-    console.log("Mapillary: resize() called", {
-      hasViewer: !!this.viewer,
-      containerRect: document
-        .getElementById(CONTAINER_ID)
-        ?.getBoundingClientRect(),
-    });
+    // TEMPORARY diagnostic - logs the container's live CSS box size vs the
+    // WebGL canvas's actual drawing-buffer resolution (its width/height
+    // attributes, not CSS), before and after each resize() call. Remove
+    // once the resize bug is root-caused.
+    const logSizes = (label: string) => {
+      const container = document.getElementById(CONTAINER_ID);
+      const canvas = container?.querySelector("canvas.mapillary-canvas");
+      const rect = container?.getBoundingClientRect();
+      console.log(`Mapillary: ${label}`, {
+        containerWidth: rect?.width,
+        containerHeight: rect?.height,
+        canvasAttrWidth: canvas?.getAttribute("width"),
+        canvasAttrHeight: canvas?.getAttribute("height"),
+        canvasCssWidth: canvas ? getComputedStyle(canvas).width : undefined,
+        canvasCssHeight: canvas ? getComputedStyle(canvas).height : undefined,
+      });
+    };
+    logSizes("resize() called");
     // Window.jsx calls this synchronously inside its onResizeStop handler,
     // in the same tick as the setState() that commits the new width/height.
     // A same-tick viewer.resize() can read the container's size before
@@ -163,13 +172,9 @@ class MapillaryModel {
     for (const delay of resizeAttempts) {
       setTimeout(() => {
         requestAnimationFrame(() => {
-          console.log("Mapillary: calling viewer.resize()", {
-            delay,
-            containerRect: document
-              .getElementById(CONTAINER_ID)
-              ?.getBoundingClientRect(),
-          });
+          logSizes(`before viewer.resize() (delay ${delay})`);
           this.viewer?.resize();
+          logSizes(`after viewer.resize() (delay ${delay})`);
         });
       }, delay);
     }
