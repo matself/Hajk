@@ -145,7 +145,17 @@ class MapillaryModel {
 
   /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
   resize = () => {
-    this.viewer?.resize();
+    // Window.jsx calls this synchronously inside its onResizeStop handler,
+    // in the same tick as the setState() that commits the new width/height.
+    // A same-tick viewer.resize() can read the container's size before
+    // that layout has actually settled. Same deferral pattern already
+    // proven necessary for the display:none -> flex reveal in showImage().
+    const resizeAttempts = [0, 100, 250];
+    for (const delay of resizeAttempts) {
+      setTimeout(() => {
+        requestAnimationFrame(() => this.viewer?.resize());
+      }, delay);
+    }
   };
 
   private async handleClick(e: MapBrowserEvent) {
