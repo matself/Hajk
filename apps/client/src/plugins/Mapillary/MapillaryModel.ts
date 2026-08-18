@@ -145,6 +145,15 @@ class MapillaryModel {
 
   /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
   resize = () => {
+    // TEMPORARY diagnostic - confirms whether this handler is actually
+    // invoked on drag-resize, and what size the container reports at
+    // each attempt. Remove once the resize bug is root-caused.
+    console.log("Mapillary: resize() called", {
+      hasViewer: !!this.viewer,
+      containerRect: document
+        .getElementById(CONTAINER_ID)
+        ?.getBoundingClientRect(),
+    });
     // Window.jsx calls this synchronously inside its onResizeStop handler,
     // in the same tick as the setState() that commits the new width/height.
     // A same-tick viewer.resize() can read the container's size before
@@ -153,7 +162,15 @@ class MapillaryModel {
     const resizeAttempts = [0, 100, 250];
     for (const delay of resizeAttempts) {
       setTimeout(() => {
-        requestAnimationFrame(() => this.viewer?.resize());
+        requestAnimationFrame(() => {
+          console.log("Mapillary: calling viewer.resize()", {
+            delay,
+            containerRect: document
+              .getElementById(CONTAINER_ID)
+              ?.getBoundingClientRect(),
+          });
+          this.viewer?.resize();
+        });
       }, delay);
     }
   };
