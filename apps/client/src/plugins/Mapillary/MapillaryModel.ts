@@ -310,9 +310,22 @@ class MapillaryModel {
       // stays stuck rendering into a 0x0 buffer. Defer past React's render
       // + the browser's next layout pass (single rAF is not reliably enough
       // for a state update to have committed and painted) before resizing.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => this.viewer?.resize());
-      });
+      //
+      // A single fixed-delay resize() only reliably catches the plugin's
+      // built-in default window size (400x300) - a non-default size (e.g.
+      // configured in Admin) needs react-rnd to finish applying that
+      // different size to the DOM first, which can take longer than two
+      // frames. Rather than guess a longer fixed delay, call resize()
+      // several more times over the following second: each call is a cheap,
+      // side-effect-free "recompute canvas size from the container's
+      // *current* size right now" - calling it extra times after the
+      // container has already settled is a harmless no-op.
+      const resizeAttempts = [0, 100, 250, 500, 1000];
+      for (const delay of resizeAttempts) {
+        setTimeout(() => {
+          requestAnimationFrame(() => this.viewer?.resize());
+        }, delay);
+      }
     }
   }
 
