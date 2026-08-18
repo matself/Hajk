@@ -311,40 +311,15 @@ class MapillaryModel {
       // + the browser's next layout pass (single rAF is not reliably enough
       // for a state update to have committed and painted) before resizing.
       //
-      // A single fixed-delay resize() only reliably catches the plugin's
-      // built-in default window size (400x300) - a non-default size (e.g.
-      // configured in Admin) needs react-rnd to finish applying that
-      // different size to the DOM first, which can take longer than two
-      // frames. Rather than guess a longer fixed delay, call resize()
-      // several more times over the following second: each call is a cheap,
-      // side-effect-free "recompute canvas size from the container's
-      // *current* size right now" - calling it extra times after the
-      // container has already settled is a harmless no-op.
+      // Cheap safety net for any remaining display:none -> flex transition
+      // timing: call resize() a few more times over the following second.
+      // Each call is a side-effect-free "recompute canvas size from the
+      // container's *current* size right now" - harmless once the
+      // container has already settled.
       const resizeAttempts = [0, 100, 250, 500, 1000];
       for (const delay of resizeAttempts) {
         setTimeout(() => {
-          requestAnimationFrame(() => {
-            this.viewer?.resize();
-            // TEMPORARY DIAGNOSTIC - remove once the sizing issue is
-            // understood. Logs the real container size and the actual
-            // <canvas> element mapillary-js renders into at the moment
-            // each resize() call fires, so we can see directly whether
-            // the container is the right size but the canvas isn't
-            // picking it up, or the container itself is still wrong.
-            const canvas = containerEl.querySelector("canvas");
-            const canvasRect = canvas?.getBoundingClientRect();
-            console.log(`[Mapillary diag @${delay}ms]`, {
-              containerOffsetWidth: containerEl.offsetWidth,
-              containerOffsetHeight: containerEl.offsetHeight,
-              canvasAttrWidth: canvas?.width,
-              canvasAttrHeight: canvas?.height,
-              canvasCssWidth: canvas ? getComputedStyle(canvas).width : null,
-              canvasCssHeight: canvas ? getComputedStyle(canvas).height : null,
-              canvasBoundingRect: canvasRect
-                ? { width: canvasRect.width, height: canvasRect.height }
-                : null,
-            });
-          });
+          requestAnimationFrame(() => this.viewer?.resize());
         }, delay);
       }
     }
