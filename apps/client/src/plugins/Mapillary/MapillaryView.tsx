@@ -74,7 +74,7 @@ function MapillaryView({ localObserver, displayViewer }: MapillaryViewProps) {
       {!displayViewer && (
         <Typography sx={{ padding: 2 }}>
           Klicka i kartan för att aktivera Mapillary gatuvy. <br />
-          Stäng fönstret genom att klicka krysset i övre högra hörnet.
+          Stäng detta fönster genom att klicka på krysset i hörnet.
         </Typography>
       )}
       <Box
