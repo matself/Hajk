@@ -42,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Client: Fixed a crash (`Cannot read properties of undefined (reading 'lastSearchPhrase')`) when `enableAppStateInHash` is on and the map config has no `search` tool configured — the hashchange handler now guards against a missing `searchModel`.
 - Client: Print - Fixed map title and subtitle (print comment) so they are always horizontally centered, wrap correctly on long text, and the subtitle is always positioned directly below the title regardless of how many lines the title spans.
 - Backend: Fixed a startup race where the JSON/body parsers (registered asynchronously after the proxy setup) could be mounted _after_ the API routers. When this happened, `req.body` was `undefined` for every request with a body, causing failures such as a cryptic `Cannot read properties of undefined (reading 'id')` 500 when saving a layer (`PUT /settings/wmslayer`). The body parsers are now guaranteed to be registered before the API routers. The settings endpoint also returns a clear error and logs the relevant request headers if a body still fails to parse.
 - Client: DocumentHandler - Fixed maplink and link not being triggered when opening a document via search results. [#1833](https://github.com/hajkmap/Hajk/issues/1833)
