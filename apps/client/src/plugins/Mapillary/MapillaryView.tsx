@@ -83,7 +83,9 @@ function MapillaryView({ localObserver, displayViewer }: MapillaryViewProps) {
       {!displayViewer && (
         <Typography sx={{ padding: 2 }}>
           Klicka i kartan för att aktivera Mapillary gatuvy. <br />
-          Stäng detta fönster genom att klicka på krysset i hörnet.
+          Stäng detta fönster genom att klicka på krysset i hörnet. <br />
+          Visa Mapillary i helskärm genom att klicka på den diskreta länken nere
+          till höger i bilden.
         </Typography>
       )}
       <ViewerArea sx={{ display: displayViewer ? "flex" : "none" }}>
