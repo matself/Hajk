@@ -16,6 +16,7 @@ import InfoDialog from "./tools/infodialog.jsx";
 import Information from "./tools/information.jsx";
 // import Informative from "./tools/informative.jsx";
 import Location from "./tools/location.jsx";
+import Mapillary from "./tools/mapillary.jsx";
 import Search from "./tools/search.jsx";
 import StreetView from "./tools/streetview.jsx";
 import Preset from "./tools/preset.jsx";
@@ -108,6 +109,8 @@ class ToolOptions extends Component {
         return <OsmSearch parent={this} model={this.props.model} />;
       case "location":
         return <Location parent={this} model={this.props.model} />;
+      case "mapillary":
+        return <Mapillary parent={this} model={this.props.model} />;
       case "search":
         return <Search parent={this} model={this.props.model} />;
       case "streetview":
@@ -181,10 +184,11 @@ class ToolOptions extends Component {
       dummy: "Dummy (testplugin)",
       externalLinks: "Externa länkar",
       fmeserver: "FME-server",
-      streetview: "Gatuvy",
+      streetview: "Google Street View",
       infoclick: "Infoklick",
       infodialog: "Informationsdialoger",
       layercomparer: "Lagerjämförare",
+      mapillary: "Mapillary gatuvy",
       measurer: "Mät",
       routing: "Navigation",
       information: "Om kartan",

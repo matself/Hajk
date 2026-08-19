@@ -7,6 +7,7 @@ import PanToolIcon from "@mui/icons-material/PanTool";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import Grid from "@mui/material/Grid";
 import CoordinatesTransformRow from "./CoordinatesTransformRow";
+import CoordinatesHeightRow from "./CoordinatesHeightRow";
 import { Divider } from "@mui/material";
 
 import withSnackbar from "components/WithSnackbar";
@@ -116,6 +117,9 @@ class CoordinatesView extends React.PureComponent {
             inverseAxis={transformation.inverseAxis}
           />
         ))}
+        {this.model.markhojdActive && (
+          <CoordinatesHeightRow model={this.model} />
+        )}
       </>
     );
   }

@@ -25,6 +25,7 @@ export const AVAILABLE_TOOLS = [
   "LayerSwitcher",
   "Location",
   "MailForm",
+  "Mapillary",
   "Measurer",
   "OsmSearch",
   "Print",
