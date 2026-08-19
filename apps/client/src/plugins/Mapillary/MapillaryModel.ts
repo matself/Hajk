@@ -70,6 +70,7 @@ class MapillaryModel {
 
   private markerLayer: Vector<VectorSource<Feature<Geometry>>>;
   private viewer?: Viewer;
+  private resizeObserver?: ResizeObserver;
   private activated = false;
   private hasShownImage = false;
 
@@ -140,57 +141,22 @@ class MapillaryModel {
     this.viewer?.remove();
     this.viewer = undefined;
 
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
+
     this.markerLayer.getSource()?.clear();
   };
 
-  /** Recomputes the viewer's canvas dimensions. Wire this to the window's onResize. */
+  /**
+   * Kept as a fallback for Hajk's Window.jsx onResize callback. The
+   * ResizeObserver set up in showImage() is what actually keeps the viewer
+   * in sync with its container - it fires for every real size change
+   * (including the display:none -> flex reveal), so this rarely has
+   * anything to do, but react-rnd's drag-resize doesn't always change the
+   * container's box in a way the observer distinguishes from a no-op.
+   */
   resize = () => {
-    // TEMPORARY diagnostic - logs the container's live CSS box size vs the
-    // WebGL canvas's actual drawing-buffer resolution (its width/height
-    // attributes, not CSS), before and after each resize() call. Remove
-    // once the resize bug is root-caused.
-    const logSizes = (label: string) => {
-      const container = document.getElementById(CONTAINER_ID);
-      const canvas = container?.querySelector("canvas.mapillary-canvas");
-      const rect = container?.getBoundingClientRect();
-      // Walk every ancestor up to the window chrome, logging position/
-      // transform/height for each - offsetParent alone can disagree with
-      // the real CSS containing block when an ancestor uses `transform`
-      // (react-rnd commonly does, for drag/resize performance), so this
-      // is the only way to see the true picture instead of guessing.
-      console.log(
-        `Mapillary: ${label} | containerWidth=${rect?.width} containerHeight=${rect?.height} ` +
-          `canvasAttrW=${canvas?.getAttribute("width")} canvasAttrH=${canvas?.getAttribute("height")} ` +
-          `canvasCssW=${canvas ? getComputedStyle(canvas).width : undefined} canvasCssH=${canvas ? getComputedStyle(canvas).height : undefined}`
-      );
-      let el: HTMLElement | null = container?.parentElement ?? null;
-      let depth = 0;
-      while (el && depth < 8) {
-        const cs = getComputedStyle(el);
-        console.log(
-          `  ancestor[${depth}] <${el.tagName} class="${el.className}"> ` +
-            `position=${cs.position} transform=${cs.transform} height=${el.getBoundingClientRect().height}`
-        );
-        el = el.parentElement;
-        depth++;
-      }
-    };
-    logSizes("resize() called");
-    // Window.jsx calls this synchronously inside its onResizeStop handler,
-    // in the same tick as the setState() that commits the new width/height.
-    // A same-tick viewer.resize() can read the container's size before
-    // that layout has actually settled. Same deferral pattern already
-    // proven necessary for the display:none -> flex reveal in showImage().
-    const resizeAttempts = [0, 100, 250];
-    for (const delay of resizeAttempts) {
-      setTimeout(() => {
-        requestAnimationFrame(() => {
-          logSizes(`before viewer.resize() (delay ${delay})`);
-          this.viewer?.resize();
-          logSizes(`after viewer.resize() (delay ${delay})`);
-        });
-      }, delay);
-    }
+    this.viewer?.resize();
   };
 
   private async handleClick(e: MapBrowserEvent) {
@@ -329,8 +295,16 @@ class MapillaryModel {
         // Letterbox always shows the full image at its true aspect ratio,
         // adding bars on whichever axis doesn't match instead.
         renderMode: RenderMode.Letterbox,
+        // trackResize only follows the browser window's resize event, which
+        // never fires for the display:none -> flex reveal or for react-rnd
+        // dragging the Hajk window's edges. The ResizeObserver below covers
+        // both by watching the container element itself.
+        trackResize: false,
       });
       this.viewer.on("image", this.onViewerImage);
+
+      this.resizeObserver = new ResizeObserver(() => this.viewer?.resize());
+      this.resizeObserver.observe(containerEl);
     }
 
     try {
@@ -346,27 +320,13 @@ class MapillaryModel {
 
     if (!this.hasShownImage) {
       this.hasShownImage = true;
-      this.localObserver.publish("locationChanged");
       // The container was still `display: none` (0x0) when the Viewer above
       // was constructed, since the View only switches it to `flex` in
-      // response to the "locationChanged" event just published. mapillary-js
-      // only auto-tracks *window* resizes, not a container going from 0x0 to
-      // its real size, so without an explicit resize() its WebGL canvas
-      // stays stuck rendering into a 0x0 buffer. Defer past React's render
-      // + the browser's next layout pass (single rAF is not reliably enough
-      // for a state update to have committed and painted) before resizing.
-      //
-      // Cheap safety net for any remaining display:none -> flex transition
-      // timing: call resize() a few more times over the following second.
-      // Each call is a side-effect-free "recompute canvas size from the
-      // container's *current* size right now" - harmless once the
-      // container has already settled.
-      const resizeAttempts = [0, 100, 250, 500, 1000];
-      for (const delay of resizeAttempts) {
-        setTimeout(() => {
-          requestAnimationFrame(() => this.viewer?.resize());
-        }, delay);
-      }
+      // response to this event. The ResizeObserver set up alongside the
+      // Viewer picks up that 0x0 -> real-size transition on its own once
+      // React/the browser have applied it, so no manual resize() is needed
+      // here.
+      this.localObserver.publish("locationChanged");
     }
   }
 
