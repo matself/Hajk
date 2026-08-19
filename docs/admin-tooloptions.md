@@ -92,4 +92,4 @@ Färdiga hittills:
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
+*Detta dokument beskriver läget i koden per 2026-08-19. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
