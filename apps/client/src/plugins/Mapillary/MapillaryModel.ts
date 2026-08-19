@@ -147,18 +147,6 @@ class MapillaryModel {
     this.markerLayer.getSource()?.clear();
   };
 
-  /**
-   * Kept as a fallback for Hajk's Window.jsx onResize callback. The
-   * ResizeObserver set up in showImage() is what actually keeps the viewer
-   * in sync with its container - it fires for every real size change
-   * (including the display:none -> flex reveal), so this rarely has
-   * anything to do, but react-rnd's drag-resize doesn't always change the
-   * container's box in a way the observer distinguishes from a no-op.
-   */
-  resize = () => {
-    this.viewer?.resize();
-  };
-
   private async handleClick(e: MapBrowserEvent) {
     const coordinate = e.coordinate;
     const [lng, lat] = transform(
