@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Observer from "react-event-observer";
 
 import BaseWindowPlugin from "../BaseWindowPlugin";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import PanoramaIcon from "@mui/icons-material/Panorama";
 
 import MapillaryModel from "./MapillaryModel";
 import MapillaryView from "./MapillaryView";
@@ -41,8 +41,8 @@ const Mapillary: React.FC<MapillaryProps> = (props) => {
       {...props}
       type="Mapillary"
       custom={{
-        icon: <PhotoCameraIcon />,
-        title: props.options.title || "Mapillary",
+        icon: <PanoramaIcon />,
+        title: props.options.title || "Mapillary gatuvy",
         description:
           props.options.description || "Titta hur området ser ut från gatan",
         height: 300,
