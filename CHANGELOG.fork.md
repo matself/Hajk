@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Client: Fixed a crash (`Cannot read properties of undefined (reading 'lastSearchPhrase')`) when `enableAppStateInHash` is on and the map config has no `search` tool configured — the hashchange handler now guards against a missing `searchModel`.
+- App_Data: `map_1.json` had the Measurer tool's `type` misspelled as `measure` instead of `measurer`, so the client's config check flagged it as an unavailable plugin on load.
 - Client: DocumentHandler - Fixed relative image/video/audio paths (`../Upload/...`) resolving incorrectly whenever `mapserviceBase` had no trailing slash, e.g. `/api/v2Upload/...` instead of `/api/v2/Upload/...`. Also fixed the Audio component ignoring its own corrected URL in favor of the raw `src` attribute. [#1759](https://github.com/hajkmap/Hajk/discussions/1759)
 - Backend: DocumentHandler - `App_Data/Upload` is now served directly by the Node backend (at both `/Upload` and `/api/vN/Upload`), so uploaded document media works out of the box on a plain `npm run dev`/`node index.js` instance instead of requiring a reverse proxy in front. [#1759](https://github.com/hajkmap/Hajk/discussions/1759)
 - Admin: DocumentHandler - Fixed the menu editor silently clearing a menu item's `folder` whenever a link or map link was confirmed on it, breaking the linked document. [#1755](https://github.com/hajkmap/Hajk/discussions/1755)
