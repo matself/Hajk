@@ -128,7 +128,7 @@ class ToolOptions extends Component {
         visibleAtStart: this.state.visibleAtStart,
         visibleForGroups: this.state.visibleForGroups.map(
           Function.prototype.call,
-          String.prototype.trim,
+          String.prototype.trim
         ),
       },
     };
@@ -143,7 +143,7 @@ class ToolOptions extends Component {
             alert: true,
             alertMessage: "Uppdateringen lyckades",
           });
-        },
+        }
       );
     }
 
