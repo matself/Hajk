@@ -1,60 +1,84 @@
 # Mapillary plugin: viewer resize notes
 
-Technical note on the `mapillary-js` viewer resize handling in
+Technical note on the `mapillary-js` viewer sizing in
 [`apps/client/src/plugins/Mapillary`](../apps/client/src/plugins/Mapillary/).
 Not a user-facing guide — kept here because this exact bug went through many
-revert cycles before landing on this approach, so the reasoning is worth
-keeping around.
+revert cycles (and two different root-cause theories) before landing here,
+so the reasoning is worth keeping around.
 
-## The problem
+## Symptom
 
-The Mapillary viewer's WebGL canvas would get stuck rendering at its
-original size (or a fixed ~200px height) whenever its container's actual
-size changed. Two situations trigger this:
+The Mapillary viewer's image area was capped at a fixed ~200px height
+inside the plugin window, regardless of how tall the window actually was -
+including right after the window first opened, with no resize involved.
 
-1. **Initial reveal.** The container starts as `display: none` (0×0) while
-   the `Viewer` is constructed, and is only switched to `flex` afterwards
-   (`MapillaryView.tsx`, in response to the `locationChanged` event). The
-   canvas is created against a 0×0 box.
-2. **Window resize.** Hajk's `Window` (`react-rnd`) resizes the plugin
-   window's DOM box directly. `mapillary-js` doesn't know this happened
-   unless told.
+## First theory (wrong): a resize-timing race
 
-`mapillary-js`'s own `trackResize` option only listens for the browser
-*window*'s `resize` event — it does not see either of the above, since
-neither one changes the browser window's size. The fix has to explicitly
-call `Viewer.resize()` after the container's box actually changes.
+The initial read was that `mapillary-js` wasn't finding out about size
+changes: the container starts as `display: none` (0×0) while the `Viewer`
+is constructed and only switches to `flex` afterwards
+(`MapillaryView.tsx`, in response to the `locationChanged` event), and
+`mapillary-js`'s own `trackResize` option only listens for the *browser
+window's* `resize` event, not a container's own size changing. That's a
+real gap, and is worth closing - `MapillaryModel.ts` now attaches a
+`ResizeObserver` directly to the container at `Viewer` construction time
+and calls `viewer.resize()` on every observed size change, replacing
+earlier fixed-delay `setTimeout` chains (`[0, 100, 250, 500, 1000]` ms) that
+guessed at the timing instead of observing it. `trackResize` is set to
+`false` since the observer supersedes it, and the observer is disconnected
+in `deactivate()`.
 
-## What didn't work well
+But this didn't fix the symptom - because it wasn't the actual cause. The
+container's own measured size (`getBoundingClientRect()`) was genuinely
+200px tall, not just late to be read. No amount of re-triggering
+`viewer.resize()` helps when the container really is that size.
 
-Earlier iterations called `viewer.resize()` from fixed-delay `setTimeout`
-chains (`[0, 100, 250, 500, 1000]` ms, each wrapped in a `requestAnimationFrame`)
-after both the reveal and the `Window.jsx` `onResize` callback. This
-happened to work but is guessing at a layout timing race rather than
-observing it, and left a pile of throwaway diagnostic logging in the
-codebase.
+## Real root cause: a CSS specificity conflict, not a timing race
 
-## The fix: `ResizeObserver`
+`MapillaryWindow`, the div `mapillary-js` renders into, was styled
+`position: absolute` with `top`/`bottom`/`left`/`right` offsets, sized
+against a distant positioned ancestor (`Window.jsx`'s `PanelContent`) so it
+would fill the window regardless of its immediate parent's own height.
 
-`MapillaryModel.ts` now attaches a `ResizeObserver` directly to the
-container element (`#mapillary-window`) at the same time the `Viewer` is
-constructed, and calls `viewer.resize()` on every observed size change:
+`mapillary-js` unconditionally adds its own `mapillary-viewer` class to the
+container element on construction. That class carries a stylesheet rule -
+`position: relative` - imported from `mapillary-js/dist/mapillary.css`,
+which the library needs so its own internal canvas/controls (themselves
+`position: absolute`) have something to anchor to. That rule has the same
+specificity as or higher than the app's own class-based `position: absolute`
+(and, being imported later, wins the cascade either way), so it silently
+overrode our `position: absolute` back to `relative`. Once the container is
+merely `position: relative`, its `top`/`bottom`/`left`/`right` offsets stop
+sizing it and become plain visual offsets instead - its actual height falls
+back to normal flow, which was governed by an intermediate wrapper `Box`
+that only had `minHeight: "200px"` and nothing pulling it up to the
+window's full available height. Hence the exact, constant 200px cap,
+independent of window size or timing.
 
-```
-Hajk Window resizes (react-rnd) ──┐
-                                   ├─► container's box changes ─► ResizeObserver ─► viewer.resize()
-display:none → flex reveal ───────┘
-```
+This is a legitimate, unavoidable requirement of `mapillary-js`, not a bug
+in the library - fighting it with our own `position: absolute` on the same
+element was never going to hold up.
 
-This covers both trigger cases with one mechanism, fires only when the size
-has actually changed (no polling, no fixed delays), and needs no knowledge
-of *why* the container changed size. `trackResize` is set to `false` on the
-`Viewer` since the observer supersedes it.
+## The fix: flex layout instead of absolute positioning
 
-`Window.jsx`'s existing `onResize` plugin callback is left wired up as a
-cheap fallback (`MapillaryModel.resize()` → `viewer.resize()`), but is not
-expected to be load-bearing — the `ResizeObserver` is what keeps the canvas
-in sync in practice.
+`MapillaryView.tsx` no longer tries to position the container against a
+distant ancestor at all. Instead:
 
-The observer is disconnected in `MapillaryModel.deactivate()` alongside the
-viewer teardown, so nothing leaks across activate/deactivate cycles.
+- The view's root `Box` is `display: flex; flexDirection: column; height: 100%`,
+  so it fills `Window.jsx`'s content section top to bottom.
+- `ViewerArea` (the box wrapping the image + date overlay) is `flex: 1`
+  instead of `minHeight: 200px`, so it grows to fill whatever space remains
+  below the instruction text.
+- `MapillaryWindow` (`#mapillary-window`, the actual `mapillary-js`
+  container) is `flex: 1` too, filling `ViewerArea` on both axes.
+
+None of these rely on `position: absolute` on the container itself, so
+`mapillary-js` forcing it to `position: relative` is no longer a conflict -
+the container is sized by flex layout either way. `DateWrapper` (the image
+date overlay) keeps `position: absolute`, now anchored via `ViewerArea`'s
+`position: relative` instead of a hardcoded header-height offset.
+
+The `ResizeObserver` fix above is still worth keeping - `mapillary-js`
+still needs to be told when its container's size changes - but it was
+solving a real, separate, smaller problem that happened to be masked by
+this larger layout bug.

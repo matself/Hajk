@@ -4,26 +4,35 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useSnackbar } from "notistack";
 
-import { isMobile } from "../../utils/IsMobile";
-
 import "mapillary-js/dist/mapillary.css";
 
 import type { MapillaryViewProps } from "./types";
 
+// mapillary-js unconditionally sets its container's CSS class to
+// "mapillary-viewer" on construction, which carries its own stylesheet rule
+// (position: relative - required so the viewer's internal canvas/controls,
+// themselves position: absolute, have something to anchor to). That rule
+// has the same specificity as - and loads after - anything we set here, so
+// it always wins: a position: absolute here was silently overridden back
+// to relative, leaving this element sized by normal flow instead of by its
+// top/bottom/left/right offsets. Sizing it via flex instead of absolute
+// positioning sidesteps the conflict entirely.
+const ViewerArea = styled(Box)(() => ({
+  flex: 1,
+  minHeight: 0,
+  position: "relative",
+}));
+
 const MapillaryWindow = styled(Box)(() => ({
   flex: 1,
-  position: "absolute",
-  top: isMobile ? 0 : "54px",
-  bottom: 0,
-  left: 0,
-  right: 0,
+  minWidth: 0,
 }));
 
 const DateWrapper = styled(Box)(({ theme }) => ({
   color: theme.palette.common.white,
   position: "absolute",
   zIndex: 1,
-  top: isMobile ? 0 : "54px",
+  top: 0,
   left: 0,
   background: "rgba(0, 0, 0, 0.7)",
   padding: "0px 3px",
@@ -70,20 +79,18 @@ function MapillaryView({ localObserver, displayViewer }: MapillaryViewProps) {
   }, [localObserver, enqueueSnackbar]);
 
   return (
-    <div>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {!displayViewer && (
         <Typography sx={{ padding: 2 }}>
           Klicka i kartan för att aktivera Mapillary gatuvy. <br />
           Stäng detta fönster genom att klicka på krysset i hörnet.
         </Typography>
       )}
-      <Box
-        sx={{ minHeight: "200px", display: displayViewer ? "flex" : "none" }}
-      >
+      <ViewerArea sx={{ display: displayViewer ? "flex" : "none" }}>
         <MapillaryWindow id="mapillary-window" />
         <DateWrapper id="image-date">{imageDate}</DateWrapper>
-      </Box>
-    </div>
+      </ViewerArea>
+    </Box>
   );
 }
 
