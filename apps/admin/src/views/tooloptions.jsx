@@ -184,7 +184,7 @@ class ToolOptions extends Component {
       dummy: "Dummy (testplugin)",
       externalLinks: "Externa länkar",
       fmeserver: "FME-server",
-      streetview: "Gatuvy",
+      streetview: "Google Street View",
       infoclick: "Infoklick",
       infodialog: "Informationsdialoger",
       layercomparer: "Lagerjämförare",
