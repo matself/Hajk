@@ -49,7 +49,7 @@ class StreetView extends React.PureComponent {
         type="StreetView"
         custom={{
           icon: <StreetviewIcon />,
-          title: "Gatuvy",
+          title: "Google Street View",
           description: "Titta hur området ser ut från gatan",
           height: 300,
           width: 400,

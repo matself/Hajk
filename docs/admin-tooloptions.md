@@ -19,10 +19,11 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 | dummy | Dummy (testplugin) | `tools/dummy.jsx` |
 | externalLinks | Externa länkar | `tools/externalLink.jsx` |
 | fmeserver | FME-server | `tools/fmeServer.jsx` |
-| streetview | Gatuvy | `tools/streetview.jsx` |
+| streetview | Google Street View | `tools/streetview.jsx` |
 | infoclick | Infoklick | `tools/infoclick.jsx` |
 | infodialog | Informationsdialoger | `tools/infodialog.jsx` |
 | layercomparer | Lagerjämförare | `tools/layercomparer.jsx` |
+| mapillary | Mapillary gatuvy | `tools/mapillary.jsx` |
 | measurer | Mät | `tools/measurer.jsx` |
 | routing | Navigation | `tools/routing.jsx` |
 | information | Om kartan | `tools/information.jsx` |
@@ -86,7 +87,9 @@ Färdiga hittills:
 - [Utskrift (print)](admin-tool-print.md)
 - [Dokumenthanterare (documenthandler)](admin-tool-documenthandler.md)
 - [Sök (search)](admin-tool-search.md)
+- [Google Street View (streetview)](admin-tool-streetview.md)
+- [Mapillary gatuvy (mapillary)](admin-tool-mapillary.md)
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
+*Detta dokument beskriver läget i koden per 2026-08-19. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
