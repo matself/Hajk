@@ -18,24 +18,29 @@ import HajkThemeProvider from "./components/HajkThemeProvider";
 import { initHFetch, hfetch, initFetchWrapper } from "./utils/FetchWrapper";
 import LocalStorageHelper from "./utils/LocalStorageHelper";
 import { getMergedSearchAndHashParams } from "./utils/getMergedSearchAndHashParams";
-import { AccessError, NotFoundError } from "./utils/CustomErrors";
+import {
+  AccessError,
+  NotFoundError,
+  ServiceUnavailableError,
+  MalformedConfigError,
+} from "./utils/CustomErrors";
 import { AVAILABLE_TOOLS } from "./constants";
 
 function ensureActiveToolsAreValid(availableTools = []) {
   // First check if there's a valid array
   if (!Array.isArray(availableTools)) {
     console.warn(
-      'activeTools should be an array. Falling back to default tools, which will load all available tools. Please check your appConfig.json and configure activeTools as an array. Example: "activeTools": ["LayerSwitcher", "Search"]'
+      'availableTools should be an array. Falling back to default tools, which will load all available tools. Please check your appConfig.json and configure availableTools as an array. Example: "availableTools": ["LayerSwitcher", "Search"]'
     );
     return AVAILABLE_TOOLS;
   }
 
-  // Now let's see that whatever's in activeTools is actually valid, i.e.
+  // Now let's see that whatever's in availableTools is actually valid, i.e.
   // exists in the AVAILABLE_TOOLS list. If not, we log a warning and filter out the invalid tools.
   const validActiveTools = availableTools.filter((tool) => {
     if (!AVAILABLE_TOOLS.includes(tool)) {
       console.warn(
-        `Tool "${tool}" in activeTools is not a valid tool. Please check your appConfig.json and ensure all tools listed in activeTools are valid. Valid tools are: ${AVAILABLE_TOOLS.join(", ")}.`
+        `Tool "${tool}" in availableTools is not a valid tool. Please check your appConfig.json and ensure all tools listed in availableTools are valid. Valid tools are: ${AVAILABLE_TOOLS.join(", ")}.`
       );
       return false;
     }
@@ -45,7 +50,7 @@ function ensureActiveToolsAreValid(availableTools = []) {
   // If after filtering out invalid tools, we end up with an empty array, we fall back to the default of loading all tools.
   if (validActiveTools.length === 0) {
     console.warn(
-      "No valid tools found in activeTools. Falling back to default tools, which will load all available tools."
+      "No valid tools found in availableTools. Falling back to default tools, which will load all available tools."
     );
     return AVAILABLE_TOOLS;
   }
@@ -68,9 +73,138 @@ initHFetch();
 // error message from appConfig (depending on if we manage to load it or not).
 let appConfig;
 
+// Everything we learn about the failing request while the startup sequence
+// runs. It ends up in the expandable technical section of the error page, so
+// we keep adding to it as soon as a value becomes known.
+const startupContext = {};
+
+/**
+ * By far the most common cause of a failed startup is a mapserviceBase that
+ * doesn't match reality: a port that nothing listens on, or a value left at
+ * "localhost" from a development setup and then deployed to a real server,
+ * where "localhost" resolves to the visitor's own machine rather than ours.
+ *
+ * Neither case can be distinguished from a plain outage by looking at the
+ * failed request alone, because the browser reports both as an opaque network
+ * error. What we can do is compare mapserviceBase to the address the user is
+ * actually visiting, which is enough to name the likely mistake outright.
+ *
+ * Returns a sentence to append to the error message, or null when the setting
+ * looks consistent with where the page is served from.
+ */
+function diagnoseMapserviceBase(mapserviceBase) {
+  if (typeof mapserviceBase !== "string" || mapserviceBase.trim() === "") {
+    return null;
+  }
+
+  const page = window.location;
+  let base;
+
+  try {
+    // A relative mapserviceBase (e.g. "/api/v2") is legitimate and resolves
+    // against the page, which is exactly what we want to compare here.
+    base = new URL(mapserviceBase, page.href);
+  } catch {
+    return `Inställningen mapserviceBase ("${mapserviceBase}") är inte en giltig adress. Rätta den i appConfig.json.`;
+  }
+
+  const isLoopback = (hostname) =>
+    ["localhost", "127.0.0.1", "[::1]", "::1"].includes(hostname);
+
+  if (isLoopback(base.hostname) && !isLoopback(page.hostname)) {
+    // Keep the configured port and path and swap only the host: in this
+    // scenario the port is usually right and the host is the copied-from-dev
+    // part. If backend sits behind the same web server as the client, the
+    // port should be dropped instead - hence the second half of the sentence.
+    const suggestion = `${page.protocol}//${page.hostname}${base.port ? `:${base.port}` : ""}${base.pathname}`;
+    return `Inställningen mapserviceBase pekar på ${base.origin}, men sidan visas från ${page.origin}. "localhost" syftar på besökarens egen dator, inte på servern, så adressen fungerar bara under utveckling. Ändra mapserviceBase i appConfig.json till den adress backend har utifrån sett, sannolikt ${suggestion} - eller ${page.origin}${base.pathname} om backend ligger bakom samma webbserver som klienten.`;
+  }
+
+  if (page.protocol === "https:" && base.protocol === "http:") {
+    return `Sidan visas över https men mapserviceBase pekar på ${base.origin}, som använder http. Webbläsaren blockerar sådana anrop helt. Ändra mapserviceBase i appConfig.json till https.`;
+  }
+
+  if (base.hostname === page.hostname && base.port !== page.port) {
+    return `Inställningen mapserviceBase pekar på port ${base.port || "(standard)"} medan sidan visas från port ${page.port || "(standard)"}. Kontrollera att backend verkligen lyssnar på port ${base.port || "(standard)"} och är nåbar därifrån, eller lägg backend bakom samma adress som klienten.`;
+  }
+
+  if (base.origin !== page.origin) {
+    return `Inställningen mapserviceBase pekar på ${base.origin}, som är en annan adress än sidans egen (${page.origin}). Kontrollera att den adressen går att nå från webbläsaren och att backend tillåter anrop från ${page.origin} (CORS).`;
+  }
+
+  return null;
+}
+
+/**
+ * Fetch and parse a JSON document, separating the three distinct ways this can
+ * go wrong into three distinct errors. Without this the caller cannot tell
+ * "server is unreachable" from "server answered with an HTML login page", and
+ * that is precisely the distinction that makes the error page useful.
+ *
+ * 403 and 404 are passed back to the caller rather than thrown, since only the
+ * caller knows whether they are fatal or worth a retry against another map.
+ */
+const fetchJson = async (url, description) => {
+  let response;
+
+  try {
+    response = await hfetch(url);
+  } catch (cause) {
+    // fetch() only rejects on network level failures: DNS, refused connection,
+    // TLS problems, or a CORS preflight that never made it back.
+    throw new ServiceUnavailableError(`Could not reach ${description}`, {
+      cause,
+      details: { url, description, reason: "network" },
+    });
+  }
+
+  if (response.status === 403 || response.status === 404) {
+    return { status: response.status };
+  }
+
+  if (!response.ok) {
+    throw new ServiceUnavailableError(`${description} returned an error`, {
+      details: {
+        url,
+        description,
+        status: response.status,
+        statusText: response.statusText,
+        reason: "http",
+      },
+    });
+  }
+
+  try {
+    return { status: response.status, json: await response.json() };
+  } catch (cause) {
+    throw new MalformedConfigError(`${description} is not valid JSON`, {
+      cause,
+      details: {
+        url,
+        description,
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        reason: "parse",
+      },
+    });
+  }
+};
+
 try {
-  const appConfigResponse = await hfetch("appConfig.json");
-  appConfig = await appConfigResponse.json();
+  const appConfigResult = await fetchJson("appConfig.json", "appConfig.json");
+
+  if (appConfigResult.json === undefined) {
+    throw new MalformedConfigError("appConfig.json could not be read", {
+      details: {
+        url: "appConfig.json",
+        description: "appConfig.json",
+        status: appConfigResult.status,
+        reason: "missing",
+      },
+    });
+  }
+
+  appConfig = appConfigResult.json;
 
   // Legacy code expects certain keys to be existent in appConfig.
   // They should in fact be optional. Let's ensure they exist on
@@ -91,45 +225,108 @@ try {
     ? initialURLParams.get("m")
     : appConfig.defaultMap;
 
+  startupContext.requestedMap = activeMap;
+  startupContext.mapCameFromUrlParam = initialURLParams.has("m");
+  startupContext.defaultMap = appConfig.defaultMap;
+
   // Check if mapserviceBase is set in appConfig. If it is not, we will
   // fall back on the simple map and layer configurations found in /public.
   const useBackend = appConfig.mapserviceBase?.trim().length > 0;
+
+  startupContext.mapserviceBase = useBackend
+    ? appConfig.mapserviceBase
+    : "(not set, using the local consolidated config in /public)";
 
   // Prepare a helper function that fetches config files
   const fetchConfig = async () => {
     if (useBackend === false) {
       // Load the user specified consolidated map and layers config, or fall back to default one
       const simpleConfig = `${initialURLParams.get("m") || "simpleMapAndLayersConfig"}.json`;
-      return await hfetch(simpleConfig);
-    } else {
-      // Prepare the URL config string
-      const configUrl = `${appConfig.proxy}${appConfig.mapserviceBase}/config`;
-      try {
-        // Try to fetch user-specified config. Return it if OK.
-        return await hfetch(`${configUrl}/${activeMap}`);
-      } catch {
-        // If the previous attempt fails reset "activeMap" to hard-coded value…
-        activeMap = appConfig.defaultMap;
-        // …and try to fetch again.
-        return await hfetch(`${configUrl}/${activeMap}`);
+      startupContext.url = simpleConfig;
+      return await fetchJson(
+        simpleConfig,
+        `the local map config (${simpleConfig})`
+      );
+    }
+
+    // Prepare the URL config string
+    const configUrl = `${appConfig.proxy}${appConfig.mapserviceBase}/config`;
+    const requestedUrl = `${configUrl}/${activeMap}`;
+    startupContext.url = requestedUrl;
+
+    try {
+      // Try to fetch user-specified config. Return it if OK.
+      return await fetchJson(requestedUrl, `the map config service`);
+    } catch (error) {
+      // A definitive answer from a working backend must not be papered over by
+      // silently loading some other map. Only retry when the service itself
+      // failed us, and only when there is another map left to try.
+      if (
+        !(error instanceof ServiceUnavailableError) ||
+        activeMap === appConfig.defaultMap
+      ) {
+        throw error;
       }
+
+      // If the previous attempt fails reset "activeMap" to hard-coded value…
+      activeMap = appConfig.defaultMap;
+      startupContext.fallbackUrl = `${configUrl}/${activeMap}`;
+
+      // …and try to fetch again.
+      return await fetchJson(
+        startupContext.fallbackUrl,
+        `the map config service`
+      );
     }
   };
 
-  const [mapConfigResponse, customThemeResponse] = await Promise.all([
+  // customTheme.json is optional cosmetics. A missing or broken file must never
+  // take the entire application down, so absorb any failure here and carry on
+  // with an empty set of theme overrides.
+  const fetchCustomTheme = async () => {
+    try {
+      const { json } = await fetchJson("customTheme.json", "customTheme.json");
+      return json || {};
+    } catch (error) {
+      console.warn(
+        "Could not load customTheme.json. Continuing without custom theme overrides.",
+        error
+      );
+      return {};
+    }
+  };
+
+  const [mapConfigResult, customTheme] = await Promise.all([
     fetchConfig(),
-    hfetch("customTheme.json"),
+    fetchCustomTheme(),
   ]);
-  // If mapConfigResponse.status is 403, throw a custom access denied error that we
+
+  // If the config service says 403, throw a custom access denied error that we
   // later catch and display Access Denied message
-  if (mapConfigResponse.status === 403) {
-    throw new AccessError("Access Denied");
-  } else if (mapConfigResponse.status === 404) {
-    throw new NotFoundError("Map Config Not Found");
+  if (mapConfigResult.status === 403) {
+    throw new AccessError("Access Denied", {
+      details: { ...startupContext, status: 403 },
+    });
+  } else if (mapConfigResult.status === 404) {
+    throw new NotFoundError("Map Config Not Found", {
+      details: { ...startupContext, status: 404 },
+    });
   }
 
-  const mapConfig = await mapConfigResponse.json();
-  const customTheme = await customThemeResponse.json();
+  const mapConfig = mapConfigResult.json;
+
+  // A syntactically valid JSON document that is not a map config is still
+  // unusable. Catching it here beats failing much later with a cryptic message
+  // about some undefined property deep inside the application.
+  if (!mapConfig?.mapConfig?.map) {
+    throw new MalformedConfigError("Map config is missing its map section", {
+      details: {
+        ...startupContext,
+        reason: "shape",
+        receivedKeys: Object.keys(mapConfig || {}).join(", ") || "(empty)",
+      },
+    });
+  }
 
   const config = {
     activeMap: useBackend ? activeMap : "simpleMapAndLayersConfig", // If we are not utilizing mapService, we know that the active map must be "simpleMapAndLayersConfig".
@@ -168,38 +365,130 @@ try {
   );
 } catch (error) {
   console.error(error);
+
+  const details = { ...startupContext, ...(error.details || {}) };
+
+  // The single most common misconfiguration, named outright when we can spot it.
+  const mapserviceBaseHint = diagnoseMapserviceBase(appConfig?.mapserviceBase);
+
+  // The path Hajk itself is served from, with query string and hash stripped.
+  // Used instead of a hard-coded "/" so the buttons keep working when Hajk is
+  // deployed under a sub-path, which the build supports since vite.config.ts
+  // sets `base: "./"`.
+  const appRoot = window.location.pathname;
+  const urlCouldBeTheProblem = Boolean(
+    window.location.search || window.location.hash
+  );
+
   // Prepare some empty variables
   let loadErrorTitle,
     loadErrorMessage,
     loadErrorReloadButtonText = "";
+  const actions = [];
+
+  const retryAction = {
+    text: appConfig?.loadErrorRetryButtonText || "Försök igen",
+    onClick: () => window.location.reload(),
+    variant: "contained",
+  };
 
   if (error instanceof AccessError) {
     loadErrorTitle = appConfig?.loadErrorAccessDeniedTitle || "Åtkomst nekad";
     loadErrorMessage =
       appConfig?.loadErrorAccessDeniedMessage ||
-      "Du har inte tillgång till den här kartan.";
+      `Du har inte behörighet till kartan "${details.requestedMap}". Om du borde ha det, kontakta systemansvarig. Har du precis loggat in kan du behöva ladda om sidan.`;
+    actions.push(retryAction);
   } else if (error instanceof NotFoundError) {
     loadErrorTitle = appConfig?.loadErrorNotFoundTitle || "Kartan finns inte";
     loadErrorMessage =
       appConfig?.loadErrorNotFoundMessage ||
-      "Kartan som du försöker nå finns inte.";
-    // Show the reset app button as a 404 might as well be caused by an erroneous `m` parameter
-    loadErrorReloadButtonText =
-      appConfig?.loadErrorReloadButtonText || "Återställ applikationen";
+      (details.mapCameFromUrlParam
+        ? `Det finns ingen karta som heter "${details.requestedMap}". Kontrollera stavningen av parametern m i adressfältet, eller öppna standardkartan med knappen nedan.`
+        : `Standardkartan "${details.requestedMap}" saknas på servern. Kontrollera inställningen defaultMap i appConfig.json, att kartfilen finns i backendens App_Data-katalog, och att mapserviceBase pekar på rätt sökväg (${details.url}).`);
+    // A 404 is quite likely caused by an erroneous `m` parameter, so offer to
+    // drop it. Only worth showing when that is in fact where the name came from.
+    if (details.mapCameFromUrlParam) {
+      actions.push({
+        text:
+          appConfig?.loadErrorDefaultMapButtonText || "Öppna standardkartan",
+        href: appRoot,
+        variant: "contained",
+      });
+    }
+  } else if (error instanceof ServiceUnavailableError) {
+    loadErrorTitle =
+      appConfig?.loadErrorServiceUnavailableTitle || "Kartservern svarar inte";
+    loadErrorMessage =
+      appConfig?.loadErrorServiceUnavailableMessage ||
+      (details.reason === "network"
+        ? `Ingen kontakt med kartservern på ${details.url}. ${mapserviceBaseHint || "Kontrollera att backend är igång och att inställningen mapserviceBase i appConfig.json pekar rätt. Kartan kan inte visas förrän servern svarar igen."}`
+        : `Kartservern svarade med felkod ${details.status}${details.statusText ? ` (${details.statusText})` : ""}. Det är ett fel på serversidan. Kontakta systemansvarig och uppge den tekniska informationen nedan.`);
+    actions.push(retryAction);
+  } else if (error instanceof MalformedConfigError) {
+    loadErrorTitle =
+      appConfig?.loadErrorMalformedConfigTitle ||
+      "Konfigurationen kunde inte läsas";
+    loadErrorMessage =
+      appConfig?.loadErrorMalformedConfigMessage ||
+      (details.reason === "shape"
+        ? `Svaret från ${details.url} är giltig JSON men innehåller ingen kartkonfiguration. Kontrollera att mapserviceBase pekar på Hajks backend och inte på någon annan tjänst.`
+        : `Svaret från ${details.url} kunde inte tolkas som JSON${details.contentType ? `, servern skickade ${details.contentType}` : ""}. Vanliga orsaker är att en proxy eller inloggningssida svarar i stället för backend, eller att filen saknas och webbservern returnerar en HTML-sida i stället.${mapserviceBaseHint ? ` ${mapserviceBaseHint}` : ""}`);
+    actions.push(retryAction);
   } else {
     loadErrorTitle = appConfig?.loadErrorTitle || "Ett fel har inträffat";
     loadErrorMessage =
       appConfig?.loadErrorMessage ||
-      "Fel när applikationen skulle läsas in. Du kan försöka att återställa applikationen genom att trycka på knappen nedan. Om felet kvarstår kan du kontakta systemansvarig.";
+      "Fel när applikationen skulle läsas in. Du kan försöka att återställa applikationen genom att trycka på knappen nedan. Om felet kvarstår, kontakta systemansvarig och uppge den tekniska informationen nedan.";
     loadErrorReloadButtonText =
       appConfig?.loadErrorReloadButtonText || "Återställ applikationen";
   }
 
+  // The original reset button: drop every URL parameter and start over from the
+  // app's own root. Kept as the primary action for the generic branch, and
+  // offered as a secondary one whenever the URL could be part of the problem.
+  if (loadErrorReloadButtonText.length > 0) {
+    actions.push({
+      text: loadErrorReloadButtonText,
+      href: appRoot,
+      variant: "contained",
+    });
+  } else if (urlCouldBeTheProblem && !details.mapCameFromUrlParam) {
+    actions.push({
+      text: appConfig?.loadErrorReloadButtonText || "Återställ applikationen",
+      href: appRoot,
+      variant: "outlined",
+    });
+  }
+
   createRoot(document.getElementById("root")).render(
     <StartupError
-      loadErrorMessage={loadErrorMessage}
       loadErrorTitle={loadErrorTitle}
-      loadErrorReloadButtonText={loadErrorReloadButtonText}
+      loadErrorMessage={loadErrorMessage}
+      actions={actions}
+      technicalDetails={{
+        Feltyp: error.name || "Error",
+        Felmeddelande: error.message,
+        Adress: details.url || window.location.href,
+        "HTTP-status": details.status
+          ? `${details.status}${details.statusText ? ` ${details.statusText}` : ""}`
+          : undefined,
+        "Content-Type": details.contentType,
+        Karta: details.requestedMap,
+        Standardkarta: details.defaultMap,
+        "Karta från m-parameter": details.mapCameFromUrlParam
+          ? "ja"
+          : details.mapCameFromUrlParam === false
+            ? "nej"
+            : undefined,
+        mapserviceBase: details.mapserviceBase,
+        "Sidans adress": window.location.origin,
+        "Trolig orsak": mapserviceBaseHint,
+        "Nytt försök mot": details.fallbackUrl,
+        "Nycklar i svaret": details.receivedKeys,
+        Ursprungsfel: error.cause ? String(error.cause) : undefined,
+        "Hajk-version": import.meta.env.VITE_APP_VERSION,
+        Tidpunkt: new Date().toISOString(),
+      }}
     />
   );
 }
