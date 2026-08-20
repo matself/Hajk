@@ -2,10 +2,20 @@
 
 ## Required tools
 
-- Latest LTS of NodeJS
+- Node.js ≥22 (LTS) — enforced via `engines` in each app's `package.json`
 - Latest Git
 
-All apps reside inside the `apps/` directory. The Client UI (`client`), Admin UI (`admin`) and NodeJS backend (`backend`) applications can be built and deployed on any OS supported by recent Git and Node versions (tested on macOS, Windows and Linux).
+## Project structure
+
+Hajk is a monorepo with three independent apps under `apps/` — no root-level workspace tooling. Each app manages its own dependencies, so every `npm` command below runs from inside an app directory.
+
+| App       | Directory       | Port | Stack                                                       |
+| --------- | --------------- | ---- | ----------------------------------------------------------- |
+| Client UI | `apps/client/`  | 3000 | React 19, Vite 7, OpenLayers 10, MUI v9                     |
+| Admin UI  | `apps/admin/`   | 3001 | React 16 (legacy), Create React App 3, MUI v4, OpenLayers 5 |
+| Backend   | `apps/backend/` | 3002 | Node.js ESM, Express 5                                      |
+
+All three can be built and deployed on any OS supported by recent Git and Node versions (tested on macOS, Windows and Linux).
 
 ## AI-assisted contributions
 
@@ -27,6 +37,53 @@ End-user documentation can be found in [Hajk's Wiki](https://github.com/hajkmap/
 ## Design guidelines
 
 Hajk is built using **Material Design** components from the [Material UI](https://material-ui.com/) project. Make sure to familiarize yourself with all the available components. It is crucial for the user experience that the design principles are followed throughout the system.
+
+## Local development setup
+
+Start apps in this order:
+
+1. **Backend**
+
+   ```bash
+   cd apps/backend
+   cp .env.example .env   # edit as needed
+   npm install
+   npm run dev            # http://localhost:3002
+                          # API Explorer: http://localhost:3002/api-explorer/
+   ```
+
+2. **Client UI**
+
+   Ensure `apps/client/public/appConfig.json` has `mapserviceBase: "http://localhost:3002/api/v2"`.
+
+   ```bash
+   cd apps/client
+   npm install
+   npm run dev   # http://localhost:3000
+   ```
+
+3. **Admin UI** (optional)
+
+   Ensure `apps/admin/public/config.json` URLs point to `http://localhost:3002/api/v2/...`.
+
+   ```bash
+   cd apps/admin
+   npm install
+   npm start     # http://localhost:3001
+   ```
+
+## Build commands
+
+```bash
+# Backend: compile to dist/
+cd apps/backend && npm run compile && npm start
+
+# Client: build to build/
+cd apps/client && npm run build
+
+# Admin: build to build/ (OpenSSL legacy provider handled by npm scripts)
+cd apps/admin && npm run build
+```
 
 ## Git workflow
 
@@ -72,3 +129,13 @@ Hajk uses **ESLint** and **Prettier** to enforce code formatting across the proj
 The `client` and `backend` directories contain all necessary configuration files. The recommended way is to use an editor that has extensions for ESLint and Prettier installed. It is also highly recommended to make the editor run Prettier on each file save (i.e. in VSCode it can be controlled by the `formatOnSave: true` flag).
 
 **For a simple guide on setting up VSCode with ESLint, Prettier and some , see [this presentation](https://github.com/hajkmap/Hajk/blob/master/dokumentation/VSCodeSetup.pdf)**. (Swedish only)
+
+In practice: the **Client** and **Backend** use ESLint 9 + Prettier and have a `npm run lint:fix` script — run it in the relevant app directory before committing. The **Admin** has no ESLint; format it with Prettier from inside `apps/admin` (it pins Prettier 2 with default settings, so don't format it using the Client's config).
+
+Additional conventions:
+
+- **Client**: prefer functional components with hooks over class components.
+- **Client**: keep components focused — aim for under 200 lines.
+- **Client**: use TypeScript interfaces for prop types in new `.ts`/`.tsx` files. Most of `src/` is still plain JS/JSX and is not type-checked (`allowJs` with `checkJs: false`), so this applies to new TypeScript code rather than being a conversion mandate.
+- **Backend**: ES module syntax throughout; do not use CommonJS `require()`.
+- **Admin** is legacy (React 16, MUI v4, CRA 3). Match the surrounding style and avoid major refactors or dependency bumps unless that is explicitly the task.

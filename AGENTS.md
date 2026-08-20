@@ -8,7 +8,7 @@ This is a monorepo with three independent apps — no root-level workspace tooli
 
 ### Core Components
 
-- **Client UI** (`apps/client/`): Web map frontend — React 19, Vite 7, OpenLayers 10, MUI v7. Port 3000.
+- **Client UI** (`apps/client/`): Web map frontend — React 19, Vite 7, OpenLayers 10, MUI v9. Port 3000.
 - **Admin UI** (`apps/admin/`): Configuration UI for maps/layers — React 16, Create React App 3 (legacy), MUI v4, OpenLayers 5. Port 3001.
 - **Backend** (`apps/backend/`): REST API server — Node.js ≥22 (ESM), Express 5. Port 3002.
 
@@ -18,9 +18,9 @@ This is a monorepo with three independent apps — no root-level workspace tooli
 | --- | --- | --- | --- |
 | Framework | Express 5 | React 19 | React 16 (legacy) |
 | Build | ES modules (no bundler) | Vite 7 | Create React App 3 |
-| UI | — | MUI v7 | MUI v4 + Ant Design 4 |
+| UI | — | MUI v9 | MUI v4 + Ant Design 4 |
 | Maps | — | OpenLayers 10 | OpenLayers 5 |
-| Language | JavaScript (ESM) | TypeScript (strict) | JavaScript |
+| Language | JavaScript (ESM) | Mostly JS/JSX; TS enabled (`strict`, but `allowJs` + `checkJs: false`) | JavaScript |
 | Linting | ESLint 9 + Prettier | ESLint 9 + Prettier | Prettier only |
 
 ### Critical Configuration Files
@@ -76,8 +76,8 @@ cd apps/admin && npm run build
 
 ### Git Workflow Conventions
 
-1. Always branch from `develop`
-2. Branch naming: `feature/ISSUE_NUM-description` (e.g., `feature/1234-blue-button`)
+1. Always branch from `develop` — in this fork too. `develop` tracks `upstream/develop` (last merged in via `e089ccf8`) and is where work lands; `master` is the fork's stable branch and trails it.
+2. Branch naming: `feature/ISSUE_NUM-description` (e.g., `feature/1234-blue-button`). Fork-only work with no upstream issue may use a plain descriptive name.
 3. Update the changelog under "Unreleased" with format:
 
    ```markdown
@@ -88,6 +88,15 @@ cd apps/admin && npm run build
    - `CHANGELOG.md` — mirrors upstream exactly. Only touch this for changes that also exist in / are intended for `hajkmap/Hajk`.
    - `CHANGELOG.fork.md` — fork-only changes (not upstreamed, e.g. the admin password gate, WMTS auth proxy). This is where most work on this fork should be recorded.
 
+### AI-Assisted Contributions
+
+`AI_POLICY.md` (on `develop`; also summarized in `CONTRIBUTING.md`) is a **hard gate for
+upstream PRs**: open an issue and get maintainer sign-off on the approach *before*
+writing code, disclose the AI tool used in the PR description, test against a real Hajk
+instance, and keep the diff scoped to the linked issue. PRs skipping the issue-first step
+are closed on sight. This does not apply to trivial edits, nor to fork-internal work that
+is never sent upstream — but it does apply the moment a change is aimed at `hajkmap/Hajk`.
+
 ## Code Patterns
 
 ### Design Principles
@@ -96,7 +105,7 @@ cd apps/admin && npm run build
 - Follow ESLint & Prettier configurations — run `npm run lint:fix` before committing (backend and client)
 - Prefer functional components with hooks over class components (client)
 - Keep components focused and modular — aim for under 200 lines
-- Use TypeScript interfaces for prop types (client)
+- Use TypeScript interfaces for prop types in new `.ts`/`.tsx` files (client); most existing files are plain JSX without prop types
 
 ### Common Integration Points
 
@@ -124,7 +133,7 @@ cd apps/admin && npm run build
 ## Key Files for Context
 
 - `apps/client/src/` - Main client application code
-- `apps/client/src/plugins/` - Tool plugins (28+)
+- `apps/client/src/plugins/` - 29 plugin directories: 28 registered tools + the `Template` scaffold
 - `apps/admin/src/` - Admin interface code
 - `apps/backend/server/` - Backend server implementation
 - `apps/backend/App_Data/*.json` - Map configuration files
@@ -136,5 +145,5 @@ cd apps/admin && npm run build
 1. Determine if changes needed in client, admin, or backend (often all three)
 2. Update appropriate configuration files
 3. Follow Material Design patterns for UI components
-4. Add appropriate tests
-5. Update CHANGELOG.md
+4. Verify by running the app — none of the three apps has a test framework configured, so lint + manual verification against a live instance is the only gate
+5. Update the changelog (`CHANGELOG.fork.md` for fork-only work, `CHANGELOG.md` only for upstream-bound changes)
