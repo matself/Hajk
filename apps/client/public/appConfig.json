@@ -25,7 +25,7 @@
   "announcements": [
     {
       "id": 1,
-      "active": true,
+      "active": false,
       "text": "Hi, this is **Hajk**! 😃 \n\nWe hope you enjoy it. 🚀💯",
       "showOnlyOnce": true,
       "maps": ["map_1", "simpleMapAndLayersConfig"],

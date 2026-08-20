@@ -41,6 +41,8 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 
 **Inte längre valbara i Admin** (koden finns kvar i repot men importen är utkommenterad i `tooloptions.jsx`): `draw` (ersatt av `sketch`), `measure` (ersatt av `measurer`), `export` (ersatt av `print`), `informative` (ersatt av `documenthandler`), `geosuiteexport`. De tre första är formellt dokumenterade i [deprecated-plugins.md](deprecated-plugins.md) — `export`/`geosuiteexport` är avstängda men inte upptagna där.
 
+**Utanför verktygslistan:** korta meddelanden som visas när kartan laddas hanteras inte som ett verktyg alls, utan i klientens `appConfig.json`. Se [Meddelanden vid kartstart (announcements)](admin-announcements.md).
+
 **Dolda i den här utgåvan** (kolumnen *Dold* ovan): sju verktyg filtreras bort ur listan via `hiddenTools` i `apps/admin/public/config.json`. Till skillnad från de utkommenterade ovan ligger de kvar i koden och tas tillbaka med en konfigurationsändring, utan ombyggnad. Se [Dölja verktyg i Admin](admin-hidden-tools.md).
 
 ## Gemensamt mönster i alla verktygsformulär

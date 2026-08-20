@@ -4,6 +4,8 @@ Konfigurationsformulär: `apps/admin/src/views/tools/infodialog.jsx`, codename `
 
 Formulärets `options` är alltså en **array** av dialogobjekt, inte ett enda `options`-objekt som de flesta andra verktyg.
 
+För korta driftmeddelanden som gäller hela installationen snarare än en enskild karta finns ett enklare alternativ: [Meddelanden vid kartstart (announcements)](admin-announcements.md), som visar en notis i stället för en dialogruta. Det redigeras dock för hand i klientens `appConfig.json` och har inget formulär i Admin.
+
 - Aktiverad, Sorteringsordning (gäller verktyget som helhet, inte enskilda dialoger)
 - **Lägg till dialog** — skapar en ny, tom dialog och väljer den i listan till vänster.
 - Vänsterlistan visar alla dialoger (efter Titel/Namn); klick väljer vilken som redigeras till höger.
