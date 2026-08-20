@@ -210,11 +210,23 @@ class ToolOptions extends Component {
       // geosuiteexport: "GeoSuite export",
     };
 
+    // Tools this build should not offer at all. Driven by config.json rather
+    // than by commenting out imports and switch cases, so the tools remain in
+    // the source for reference and the list can be changed without a rebuild.
+    // Note that hiding a tool does not disable it in map configs that already
+    // use it - such a tool keeps working in the client but can no longer be
+    // switched off from here, so clear it from the maps first.
+    const adminConfig = this.props.model.get("config") || {};
+    const hiddenTools = Array.isArray(adminConfig.hiddenTools)
+      ? adminConfig.hiddenTools
+      : [];
+
     return (
       <div>
         <aside>
           <ul className="config-layer-list">
             {Object.keys(toolTypes)
+              .filter((key) => hiddenTools.indexOf(key) === -1)
               .sort((a, b) =>
                 this.getIndexForTool(a) === this.getIndexForTool(b)
                   ? 0

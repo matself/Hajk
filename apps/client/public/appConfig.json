@@ -4,11 +4,8 @@
   "availableTools": [
     "Anchor",
     "Bookmarks",
-    "Buffer",
     "Coordinates",
     "DocumentHandler",
-    "Edit",
-    "FmeServer",
     "InfoDialog",
     "LayerComparer",
     "LayerSwitcher",
@@ -18,12 +15,9 @@
     "Measurer",
     "OsmSearch",
     "Print",
-    "PropertyChecker",
     "Routing",
     "Search",
-    "Sketch",
-    "StreetView",
-    "TimeSlider"
+    "StreetView"
   ],
   "loadErrorTitle": "Ett fel har inträffat",
   "loadErrorMessage": "Fel när applikationen skulle läsas in. Du kan försöka att återställa applikationen genom att trycka på knappen nedan. Om felet kvarstår kan du kontakta systemansvarig.",

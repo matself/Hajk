@@ -433,15 +433,6 @@
       "index": 2
     },
     {
-      "type": "sketch",
-      "options": {
-        "target": "left",
-        "position": "left",
-        "visibleForGroups": []
-      },
-      "index": 3
-    },
-    {
       "type": "measurer",
       "options": {
         "target": "control",
@@ -608,18 +599,6 @@
         "visibleForGroups": []
       },
       "index": 16
-    },
-    {
-      "type": "buffer",
-      "options": {
-        "target": "toolbar",
-        "instruction": "",
-        "varbergVer": false,
-        "geoserverUrl": "",
-        "notFeatureLayers": [],
-        "visibleForGroups": []
-      },
-      "index": 17
     },
     {
       "type": "print",

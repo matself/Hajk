@@ -43,7 +43,16 @@
     "url_document_list": "http://localhost:3002/api/v2/informative/list",
     "url_client_ui": "http://localhost:3002/",
     "authentication_active": false,
-    "use_document_folders": true
+    "use_document_folders": true,
+    "hiddenTools": [
+      "buffer",
+      "collector",
+      "dummy",
+      "edit",
+      "fmeserver",
+      "sketch",
+      "timeslider"
+    ]
   },
   "menueditor": {
     "url_proxy": "",

@@ -10,36 +10,38 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 
 ## Verktyg (codename → visningsnamn → fil)
 
-| Codename | Visningsnamn | Formulärfil |
-|---|---|---|
-| bookmarks | Platser | `tools/bookmarks.jsx` |
-| buffer | Buffra | `tools/buffer.jsx` |
-| anchor | Dela | `tools/anchor.jsx` |
-| documenthandler | Dokumenthanterare | `tools/MenuEditor/menuEditor.jsx` |
-| dummy | Dummy (testplugin) | `tools/dummy.jsx` |
-| externalLinks | Externa länkar | `tools/externalLink.jsx` |
-| fmeserver | FME-server | `tools/fmeServer.jsx` |
-| streetview | Google Street View | `tools/streetview.jsx` |
-| infoclick | Infoklick | `tools/infoclick.jsx` |
-| infodialog | Informationsdialoger | `tools/infodialog.jsx` |
-| layercomparer | Lagerjämförare | `tools/layercomparer.jsx` |
-| mapillary | Mapillary gatuvy | `tools/mapillary.jsx` |
-| measurer | Mät | `tools/measurer.jsx` |
-| routing | Navigation | `tools/routing.jsx` |
-| information | Om kartan | `tools/information.jsx` |
-| osmsearch | OSM-sökning | `tools/osmsearch.jsx` |
-| location | Positionera | `tools/location.jsx` |
-| edit | Redigera | `tools/edit.jsx` |
-| sketch | Rita | `tools/sketch.jsx` |
-| preset | Genvägar | `tools/preset.jsx` |
-| search | Sök | `tools/search.jsx` |
-| timeslider | Tidslinje | `tools/timeslider.jsx` |
-| collector | Tyck till | `tools/collector.jsx` |
-| mailform | Tyck till (e-post) | `tools/mailform.jsx` |
-| print | Utskrift | `tools/print.jsx` |
-| coordinates | Visa koordinat | `tools/coordinates.jsx` |
+| Codename | Visningsnamn | Formulärfil | Dold |
+|---|---|---|---|
+| bookmarks | Platser | `tools/bookmarks.jsx` |  |
+| buffer | Buffra | `tools/buffer.jsx` | ja |
+| anchor | Dela | `tools/anchor.jsx` |  |
+| documenthandler | Dokumenthanterare | `tools/MenuEditor/menuEditor.jsx` |  |
+| dummy | Dummy (testplugin) | `tools/dummy.jsx` | ja |
+| externalLinks | Externa länkar | `tools/externalLink.jsx` |  |
+| fmeserver | FME-server | `tools/fmeServer.jsx` | ja |
+| streetview | Google Street View | `tools/streetview.jsx` |  |
+| infoclick | Infoklick | `tools/infoclick.jsx` |  |
+| infodialog | Informationsdialoger | `tools/infodialog.jsx` |  |
+| layercomparer | Lagerjämförare | `tools/layercomparer.jsx` |  |
+| mapillary | Mapillary gatuvy | `tools/mapillary.jsx` |  |
+| measurer | Mät | `tools/measurer.jsx` |  |
+| routing | Navigation | `tools/routing.jsx` |  |
+| information | Om kartan | `tools/information.jsx` |  |
+| osmsearch | OSM-sökning | `tools/osmsearch.jsx` |  |
+| location | Positionera | `tools/location.jsx` |  |
+| edit | Redigera | `tools/edit.jsx` | ja |
+| sketch | Rita | `tools/sketch.jsx` | ja |
+| preset | Genvägar | `tools/preset.jsx` |  |
+| search | Sök | `tools/search.jsx` |  |
+| timeslider | Tidslinje | `tools/timeslider.jsx` | ja |
+| collector | Tyck till | `tools/collector.jsx` | ja |
+| mailform | Tyck till (e-post) | `tools/mailform.jsx` |  |
+| print | Utskrift | `tools/print.jsx` |  |
+| coordinates | Visa koordinat | `tools/coordinates.jsx` |  |
 
 **Inte längre valbara i Admin** (koden finns kvar i repot men importen är utkommenterad i `tooloptions.jsx`): `draw` (ersatt av `sketch`), `measure` (ersatt av `measurer`), `export` (ersatt av `print`), `informative` (ersatt av `documenthandler`), `geosuiteexport`. De tre första är formellt dokumenterade i [deprecated-plugins.md](deprecated-plugins.md) — `export`/`geosuiteexport` är avstängda men inte upptagna där.
+
+**Dolda i den här utgåvan** (kolumnen *Dold* ovan): sju verktyg filtreras bort ur listan via `hiddenTools` i `apps/admin/public/config.json`. Till skillnad från de utkommenterade ovan ligger de kvar i koden och tas tillbaka med en konfigurationsändring, utan ombyggnad. Se [Dölja verktyg i Admin](admin-hidden-tools.md).
 
 ## Gemensamt mönster i alla verktygsformulär
 
@@ -92,4 +94,4 @@ Färdiga hittills:
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-08-19. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
+*Detta dokument beskriver läget i koden per 2026-08-20. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
