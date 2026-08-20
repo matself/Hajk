@@ -61,7 +61,7 @@ matself/Hajk                     ← this fork; branch from `develop` (tracks up
 ├── Docker/, Dockerfile          Container builds (multi-stage: backend → client → admin)
 ├── scripts/                     Release + local build helpers (not part of app builds)
 ├── AI_POLICY.md                 Hard gate for upstream PRs — see §0
-├── CONTRIBUTING.md              Upstream's copy on `develop`; setup lives in AGENTS.md now
+├── CONTRIBUTING.md              Upstream's text + fork's setup/structure sections
 ├── CHANGELOG.md                 Mirrors UPSTREAM only — see §7
 ├── CHANGELOG.fork.md            Fork-only changes — this is where most work is recorded
 └── .claude/commands/            `/compliance-check` slash command
