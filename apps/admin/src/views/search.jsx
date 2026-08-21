@@ -1,6 +1,7 @@
 import React from "react";
 import { Component } from "react";
 import Alert from "../views/alert.jsx";
+import InfoclickEditor from "./components/InfoclickEditor";
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/SaveSharp";
 import AddIcon from "@material-ui/icons/Add";
@@ -38,6 +39,24 @@ const ColorButtonBlue = withStyles((theme) => ({
   },
 }))(Button);
 
+// A WFS DescribeFeatureType response types geometry columns as gml:*, e.g.
+// "gml:GeometryPropertyType" or "gml:MultiPolygonPropertyType". The model's
+// parser only strips the *element's* namespace prefix (xsd:), so the gml:
+// prefix survives on the type and lets us tell geometry columns apart from
+// ordinary attributes.
+const GEOMETRY_TYPE_REGEX = /^gml:|PropertyType$/i;
+
+function isGeometryType(type) {
+  return GEOMETRY_TYPE_REGEX.test(type || "");
+}
+
+const ATTRIBUTE_FETCH_ERROR =
+  "Kunde inte hämta attributlistan från tjänsten. Ange attributnamn manuellt.";
+
+// The model's DescribeFeatureType request has no error handler, so a failed
+// request would otherwise leave the UI stuck in its "Hämtar attribut…" state.
+const ATTRIBUTE_FETCH_TIMEOUT = 20000;
+
 const defaultState = {
   load: false,
   capabilities: false,
@@ -56,6 +75,11 @@ const defaultState = {
   secondaryLabelFields: "",
   shortDisplayFields: "",
   geometryField: "",
+  attributesCache: {},
+  attributesLayerName: "",
+  attributesFetching: false,
+  attributesError: null,
+  detailsVisible: false,
   url: "",
   outputFormat: undefined,
   serverType: "geoserver",
@@ -76,6 +100,8 @@ class Search extends Component {
   constructor() {
     super();
     this.state = defaultState;
+    this.attributesTimer = null;
+    this.attributesRequestId = 0;
   }
   /**
    *
@@ -98,6 +124,7 @@ class Search extends Component {
    */
   componentWillUnmount() {
     this.props.model.off("change:layers");
+    this.clearAttributeTimer();
   }
   /**
    *
@@ -166,6 +193,11 @@ class Search extends Component {
           addedLayers: layer.layers,
         });
 
+        // Editing an existing search layer: pull the attribute list for the
+        // configured feature type right away, so that the attribute pickers
+        // and the Inforuta editor are usable without an extra click.
+        this.fetchAttributes(layer.layers && layer.layers[0]);
+
         this.validateField("layers", true);
 
         Object.keys(this.refs).forEach((element) => {
@@ -193,8 +225,11 @@ class Search extends Component {
       load: true,
       addedLayers: [],
       capabilities: false,
-      layerProperties: undefined,
-      layerPropertiesName: undefined,
+      attributesCache: {},
+      attributesLayerName: "",
+      attributesFetching: false,
+      attributesError: null,
+      detailsVisible: false,
     });
 
     if (this.state.capabilities) {
@@ -228,7 +263,13 @@ class Search extends Component {
         {
           addedLayers: [checkedLayer],
         },
-        () => this.validateField("layers"),
+        () => {
+          this.validateField("layers");
+          // A search source is always a WFS, so DescribeFeatureType is always
+          // available - fetch the attributes right away and let them fill in
+          // Geometrifält, which is otherwise a common source of typos.
+          this.fetchAttributes(checkedLayer, { autofillGeometry: true });
+        },
         true
       );
     } else {
@@ -237,6 +278,9 @@ class Search extends Component {
           addedLayers: this.state.addedLayers.filter(
             (layer) => layer !== checkedLayer
           ),
+          attributesLayerName: "",
+          attributesError: null,
+          detailsVisible: false,
         },
         () => this.validateField("layers"),
         true
@@ -430,6 +474,9 @@ class Search extends Component {
     var input = this.refs["input_" + fieldName],
       value = input ? input.value : "";
 
+    // Inforuta is edited by InfoclickEditor, which keeps its own state and has
+    // no input to read a value off.
+    if (fieldName === "infobox") value = this.state.infobox || "";
     if (fieldName === "date") value = create_date();
     if (fieldName === "layers") value = format_layers(this.state.addedLayers);
     if (fieldName === "searchFields") value = value.split(",");
@@ -569,37 +616,305 @@ class Search extends Component {
   /**
    *
    */
-  describeLayer(e, layer) {
-    var arcgis = /MapServer\/WFSServer$/.test(this.refs.input_url.value);
-    this.props.model.getLayerDescription(
-      this.refs.input_url.value,
-      layer,
-      arcgis,
-      (properties) => {
+  clearAttributeTimer() {
+    if (this.attributesTimer) {
+      clearTimeout(this.attributesTimer);
+      this.attributesTimer = null;
+    }
+  }
+  /**
+   * Fetches attribute names and types for a feature type using WFS
+   * DescribeFeatureType, and caches the result per feature type.
+   *
+   * The ArcGIS branch of the model's getLayerDescription() is deliberately not
+   * used: it keys on layer.id, which the feature types parsed out of a WFS
+   * GetCapabilities never carry. A search source is always a WFS - including
+   * ArcGIS' own /MapServer/WFSServer endpoints, which do answer
+   * DescribeFeatureType - so the WFS path covers every case here.
+   */
+  fetchAttributes(layerName, options = {}) {
+    if (!layerName) {
+      // Only complain when the admin asked for this explicitly - the automatic
+      // fetches simply have nothing to do yet.
+      if (options.force === true) {
         this.setState({
-          layerProperties: properties,
-          layerPropertiesName: layer.name,
+          attributesError:
+            "Välj ett lager i lagerlistan innan attributen kan hämtas.",
         });
       }
+      return;
+    }
+
+    var autofillGeometry = options.autofillGeometry === true;
+    var showDetails = options.showDetails === true;
+    var force = options.force === true;
+    var cached = this.state.attributesCache[layerName];
+
+    this.setState({
+      attributesLayerName: layerName,
+      attributesError: cached === false ? ATTRIBUTE_FETCH_ERROR : null,
+      detailsVisible: showDetails || this.state.detailsVisible,
+    });
+
+    if (cached !== undefined && !force) {
+      this.clearAttributeTimer();
+      this.attributesRequestId++;
+      this.setState({ attributesFetching: false });
+      if (Array.isArray(cached) && autofillGeometry) {
+        this.autofillGeometryField(cached);
+      }
+      return;
+    }
+
+    // Any response to an earlier request is stale from here on - the admin has
+    // moved on to another feature type or asked for a refetch.
+    var requestId = ++this.attributesRequestId;
+
+    this.clearAttributeTimer();
+    this.setState({ attributesFetching: true, attributesError: null });
+
+    this.attributesTimer = setTimeout(() => {
+      if (requestId !== this.attributesRequestId) {
+        return;
+      }
+      this.attributesTimer = null;
+      // Bump the id so that a very late response can't revive this request.
+      this.attributesRequestId++;
+      this.setState({
+        attributesFetching: false,
+        attributesError: ATTRIBUTE_FETCH_ERROR,
+      });
+    }, ATTRIBUTE_FETCH_TIMEOUT);
+
+    this.props.model.getLayerDescription(
+      this.state.url,
+      { name: layerName },
+      false,
+      (properties) => {
+        if (requestId !== this.attributesRequestId) {
+          return;
+        }
+        this.clearAttributeTimer();
+
+        var attributes = Array.isArray(properties)
+          ? properties.map((property) => ({
+              name: property.name,
+              type: property.localType,
+            }))
+          : false;
+
+        this.setState((prevState) => ({
+          attributesCache: {
+            ...prevState.attributesCache,
+            [layerName]: attributes,
+          },
+          attributesFetching: false,
+          attributesError:
+            attributes === false
+              ? ATTRIBUTE_FETCH_ERROR
+              : prevState.attributesError,
+        }));
+
+        if (attributes !== false && autofillGeometry) {
+          this.autofillGeometryField(attributes);
+        }
+      }
     );
+  }
+  /**
+   * Fills in Geometrifält from the feature type's geometry column, but never
+   * overwrites a value the admin has already entered.
+   */
+  autofillGeometryField(attributes) {
+    var geometryAttributes = attributes.filter((attribute) =>
+      isGeometryType(attribute.type)
+    );
+
+    if (
+      geometryAttributes.length === 0 ||
+      String(this.state.geometryField || "").trim() !== ""
+    ) {
+      return;
+    }
+
+    this.setState({ geometryField: geometryAttributes[0].name }, () =>
+      this.validateField("geometryField", true)
+    );
+  }
+  /**
+   *
+   */
+  getAttributes() {
+    var attributes = this.state.attributesCache[this.state.attributesLayerName];
+    return Array.isArray(attributes) ? attributes : [];
+  }
+  /**
+   *
+   */
+  getNonGeometryAttributes() {
+    return this.getAttributes().filter(
+      (attribute) => !isGeometryType(attribute.type)
+    );
+  }
+  /**
+   *
+   */
+  getGeometryAttributes() {
+    return this.getAttributes().filter((attribute) =>
+      isGeometryType(attribute.type)
+    );
+  }
+  /**
+   * Appends an attribute to one of the comma separated list fields. The state
+   * value can be either a string (typed by the admin) or an array (as stored
+   * in the layer config), so both are normalized here.
+   */
+  addAttributeToField(fieldName, attributeName) {
+    if (!attributeName) {
+      return;
+    }
+
+    var current = this.state[fieldName];
+    var parts = (
+      Array.isArray(current) ? current : String(current || "").split(",")
+    )
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+
+    if (parts.indexOf(attributeName) !== -1) {
+      return;
+    }
+
+    parts.push(attributeName);
+
+    this.setState({ [fieldName]: parts.join(",") }, () =>
+      this.validateField(fieldName, true)
+    );
+  }
+  /**
+   *
+   */
+  describeLayer(e, layer) {
+    if (
+      this.state.detailsVisible &&
+      this.state.attributesLayerName === layer.name
+    ) {
+      this.closeDetails();
+      return;
+    }
+    this.fetchAttributes(layer.name, { showDetails: true });
   }
   /**
    *
    */
   closeDetails() {
     this.setState({
-      layerProperties: undefined,
-      layerPropertiesName: undefined,
+      detailsVisible: false,
     });
   }
   /**
    *
    */
-  renderLayerProperties() {
-    if (this.state.layerProperties === undefined) {
+  renderAttributePicker(fieldName) {
+    var attributes = this.getNonGeometryAttributes();
+
+    if (attributes.length === 0) {
       return null;
     }
-    if (this.state.layerProperties === false) {
+
+    return (
+      <select
+        value=""
+        style={{ maxWidth: "220px", verticalAlign: "top" }}
+        onChange={(e) => this.addAttributeToField(fieldName, e.target.value)}
+      >
+        <option value="" disabled>
+          Lägg till attribut…
+        </option>
+        {attributes.map((attribute) => (
+          <option key={attribute.name} value={attribute.name}>
+            {attribute.name}
+            {attribute.type ? ` (${attribute.type})` : ""}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  /**
+   *
+   */
+  renderGeometryPicker() {
+    var attributes = this.getGeometryAttributes();
+
+    if (attributes.length === 0) {
+      return null;
+    }
+
+    return (
+      <select
+        value=""
+        style={{ maxWidth: "220px", verticalAlign: "top" }}
+        onChange={(e) => {
+          var value = e.target.value;
+          if (!value) {
+            return;
+          }
+          this.setState({ geometryField: value }, () =>
+            this.validateField("geometryField", true)
+          );
+        }}
+      >
+        <option value="" disabled>
+          Välj geometrifält…
+        </option>
+        {attributes.map((attribute) => (
+          <option key={attribute.name} value={attribute.name}>
+            {attribute.name}
+            {attribute.type ? ` (${attribute.type})` : ""}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  /**
+   *
+   */
+  renderAttributeStatus() {
+    if (this.state.attributesFetching) {
+      return "Hämtar attribut…";
+    }
+
+    if (this.state.attributesError) {
+      return (
+        <span style={{ color: "#b71c1c" }}>{this.state.attributesError}</span>
+      );
+    }
+
+    var attributes = this.getAttributes();
+
+    if (attributes.length === 0) {
+      return null;
+    }
+
+    return `${attributes.length} attribut hämtade för ${this.state.attributesLayerName}.`;
+  }
+  /**
+   *
+   */
+  renderLayerProperties() {
+    if (!this.state.detailsVisible) {
+      return null;
+    }
+    if (this.state.attributesFetching) {
+      return (
+        <div>
+          <i className="fa fa-times" onClick={() => this.closeDetails()} />
+          <div>Hämtar attribut…</div>
+        </div>
+      );
+    }
+    var attributes = this.state.attributesCache[this.state.attributesLayerName];
+    if (!Array.isArray(attributes)) {
       return (
         <div>
           <i className="fa fa-times" onClick={() => this.closeDetails()} />
@@ -607,10 +922,10 @@ class Search extends Component {
         </div>
       );
     }
-    var rows = this.state.layerProperties.map((property, i) => (
+    var rows = attributes.map((property, i) => (
       <tr key={i}>
         <td>{property.name}</td>
-        <td>{property.localType}</td>
+        <td>{property.type}</td>
       </tr>
     ));
     return (
@@ -635,7 +950,8 @@ class Search extends Component {
     if (this.state && this.state.capabilities) {
       return this.state.capabilities.map((layer, i) => {
         var classNames =
-          this.state.layerPropertiesName === layer.name
+          this.state.detailsVisible &&
+          this.state.attributesLayerName === layer.name
             ? "fa fa-info-circle active"
             : "fa fa-info-circle";
         return (
@@ -833,6 +1149,27 @@ class Search extends Component {
               </div>
               <div>
                 <label>
+                  Attribut{" "}
+                  <abbr title="Attributen hämtas automatiskt från tjänstens WFS DescribeFeatureType när ett lager väljs. De kan sedan väljas i listorna nedan och infogas som platshållare i Inforutan.">
+                    (?)
+                  </abbr>
+                </label>
+                <span
+                  className="btn btn-default"
+                  onClick={() =>
+                    this.fetchAttributes(this.state.addedLayers[0], {
+                      force: true,
+                    })
+                  }
+                >
+                  Hämta attribut
+                </span>
+                <span style={{ marginLeft: "8px" }}>
+                  {this.renderAttributeStatus()}
+                </span>
+              </div>
+              <div>
+                <label>
                   Visningsnamn*{" "}
                   <abbr title="Visas för användaren i bland annat sökresultatlistan som namnet på datamängden man söker i.">
                     (?)
@@ -877,10 +1214,18 @@ class Search extends Component {
                     (?)
                   </abbr>
                 </label>
-                <textarea
-                  ref="input_infobox"
-                  value={this.state.infobox}
-                  onChange={(e) => this.setState({ infobox: e.target.value })}
+                <InfoclickEditor
+                  key={this.state.id || "new"}
+                  initialValue={this.state.infobox}
+                  onChange={(html) => this.setState({ infobox: html })}
+                  availableAttributes={this.getNonGeometryAttributes()}
+                  fetchingAttributes={this.state.attributesFetching}
+                  fetchError={this.state.attributesError}
+                  onFetchAttributes={() =>
+                    this.fetchAttributes(this.state.addedLayers[0], {
+                      force: true,
+                    })
+                  }
                 />
               </div>
               <div>
@@ -914,6 +1259,7 @@ class Search extends Component {
                   value={this.state.searchFields}
                   className={this.getValidationClass("searchFields")}
                 />
+                {this.renderAttributePicker("searchFields")}
               </div>
               <div>
                 <label>
@@ -936,6 +1282,7 @@ class Search extends Component {
                   value={this.state.displayFields}
                   className={this.getValidationClass("displayFields")}
                 />
+                {this.renderAttributePicker("displayFields")}
               </div>
               <div>
                 <label>
@@ -958,6 +1305,7 @@ class Search extends Component {
                   value={this.state.secondaryLabelFields}
                   className={this.getValidationClass("secondaryLabelFields")}
                 />
+                {this.renderAttributePicker("secondaryLabelFields")}
               </div>
               <div>
                 <label>
@@ -980,6 +1328,7 @@ class Search extends Component {
                   value={this.state.shortDisplayFields}
                   className={this.getValidationClass("shortDisplayFields")}
                 />
+                {this.renderAttributePicker("shortDisplayFields")}
               </div>
               <div>
                 <label>Geometrifält</label>
@@ -997,6 +1346,7 @@ class Search extends Component {
                   value={this.state.geometryField}
                   className={this.getValidationClass("geometryField")}
                 />
+                {this.renderGeometryPicker()}
               </div>
             </fieldset>
             {this.state.mode === "edit" ? (
