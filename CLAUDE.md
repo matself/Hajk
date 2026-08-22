@@ -379,6 +379,20 @@ explaining *why*, matching the existing style.
 
 ## 9. Conventions for changes
 
+**Branches**
+
+Do not create a branch unless the user has agreed to it. Work on the branch that is
+already checked out and ask before branching, even when the change would obviously
+suit one — a branch the user did not ask for is theirs to clean up later.
+
+When a branch *is* agreed, it carries the build setup forward untouched: `package.json`
+and `package-lock.json` in all three apps, `scripts/`, `Dockerfile`, `Docker/`,
+`netlify.toml` and `.github/` must be byte-identical to the base branch unless changing
+them is the task. Note that running `npm install` rewrites `package-lock.json` as a side
+effect (npm 10 renormalizes lockfiles written by older npm versions) — check
+`git status` after installing to build or lint, and revert the lockfile before
+committing.
+
 **Code**
 
 - MUI components and Material Design for all new UI, in both Client (v9) and Admin (v4).
