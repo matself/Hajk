@@ -12,7 +12,9 @@ Vilken WMS-serverimplementation tjänsten kör: `geoserver`, `mapserver`, `qgis`
 **Url\***
 Tjänstens WMS-endpoint. Klicka **Ladda** för att hämta `GetCapabilities` och fylla i lagerlistan nedan.
 
-Misslyckas hämtningen visas tjänstens eget felmeddelande när den lämnat något — t.ex. "Tjänsten svarade med ett felmeddelande: …" när servern svarar med en `ServiceExceptionReport`, eller "Tjänsten kräver inloggning (HTTP 401)" när den vill ha användarnamn och lösenord. Först när servern inte svarar alls visas det gamla CORS-meddelandet. Tidigare tolkades ett felsvar som ett tomt capabilities-dokument, vilket gav en tom lagerlista utan förklaring.
+Misslyckas hämtningen visas tjänstens eget felmeddelande när den lämnat något — t.ex. "Tjänsten svarade med ett felmeddelande: …" när servern svarar med en `ServiceExceptionReport`. Tidigare tolkades ett felsvar som ett tomt capabilities-dokument, vilket gav en tom lagerlista utan förklaring.
+
+Statuskoder ("Tjänsten kräver inloggning (HTTP 401)") kan bara visas när webbläsaren får läsa svaret, alltså när tjänsten skickar CORS-huvuden, eller när hämtningen går via backend därför att användarnamn fyllts i. Lantmäteriets öppna endpoints svarar t.ex. 401 helt utan CORS-huvud, och då ser Hajk ingen statuskod alls — meddelandet om CORS är i det läget korrekt, och rätt åtgärd är att fylla i användarnamn och lösenord. Notera också att en tjänst måste skicka **ett** `Access-Control-Allow-Origin`-huvud: skickar den två (t.ex. både origin och `*`) blockerar webbläsaren svaret precis som om huvudet saknats.
 
 Lagerlistan hämtas i fyra WMS-versioner parallellt (1.3.0, 1.1.1, 1.1.0 och 1.0.0) och dubbletter sorteras bort. Om tjänsten svarar på några av dem men inte alla används de som lyckades — hela hämtningen avbryts bara om samtliga misslyckas.
 

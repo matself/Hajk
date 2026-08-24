@@ -9,7 +9,9 @@ Fält märkta med `*` i UI:t är obligatoriska (valideras via `validateField`).
 **CapabilitiesUrl\***
 URL till WMTS-tjänstens `GetCapabilities`-dokument. Klicka **Hämta** för att läsa in tjänstens innehåll (lagerlista, matrisuppsättningar m.m.) — detta måste göras innan övriga fält i formuläret kan fyllas i automatiskt.
 
-Misslyckas hämtningen visas tjänstens eget felmeddelande när den lämnat något — t.ex. "Tjänsten svarade med ett felmeddelande: …" när servern svarar med en `ExceptionReport`, eller "Tjänsten kräver inloggning (HTTP 401)" när den vill ha användarnamn och lösenord. Först när servern inte svarar alls visas det gamla CORS-meddelandet.
+Misslyckas hämtningen visas tjänstens eget felmeddelande när den lämnat något — t.ex. "Tjänsten svarade med ett felmeddelande: …" när servern svarar med en `ExceptionReport`, eller "Svaret är inget WMTS-capabilities-dokument (rotelementet är <WMS_Capabilities>)" om en WMS-URL klistrats in i WMTS-formuläret.
+
+Statuskoder ("Tjänsten kräver inloggning (HTTP 401)") kan bara visas när webbläsaren får läsa svaret, alltså när tjänsten skickar CORS-huvuden, eller när hämtningen går via backend därför att användarnamn fyllts i — se [admin-wms-layer-form.md](admin-wms-layer-form.md) för samma resonemang. Lantmäteriets öppna WMTS svarar 401 utan CORS-huvud, och då visas CORS-meddelandet, vilket i det läget är korrekt.
 
 **Autentisering (Basic) — Användarnamn / Lösenord**
 Om tjänsten kräver Basic-autentisering, fyll i dessa **innan** du klickar Hämta. Hajk hämtar capabilities server-side med uppgifterna och lagrar dem i `layers.json`, så att backend kan proxya anrop till tjänsten med samma inloggning. Uppgifterna skickas aldrig till webbläsaren/klienten.
