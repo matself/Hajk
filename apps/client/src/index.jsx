@@ -141,8 +141,8 @@ function diagnoseMapserviceBase(mapserviceBase) {
  * "server is unreachable" from "server answered with an HTML login page", and
  * that is precisely the distinction that makes the error page useful.
  *
- * 403 and 404 are passed back to the caller rather than thrown, since only the
- * caller knows whether they are fatal or worth a retry against another map.
+ * 403, 404 and 422 are passed back to the caller rather than thrown, since only
+ * the caller knows whether they are fatal or worth a retry against another map.
  */
 const fetchJson = async (url, description) => {
   let response;
@@ -158,8 +158,16 @@ const fetchJson = async (url, description) => {
     });
   }
 
-  if (response.status === 403 || response.status === 404) {
-    return { status: response.status };
+  if ([403, 404, 422].includes(response.status)) {
+    // A 422 means the backend read the file and refused it. Its message names
+    // the actual defect, which beats anything we could infer from out here, so
+    // carry it along for the technical details.
+    const detail =
+      response.status === 422
+        ? await response.text().catch(() => undefined)
+        : undefined;
+
+    return { status: response.status, detail };
   }
 
   if (!response.ok) {
@@ -254,30 +262,15 @@ try {
     const requestedUrl = `${configUrl}/${activeMap}`;
     startupContext.url = requestedUrl;
 
-    try {
-      // Try to fetch user-specified config. Return it if OK.
-      return await fetchJson(requestedUrl, `the map config service`);
-    } catch (error) {
-      // A definitive answer from a working backend must not be papered over by
-      // silently loading some other map. Only retry when the service itself
-      // failed us, and only when there is another map left to try.
-      if (
-        !(error instanceof ServiceUnavailableError) ||
-        activeMap === appConfig.defaultMap
-      ) {
-        throw error;
-      }
-
-      // If the previous attempt fails reset "activeMap" to hard-coded value…
-      activeMap = appConfig.defaultMap;
-      startupContext.fallbackUrl = `${configUrl}/${activeMap}`;
-
-      // …and try to fetch again.
-      return await fetchJson(
-        startupContext.fallbackUrl,
-        `the map config service`
-      );
-    }
+    // Whatever the config service answers about the requested map is the
+    // answer. Hajk used to retry against appConfig.defaultMap here, which
+    // meant a broken map quietly opened a different one instead - the user got
+    // a working map that simply wasn't the one they asked for, with nothing
+    // said about it. There is no failure left that the retry could rescue
+    // either: a 404 is already fatal a few lines down, a 5xx is a definitive
+    // answer about this particular map, and if the service is unreachable then
+    // asking it for a second map name cannot help.
+    return await fetchJson(requestedUrl, `the map config service`);
   };
 
   // customTheme.json is optional cosmetics. A missing or broken file must never
@@ -310,6 +303,17 @@ try {
   } else if (mapConfigResult.status === 404) {
     throw new NotFoundError("Map Config Not Found", {
       details: { ...startupContext, status: 404 },
+    });
+  } else if (mapConfigResult.status === 422) {
+    // The backend found the file, read it, and rejected it: it is not a map
+    // config. Nothing about that is transient, so there is nothing to retry.
+    throw new MalformedConfigError("Map config file is not a map config", {
+      details: {
+        ...startupContext,
+        status: 422,
+        reason: "invalid-map-file",
+        serverMessage: mapConfigResult.detail,
+      },
     });
   }
 
@@ -369,7 +373,13 @@ try {
   const details = { ...startupContext, ...(error.details || {}) };
 
   // The single most common misconfiguration, named outright when we can spot it.
-  const mapserviceBaseHint = diagnoseMapserviceBase(appConfig?.mapserviceBase);
+  // A 403, 404 or 422 is Hajk's own backend answering, which proves that
+  // mapserviceBase points where it should - offering the hint there would send
+  // the reader off after a setting that is demonstrably fine.
+  const backendAnswered = [403, 404, 422].includes(details.status);
+  const mapserviceBaseHint = backendAnswered
+    ? null
+    : diagnoseMapserviceBase(appConfig?.mapserviceBase);
 
   // The path Hajk itself is served from, with query string and hash stripped.
   // Used instead of a hard-coded "/" so the buttons keep working when Hajk is
@@ -424,6 +434,27 @@ try {
         ? `Ingen kontakt med kartservern på ${details.url}. ${mapserviceBaseHint || "Kontrollera att backend är igång och att inställningen mapserviceBase i appConfig.json pekar rätt. Kartan kan inte visas förrän servern svarar igen."}`
         : `Kartservern svarade med felkod ${details.status}${details.statusText ? ` (${details.statusText})` : ""}. Det är ett fel på serversidan. Kontakta systemansvarig och uppge den tekniska informationen nedan.`);
     actions.push(retryAction);
+  } else if (
+    error instanceof MalformedConfigError &&
+    details.reason === "invalid-map-file"
+  ) {
+    loadErrorTitle =
+      appConfig?.loadErrorInvalidMapFileTitle ||
+      "Den angivna filen är ingen korrekt kartfil";
+    loadErrorMessage =
+      appConfig?.loadErrorInvalidMapFileMessage ||
+      `Servern hittade "${details.requestedMap}.json" men avvisade den. Filen är ingen kartkonfiguration. Kontrollera filen i App_Data-katalogen. Se ytterligare tekniska information.`;
+    // Reloading cannot fix a bad file, so don't offer it. If the name came from
+    // the address bar, the default map is a way out that actually leads
+    // somewhere.
+    if (details.mapCameFromUrlParam) {
+      actions.push({
+        text:
+          appConfig?.loadErrorDefaultMapButtonText || "Öppna standardkartan",
+        href: appRoot,
+        variant: "contained",
+      });
+    }
   } else if (error instanceof MalformedConfigError) {
     loadErrorTitle =
       appConfig?.loadErrorMalformedConfigTitle ||
@@ -483,8 +514,8 @@ try {
         mapserviceBase: details.mapserviceBase,
         "Sidans adress": window.location.origin,
         "Trolig orsak": mapserviceBaseHint,
-        "Nytt försök mot": details.fallbackUrl,
         "Nycklar i svaret": details.receivedKeys,
+        "Serverns förklaring": details.serverMessage,
         Ursprungsfel: error.cause ? String(error.cause) : undefined,
         "Hajk-version": import.meta.env.VITE_APP_VERSION,
         Tidpunkt: new Date().toISOString(),

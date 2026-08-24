@@ -402,6 +402,9 @@ paths:
         200:
           description: Success
           content: {}
+        422:
+          description: The file exists but is not a valid map configuration
+          content: {}
     put:
       tags:
         - Admin - Maps and layers
@@ -453,6 +456,9 @@ paths:
       responses:
         200:
           description: Success
+          content: {}
+        422:
+          description: The file exists but is not a valid map configuration
           content: {}
   /mapconfig/export/{map}/{format}:
     get:

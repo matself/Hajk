@@ -13,12 +13,17 @@ export default function handleStandardResponse(res, data, successStatus = 200) {
   if (data.error) {
     // Check if it's AccessError. If so, send a 403 Forbidden.
     // If error.code is ENOENT, send a 404 Not Found.
+    // If it's MalformedConfigError, the file was found and read but isn't
+    // usable, which is a 422 Unprocessable Content - a distinct case from both
+    // "missing" and "the server broke", and one the Client reports differently.
     // Otherwise, send a generic status 500.
     let status = 500;
     if (data.error.code === "ENOENT") {
       status = 404;
     } else if (data.error.name === "AccessError") {
       status = 403;
+    } else if (data.error.name === "MalformedConfigError") {
+      status = 422;
     }
     res.status(status).send(data.error.toString());
   }

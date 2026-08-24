@@ -7,6 +7,7 @@ import ad from "./activedirectory.service.js";
 import asyncFilter from "../utils/asyncFilter.js";
 import getAnalyticsOptionsFromDotEnv from "../utils/getAnalyticsOptionsFromDotEnv.js";
 import { AccessError } from "../utils/AccessError.js";
+import { MalformedConfigError } from "../utils/MalformedConfigError.js";
 import { backupBeforeWrite } from "../utils/backupConfig.js";
 
 const logger = log4js.getLogger("service.config.v2");
@@ -49,6 +50,60 @@ class ConfigServiceV2 {
   }
 
   /**
+   * @summary Ensure that a parsed App_Data file really is a map configuration.
+   *
+   * @description App_Data contains nothing but JSON files, and nothing in a
+   * file name distinguishes a map config from a layers store, a saved API
+   * response, or an unrelated document. Without this check the first code to
+   * touch the object is #removeUnusedLayersFromStore, which fails on
+   * `mapConfig.tools.find(...)` with a TypeError that says nothing about the
+   * real problem and reaches the user as a generic 500.
+   *
+   * Note that this deliberately checks only what the rest of the pipeline
+   * actually depends on. It is a sanity check against the wrong kind of file,
+   * not a schema validation of map configs.
+   *
+   * @param {string} map Name of the map configuration, used in error messages
+   * @param {*} json The parsed contents of App_Data/<map>.json
+   * @memberof ConfigServiceV2
+   */
+  #validateMapConfigShape(map, json) {
+    const isPlainObject = (v) =>
+      typeof v === "object" && v !== null && !Array.isArray(v);
+
+    if (!isPlainObject(json)) {
+      throw new MalformedConfigError(
+        `"${map}.json" is not a map configuration: expected a JSON object, got ${
+          Array.isArray(json) ? "an array" : typeof json
+        }.`
+      );
+    }
+
+    // By far the most common mistake: saving the response of
+    // GET /config/<map> back into App_Data. It carries the real map config one
+    // level down, which makes it look convincing while being unreadable.
+    if (isPlainObject(json.mapConfig) && json.layersConfig !== undefined) {
+      throw new MalformedConfigError(
+        `"${map}.json" is not a map configuration: it looks like a saved response from the config service, with the map config nested under "mapConfig". A map configuration holds "map" and "tools" at its top level. Unwrap it, and merge the layers from "layersConfig" into layers.json.`
+      );
+    }
+
+    const missing = [];
+    if (!isPlainObject(json.map)) missing.push('"map"');
+    if (!Array.isArray(json.tools)) missing.push('"tools"');
+
+    if (missing.length > 0) {
+      throw new MalformedConfigError(
+        `"${map}.json" is not a map configuration: ${missing.join(" and ")} ${
+          missing.length === 1 ? "is" : "are"
+        } missing or of the wrong type. Top-level keys found: ${
+          Object.keys(json).join(", ") || "(none)"
+        }.`
+      );
+    }
+  }
+
+  /**
    * @summary Get contents of a map configuration as JSON object, if AD is active
    * a check will be made to see if specified user has access to the map.
    *
@@ -69,6 +124,10 @@ class ConfigServiceV2 {
       );
       const text = await fs.promises.readFile(pathToFile, "utf-8");
       const json = await JSON.parse(text);
+
+      // Refuse anything that isn't a map config before it reaches the code that
+      // takes for granted that it is.
+      this.#validateMapConfigShape(safeMap, json);
 
       // Ensure that we print the correct API version to output
       json.version = 2.1;
@@ -163,6 +222,12 @@ class ConfigServiceV2 {
         return washContent ? await this.washMapConfig(json, user) : json;
       }
     } catch (error) {
+      // A malformed file is an operator problem rather than a client problem,
+      // so make sure it shows up in the backend log too. Otherwise it is only
+      // ever visible to whoever happens to open the browser console.
+      if (error.name === "MalformedConfigError") {
+        logger.error("[getMapConfig] %s", error.message);
+      }
       return { error };
     }
   }
