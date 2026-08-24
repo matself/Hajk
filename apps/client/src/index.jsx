@@ -443,7 +443,7 @@ try {
       "Den angivna filen är ingen korrekt kartfil";
     loadErrorMessage =
       appConfig?.loadErrorInvalidMapFileMessage ||
-      `Servern hittade "${details.requestedMap}.json" men avvisade den. Filen är ingen kartkonfiguration. Kontrollera filen i App_Data-katalogen. Se ytterligare tekniska information.`;
+      `Servern hittade "${details.requestedMap}.json" men avvisade den. Filen är ingen kartkonfiguration. Kontrollera filen i App_Data-katalogen. Se ytterligare teknisk information nedan.`;
     // Reloading cannot fix a bad file, so don't offer it. If the name came from
     // the address bar, the default map is a way out that actually leads
     // somewhere.
