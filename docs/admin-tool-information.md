@@ -4,7 +4,7 @@ Konfigurationsformulär: `apps/admin/src/views/tools/information.jsx`, codename 
 
 Visar en enkel informationsruta med en stängningsknapp, öppningsbar via en informationsikon bland kartkontrollerna. Till skillnad från de flesta verktyg saknar detta helt Fönsterinställningar (target/position/bredd/höjd) — det är alltid en fast dialogruta, ingen drawer/widget.
 
-- Aktiverad, Sorteringsordning
+- Aktiverad, Sorteringsordning — observera att **Sorteringsordning saknar verkan** för det här verktyget: det ritas som en fast kontrollknapp i klientens `App.jsx` och passerar aldrig insticksmotorn som sorterar på `index`. Se [admin-tooloptions.md](admin-tooloptions.md).
 - **Visa vid start endast en gång** — om ikryssad visas rutan automatiskt bara vid användarens första besök (styr `showInfoOnce`), annars visas den vid varje sidladdning om "Synlig vid start" (nedan) är satt.
 - **Synlig vid start** *(motsvarar `visibleAtStart` i konfigurationen — finns inte som synligt fält i formuläret, se anmärkning nedan)*
 - **Text vid mouse-over på informations-knappen** — tooltip på ikonen (`title`).

@@ -23,6 +23,18 @@ const examples = [
     name: "OpenStreetMap",
     uri: "https://www.openstreetmap.org/#map=19/{y|EPSG:4326|4}/{x|EPSG:4326|4}",
   },
+  {
+    name: "Lantmäteriet Min karta",
+    uri: "https://minkarta.lantmateriet.se/plats/3006/v2.0/?e={x|EPSG:3006|0}&n={y|EPSG:3006|0}&z=10",
+  },
+  {
+    name: "Hitta.se",
+    uri: "https://www.hitta.se/kartan!~{y|EPSG:4326|5},{x|EPSG:4326|5},15z/",
+  },
+  {
+    name: "Eniro kartor",
+    uri: "https://www.eniro.se/kartor?c={y|EPSG:4326|5},{x|EPSG:4326|5}&z=15",
+  },
 ];
 
 const ColorButtonRed = withStyles((theme) => ({
@@ -414,11 +426,22 @@ class ToolOptions extends Component {
               type="number"
               min="0"
               className="control-fixed-width"
+              disabled
               onChange={(e) => {
                 this.handleInputChange(e);
               }}
               value={this.state.index}
             />
+            <span
+              style={{
+                marginLeft: "8px",
+                fontSize: "0.8rem",
+                color: "#767676",
+              }}
+            >
+              Saknar verkan för det här verktyget — knappen har en fast
+              placering i kartans knapprad.
+            </span>
           </div>
 
           <div className="separator">Övriga inställningar</div>
@@ -469,13 +492,18 @@ class ToolOptions extends Component {
 
                 (this.state.showExamples === true ? 
                   <div style={{display: "flex", backgroundColor: "#f7f7f7", borderRadius: 8, padding: "10px", marginTop: "4px", fontSize: "0.8rem"}}>
-                    <div style={{display: "flex", flex: "0 1 60%"}}>
+                    <div style={{display: "flex", flexFlow: "column", flex: "0 1 60%"}}>
+                      <div style={{marginBottom: "8px"}}>
+                        Skriv en vanlig URL och sätt in platshållare där koordinaterna ska stå. De ersätts med kartans mittpunkt när användaren klickar på länken.
+                      </div>
                       <code style={{fontSize: "0.8rem"}}>
                         {"{x|EPSG:4326|4}"}<br/>
-                        <br/>                        
-                        x eller y = koordinat från kartan<br/>
-                        EPSG:4326 = konvertera till valfri projektion<br/>
-                        4 = antal decimaler (optional, default = 4)<br/>
+                        <br/>
+                        x = östlig koordinat, y = nordlig<br/>
+                        EPSG:4326 = projektion att räkna om till, t.ex. EPSG:3006 för SWEREF 99 TM<br/>
+                        4 = antal decimaler (valfritt, standard 4)<br/>
+                        <br/>
+                        {"{zoom}"} = kartans zoomnivå<br/>
                       </code>
                     </div>
                     <div style={{display: "flex", flexFlow: "column", alignItems: "flex-end", flex: "0 1 40%"}}>

@@ -17,7 +17,7 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 | anchor | Dela | `tools/anchor.jsx` |  |
 | documenthandler | Dokumenthanterare | `tools/MenuEditor/menuEditor.jsx` |  |
 | dummy | Dummy (testplugin) | `tools/dummy.jsx` | ja |
-| externalLinks | Externa länkar | `tools/externalLink.jsx` |  |
+| externalLinks | [Externa kartlänkar](admin-tool-externallinks.md) | `tools/externalLink.jsx` |  |
 | fmeserver | FME-server | `tools/fmeServer.jsx` | ja |
 | streetview | Google Street View | `tools/streetview.jsx` |  |
 | infoclick | Infoklick | `tools/infoclick.jsx` |  |
@@ -53,7 +53,11 @@ Varje verktygs formulär är en fristående komponent (kopierad från en gemensa
 
 - **Spara** — skriver hela kartans `toolConfig` till backend, inte bara det här verktyget.
 - **Aktiverad** — om verktyget överhuvudtaget ska finnas i kartans `tools`-array. Avmarkerad och sparad tar bort verktyget helt från kartan (efter bekräftelse om det redan fanns konfigurerat) — inte bara dölja det.
-- **Sorteringsordning** — verktygets `index`, samma tal som visas inom parentes i listan till vänster. Avgör ordningen verktygen visas i (t.ex. i sidopanelen), inte bara i listan här.
+- **Sorteringsordning** — verktygets `index`, samma tal som visas inom parentes i listan till vänster. Avgör ordningen verktygen visas i, inte bara i listan här. Talet är globalt men verkar per behållare: klienten sorterar *alla* verktyg i en enda lista efter `index` och monterar dem i den ordningen, varefter varje verktyg lägger sin knapp i sin egen behållare (Drawer, widgetkolumn eller kontrollknappar). Bara den inbördes ordningen inom samma behållare blir därför synlig — absoluta värden spelar ingen roll, och två verktyg i olika behållare kan ha samma tal utan att det märks. Undvik däremot samma tal för två verktyg i *samma* behållare: sorteringen faller då tillbaka på den ordning insticken råkade laddas i, som varken är stabil eller inställbar. Ett praktiskt knep är att ge varje behållare ett eget nummerintervall.
+
+  Tre undantag där fältet inte gör någonting alls: `preset` (Genvägar), `externalLinks` (Externa kartlänkar) och `information` (Om kartan) ritas som fasta kontrollknappar direkt i klientens `App.jsx` och passerar aldrig insticksmotorn. De var tidigare plugins och behöll sin konfiguration när de gjordes om till inbyggda kontroller (se kommentaren i `App.jsx`), så `index` läses och sparas men påverkar ingenting. Notera också att de knappar som öppnar Drawer (Kartlager, Kartverktyg) sorteras efter en helt egen `order`-egenskap i `DrawerToggleButtons.jsx` som inte har med verktygens `index` att göra.
+
+  Även för verktyg där `index` fungerar är räckvidden begränsad i kontrollknappskolumnen: insticksknapparna hamnar allihop i en och samma behållare (`#plugin-control-buttons`) på en fast plats mitt i kolumnen, med inbyggda kontroller både ovanför och nedanför. Du kan alltså ordna insticksknapparna sinsemellan, men inte flytta dem förbi de fasta knapparna.
 
 **Fönsterinställningar (mycket vanligt, men inte universellt):**
 
@@ -93,7 +97,8 @@ Färdiga hittills:
 - [Sök (search)](admin-tool-search.md)
 - [Google Street View (streetview)](admin-tool-streetview.md)
 - [Mapillary gatuvy (mapillary)](admin-tool-mapillary.md)
+- [Externa kartlänkar (externalLinks)](admin-tool-externallinks.md)
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-08-20. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*
+*Detta dokument beskriver läget i koden per 2026-08-24. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras.*

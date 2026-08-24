@@ -182,7 +182,7 @@ class ToolOptions extends Component {
       anchor: "Dela",
       documenthandler: "Dokumenthanterare",
       dummy: "Dummy (testplugin)",
-      externalLinks: "Externa länkar",
+      externalLinks: "Externa kartlänkar",
       fmeserver: "FME-server",
       streetview: "Google Street View",
       infoclick: "Infoklick",

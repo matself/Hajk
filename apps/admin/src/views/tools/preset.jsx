@@ -386,11 +386,22 @@ class ToolOptions extends Component {
               type="number"
               min="0"
               className="control-fixed-width"
+              disabled
               onChange={(e) => {
                 this.handleInputChange(e);
               }}
               value={this.state.index}
             />
+            <span
+              style={{
+                marginLeft: "8px",
+                fontSize: "0.8rem",
+                color: "#767676",
+              }}
+            >
+              Saknar verkan för det här verktyget — knappen har en fast
+              placering i kartans knapprad.
+            </span>
           </div>
           {/*           <div>
             <label htmlFor="target">Verktygsplacering</label>
