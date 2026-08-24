@@ -12,6 +12,10 @@ Vilken WMS-serverimplementation tjänsten kör: `geoserver`, `mapserver`, `qgis`
 **Url\***
 Tjänstens WMS-endpoint. Klicka **Ladda** för att hämta `GetCapabilities` och fylla i lagerlistan nedan.
 
+Misslyckas hämtningen visas tjänstens eget felmeddelande när den lämnat något — t.ex. "Tjänsten svarade med ett felmeddelande: …" när servern svarar med en `ServiceExceptionReport`, eller "Tjänsten kräver inloggning (HTTP 401)" när den vill ha användarnamn och lösenord. Först när servern inte svarar alls visas det gamla CORS-meddelandet. Tidigare tolkades ett felsvar som ett tomt capabilities-dokument, vilket gav en tom lagerlista utan förklaring.
+
+Lagerlistan hämtas i fyra WMS-versioner parallellt (1.3.0, 1.1.1, 1.1.0 och 1.0.0) och dubbletter sorteras bort. Om tjänsten svarar på några av dem men inte alla används de som lyckades — hela hämtningen avbryts bara om samtliga misslyckas.
+
 **Autentisering (Basic) — Användarnamn / Lösenord**
 Om tjänsten kräver Basic-autentisering, fyll i dessa **innan** du klickar Ladda. Hajk hämtar capabilities server-side med uppgifterna och lagrar dem i `layers.json`, så att backend proxyar anrop till tjänsten med samma inloggning. Uppgifterna skickas aldrig till webbläsaren/klienten.
 

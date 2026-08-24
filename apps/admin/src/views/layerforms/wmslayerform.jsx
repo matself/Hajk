@@ -1410,9 +1410,13 @@ class WMSLayerForm extends Component {
           capabilitiesList: [],
         });
         if (this.props.parent) {
+          // The parser tells us what the service actually answered - an
+          // exception report, an HTML page, a document that is not capabilities
+          // at all - which beats blaming CORS for every failure.
           this.props.parent.setState({
             alert: true,
             alertMessage:
+              (err && err.message) ||
               "Servern svarar inte eller blockeras av CORS.\nFörsök med en annan URL.",
           });
         }

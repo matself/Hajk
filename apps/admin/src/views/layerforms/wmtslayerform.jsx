@@ -230,9 +230,13 @@ class WMTSLayerForm extends Component {
           wmtsTileMatrixSets: [],
         });
         if (this.props.parent) {
+          // Show what the service actually answered when it said anything - an
+          // exception report or an authentication challenge is far more useful
+          // than a blanket CORS message.
           this.props.parent.setState({
             alert: true,
             alertMessage:
+              (err && err.message) ||
               "Servern svarar inte eller blockeras av CORS.\nFörsök med en annan URL.",
           });
         }
