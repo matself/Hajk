@@ -126,4 +126,4 @@ Kryssrutan **Tidslinjedatum** aktiverar fälten **Tidslinje start** och **Tidsli
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-08-24. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*

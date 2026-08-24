@@ -43,6 +43,12 @@ Samma knapp semantiskt olika beroende på läge: **Lägg till** (grönt) i till�
 **Avbryt**
 Visas bara i redigeringsläge. Återställer hela vyn till tillägg-läge utan att spara ändringar.
 
+## Filtrera och sortera "Tillgängliga lager"
+
+WMS-formuläret har ett filterfält ovanför lagerlistan och sorterbara kolumnrubriker (Titel, Namn) — nödvändigt eftersom en GeoServer ofta publicerar flera hundra lager i samma capabilities-svar, och listan annars visar dem i exakt den ordning tjänsten levererar dem. Filtret påverkar bara vad som visas: redan ikryssade lager förblir valda även när de filtreras bort. Se [admin-wms-layer-form.md](admin-wms-layer-form.md) för detaljer.
+
+Övriga formulär (WMTS, ArcGIS, Vektor) saknar detta med flit — sådana tjänster innehåller sällan så många lager att listan blir oöverskådlig.
+
 ## Beskriv lager (attributtabell)
 
 Både Vektor/WFS- och ArcGIS-formulären har en egen `describeLayer`-funktion (info-ikonen bredvid varje rad i "Tillgängliga lager") som hämtar attributnamn och -typer för ett valt lager — via WFS `DescribeFeatureType` för Vektor, via tjänstens egen beskrivnings-API för ArcGIS — och visar dem i högerspalten. Praktiskt för att hitta rätt attributnamn till fält som Sökfält, Geometrifält eller Visningsfält (Vektor), eller bara för att skriva [`{attributnamn}`-platshållare](admin-infoklick-mallformat.md) i Inforuta för hand (ArcGIS, som saknar "Hämta attribut" i själva Inforuta-fältet, se [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md)) — utan att behöva slå upp det i en extern GIS-klient.
