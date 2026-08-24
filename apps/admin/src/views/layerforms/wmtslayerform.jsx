@@ -11,16 +11,96 @@ function textValue(val) {
   return String(val);
 }
 
-// Normalize CRS identifiers to "EPSG:CODE" format for OpenLayers.
-// Handles OGC URN, OGC HTTP URI, and pass-through for already correct values.
+// Normalize CRS identifiers to "EPSG:CODE" format for OpenLayers, which only
+// resolves a projection by its registered code. The URN form has an optional
+// version field, and services use every variant of it: GeoServer publishes
+// "urn:ogc:def:crs:EPSG::3857", Lantmäteriet "urn:ogc:def:crs:EPSG:6.3:3006"
+// and swisstopo "urn:ogc:def:crs:EPSG:2056". Only the first of those used to be
+// recognized, so the other two were stored verbatim as the layer's projection -
+// a string no projection is registered under, which happens to work only as
+// long as the WMTS matrix set matches the map's own projection.
+//
+// Authorities other than EPSG are passed through untouched. OpenLayers resolves
+// the OGC CRS84 URNs itself, and rewriting them to "OGC:CRS84" would produce a
+// code nothing knows.
 function crsToEpsg(crs) {
   if (!crs) return "";
-  var s = String(crs);
-  var urn = s.match(/urn:ogc:def:crs:(\w+)::(\w+)/);
-  if (urn) return urn[1] + ":" + urn[2];
-  var uri = s.match(/\/def\/crs\/(\w+)\/\w+\/(\w+)/);
-  if (uri) return uri[1] + ":" + uri[2];
+  var s = String(crs).trim();
+
+  var urn = s.match(/^urn:(?:x-)?ogc:def:crs:([^:]+):(?:[^:]*:)?([^:]+)$/i);
+  if (urn) {
+    return urn[1].toUpperCase() === "EPSG" ? "EPSG:" + urn[2] : s;
+  }
+
+  var uri = s.match(/\/def\/crs\/([^/]+)\/[^/]*\/([^/]+)$/i);
+  if (uri) {
+    return uri[1].toUpperCase() === "EPSG" ? "EPSG:" + uri[2] : s;
+  }
+
   return s;
+}
+
+// WMTS reports TopLeftCorner in the axis order of its own CRS, and nothing in
+// the two numbers says which one comes first - only the CRS definition does.
+// This used to be guessed from the sign, on the assumption that a positive
+// first value meant northing first. That is right for SWEREF 99 (Lantmäteriet
+// publishes "8500000 -1200000") and for Web Mercator, whose corner starts
+// negative, and wrong for any easting-first CRS with positive eastings:
+// swisstopo's EPSG:2056 publishes "2420000.0 1350000.0", easting first, and the
+// guess swapped it into a tile grid origin somewhere else entirely.
+//
+// EPSG axis order cannot be derived offline - proj4 definitions do not carry it
+// and the projection is not registered in Admin - so the coordinate systems Hajk
+// supports are listed explicitly, in the same spirit as supportedProjections in
+// the WMS form. Add a code here when a service needs one that is missing.
+const NORTHING_FIRST_CRS = [
+  "EPSG:3006",
+  "EPSG:3007",
+  "EPSG:3008",
+  "EPSG:3009",
+  "EPSG:3010",
+  "EPSG:3011",
+  "EPSG:3012",
+  "EPSG:3013",
+  "EPSG:3014",
+  "EPSG:3015",
+  "EPSG:3016",
+  "EPSG:3017",
+  "EPSG:3018",
+  "EPSG:3021",
+  "EPSG:3035",
+  "EPSG:4258",
+  "EPSG:4326",
+  "EPSG:5847",
+];
+
+const EASTING_FIRST_CRS = [
+  "CRS:84",
+  "EPSG:2056",
+  "EPSG:3857",
+  "EPSG:25832",
+  "EPSG:25833",
+  "EPSG:25834",
+  "EPSG:25835",
+  "EPSG:900913",
+];
+
+/**
+ * Decides whether TopLeftCorner is written northing first for a given CRS.
+ * Falls back to the old sign heuristic for coordinate systems that are in
+ * neither list, so an unlisted CRS is no worse off than it was before.
+ */
+function isNorthingFirst(projection, firstValue) {
+  var code = String(projection || "").toUpperCase();
+
+  if (NORTHING_FIRST_CRS.indexOf(code) !== -1) {
+    return true;
+  }
+  if (EASTING_FIRST_CRS.indexOf(code) !== -1) {
+    return false;
+  }
+
+  return !Number.isNaN(firstValue) && firstValue > 0;
 }
 
 const defaultState = {
@@ -730,8 +810,9 @@ class WMTSLayerForm extends Component {
                     matrices = [matrices];
                   }
                   if (matrices.length > 0) {
-                    // WMTS may report TopLeftCorner in CRS axis order.
-                    // Swap only when the first value is positive.
+                    // TopLeftCorner follows the CRS's axis order, so ask the
+                    // CRS rather than the numbers - see isNorthingFirst above.
+                    // Hajk stores origins easting first.
                     stateUpdate.origins = matrices
                       .map((m) => {
                         var parts = textValue(m.TopLeftCorner)
@@ -740,8 +821,7 @@ class WMTSLayerForm extends Component {
                         if (parts.length !== 2) {
                           return textValue(m.TopLeftCorner).trim();
                         }
-                        var firstValue = Number(parts[0]);
-                        return !Number.isNaN(firstValue) && firstValue > 0
+                        return isNorthingFirst(projection, Number(parts[0]))
                           ? parts[1] + " " + parts[0]
                           : parts[0] + " " + parts[1];
                       })

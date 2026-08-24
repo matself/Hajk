@@ -49,10 +49,12 @@ MIME-typen för tile-bilderna, t.ex. `image/png` eller `image/jpeg`.
 Bas-URL eller URL-mall (för REST) som tiles hämtas ifrån.
 
 **Projektion (projection)\***
-Koordinatsystemet (EPSG-kod) som matrisuppsättningen är definierad i.
+Koordinatsystemet (EPSG-kod) som matrisuppsättningen är definierad i. Fylls i från matrisuppsättningens `SupportedCRS`, som tjänsterna anger som URN i flera varianter (`urn:ogc:def:crs:EPSG::3857`, Lantmäteriets `urn:ogc:def:crs:EPSG:6.3:3006`, swisstopos `urn:ogc:def:crs:EPSG:2056`) — samtliga översätts till `EPSG:kod`. URN:er från andra myndigheter än EPSG (t.ex. OGC:s CRS84) lämnas orörda eftersom OpenLayers tolkar dem själv.
+
+Lager som lades till innan detta kan ha hela URN:en sparad som projektion i `layers.json`. Det fungerar bara så länge matrisuppsättningen råkar ha samma koordinatsystem som kartan, eftersom ingen projektion är registrerad under det namnet. Åtgärda genom att hämta capabilities på nytt och välja matrisuppsättningen igen, eller genom att rätta värdet till `EPSG:kod`.
 
 **Startkoordinater (origins)\***
-Övre vänstra hörnets koordinater (`TopLeftCorner`) per matrisnivå, i samma ordning som Matrisnivåer nedan.
+Övre vänstra hörnets koordinater (`TopLeftCorner`) per matrisnivå, i samma ordning som Matrisnivåer nedan. Hajk lagrar dem med easting först, medan tjänsten anger dem i koordinatsystemets egen axelordning — SWEREF 99 och WGS 84 har northing (respektive latitud) först, medan t.ex. Web Mercator och schweiziska EPSG:2056 har easting först. Vilket som gäller avgörs av en lista över de koordinatsystem Hajk stöder (`NORTHING_FIRST_CRS`/`EASTING_FIRST_CRS` i `wmtslayerform.jsx`); för ett koordinatsystem som inte finns i listorna gissas ordningen på teckenet hos det första värdet, precis som tidigare. Ligger lagret uppenbart fel i kartan är det första stället att titta.
 
 **Upplösningar (resolutions)\***
 Upplösning (meter/pixel) per matrisnivå, kommaseparerad, i fallande ordning.
