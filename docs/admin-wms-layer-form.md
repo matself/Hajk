@@ -51,6 +51,12 @@ Visar en knapp i Klienten för att öppna lagrets attributtabell. Se [issue #595
 
 En tabell (Titel, Namn, Grupp, Infoklick) med samtliga lager från tjänstens capabilities-svar. Kryssa i de lager som ska läggas till kartan — de hamnar då i "Valda lager" nedan. Om listan är tom: klicka Ladda under Anslutning först.
 
+**Filtrera**
+Fältet ovanför tabellen filtrerar listan på titel eller namn, vilket behövs när en GeoServer publicerar hundratals lager. Räknaren bredvid visar hur många lager som matchar av det totala antalet. Filtret påverkar bara vad som visas — redan ikryssade lager förblir valda även om de filtreras bort, och syns kvar i "Valda lager". Ett sublager hittas även om dess grupplager inte matchar filtret.
+
+**Sortering**
+Klicka på kolumnrubriken Titel eller Namn för att sortera listan; ett nytt klick på samma rubrik vänder ordningen. Sorteringen sker inom varje nivå, så att ett grupplager behåller sina sublager direkt efter sig. Utan sortering visas lagren i den ordning tjänsten levererar dem.
+
 ## Hantera valda lager
 
 **Valda lager\***

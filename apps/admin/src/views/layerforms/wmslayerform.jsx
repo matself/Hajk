@@ -75,6 +75,9 @@ const defaultState = {
   timeSliderEnd: "",
   solpopup: solpop,
   capabilitiesList: [],
+  capabilitiesFilter: "",
+  capabilitiesSortBy: "", // "", "Title" or "Name". Empty means capabilities order.
+  capabilitiesSortDesc: false,
   version: WMS_VERSION_1_1_0,
   projection: "",
   infoFormat: "",
@@ -208,14 +211,22 @@ class WMSLayerForm extends Component {
   renderLayerList() {
     let layers = this.renderLayersFromCapabilites();
 
-    let tr =
-      layers === null ? (
+    let tr = null;
+    if (layers === null) {
+      tr = (
         <tr>
           <td colSpan="4">Klicka på Ladda-knappen för att se lagerlista</td>
         </tr>
-      ) : (
-        layers
       );
+    } else if (layers.length === 0) {
+      tr = (
+        <tr>
+          <td colSpan="4">Inga lager matchar filtret</td>
+        </tr>
+      );
+    } else {
+      tr = layers;
+    }
     return <tbody>{tr}</tbody>;
   }
 
@@ -976,6 +987,104 @@ class WMSLayerForm extends Component {
     );
   }
 
+  layerMatchesCapabilitiesFilter(layer) {
+    const filter = (this.state.capabilitiesFilter || "").trim().toLowerCase();
+    if (filter === "") return true;
+    return (
+      (layer.Title || "").toLowerCase().indexOf(filter) !== -1 ||
+      (layer.Name || "").toLowerCase().indexOf(filter) !== -1
+    );
+  }
+
+  /**
+   * Sorts layers on one level only, i.e. siblings among themselves. The list
+   * is rendered flat, so a group layer is only recognizable by being followed
+   * by its sublayers - sorting the flat result would break that grouping.
+   * Returns a copy: the capabilities document itself must stay untouched.
+   */
+  sortCapabilitiesLayers(layers) {
+    const property = this.state.capabilitiesSortBy;
+    if (!property) return layers;
+    return [...layers].sort((a, b) => {
+      const result = (a?.[property] || "")
+        .toString()
+        .localeCompare((b?.[property] || "").toString(), "sv", {
+          numeric: true,
+          sensitivity: "base",
+        });
+      return this.state.capabilitiesSortDesc ? -result : result;
+    });
+  }
+
+  toggleCapabilitiesSort(property) {
+    this.setState((state) => ({
+      capabilitiesSortBy: property,
+      capabilitiesSortDesc:
+        state.capabilitiesSortBy === property
+          ? !state.capabilitiesSortDesc
+          : false,
+    }));
+  }
+
+  renderCapabilitiesSortIcon(property) {
+    if (this.state.capabilitiesSortBy !== property) {
+      return <i className="fa fa-sort" />;
+    }
+    return (
+      <i
+        className={
+          this.state.capabilitiesSortDesc ? "fa fa-sort-desc" : "fa fa-sort-asc"
+        }
+      />
+    );
+  }
+
+  countCapabilitiesLayers() {
+    let total = 0;
+    let matching = 0;
+    const walk = (layer) => {
+      if (layer.Name) {
+        total++;
+        if (this.layerMatchesCapabilitiesFilter(layer)) matching++;
+      }
+      if (layer.Layer) {
+        const sublayers = Array.isArray(layer.Layer)
+          ? layer.Layer
+          : [layer.Layer];
+        sublayers.forEach(walk);
+      }
+    };
+
+    if (this.state.capabilities?.Capability?.Layer) {
+      const layersToProcess = this.state.capabilities.Capability.Layer
+        .Layer || [this.state.capabilities.Capability.Layer];
+      layersToProcess.forEach(walk);
+    }
+
+    return { total, matching };
+  }
+
+  renderCapabilitiesFilter() {
+    if (!this.state.capabilities) return null;
+    const { total, matching } = this.countCapabilitiesLayers();
+    return (
+      <div>
+        <input
+          type="text"
+          placeholder="filtrera på titel eller namn"
+          value={this.state.capabilitiesFilter}
+          onChange={(e) =>
+            this.setState({ capabilitiesFilter: e.target.value })
+          }
+        />
+        &nbsp;
+        <span>
+          Visar {matching} av {total} lager
+        </span>
+      </div>
+    );
+  }
+
   renderLayersFromCapabilites() {
     if (this.state && this.state.capabilities) {
       var layers = [];
@@ -998,6 +1107,16 @@ class WMSLayerForm extends Component {
 
         return "";
       };
+      // React keys must be stable between renders, otherwise every row is
+      // remounted on each keystroke in the filter field. Layer names are
+      // unique in practice, but the counter guards against duplicates.
+      const usedRowKeys = new Map();
+      const createRowKey = (name) => {
+        const count = (usedRowKeys.get(name) || 0) + 1;
+        usedRowKeys.set(name, count);
+        return "fromCapability_" + name + "_" + count;
+      };
+
       const append = (layer, parentGuid) => {
         const guid = this.createGuid();
 
@@ -1010,14 +1129,16 @@ class WMSLayerForm extends Component {
         let isGroupIcon = layer.Layer ? "fa fa-check" : "fa fa-remove";
 
         return (
-          <tr key={"fromCapability_" + guid}>
+          <tr key={createRowKey(layer.Name)}>
             <td className="wms-layer-name">
               <input
                 ref={layer.Name}
                 id={"layer" + guid}
                 type="checkbox"
                 data-type="wms-layer"
-                checked={this.state.addedLayers.find((l) => l === layer.Name)}
+                // Must be a boolean: find() returns undefined for unchecked
+                // rows, which makes React treat the input as uncontrolled.
+                checked={this.state.addedLayers.some((l) => l === layer.Name)}
                 onChange={(e) => {
                   this.appendLayer(e, layer.Name, opts);
                 }}
@@ -1053,7 +1174,10 @@ class WMSLayerForm extends Component {
         // Handle group type called "Containing category" in WMS specification.
         // Such group has no name attribute and can't be rendered on its own. If we
         // find one of these, don't add it to the list.
-        if (layer.Name) layers.push(append(layer, parentGuid));
+        // Layers filtered out are skipped here, but recursion continues
+        // below, so a matching sublayer is listed even when its parent is not.
+        if (layer.Name && this.layerMatchesCapabilitiesFilter(layer))
+          layers.push(append(layer, parentGuid));
         // Next, check if there are sublayers and repeat the procedure.
         if (layer.Layer) {
           // Ensure that we deal with an array, as e.g.
@@ -1063,7 +1187,7 @@ class WMSLayerForm extends Component {
             layer.Layer = [layer.Layer];
           }
           // Create a guid to indicate which element is the parent of current
-          layer.Layer.forEach((layer) => {
+          this.sortCapabilitiesLayers(layer.Layer).forEach((layer) => {
             const guid = this.createGuid();
             recursivePushLayer(layer, guid);
           });
@@ -1073,7 +1197,7 @@ class WMSLayerForm extends Component {
       if (this.state.capabilities?.Capability?.Layer) {
         const layersToProcess = this.state.capabilities.Capability.Layer
           .Layer || [this.state.capabilities.Capability.Layer];
-        layersToProcess.forEach((layer) => {
+        this.sortCapabilitiesLayers(layersToProcess).forEach((layer) => {
           recursivePushLayer(layer);
         });
       }
@@ -1337,8 +1461,13 @@ class WMSLayerForm extends Component {
       // both are valid for e.g. OGC WMS v1.1.1 DTD.
       const layers = capabilities.Capability.Layer.Layer;
       if (capabilities.Capability.Layer[RS]) {
-        // If there is a direct RS property on the Layer, use it (assuming it's an array)
-        projections = [...new Set(capabilities.Capability.Layer[RS])];
+        // If there is a direct RS property on the Layer, use it. It can be
+        // either a single string or an array (see #1352), so normalize with
+        // concat first - spreading a Set built from a string would iterate it
+        // character by character and leave us with a list of single letters.
+        projections = [
+          ...new Set([].concat(capabilities.Capability.Layer[RS])),
+        ];
       } else if (layers) {
         // Otherwise, iterate over the child layers
         projections = layers.flatMap((layer) => {
@@ -2118,6 +2247,7 @@ class WMSLayerForm extends Component {
           </label>
         </div>
         <div className="separator">Tillgängliga lager</div>
+        {this.renderCapabilitiesFilter()}
         <div>
           <table
             style={{
@@ -2128,8 +2258,18 @@ class WMSLayerForm extends Component {
           >
             <thead>
               <tr>
-                <td>Titel</td>
-                <td>Namn</td>
+                <td
+                  style={{ cursor: "pointer" }}
+                  onClick={() => this.toggleCapabilitiesSort("Title")}
+                >
+                  Titel {this.renderCapabilitiesSortIcon("Title")}
+                </td>
+                <td
+                  style={{ cursor: "pointer" }}
+                  onClick={() => this.toggleCapabilitiesSort("Name")}
+                >
+                  Namn {this.renderCapabilitiesSortIcon("Name")}
+                </td>
                 <td>Grupp</td>
                 <td>Infoklick</td>
               </tr>
