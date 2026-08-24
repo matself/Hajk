@@ -92,7 +92,10 @@ export default function SubLayerItem({
 
         {getIconFromLayer()}
         <ListItemText
-          primary={subLayerInfo.caption}
+          // Older configs may lack a caption for the sublayer, which used to
+          // render a nameless row. Fall back to the layer name, as
+          // InfoClickHelpers already does for the infoclick title.
+          primary={subLayerInfo.caption || subLayer}
           sx={{ alignSelf: "center" }}
           slotProps={{
             primary: {

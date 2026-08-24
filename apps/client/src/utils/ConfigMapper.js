@@ -193,8 +193,24 @@ export default class ConfigMapper {
           VERSION: args.version || "1.1.1",
           [srsOrCrs]: projection || "EPSG:3006",
           TILED: args.tiled,
+          // STYLES binds positionally to LAYERS - entry n styles layer n -
+          // but this was derived from layersInfo in its own order, which only
+          // corresponds to args.layers by coincidence. layersInfo also holds
+          // one entry per sublayer of a GeoServer named group while LAYERS
+          // holds just the group, so every layer added after such a group took
+          // the wrong slot. Verified against a live GeoServer: a style name
+          // landing on the wrong layer fails the entire GetMap with a
+          // ServiceException, so the layer disappears from the map rather than
+          // merely losing its styling. Look the style up by id, the way
+          // getLegendUrl above already does, so the two lists correspond by
+          // construction.
           STYLES: Array.isArray(args.layersInfo)
-            ? args.layersInfo.map((l) => l.style || "").join(",")
+            ? args.layers
+                .map(
+                  (layer) =>
+                    args.layersInfo.find((l) => l.id === layer)?.style || ""
+                )
+                .join(",")
             : null,
         },
         layersInfo: mapLayersInfo(args.layersInfo, args.infobox),

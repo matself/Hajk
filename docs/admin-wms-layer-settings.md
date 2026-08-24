@@ -9,6 +9,8 @@ Formuläret där du kommer ifrån (anslutning, request-inställningar, val av su
 **Visningsnamn**
 Namnet som visas för lagret i Lagerhanterarens lagerlista i Klienten. Påverkar inte vilket lager som hämtas från WMS-tjänsten (det styrs av lagrets tekniska namn/id, satt när lagret lades till).
 
+Förifylls med sublagrets titel från capabilities när lagret bockas i, och kan sedan skrivas om fritt. Lager som lades till innan detta började gälla kan ha tomt Visningsnamn kvar; sådana lager visas i Klienten med sitt tekniska lagernamn tills fältet fylls i.
+
 **Inforuta**
 HTML-mallen som visas i infoklick-popupen när användaren klickar på ett objekt i lagret i kartan (inte att förväxla med informationsikonen (i) i lagerlistan, se Infodokument i [admin-wms-layer-form.md](admin-wms-layer-form.md)). Fältet skickas som `infobox` till Klienten och kan innehålla `{attributnamn}`-platshållare, villkorsblock, filter m.m. — se [admin-infoklick-mallformat.md](admin-infoklick-mallformat.md) för hela syntaxen.
 

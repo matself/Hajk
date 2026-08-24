@@ -86,10 +86,15 @@ function GroupLayer({
   // Find out which (if any) sublayer is the filter hit
   const subLayersToShow = filterHits
     ? allSubLayers.filter((sl) => {
-        const subLayerCaption = layerInfo?.layersInfo[sl]?.caption;
+        // Same fallback as the search index in LayersTab and the label in
+        // SubLayerItem: a captionless sublayer is shown by its layer name and
+        // has to be findable by it. The two matchers must stay in sync, since
+        // the index only records a hit on the parent layer id and this is what
+        // decides which sublayers are then shown.
+        const subLayerCaption = layerInfo?.layersInfo?.[sl]?.caption || sl;
         return subLayerCaption
-          ?.toLocaleLowerCase()
-          ?.includes(lowercaseFilterValue);
+          .toLocaleLowerCase()
+          .includes(lowercaseFilterValue);
       })
     : allSubLayers;
 

@@ -282,7 +282,11 @@ class WMSLayerForm extends Component {
 
       addedLayersInfo[checkedLayer] = {
         id: checkedLayer,
-        caption: "",
+        // Pre-fill the display name with the layer's title from
+        // GetCapabilities. Without it, every sublayer of a group ends up
+        // nameless in LayerSwitcher until the admin types a name by hand.
+        // This is what addAllSublayers() has always done.
+        caption: opts.title || "",
         legend: "",
         legendIcon: "",
         infobox: "",
@@ -296,7 +300,7 @@ class WMSLayerForm extends Component {
         opts.children.forEach((subLayer) => {
           addedLayersInfo[subLayer.Name] = {
             id: subLayer.Name,
-            caption: "",
+            caption: subLayer.Title || "",
             legend: "",
             legendIcon: "",
             infobox: "",
@@ -360,14 +364,30 @@ class WMSLayerForm extends Component {
   ) {
     if (!arrayToSearchIn) return null;
 
-    let match = null;
-    match = arrayToSearchIn.find((l) => {
-      if (l.hasOwnProperty("Layer")) {
-        return this.findInCapabilities(layerName, l.Layer);
+    // Walk the tree depth first and return the matching layer itself. The
+    // previous implementation used find() with the recursive call as its
+    // predicate, so a match below a group made find() return the group
+    // instead of the layer that actually matched - which meant a nested
+    // layer was handed its parent's styles. A group can also be a named,
+    // selectable layer in its own right, so check each node before
+    // descending into it rather than treating "has children" as "is not a
+    // layer".
+    for (const layer of [].concat(arrayToSearchIn)) {
+      if (!layer) continue;
+
+      if (layer.Name === layerName) return layer;
+
+      if (layer.Layer) {
+        // A single child is not always wrapped in an array, see #1182.
+        const match = this.findInCapabilities(
+          layerName,
+          [].concat(layer.Layer)
+        );
+        if (match) return match;
       }
-      return l.Name === layerName;
-    });
-    return match;
+    }
+
+    return null;
   }
 
   // Fetches available attribute names for a WMS sublayer, so they can be
@@ -1140,7 +1160,15 @@ class WMSLayerForm extends Component {
                 // rows, which makes React treat the input as uncontrolled.
                 checked={this.state.addedLayers.some((l) => l === layer.Name)}
                 onChange={(e) => {
-                  this.appendLayer(e, layer.Name, opts);
+                  // layerOpts is only built for top level layers, so nested
+                  // rows have no opts at all. Pass the title and abstract from
+                  // the row itself, so captions are pre-filled no matter how
+                  // deep in the capabilities tree the layer sits.
+                  this.appendLayer(e, layer.Name, {
+                    ...opts,
+                    title: opts?.title || trueTitle,
+                    abstract: opts?.abstract || layer.Abstract || "",
+                  });
                 }}
                 // disabled={parentGuid !== null} // When we get auto-selection of sublayers to work, we should disable manual checking on sublayer items
               />

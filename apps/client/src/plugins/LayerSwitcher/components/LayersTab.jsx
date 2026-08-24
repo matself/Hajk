@@ -113,8 +113,13 @@ const LayersTab = ({
     let subLayerIndex = [];
     if (l.allSubLayers?.length > 1) {
       subLayerIndex = l.allSubLayers.map((sl) => {
-        const subLayerInfo = l.layerInfo.layersInfo[sl];
-        return [subLayerInfo.caption, l.id];
+        // allSubLayers is derived from the WMS LAYERS parameter while
+        // layersInfo is a separate object in the layer config, so the two can
+        // disagree - SubLayerItem guards against exactly that. A sublayer may
+        // also carry no caption. Fall back to the layer name, which is what
+        // gets rendered in that case, so the filter matches what is on screen.
+        const subLayerInfo = l.layerInfo?.layersInfo?.[sl];
+        return [subLayerInfo?.caption || sl, l.id];
       });
     }
 
@@ -125,7 +130,7 @@ const LayersTab = ({
     const lowercaseFilterValue = filterValue.toLocaleLowerCase();
     const hits = searchIndex
       ?.filter(([name, _]) =>
-        name.toLocaleLowerCase().includes(lowercaseFilterValue)
+        (name || "").toLocaleLowerCase().includes(lowercaseFilterValue)
       )
       ?.map(([_, id]) => id);
     filterHits = new Set(hits);
