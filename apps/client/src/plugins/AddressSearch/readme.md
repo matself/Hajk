@@ -4,14 +4,31 @@ Searches Lantmäteriet's **Belägenhetsadress Direkt** (v4.2) for Swedish addres
 and moves the map to the one the user picks. Optionally works the other way too:
 click in the map and the plugin fetches the nearest address.
 
-This is a fork-only plugin (`matself/Hajk`); it does not exist upstream.
+This is a fork-only plugin (`matself/Hajk`); it does not exist upstream. For the
+administrator's view of the same tool - what each field does, and how to get it
+running - see [docs/admin-tool-addresssearch.md](../../../../../docs/admin-tool-addresssearch.md).
+
+## Files
+
+| File                    | Holds                                                |
+| ----------------------- | ---------------------------------------------------- |
+| `AddressSearch.jsx`     | The `BaseWindowPlugin` wrapper.                      |
+| `AddressSearchView.jsx` | The field, the result list and the map-pick toggle.  |
+| `AddressSearchModel.js` | The map: layer, marker, projections, click lock.     |
+| `AddressSearchApi.js`   | The HTTP layer: credentials, aborts, error messages. |
+| `addressFormat.js`      | Everything that depends on the API's field names.    |
+| `constants/index.js`    | Frozen defaults and the SRIDs the API accepts.       |
+
+The split follows where change comes from: `addressFormat.js` is the file to
+edit when the API's response shape moves, and nothing else needs touching.
 
 ## How it talks to the API
 
 Nothing is called directly. Every request goes to the backend proxy at
-`{mapserviceBase}/belagenhetsadressproxy`, which forwards it to Lantmäteriet and
-attaches the bearer token. See `LANTMATERIET_BELAGENHETSADRESS_*` in the
-backend's `.env.example`.
+`{mapserviceBase}/belagenhetsadressproxy`, which attaches the credentials and
+forwards it to Lantmäteriet. See `LANTMATERIET_BELAGENHETSADRESS_*` in the
+backend's `.env.example`. Basic auth with a Geotorget user is what the service
+asks for; a bearer token works where the subscription grants the scope.
 
 Searching is two calls, because the API separates the label from the geometry:
 
