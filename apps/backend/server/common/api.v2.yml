@@ -600,6 +600,42 @@ paths:
         200:
           description: Result will vary depending on response from the API.
           content: {}
+  /belagenhetsadressproxy/{query}:
+    get:
+      tags:
+        - Lantmateriet Belagenhetsadress Proxy
+      parameters:
+        - name: query
+          in: path
+          description: Path corresponding to an endpoint on Lantmateriet's Belagenhetsadress Direkt API, e.g. "referens/fritext?adress=lantmaterig 2 gavle".
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy the specified query to Lantmateriet's Belagenhetsadress Direkt API, adding the
+        Authorization header from LANTMATERIET_BELAGENHETSADRESS_TOKEN so that the subscription's
+        token never reaches the browser. Only enabled when LANTMATERIET_BELAGENHETSADRESS_ACTIVE
+        is "true" and a token is configured. The proxy forwards all HTTP methods, not only GET
+        (POST / and POST /referens/geometri are used to resolve address ids to geometries).
+      responses:
+        200:
+          description: Result will vary depending on response from the API.
+          content: {}
+    post:
+      tags:
+        - Lantmateriet Belagenhetsadress Proxy
+      parameters:
+        - name: query
+          in: path
+          description: Path corresponding to an endpoint on Lantmateriet's Belagenhetsadress Direkt API that accepts POST, e.g. "" (fetch addresses by id) or "referens/geometri".
+          required: true
+          schema:
+            type: string
+      description: Same as the GET variant, but for the endpoints that take a request body.
+      responses:
+        200:
+          description: Result will vary depending on response from the API.
+          content: {}
   /admin-auth/login:
     post:
       tags:

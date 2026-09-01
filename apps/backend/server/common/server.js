@@ -326,6 +326,40 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     return value === "1" || value.toLowerCase() === "true";
   }
 
+  async setupBelagenhetsadressProxy() {
+    // Each API version has its own Lantmateriet Belagenhetsadress proxy middleware. Let's iterate them.
+    for await (const v of app.get("apiVersions")) {
+      // Don't enable the proxy unless it's activated AND we have a token to
+      // authenticate with - without one every forwarded request would 401.
+      if (
+        process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE === "true" &&
+        process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN !== undefined
+      ) {
+        const { default: lantmaterietBelagenhetsadressProxy } = await import(
+          `../apis/v${v}/middlewares/lantmateriet.belagenhetsadress.proxy.js`
+        );
+
+        app.use(
+          `/api/v${v}/belagenhetsadressproxy`,
+          lantmaterietBelagenhetsadressProxy()
+        );
+        logger.info(
+          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env. Enabling Lantmateriet Belagenhetsadress proxy for API V%s",
+          process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE,
+          v
+        );
+      } else
+        logger.info(
+          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env (and a token %s). Not enabling Lantmateriet Belagenhetsadress proxy for API V%s",
+          process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE,
+          process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN === undefined
+            ? "is missing"
+            : "is set",
+          v
+        );
+    }
+  }
+
   async setupSokigoProxy() {
     // Each API version has its own Sokigo proxy middleware. Let's iterate them.
     for await (const v of app.get("apiVersions")) {
@@ -528,6 +562,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     await this.setupSokigoProxy();
     await this.setupFmeProxy();
     await this.setupMarkhojdProxy();
+    await this.setupBelagenhetsadressProxy();
     await this.setupWmtsAuthProxy();
     await this.setupWmsAuthProxy();
     this.setupGenericProxy();
