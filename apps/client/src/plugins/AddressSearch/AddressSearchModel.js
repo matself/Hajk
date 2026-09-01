@@ -11,18 +11,24 @@ import {
   SUPPORTED_SRIDS,
 } from "./constants";
 
-// The reference endpoints answer with "etikett och id" per address, but the
-// product's JSON schema is not published outside Geotorget, so rather than
-// guessing one field name we look for the ones the API is known to use and
-// report what we actually got when none of them match. See #readReference.
+// Field names verified against live v4.2 responses. The two families of
+// endpoints answer in quite different shapes, which is why reading a label
+// takes two routines rather than one:
+//
+//   /referens/*, /autocomplete/*  ->  flat objects with a ready-made label:
+//       { "adress": "Täby Täby Lantmätarvägen 2 18753 Täby",
+//         "objektidentitet": "76e01bf5-…" }
+//
+//   /{id}, /punkt                 ->  GeoJSON features whose properties nest
+//       the parts and carry no label at all, so one has to be composed:
+//       properties.adressomrade.faststalltNamn                 -> street name
+//       properties.adressplatsattribut.adressplatsbeteckning   -> number
+//       properties.adressplatsattribut.postnummer / .postort   -> postal
+//
+// The aliases below cushion against version drift; the first name in each list
+// is the one the API actually uses today.
 const ID_FIELDS = ["objektidentitet", "objektIdentitet", "id"];
-const LABEL_FIELDS = [
-  "adressbeteckning",
-  "etikett",
-  "beteckning",
-  "adress",
-  "label",
-];
+const LABEL_FIELDS = ["adress", "adressbeteckning", "etikett", "beteckning"];
 
 // btoa() only accepts Latin-1, so encode to UTF-8 bytes first - otherwise a
 // password containing e.g. "å" throws instead of authenticating.
@@ -37,6 +43,41 @@ const readString = (object, candidates) => {
     }
   }
   return null;
+};
+
+// Swedish postal codes are written in two groups, "187 52" rather than
+// "18752". The API returns them as a number.
+const formatPostalCode = (value) => {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits.length === 5
+    ? `${digits.slice(0, 3)} ${digits.slice(3)}`
+    : digits;
+};
+
+/**
+ * @summary Composes a label for an address feature, which these endpoints do
+ * not provide. Produces e.g. "Vallatorpsvägen 6, 187 52 Täby".
+ * @description Deliberately shorter than the label the reference endpoints
+ * return - "Täby Täby Vallatorpsvägen 6 18752 Täby" - which names the
+ * municipality twice, once as kommun and once as kommundel.
+ */
+const composeAddressLabel = (properties) => {
+  const area = properties?.adressomrade ?? {};
+  const place = properties?.adressplatsattribut ?? {};
+
+  // adressplatsbeteckning holds the number and, where an address has them, its
+  // letter and position suffixes. Every string member of it belongs to the
+  // designation, so join them all rather than naming fields we have not seen.
+  const designation = Object.values(place.adressplatsbeteckning ?? {})
+    .filter((value) => typeof value === "string" && value.length > 0)
+    .join(" ");
+
+  const street = [area.faststalltNamn, designation].filter(Boolean).join(" ");
+  const postal = [formatPostalCode(place.postnummer), place.postort]
+    .filter(Boolean)
+    .join(" ");
+
+  return [street, postal].filter(Boolean).join(", ") || null;
 };
 
 export default class AddressSearchModel {
@@ -303,8 +344,7 @@ export default class AddressSearchModel {
 
     return {
       feature,
-      label:
-        readString(feature.getProperties(), LABEL_FIELDS) ?? "Okänd adress",
+      label: composeAddressLabel(feature.getProperties()) ?? "Okänd adress",
     };
   };
 

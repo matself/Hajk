@@ -74,6 +74,39 @@ It prints the token's scope, issuer and expiry, then calls one endpoint from
 each group (health, autocomplete, referens, punkt) with every credential given
 and prints the result as a matrix, so which scheme works is visible at a glance.
 
+## Response shapes
+
+Verified against live v4.2 responses. The two families of endpoints answer
+differently, which is the one thing to know before changing this code.
+
+The reference and autocomplete endpoints return flat objects with a ready-made
+label:
+
+```json
+{
+  "adress": "Täby Täby Lantmätarvägen 2 18753 Täby",
+  "objektidentitet": "76e01bf5-4e3f-402e-867a-107b21c2c17f"
+}
+```
+
+The address endpoints (`/{id}`, `/punkt`) return GeoJSON whose properties nest
+the parts and carry **no label at all**, so the plugin composes one:
+
+| Value                           | Path in `properties`                         |
+| ------------------------------- | -------------------------------------------- |
+| Street name                     | `adressomrade.faststalltNamn`                |
+| Number (with any letter suffix) | `adressplatsattribut.adressplatsbeteckning`  |
+| Postal code / town              | `adressplatsattribut.postnummer`, `.postort` |
+| Municipality                    | `adressomrade.kommundel.kommun.kommunnamn`   |
+
+`composeAddressLabel` produces `Vallatorpsvägen 6, 187 52 Täby` - deliberately
+shorter than the reference label, which names the municipality twice, once as
+kommun and once as kommundel.
+
+The GeoJSON carries `crs: urn:ogc:def:crs:EPSG::3006`. OpenLayers resolves that
+URN itself, and produces the same coordinate as an explicit transform, so the
+plugin passes `dataProjection` and lets it be.
+
 ## One thing to know before extending this
 
 The JSON schema for the _reference_ responses is not published outside
