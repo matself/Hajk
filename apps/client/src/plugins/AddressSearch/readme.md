@@ -89,6 +89,15 @@ label:
 }
 ```
 
+That label names the municipality twice - once as kommun, once as kommundel -
+so the plugin asks for `splitAdress=true` and builds its own from the
+components, matching the format used for map clicks. **The component field
+names are not yet confirmed against a live response**: `composeReferenceLabel`
+looks for the names the rest of the API uses (`COMPONENT_*` in the model), and
+falls back to the flat label when it does not recognise them, which is never
+worse than not asking. When that happens it logs the object once to the
+console, naming what to add.
+
 The address endpoints (`/{id}`, `/punkt`) return GeoJSON whose properties nest
 the parts and carry **no label at all**, so the plugin composes one:
 
@@ -98,6 +107,13 @@ the parts and carry **no label at all**, so the plugin composes one:
 | Number (with any letter suffix) | `adressplatsattribut.adressplatsbeteckning`  |
 | Postal code / town              | `adressplatsattribut.postnummer`, `.postort` |
 | Municipality                    | `adressomrade.kommundel.kommun.kommunnamn`   |
+| Point placement                 | `adressplatsattribut.insamlingslage`         |
+
+`insamlingslage` says what the coordinate was measured against - "Byggnad",
+"Ingång" and so on - which decides how literally the marker should be read: an
+entrance point sits on the street side of the building, a building point
+somewhere within its footprint. The plugin shows it beneath the field as
+"Adresspunktens läge: …".
 
 `composeAddressLabel` produces `Vallatorpsvägen 6, 187 52 Täby` - deliberately
 shorter than the reference label, which names the municipality twice, once as

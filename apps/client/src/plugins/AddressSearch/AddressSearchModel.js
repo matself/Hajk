@@ -54,6 +54,65 @@ const formatPostalCode = (value) => {
     : digits;
 };
 
+// With splitAdress=true the reference endpoints populate a components object
+// alongside the flat "adress" string. Its exact shape is not documented outside
+// Geotorget and no sample was to hand when this was written, so we look for the
+// names the rest of the API uses, and fall back to the flat label whenever the
+// components cannot be read - which is never worse than not asking for them.
+// #readReference logs the object once when that happens, naming what to add.
+const COMPONENT_CONTAINERS = [
+  "adressComponents",
+  "adresskomponenter",
+  "adressKomponenter",
+  "components",
+];
+const COMPONENT_STREET = [
+  "adressomrade",
+  "adressomradesnamn",
+  "gatunamn",
+  "faststalltNamn",
+];
+const COMPONENT_NUMBER = [
+  "adressplatsbeteckning",
+  "adressplatsnummer",
+  "nummer",
+];
+const COMPONENT_POSTORT = ["postort", "postortsnamn"];
+
+const readComponents = (item) => {
+  for (const key of COMPONENT_CONTAINERS) {
+    if (item?.[key] && typeof item[key] === "object") {
+      return item[key];
+    }
+  }
+  // The components may also be spread across the reference itself rather than
+  // nested, in which case the street name is the tell.
+  return readString(item, COMPONENT_STREET) ? item : null;
+};
+
+/**
+ * @summary Composes the same short label from a reference's components as
+ * #composeAddressLabel does from a feature, so the two agree.
+ * @returns {string|null} null when the components are not recognisable
+ */
+const composeReferenceLabel = (components) => {
+  const streetName = readString(components, COMPONENT_STREET);
+  if (!streetName) {
+    return null;
+  }
+
+  const number =
+    readString(components, COMPONENT_NUMBER) ??
+    String(components?.adressplatsnummer ?? "");
+  const postort = readString(components, COMPONENT_POSTORT);
+  const postal = [formatPostalCode(components?.postnummer), postort]
+    .filter(Boolean)
+    .join(" ");
+
+  const street = [streetName, number].filter(Boolean).join(" ").trim();
+  return [street, postal].filter(Boolean).join(", ") || null;
+};
+
 /**
  * @summary Composes a label for an address feature, which these endpoints do
  * not provide. Produces e.g. "Vallatorpsvägen 6, 187 52 Täby".
@@ -221,7 +280,24 @@ export default class AddressSearchModel {
 
   #readReference = (item) => {
     const id = readString(item, ID_FIELDS);
-    const label = readString(item, LABEL_FIELDS);
+    const flatLabel = readString(item, LABEL_FIELDS);
+
+    // Prefer a label built from the components, which drops the duplicated
+    // municipality the flat string carries ("Täby Täby Lantmätarvägen 2 …").
+    const components = readComponents(item);
+    const label = composeReferenceLabel(components) ?? flatLabel;
+
+    if (
+      components &&
+      !composeReferenceLabel(components) &&
+      !this.#warnedAboutShape
+    ) {
+      this.#warnedAboutShape = true;
+      console.warn(
+        "AddressSearch: splitAdress returned components this plugin could not read, so the API's own label is used instead. Add the field names below to COMPONENT_* in AddressSearchModel to tidy the labels.",
+        components
+      );
+    }
 
     if ((!id || !label) && !this.#warnedAboutShape) {
       this.#warnedAboutShape = true;
@@ -256,6 +332,9 @@ export default class AddressSearchModel {
     if (this.#options.onlyCurrentAddresses) {
       params.set("status", "Gällande");
     }
+    // Populates the components the tidy label is built from. Harmless when the
+    // response turns out not to carry them: the flat label is used instead.
+    params.set("splitAdress", "true");
 
     const payload = await this.#fetchJson(
       `${this.#baseUrl}/referens/fritext?${params}`,
@@ -282,6 +361,25 @@ export default class AddressSearchModel {
       dataProjection,
       featureProjection,
     });
+  };
+
+  /**
+   * @summary Reads what is worth showing about an address feature beside its
+   * label.
+   * @description insamlingslage says what the coordinate was actually measured
+   * against - "Byggnad", "Ingång", and so on - which decides how literally the
+   * marker should be read: an entrance point sits on the street side of the
+   * building, a building point somewhere within its footprint.
+   */
+  describeFeature = (feature) => {
+    const properties = feature?.getProperties() ?? {};
+    const place = properties.adressplatsattribut ?? {};
+
+    return {
+      label: composeAddressLabel(properties),
+      insamlingslage:
+        typeof place.insamlingslage === "string" ? place.insamlingslage : null,
+    };
   };
 
   /**
@@ -342,9 +440,12 @@ export default class AddressSearchModel {
       return null;
     }
 
+    const described = this.describeFeature(feature);
+
     return {
       feature,
-      label: composeAddressLabel(feature.getProperties()) ?? "Okänd adress",
+      label: described.label ?? "Okänd adress",
+      insamlingslage: described.insamlingslage,
     };
   };
 

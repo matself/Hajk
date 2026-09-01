@@ -20,6 +20,8 @@ function AddressSearchView(props) {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [picking, setPicking] = useState(false);
+  // What the address point was measured against - see model.describeFeature.
+  const [insamlingslage, setInsamlingslage] = useState(null);
 
   const debounceTimer = useRef(null);
 
@@ -77,6 +79,7 @@ function AddressSearchView(props) {
           return;
         }
         model.showFeature(feature);
+        setInsamlingslage(model.describeFeature(feature).insamlingslage);
       } catch (error) {
         reportError(error);
       }
@@ -98,6 +101,7 @@ function AddressSearchView(props) {
         setSelected(reference);
         setOptions([reference]);
         setInputValue(hit.label);
+        setInsamlingslage(hit.insamlingslage);
         model.showFeature(hit.feature);
       } catch (error) {
         reportError(error);
@@ -147,6 +151,7 @@ function AddressSearchView(props) {
           onInputChange={(_event, value) => setInputValue(value)}
           onChange={(_event, value) => {
             setSelected(value);
+            setInsamlingslage(null);
             if (value) {
               showAddress(value);
             } else {
@@ -187,6 +192,15 @@ function AddressSearchView(props) {
           </ToggleButton>
         )}
       </Box>
+      {insamlingslage && (
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          sx={{ display: "block", marginTop: 1 }}
+        >
+          Adresspunktens läge: {insamlingslage.toLowerCase()}
+        </Typography>
+      )}
       <Typography
         variant="caption"
         color="textSecondary"
