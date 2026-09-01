@@ -18,8 +18,13 @@ export const DEFAULT_OPTIONS = Object.freeze({
   // Appended to mapserviceBase to reach the backend proxy. Only change this if
   // the proxy has been mounted somewhere else.
   proxyPath: "belagenhetsadressproxy",
-  // Sent as a bearer token on every call. Leave empty when the token is
-  // configured server-side in .env, which is the better place for it.
+  // Credentials, sent on every call. Leave all three empty when they are
+  // configured server-side in .env, which is the better place for them.
+  // Basic auth with Geotorget credentials is what these endpoints ask for with
+  // a "WWW-Authenticate: Basic" challenge; a bearer token works where the
+  // subscription grants the matching scope, and takes precedence when set.
+  username: "",
+  password: "",
   token: "",
   maxHits: 15,
   // Milliseconds to wait after the last keystroke before searching. Every

@@ -24,6 +24,11 @@ const LABEL_FIELDS = [
   "label",
 ];
 
+// btoa() only accepts Latin-1, so encode to UTF-8 bytes first - otherwise a
+// password containing e.g. "å" throws instead of authenticating.
+const toBase64 = (value) =>
+  btoa(String.fromCharCode(...new TextEncoder().encode(value)));
+
 const readString = (object, candidates) => {
   for (const key of candidates) {
     const value = object?.[key];
@@ -107,26 +112,21 @@ export default class AddressSearchModel {
 
   #getHeaders = () => {
     const headers = { Accept: "application/json" };
-    // Only sent when the token is configured per map. With the token in the
-    // backend's .env instead - the better place for it - the proxy adds its own
-    // and this header never exists.
+
+    // Only sent when credentials are configured per map. With them in the
+    // backend's .env instead - the better place - the proxy adds its own and
+    // this header never exists.
     if (this.#options.token) {
       headers.Authorization = `Bearer ${this.#options.token}`;
+    } else if (this.#options.username) {
+      headers.Authorization = `Basic ${toBase64(
+        `${this.#options.username}:${this.#options.password ?? ""}`
+      )}`;
     }
+
     return headers;
   };
 
-  /**
-   * @summary Turns an error response into something a user can act on.
-   * @description Two different services answer on this route and both explain
-   * themselves in the body: Lantmateriet's own Fault object ({code, reason,
-   * errors}) and, in front of it, the API gateway ({code, message,
-   * description}). A gateway rejection in particular is worth quoting rather
-   * than paraphrasing - "scope validation failed" means the token is genuine
-   * but not entitled to that endpoint, which is a different problem from the
-   * wrong token, and a generic "check your token" sends you hunting for the
-   * wrong thing.
-   */
   #readErrorDetail = (body) => {
     if (!body) {
       return null;

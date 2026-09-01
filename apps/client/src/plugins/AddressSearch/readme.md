@@ -40,31 +40,39 @@ plugin says so rather than failing silently.
 Configurable per map in Admin (`Verktyg → Adressök`); defaults live in
 `constants/index.js`.
 
-| Option                 | Default                  | Notes                                                                                                          |
-| ---------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `token`                | `""`                     | Bearer token, sent by the browser. Leave empty when the backend holds it in `.env`, which is the better place. |
-| `maxHits`              | `15`                     | Max results per search (API allows up to 500).                                                                 |
-| `debounceTime`         | `350`                    | Milliseconds after the last keystroke before searching.                                                        |
-| `kommunkod`            | `""`                     | Four-digit municipality code to restrict to. Empty = all of Sweden.                                            |
-| `onlyCurrentAddresses` | `true`                   | Excludes `Reserverad` addresses, which are assigned but not yet in use.                                        |
-| `zoom`                 | `16`                     | Address points have no extent, so there is nothing to fit to.                                                  |
-| `enableMapClick`       | `true`                   | Shows the pick-from-map button.                                                                                |
-| `proxyPath`            | `belagenhetsadressproxy` | Only change if the proxy was mounted elsewhere.                                                                |
+| Option                  | Default                  | Notes                                                                                                                                              |
+| ----------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `username` / `password` | `""`                     | Geotorget credentials for Basic auth - what these endpoints ask for. Leave empty when the backend holds them in `.env`, which is the better place. |
+| `token`                 | `""`                     | Bearer token, an alternative to the pair above and used before it when set.                                                                        |
+| `maxHits`               | `15`                     | Max results per search (API allows up to 500).                                                                                                     |
+| `debounceTime`          | `350`                    | Milliseconds after the last keystroke before searching.                                                                                            |
+| `kommunkod`             | `""`                     | Four-digit municipality code to restrict to. Empty = all of Sweden.                                                                                |
+| `onlyCurrentAddresses`  | `true`                   | Excludes `Reserverad` addresses, which are assigned but not yet in use.                                                                            |
+| `zoom`                  | `16`                     | Address points have no extent, so there is nothing to fit to.                                                                                      |
+| `enableMapClick`        | `true`                   | Shows the pick-from-map button.                                                                                                                    |
+| `proxyPath`             | `belagenhetsadressproxy` | Only change if the proxy was mounted elsewhere.                                                                                                    |
 
 ## When the service refuses
 
-A 403 with gateway code `900910` is not a bad token: it means the token is
-genuine but its scope does not cover the endpoint, which can differ per group of
-operations. To see which groups your token actually opens:
+Two failures here look alike and are not. A `401` carrying
+`WWW-Authenticate: Basic` means the service wants Geotorget username and
+password, not a bearer token - the products under
+`api.lantmateriet.se/distribution` do not agree on one scheme, and Markhöjd next
+door uses Basic too. A `403` with gateway code `900910` means the opposite: the
+token is genuine, but its scope does not cover that endpoint, and entitlements
+can differ per group of operations.
+
+To see which credential opens what:
 
 ```bash
 cd apps/backend
-npm run check-belagenhetsadress            # uses the token from .env
-npm run check-belagenhetsadress -- "eyJ…"  # or one passed in
+npm run check-belagenhetsadress                            # uses .env
+npm run check-belagenhetsadress -- "eyJ…" "user:password"  # or these
 ```
 
 It prints the token's scope, issuer and expiry, then calls one endpoint from
-each group (health, autocomplete, referens, punkt) and reports what came back.
+each group (health, autocomplete, referens, punkt) with every credential given
+and prints the result as a matrix, so which scheme works is visible at a glance.
 
 ## One thing to know before extending this
 

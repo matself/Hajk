@@ -21,6 +21,8 @@ var defaultState = {
   index: 0,
   target: "toolbar",
   visibleAtStart: false,
+  username: "",
+  password: "",
   token: "",
   maxHits: 15,
   debounceTime: 350,
@@ -52,6 +54,8 @@ class ToolOptions extends Component {
         width: tool.options.width,
         height: tool.options.height,
         visibleAtStart: tool.options.visibleAtStart,
+        username: tool.options.username || "",
+        password: tool.options.password || "",
         token: tool.options.token || "",
         maxHits: tool.options.maxHits || defaultState.maxHits,
         debounceTime: tool.options.debounceTime || defaultState.debounceTime,
@@ -92,8 +96,9 @@ class ToolOptions extends Component {
     });
   }
 
-  // Kommunkod and token must stay strings. The numeric coercion above would
-  // turn a municipality code such as 0180 into 180, which matches no kommun.
+  // Kommunkod and the credentials must stay strings. The numeric coercion above
+  // would turn a municipality code such as 0180 into 180, which matches no
+  // kommun, and would do the same to an all-digit password.
   handleStringInputChange(event) {
     const target = event.target;
     this.setState({
@@ -138,6 +143,8 @@ class ToolOptions extends Component {
         width: this.state.width,
         height: this.state.height,
         visibleAtStart: this.state.visibleAtStart,
+        username: this.state.username,
+        password: this.state.password,
         token: this.state.token,
         maxHits: this.state.maxHits,
         debounceTime: this.state.debounceTime,
@@ -360,12 +367,45 @@ class ToolOptions extends Component {
           </div>
           <div className="separator">Adressök</div>
           <div>
+            <label htmlFor="username">
+              Användarnamn{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Geotorget-användare för Lantmäteriets Belägenhetsadress Direkt (Basic-autentisering, samma typ av konto som Markhöjd i Koordinater använder). Lämna tomt om uppgifterna är konfigurerade i backend (LANTMATERIET_BELAGENHETSADRESS_USER i .env), vilket är att föredra - då når de aldrig webbläsaren."
+              />
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleStringInputChange(e);
+              }}
+              value={this.state.username}
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Lösenord</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleStringInputChange(e);
+              }}
+              value={this.state.password}
+            />
+          </div>
+          <div>
             <label htmlFor="token">
               Token{" "}
               <i
                 className="fa fa-question-circle"
                 data-toggle="tooltip"
-                title="Bearer-token för Lantmäteriets Belägenhetsadress Direkt. Lämna tomt om token är konfigurerad i backend (LANTMATERIET_BELAGENHETSADRESS_TOKEN i .env), vilket är att föredra - då når den aldrig webbläsaren."
+                title="Alternativ till användarnamn/lösenord: en bearer-token från Lantmäteriets API-manager. Används före Basic-uppgifterna ovan när den är ifylld. Observera att en token vars scope inte täcker en endpoint avvisas med 403 och kod 900910 - det ser ut som en felaktig token men är det inte."
               />
             </label>
             <input
