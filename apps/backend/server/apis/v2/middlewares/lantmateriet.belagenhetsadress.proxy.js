@@ -21,16 +21,23 @@ export default function lantmaterietBelagenhetsadressProxy(
     // already appended to the target's path as-is, query string included.
     on: {
       proxyReq: (proxyReq, req, _res) => {
-        // Unlike the Markhojd proxy, credentials for this product are a genuine
-        // server-side secret: the access token is tied to the organization's
-        // Geotorget subscription and every call is billed against it. It is
-        // therefore held in .env and injected here, never sent to the browser.
-        proxyReq.setHeader(
-          "Authorization",
-          `Bearer ${process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN}`
-        );
+        // The token can live in either of two places. Held in .env it stays on
+        // the server and never reaches the browser, which is what a deployment
+        // with server access should do. Configured per map in Admin it travels
+        // with the request instead, the way the Markhojd proxy works, which is
+        // the only option when the person configuring Hajk cannot edit .env.
+        // The server's own token wins; otherwise we forward whatever the client
+        // sent untouched.
+        const token = process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN;
+        if (token) {
+          proxyReq.setHeader("Authorization", `Bearer ${token}`);
+        }
 
-        logger.debug(`${req.method} ${req.originalUrl} ~> ${proxyReq.path}`);
+        logger.debug(
+          `${req.method} ${req.originalUrl} ~> ${proxyReq.path} (token from ${
+            token ? ".env" : "client"
+          })`
+        );
       },
       error: (err, _req, res) => {
         if (err) {

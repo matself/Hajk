@@ -329,12 +329,10 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
   async setupBelagenhetsadressProxy() {
     // Each API version has its own Lantmateriet Belagenhetsadress proxy middleware. Let's iterate them.
     for await (const v of app.get("apiVersions")) {
-      // Don't enable the proxy unless it's activated AND we have a token to
-      // authenticate with - without one every forwarded request would 401.
-      if (
-        process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE === "true" &&
-        process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN !== undefined
-      ) {
+      // A token is not required here: when .env doesn't hold one, the proxy
+      // forwards the Authorization header sent by the client, which is where a
+      // token configured per map in Admin arrives from.
+      if (process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE === "true") {
         const { default: lantmaterietBelagenhetsadressProxy } = await import(
           `../apis/v${v}/middlewares/lantmateriet.belagenhetsadress.proxy.js`
         );
@@ -344,17 +342,17 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
           lantmaterietBelagenhetsadressProxy()
         );
         logger.info(
-          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env. Enabling Lantmateriet Belagenhetsadress proxy for API V%s",
+          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env. Enabling Lantmateriet Belagenhetsadress proxy for API V%s. Authenticating with the token %s",
           process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE,
-          v
+          v,
+          process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN === undefined
+            ? "sent by each client, as none is configured in .env"
+            : "from .env"
         );
       } else
         logger.info(
-          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env (and a token %s). Not enabling Lantmateriet Belagenhetsadress proxy for API V%s",
+          "LANTMATERIET_BELAGENHETSADRESS_ACTIVE is set to %o in .env. Not enabling Lantmateriet Belagenhetsadress proxy for API V%s",
           process.env.LANTMATERIET_BELAGENHETSADRESS_ACTIVE,
-          process.env.LANTMATERIET_BELAGENHETSADRESS_TOKEN === undefined
-            ? "is missing"
-            : "is set",
           v
         );
     }

@@ -612,11 +612,13 @@ paths:
           schema:
             type: string
       description: >
-        Proxy the specified query to Lantmateriet's Belagenhetsadress Direkt API, adding the
-        Authorization header from LANTMATERIET_BELAGENHETSADRESS_TOKEN so that the subscription's
-        token never reaches the browser. Only enabled when LANTMATERIET_BELAGENHETSADRESS_ACTIVE
-        is "true" and a token is configured. The proxy forwards all HTTP methods, not only GET
-        (POST / and POST /referens/geometri are used to resolve address ids to geometries).
+        Proxy the specified query to Lantmateriet's Belagenhetsadress Direkt API. When
+        LANTMATERIET_BELAGENHETSADRESS_TOKEN is set, the proxy adds it as a bearer token so it
+        never reaches the browser; when it is not, the Authorization header sent by the client
+        is forwarded instead, which is where a token configured per map in Admin arrives from.
+        Only enabled when LANTMATERIET_BELAGENHETSADRESS_ACTIVE is "true". The proxy forwards
+        all HTTP methods, not only GET (POST / and POST /referens/geometri are used to resolve
+        address ids to geometries).
       responses:
         200:
           description: Result will vary depending on response from the API.
