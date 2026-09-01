@@ -116,23 +116,63 @@ export default class AddressSearchModel {
     return headers;
   };
 
+  /**
+   * @summary Turns an error response into something a user can act on.
+   * @description Two different services answer on this route and both explain
+   * themselves in the body: Lantmateriet's own Fault object ({code, reason,
+   * errors}) and, in front of it, the API gateway ({code, message,
+   * description}). A gateway rejection in particular is worth quoting rather
+   * than paraphrasing - "scope validation failed" means the token is genuine
+   * but not entitled to that endpoint, which is a different problem from the
+   * wrong token, and a generic "check your token" sends you hunting for the
+   * wrong thing.
+   */
+  #readErrorDetail = (body) => {
+    if (!body) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(body);
+      const detail =
+        parsed.description ?? parsed.message ?? parsed.reason ?? null;
+      const errors = Array.isArray(parsed.errors)
+        ? parsed.errors.join(" ")
+        : parsed.errors;
+      return [detail, errors].filter(Boolean).join(" ") || null;
+    } catch {
+      // Not JSON - a proxy or a web server further out may have answered in
+      // HTML, which is not worth putting in a snackbar.
+      return body.trimStart().startsWith("<") ? null : body.slice(0, 200);
+    }
+  };
+
   #fetchJson = async (url, signal) => {
     const response = await fetch(url, { signal, headers: this.#getHeaders() });
 
     if (!response.ok) {
+      const detail = this.#readErrorDetail(
+        await response.text().catch(() => "")
+      );
+
       // The proxy is only mounted when it has been activated in the backend's
       // .env, so a 404 here usually means exactly that rather than a bad address.
-      if (response.status === 404) {
+      if (response.status === 404 && !detail) {
         throw new Error(
           "Adresstjänsten svarade inte (404). Kontrollera att adressproxyn är aktiverad i backend."
         );
       }
-      if (response.status === 401 || response.status === 403) {
-        throw new Error(
-          `Adresstjänsten nekade anropet (${response.status}). Kontrollera token för tjänsten.`
-        );
-      }
-      throw new Error(`Adresstjänsten svarade med status ${response.status}.`);
+
+      const prefix =
+        response.status === 401 || response.status === 403
+          ? `Adresstjänsten nekade anropet (${response.status})`
+          : `Adresstjänsten svarade med status ${response.status}`;
+
+      throw new Error(
+        detail
+          ? `${prefix}: ${detail}`
+          : `${prefix}. Kontrollera token för tjänsten.`
+      );
     }
 
     return await response.json();
