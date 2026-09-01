@@ -20,7 +20,8 @@
     "dev:debug": "nodemon server --config .nodemonrc.json --inspect",
     "lint": "eslint server",
     "lint:fix": "eslint --fix server",
-    "hash-admin-password": "node server/utils/hashAdminPassword.js"
+    "hash-admin-password": "node server/utils/hashAdminPassword.js",
+    "check-belagenhetsadress": "node server/utils/checkBelagenhetsadress.js"
   },
   "dependencies": {
     "activedirectory2": "^2.2.0",

@@ -51,6 +51,21 @@ Configurable per map in Admin (`Verktyg → Adressök`); defaults live in
 | `enableMapClick`       | `true`                   | Shows the pick-from-map button.                                                                                |
 | `proxyPath`            | `belagenhetsadressproxy` | Only change if the proxy was mounted elsewhere.                                                                |
 
+## When the service refuses
+
+A 403 with gateway code `900910` is not a bad token: it means the token is
+genuine but its scope does not cover the endpoint, which can differ per group of
+operations. To see which groups your token actually opens:
+
+```bash
+cd apps/backend
+npm run check-belagenhetsadress            # uses the token from .env
+npm run check-belagenhetsadress -- "eyJ…"  # or one passed in
+```
+
+It prints the token's scope, issuer and expiry, then calls one endpoint from
+each group (health, autocomplete, referens, punkt) and reports what came back.
+
 ## One thing to know before extending this
 
 The JSON schema for the _reference_ responses is not published outside
