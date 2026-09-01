@@ -26,6 +26,7 @@ import Routing from "./tools/routing.jsx";
 import Collector from "./tools/collector.jsx";
 import MailForm from "./tools/mailform.jsx";
 import Dummy from "./tools/dummy.jsx";
+import AddressSearch from "./tools/addresssearch.jsx";
 import OsmSearch from "./tools/osmsearch.jsx";
 import MenuEditor from "./tools/MenuEditor/menuEditor.jsx";
 import TimeSlider from "./tools/timeslider.jsx";
@@ -105,6 +106,8 @@ class ToolOptions extends Component {
       //   return <Informative parent={this} model={this.props.model} />;
       case "dummy":
         return <Dummy parent={this} model={this.props.model} />;
+      case "addresssearch":
+        return <AddressSearch parent={this} model={this.props.model} />;
       case "osmsearch":
         return <OsmSearch parent={this} model={this.props.model} />;
       case "location":
@@ -177,6 +180,7 @@ class ToolOptions extends Component {
 
   render() {
     var toolTypes = {
+      addresssearch: "Adressök",
       bookmarks: "Platser",
       buffer: "Buffra",
       anchor: "Dela",

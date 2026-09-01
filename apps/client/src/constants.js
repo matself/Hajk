@@ -6,6 +6,7 @@ export const PLUGINS_TO_IGNORE_IN_HASH_APP_STATE = ["anchor", "print"];
 // back to a default of loading all tools, if activeTools is not provided or invalid.
 // PLEASE NOTE THAT THIS LIST IS CASE SENSITIVE, NAMES MUST CORRESPOND EXACTLY TO DIRECTORY NAMES.
 export const AVAILABLE_TOOLS = [
+  "AddressSearch",
   "Anchor",
   "Bookmarks",
   "Buffer",

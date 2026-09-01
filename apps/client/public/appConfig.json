@@ -2,6 +2,7 @@
   "mapserviceBase": "",
   "defaultMap": "map_1",
   "availableTools": [
+    "AddressSearch",
     "Anchor",
     "Bookmarks",
     "Coordinates",
