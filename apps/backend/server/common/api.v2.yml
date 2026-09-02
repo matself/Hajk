@@ -638,6 +638,30 @@ paths:
         200:
           description: Result will vary depending on response from the API.
           content: {}
+  /detaljplanproxy/{query}:
+    get:
+      tags:
+        - Lantmateriet Detaljplan Proxy
+      parameters:
+        - name: query
+          in: path
+          description: >
+            Path corresponding to an endpoint on Lantmateriet's Geodatakatalog for detaljplan,
+            e.g. "collections" or "collections/1281/items?bbox=389400,6176950,389600,6177200".
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy the specified query to Lantmateriet's Geodatakatalog for detaljplan (NGP), an
+        OGC API Features service delivering the national digital detaljplan data one collection
+        per municipality. When LANTMATERIET_DETALJPLAN_USER is set, the proxy builds a Basic
+        auth header from it and LANTMATERIET_DETALJPLAN_PASSWORD so the credentials never reach
+        the browser; when it is not, the Authorization header sent by the client is forwarded
+        instead. Only enabled when LANTMATERIET_DETALJPLAN_ACTIVE is "true".
+      responses:
+        200:
+          description: Result will vary depending on response from the API.
+          content: {}
   /admin-auth/login:
     post:
       tags:

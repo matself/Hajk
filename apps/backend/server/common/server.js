@@ -358,6 +358,35 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     }
   }
 
+  async setupDetaljplanProxy() {
+    // Each API version has its own Lantmateriet Detaljplan proxy middleware. Let's iterate them.
+    for await (const v of app.get("apiVersions")) {
+      // Credentials are not required here: when .env doesn't hold them, the proxy
+      // forwards the Authorization header sent by the client, which is where
+      // credentials configured per map in Admin arrive from.
+      if (process.env.LANTMATERIET_DETALJPLAN_ACTIVE === "true") {
+        const { default: lantmaterietDetaljplanProxy } = await import(
+          `../apis/v${v}/middlewares/lantmateriet.detaljplan.proxy.js`
+        );
+
+        app.use(`/api/v${v}/detaljplanproxy`, lantmaterietDetaljplanProxy());
+        logger.info(
+          "LANTMATERIET_DETALJPLAN_ACTIVE is set to %o in .env. Enabling Lantmateriet Detaljplan proxy for API V%s. Authenticating with the credentials %s",
+          process.env.LANTMATERIET_DETALJPLAN_ACTIVE,
+          v,
+          process.env.LANTMATERIET_DETALJPLAN_USER === undefined
+            ? "sent by each client, as none are configured in .env"
+            : "from .env"
+        );
+      } else
+        logger.info(
+          "LANTMATERIET_DETALJPLAN_ACTIVE is set to %o in .env. Not enabling Lantmateriet Detaljplan proxy for API V%s",
+          process.env.LANTMATERIET_DETALJPLAN_ACTIVE,
+          v
+        );
+    }
+  }
+
   async setupSokigoProxy() {
     // Each API version has its own Sokigo proxy middleware. Let's iterate them.
     for await (const v of app.get("apiVersions")) {
@@ -561,6 +590,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     await this.setupFmeProxy();
     await this.setupMarkhojdProxy();
     await this.setupBelagenhetsadressProxy();
+    await this.setupDetaljplanProxy();
     await this.setupWmtsAuthProxy();
     await this.setupWmsAuthProxy();
     this.setupGenericProxy();
