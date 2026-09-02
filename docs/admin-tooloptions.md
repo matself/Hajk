@@ -14,6 +14,7 @@ Det här är panelen som öppnas via knappen **Verktyg** i [Kartinställningar](
 | --------------- | ------------------------------------------------- | --------------------------------- | ---- |
 | addresssearch   | [Adressök](admin-tool-addresssearch.md)           | `tools/addresssearch.jsx`         |      |
 | bookmarks       | Platser                                           | `tools/bookmarks.jsx`             |      |
+| planchecker     | [Detaljplan](admin-tool-planchecker.md)           | `tools/planchecker.jsx`           |      |
 | buffer          | Buffra                                            | `tools/buffer.jsx`                | ja   |
 | anchor          | Dela                                              | `tools/anchor.jsx`                |      |
 | documenthandler | Dokumenthanterare                                 | `tools/MenuEditor/menuEditor.jsx` |      |
@@ -92,6 +93,7 @@ Färdiga hittills:
 - [Lagerjämförare (layercomparer)](admin-tool-layercomparer.md)
 - [OSM-sökning (osmsearch)](admin-tool-osmsearch.md)
 - [Adressök (addresssearch)](admin-tool-addresssearch.md)
+- [Detaljplan (planchecker)](admin-tool-planchecker.md)
 - [Infoklick (infoclick)](admin-tool-infoclick.md)
 - [Informationsdialoger (infodialog)](admin-tool-infodialog.md)
 - [Utskrift (print)](admin-tool-print.md)
@@ -103,4 +105,4 @@ Färdiga hittills:
 
 ---
 
-_Detta dokument beskriver läget i koden per 2026-09-01. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras._
+_Detta dokument beskriver läget i koden per 2026-09-02. Om `tooloptions.jsx` ändras (nytt verktyg tillagt/borttaget) bör tabellen ovan uppdateras._

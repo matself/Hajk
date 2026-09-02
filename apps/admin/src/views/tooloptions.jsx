@@ -28,6 +28,7 @@ import MailForm from "./tools/mailform.jsx";
 import Dummy from "./tools/dummy.jsx";
 import AddressSearch from "./tools/addresssearch.jsx";
 import OsmSearch from "./tools/osmsearch.jsx";
+import PlanChecker from "./tools/planchecker.jsx";
 import MenuEditor from "./tools/MenuEditor/menuEditor.jsx";
 import TimeSlider from "./tools/timeslider.jsx";
 // import GeosuiteExport from "./tools/geosuiteExport.jsx";
@@ -110,6 +111,8 @@ class ToolOptions extends Component {
         return <AddressSearch parent={this} model={this.props.model} />;
       case "osmsearch":
         return <OsmSearch parent={this} model={this.props.model} />;
+      case "planchecker":
+        return <PlanChecker parent={this} model={this.props.model} />;
       case "location":
         return <Location parent={this} model={this.props.model} />;
       case "mapillary":
@@ -197,6 +200,7 @@ class ToolOptions extends Component {
       routing: "Navigation",
       information: "Om kartan",
       osmsearch: "OSM-sökning",
+      planchecker: "Detaljplan",
       location: "Positionera",
       edit: "Redigera",
       sketch: "Rita",
