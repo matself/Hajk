@@ -370,6 +370,19 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         );
 
         app.use(`/api/v${v}/detaljplanproxy`, lantmaterietDetaljplanProxy());
+
+        // The plan documents (Plankarta, Planhandling, Beslutsprotokoll) are
+        // served from a sibling path rather than from the söktjänst, behind the
+        // same credentials - so their links land on a browser Basic-auth prompt
+        // unless they are proxied too. Same subscription, same .env, own route.
+        app.use(
+          `/api/v${v}/detaljplanassetproxy`,
+          lantmaterietDetaljplanProxy({
+            target:
+              process.env.LANTMATERIET_DETALJPLAN_ASSET_BASE_URL ||
+              "https://api.lantmateriet.se/distribution/geodatakatalog/nedladdning/v1",
+          })
+        );
         logger.info(
           "LANTMATERIET_DETALJPLAN_ACTIVE is set to %o in .env. Enabling Lantmateriet Detaljplan proxy for API V%s. Authenticating with the credentials %s",
           process.env.LANTMATERIET_DETALJPLAN_ACTIVE,
@@ -386,6 +399,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
         // disabled feature. Say so plainly instead.
         const configuredButInactive = [
           "LANTMATERIET_DETALJPLAN_BASE_URL",
+          "LANTMATERIET_DETALJPLAN_ASSET_BASE_URL",
           "LANTMATERIET_DETALJPLAN_USER",
           "LANTMATERIET_DETALJPLAN_PASSWORD",
         ].filter((key) => process.env[key] !== undefined);

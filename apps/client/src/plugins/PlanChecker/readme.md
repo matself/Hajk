@@ -84,6 +84,13 @@ metadata repeated on it, so grouping needs no second request:
 | Plan status | `detaljplan.status`, `detaljplan.datumLagakraft` |
 | Regulation grouping | `feature.typ` |
 | Documents | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
+
+The document links need proxying of their own. Their `href` points at
+Lantmäteriet's **download** endpoint — a sibling path to the söktjänst, not
+below it — behind the same credentials, so following one directly puts up a
+browser login prompt nobody can answer. The plugin rewrites each href onto
+`assetProxyPath`; anything not matching that shape is left untouched rather
+than mangled.
 | Regulation text | `planbestammelse.bestammelseformulering` |
 | Regulation detail | `planbestammelse.anvandningsform` / `kategori` / `underkategori` |
 
@@ -137,6 +144,7 @@ asynchronously and a layer missing at first render usually is not.
     "title": "Detaljplan",
     "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
     "proxyPath": "detaljplanproxy", // Path below mapserviceBase where the backend proxy sits.
+    "assetProxyPath": "detaljplanassetproxy", // …and where the document proxy sits.
     "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
     "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
     "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer the tool

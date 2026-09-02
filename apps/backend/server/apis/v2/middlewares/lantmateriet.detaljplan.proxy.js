@@ -20,9 +20,16 @@ function buildAuthHeader() {
   return `Basic ${Buffer.from(raw).toString("base64")}`;
 }
 
-export default function lantmaterietDetaljplanProxy(_err, _req, _res, _next) {
+/**
+ * @param {object} [options]
+ * @param {string} [options.target] Upstream base URL. Defaults to the söktjänst.
+ *   The plan documents live under a sibling path (nedladdning/v1) behind the same
+ *   credentials, so the asset route passes that base instead of the search one.
+ */
+export default function lantmaterietDetaljplanProxy(options = {}) {
   return createProxyMiddleware({
     target:
+      options.target ||
       process.env.LANTMATERIET_DETALJPLAN_BASE_URL ||
       "https://api.lantmateriet.se/distribution/geodatakatalog/sokning/v1/detaljplan/v2",
     logger: logger,

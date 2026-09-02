@@ -683,6 +683,31 @@ paths:
         200:
           description: Result will vary depending on response from the API.
           content: {}
+  /detaljplanassetproxy/{query}:
+    get:
+      tags:
+        - Lantmateriet Detaljplan Proxy
+      parameters:
+        - name: query
+          in: path
+          description: >
+            Path below Lantmateriet's Geodatakatalog download endpoint, in practice
+            "asset/{uuid}" - the plan documents (Plankarta, Planhandling,
+            Beslutsprotokoll) an item's assets link to.
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy a plan document from Lantmateriet's Geodatakatalog. The documents are
+        served from a sibling path to the search service rather than below it, but
+        behind the same credentials, so their links would otherwise land the user on
+        a browser Basic-auth prompt. Shares LANTMATERIET_DETALJPLAN_ACTIVE and the
+        credentials with the search proxy; the base URL is set separately with
+        LANTMATERIET_DETALJPLAN_ASSET_BASE_URL.
+      responses:
+        200:
+          description: The document, streamed from the upstream service.
+          content: {}
   /admin-auth/login:
     post:
       tags:

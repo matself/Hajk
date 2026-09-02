@@ -29,6 +29,7 @@ export default class PlanCheckerModel {
   #localObserver;
   #options;
   #api;
+  #assetProxyBase;
 
   constructor(settings) {
     this.#map = settings.map;
@@ -51,6 +52,7 @@ export default class PlanCheckerModel {
     this.#api = new PlanCheckerApi(
       `${mapServiceBase}/${this.#options.proxyPath}`
     );
+    this.#assetProxyBase = `${mapServiceBase}/${this.#options.assetProxyPath}`;
 
     this.#localObserver.subscribe(
       "drawModel.featureAdded",
@@ -164,7 +166,23 @@ export default class PlanCheckerModel {
     const assets = item.assets ?? {};
     return Object.values(assets)
       .filter((a) => a?.href && a.title && a.roles?.[0] !== "detaljplan")
-      .map((a) => ({ title: a.title, href: a.href, role: a.roles?.[0] }));
+      .map((a) => ({
+        title: a.title,
+        href: this.#toProxiedAssetUrl(a.href),
+        role: a.roles?.[0],
+      }));
+  };
+
+  /**
+   * Point a document link at our own proxy. The hrefs are absolute URLs into
+   * Lantmateriet's download endpoint, which requires the same credentials as the
+   * search service - follow one directly and the browser puts up a login prompt
+   * nobody can answer. Anything not matching that shape is left alone rather
+   * than mangled.
+   */
+  #toProxiedAssetUrl = (href) => {
+    const match = /\/nedladdning\/v\d+\/(.+)$/.exec(href);
+    return match ? `${this.#assetProxyBase}/${match[1]}` : href;
   };
 
   #handleFeatureAdded = async (feature) => {

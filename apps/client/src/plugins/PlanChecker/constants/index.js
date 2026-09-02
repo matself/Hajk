@@ -10,6 +10,10 @@ export const DEFAULT_MEASUREMENT_SETTINGS = Object.freeze({
 export const DEFAULT_OPTIONS = Object.freeze({
   // Path below mapserviceBase where the backend's NGP proxy is mounted.
   proxyPath: "detaljplanproxy",
+  // And where the proxy for the plan documents is mounted. They are served from
+  // a sibling path to the search service, behind the same credentials, so their
+  // links need proxying too or they land on a browser login prompt.
+  assetProxyPath: "detaljplanassetproxy",
   // Which plan statuses to look for. Lantmateriet's own viewer asks for
   // "laga kraft" alone, which is the honest default: a plan that has not
   // gained legal force does not regulate anything yet.
