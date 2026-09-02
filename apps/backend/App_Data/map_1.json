@@ -770,6 +770,24 @@
         "zoomToBoundingBox": true,
         "visibleForGroups": []
       }
+    },
+    {
+      "type": "planchecker",
+      "index": 1,
+      "options": {
+        "title": "Planbesked",
+        "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
+        "kommunkod": "1281",
+        "proxyPath": "detaljplanproxy",
+        "clickBufferMeters": 1,
+        "maxItems": 200,
+        "wmsLayerId": "",
+        "visibleAtStart": false,
+        "target": "control",
+        "position": "right",
+        "height": "dynamic",
+        "visibleForGroups": []
+      }
     }
   ],
   "map": {

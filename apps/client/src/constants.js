@@ -29,6 +29,7 @@ export const AVAILABLE_TOOLS = [
   "Mapillary",
   "Measurer",
   "OsmSearch",
+  "PlanChecker",
   "Print",
   "PropertyChecker",
   "Routing",
