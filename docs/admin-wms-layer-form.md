@@ -18,8 +18,17 @@ Statuskoder ("Tjänsten kräver inloggning (HTTP 401)") kan bara visas när webb
 
 Lagerlistan hämtas i fyra WMS-versioner parallellt (1.3.0, 1.1.1, 1.1.0 och 1.0.0) och dubbletter sorteras bort. Om tjänsten svarar på några av dem men inte alla används de som lyckades — hela hämtningen avbryts bara om samtliga misslyckas.
 
-**Autentisering (Basic) — Användarnamn / Lösenord**
-Om tjänsten kräver Basic-autentisering, fyll i dessa **innan** du klickar Ladda. Hajk hämtar capabilities server-side med uppgifterna och lagrar dem i `layers.json`, så att backend proxyar anrop till tjänsten med samma inloggning. Uppgifterna skickas aldrig till webbläsaren/klienten.
+**Autentisering (Basic eller Bearer) — Användarnamn / Lösenord / Token**
+Om tjänsten kräver autentisering, fyll i uppgifterna **innan** du klickar Ladda. Hajk hämtar capabilities server-side med dem och lagrar dem i `layers.json`, så att backend proxyar anrop till tjänsten med samma inloggning. Uppgifterna skickas aldrig till webbläsaren/klienten — de plockas bort ur kartkonfigurationen innan den lämnar servern, och lagrets URL skrivs samtidigt om till backendens egen proxy (`/api/v2/wmsproxy/<lager-id>/…`).
+
+Två scheman stöds, och du fyller i **antingen** det ena eller det andra:
+
+- **Användarnamn** och **Lösenord** ger `Basic`-autentisering. Detta är vad de flesta tjänster med inloggning använder.
+- **Token** ger `Bearer`-autentisering. Detta är vad t.ex. Lantmäteriets visningstjänster bakom Geotorget använder, där prenumerationen ger en token i stället för ett lösenord.
+
+Fylls båda i används **token**, eftersom en tjänst som begär en Bearer-token inte har någon användning för Basic-uppgifter som blivit kvar sedan ett tidigare försök. Vill du byta från token till användarnamn och lösenord måste du alltså tömma tokenfältet.
+
+När du öppnar ett sparat lager för redigering fylls fälten i från `layers.json`, så att uppgifterna följer med när du sparar om lagret.
 
 **Välj workspace**
 Visas bara för GeoServer-tjänster (kräver att "Hämta workspace" klickats). Begränsar vilket workspace lagerlistan hämtas ifrån — praktiskt för GeoServer-instanser med många workspaces, annars måste hela den (ofta stora) gemensamma capabilities-listan hämtas.

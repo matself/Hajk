@@ -92,6 +92,7 @@ const defaultState = {
   workspaceList: [],
   authUsername: "",
   authPassword: "",
+  authToken: "",
   attributesCache: {},
   attributesFetching: {},
   attributesErrors: {},
@@ -1375,6 +1376,7 @@ class WMSLayerForm extends Component {
       {
         username: this.state.authUsername,
         password: this.state.authPassword,
+        token: this.state.authToken,
       }
     );
 
@@ -1613,18 +1615,28 @@ class WMSLayerForm extends Component {
   getLayer() {
     const cql = this.getValue("defaultCqlFilter");
 
-    // Assemble the (optional) Basic auth block. When no username is provided we
-    // return `undefined`, which JSON.stringify drops entirely - so unauthenticated
-    // layers stay clean. Credentials are only ever used server-side by the WMS
-    // auth proxy and are stripped before the config reaches the client.
+    // Assemble the (optional) auth block, in the two schemes the WMS auth proxy
+    // understands. A token wins over a username, because a service asking for a
+    // Bearer token has no use for Basic credentials left over from an earlier
+    // attempt. When neither is given we return `undefined`, which JSON.stringify
+    // drops entirely - so unauthenticated layers stay clean. Credentials are only
+    // ever used server-side by the WMS auth proxy and are stripped before the
+    // config reaches the client.
     const authUsername = this.getValue("authUsername");
-    const auth = authUsername
-      ? {
-          type: "basic",
-          username: authUsername,
-          password: this.getValue("authPassword"),
-        }
-      : undefined;
+    const authToken = this.getValue("authToken");
+    let auth = undefined;
+    if (authToken) {
+      auth = {
+        type: "bearer",
+        token: authToken,
+      };
+    } else if (authUsername) {
+      auth = {
+        type: "basic",
+        username: authUsername,
+        password: this.getValue("authPassword"),
+      };
+    }
 
     const o = {
       type: this.state.layerType,
@@ -1975,8 +1987,8 @@ class WMSLayerForm extends Component {
           )}
         </div>
         <div className="separator">
-          Autentisering (Basic){" "}
-          <abbr title="Om tjänsten kräver Basic-autentisering (användarnamn/lösenord), fyll i uppgifterna här INNAN du klickar Ladda. Hajk hämtar capabilities server-side med dessa uppgifter, och lagrar dem i layers.json för att skicka dem server-side till tjänsten via en inbyggd proxy. Uppgifterna skickas aldrig till webbläsaren.">
+          Autentisering (Basic eller Bearer){" "}
+          <abbr title="Om tjänsten kräver autentisering, fyll i uppgifterna här INNAN du klickar Ladda. Använd antingen användarnamn och lösenord (Basic) eller en token (Bearer) - fylls båda i används token. Hajk hämtar capabilities server-side med dessa uppgifter, och lagrar dem i layers.json för att skicka dem server-side till tjänsten via en inbyggd proxy. Uppgifterna skickas aldrig till webbläsaren.">
             (?)
           </abbr>
         </div>
@@ -2001,6 +2013,18 @@ class WMSLayerForm extends Component {
             value={this.state.authPassword}
             onChange={(e) => {
               this.setState({ authPassword: e.target.value });
+            }}
+          />
+        </div>
+        <div>
+          <label>Token</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            ref="input_authToken"
+            value={this.state.authToken}
+            onChange={(e) => {
+              this.setState({ authToken: e.target.value });
             }}
           />
         </div>

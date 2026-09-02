@@ -478,12 +478,12 @@ var manager = Model.extend({
       return parseCapabilities(xmlstr, "wms");
     };
 
-    // If the service requires Basic auth, the browser cannot fetch its
-    // capabilities directly (the Authorization header triggers a CORS preflight
-    // that authenticated providers won't answer). Route the request through the
-    // backend instead, which fetches server-side and returns the raw XML.
-    // Unauthenticated services use direct browser fetch.
-    if (auth && auth.username) {
+    // If the service requires authentication, Basic or Bearer alike, the
+    // browser cannot fetch its capabilities directly (the Authorization header
+    // triggers a CORS preflight that authenticated providers won't answer).
+    // Route the request through the backend instead, which fetches server-side
+    // and returns the raw XML. Unauthenticated services use direct browser fetch.
+    if (auth && (auth.username || auth.token)) {
       var endpoint = this.get("config").url_layers.replace(
         /\/layers\/?$/,
         "/wmscapabilities"
@@ -502,6 +502,7 @@ var manager = Model.extend({
             version: version,
             username: auth.username,
             password: auth.password,
+            token: auth.token,
           }),
         })
           .then(readBackendResponse)

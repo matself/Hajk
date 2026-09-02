@@ -325,6 +325,7 @@ class Manager extends Component {
           searchGeometryField: layer.searchGeometryField || "",
           authUsername: layer.auth?.username || "",
           authPassword: layer.auth?.password || "",
+          authToken: layer.auth?.token || "",
           infoVisible: layer.infoVisible,
           infoTitle: layer.infoTitle,
           infoText: layer.infoText,

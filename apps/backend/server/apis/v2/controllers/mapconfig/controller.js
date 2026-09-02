@@ -90,10 +90,12 @@ export class Controller {
    * @memberof Controller
    */
   wmsCapabilities(req, res) {
-    const { url, version, username, password } = req.body || {};
-    ConfigService.getWmsCapabilities(url, version, { username, password }).then(
-      (data) => handleStandardResponse(res, data)
-    );
+    const { url, version, username, password, token } = req.body || {};
+    ConfigService.getWmsCapabilities(url, version, {
+      username,
+      password,
+      token,
+    }).then((data) => handleStandardResponse(res, data));
   }
 
   /**

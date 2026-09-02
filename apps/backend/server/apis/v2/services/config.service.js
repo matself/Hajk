@@ -1100,8 +1100,13 @@ class ConfigServiceV2 {
         finalUrl = `${url}${glue}service=WMS&request=GetCapabilities&version=${encodeURIComponent(version)}`;
       }
 
+      // The same two schemes the WMS auth proxy supports, so a layer that
+      // renders through the proxy can have its capabilities read here too.
+      // Bearer wins when both are configured, matching the proxy's own order.
       const headers = {};
-      if (auth && auth.username) {
+      if (auth && auth.token) {
+        headers.Authorization = `Bearer ${auth.token}`;
+      } else if (auth && auth.username) {
         const raw = `${auth.username}:${auth.password ?? ""}`;
         headers.Authorization = `Basic ${Buffer.from(raw).toString("base64")}`;
       }
