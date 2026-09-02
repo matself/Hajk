@@ -24,7 +24,7 @@ const heading = (type) => REGULATION_TYPE_HEADINGS[type?.toLowerCase()] ?? type;
  * matters when reading a plan: what applies at this exact point, versus what
  * the plan contains as a whole, with the counts to move between them.
  */
-function PlanCheckerView({ localObserver }) {
+function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
   const [plans, setPlans] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -47,6 +47,20 @@ function PlanCheckerView({ localObserver }) {
     };
   }, [localObserver]);
 
+  const layerWarning =
+    layerStatus === "missing" ? (
+      <Alert severity="warning">
+        Planlagret ({wmsLayerId}) finns inte i den här kartan, så planerna kan
+        inte visas grafiskt. Kontrollera lagret i Lagerhanteraren, eller
+        verktygets inställning, med kartans administratör.
+      </Alert>
+    ) : layerStatus === "hidden" ? (
+      <Alert severity="info">
+        Planlagret är släckt. Tänd det i Lagerhanteraren för att se planerna i
+        kartan — sökningen fungerar ändå.
+      </Alert>
+    ) : null;
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
@@ -55,13 +69,24 @@ function PlanCheckerView({ localObserver }) {
     );
   }
 
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) {
+    return (
+      <Stack spacing={2}>
+        {layerWarning}
+        <Alert severity="error">{error}</Alert>
+      </Stack>
+    );
+  }
 
   if (plans === null) {
     return (
-      <Typography variant="body2">
-        Klicka i kartan för att se vilka planbestämmelser som gäller på platsen.
-      </Typography>
+      <Stack spacing={2}>
+        {layerWarning}
+        <Typography variant="body2">
+          Klicka i kartan för att se vilka planbestämmelser som gäller på
+          platsen.
+        </Typography>
+      </Stack>
     );
   }
 
@@ -70,16 +95,20 @@ function PlanCheckerView({ localObserver }) {
     // the same as no plan. NGP holds only plans delivered under the national
     // specification, which is a minority of those in force.
     return (
-      <Alert severity="info">
-        Ingen digital detaljplan hittades på den klickade punkten. Det betyder
-        inte att platsen saknar detaljplan — bara att det inte finns någon
-        registrerad i den nationella geodataplattformen.
-      </Alert>
+      <Stack spacing={2}>
+        {layerWarning}
+        <Alert severity="info">
+          Ingen digital detaljplan hittades på den klickade punkten. Det betyder
+          inte att platsen saknar detaljplan — bara att det inte finns någon
+          registrerad i den nationella geodataplattformen.
+        </Alert>
+      </Stack>
     );
   }
 
   return (
     <Stack spacing={2}>
+      {layerWarning}
       <FormControlLabel
         control={
           <Switch

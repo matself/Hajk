@@ -65,47 +65,42 @@ const PlanChecker = (props) => {
     return () => drawModel.toggleDrawInteraction("");
   }, [drawModel, pluginShown]);
 
-  // Switch the styled plan layer on with the tool. The WMS is the only thing
-  // the user actually sees - the söktjänst has no rendering of its own - so a
-  // PlanChecker without it shows results for plans that are invisible on the
-  // map. Whatever the layer's visibility was before is restored on close, so
-  // the tool does not switch off a layer the user had turned on themselves.
-  const previousVisibility = React.useRef(null);
+  // Watch the styled plan layer rather than commanding it. Turning layers on
+  // and off is the user's business, so the tool only reports when the layer it
+  // depends on is missing or switched off - results that describe plans nobody
+  // can see on the map are worse than a warning saying why.
+  const [layerStatus, setLayerStatus] = React.useState("ok");
   React.useEffect(() => {
     const layerId = props.options.wmsLayerId;
-    if (!layerId) return;
+    if (!layerId || !pluginShown) {
+      setLayerStatus("ok");
+      return;
+    }
 
-    // Layers load asynchronously, so the layer may not exist on first render.
-    // Retry briefly rather than silently doing nothing.
     let cancelled = false;
     let attempts = 0;
-    const apply = () => {
+    let layer = null;
+    const onVisibilityChange = () =>
+      setLayerStatus(layer.getVisible() ? "ok" : "hidden");
+
+    const attach = () => {
       if (cancelled) return;
-      const layer = props.map
-        .getAllLayers()
-        .find((l) => l.get("name") === layerId);
+      layer = props.map.getAllLayers().find((l) => l.get("name") === layerId);
 
+      // Layers load asynchronously, so absence at first render means nothing.
       if (!layer) {
-        if (attempts++ < 20) return void setTimeout(apply, 250);
-        console.warn(
-          `PlanChecker: no layer with id "${layerId}" is present in this map, so the plan layer cannot be switched on. Check the plugin's wmsLayerId against layers.json.`
-        );
-        return;
+        if (attempts++ < 20) return void setTimeout(attach, 250);
+        return setLayerStatus("missing");
       }
 
-      if (pluginShown) {
-        if (previousVisibility.current === null) {
-          previousVisibility.current = layer.getVisible();
-        }
-        layer.setVisible(true);
-      } else if (previousVisibility.current !== null) {
-        layer.setVisible(previousVisibility.current);
-        previousVisibility.current = null;
-      }
+      onVisibilityChange();
+      layer.on("change:visible", onVisibilityChange);
     };
-    apply();
+    attach();
+
     return () => {
       cancelled = true;
+      layer?.un("change:visible", onVisibilityChange);
     };
   }, [props.map, props.options.wmsLayerId, pluginShown]);
 
@@ -115,7 +110,7 @@ const PlanChecker = (props) => {
       type="planchecker"
       custom={{
         icon: <MapIcon />,
-        title: props.options.title || "Planbesked",
+        title: props.options.title || "Detaljplan",
         description:
           props.options.description ||
           "Klicka i kartan och se vilka planbestämmelser som gäller",
@@ -125,7 +120,11 @@ const PlanChecker = (props) => {
         onWindowShow: () => setPluginShown(true),
       }}
     >
-      <PlanCheckerView localObserver={localObserver} />
+      <PlanCheckerView
+        localObserver={localObserver}
+        layerStatus={layerStatus}
+        wmsLayerId={props.options.wmsLayerId}
+      />
     </BaseWindowPlugin>
   );
 };

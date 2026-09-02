@@ -775,7 +775,7 @@
       "type": "planchecker",
       "index": 1,
       "options": {
-        "title": "Planbesked",
+        "title": "Detaljplan",
         "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
         "proxyPath": "detaljplanproxy",
         "planStatuses": [

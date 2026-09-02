@@ -102,8 +102,29 @@ Two things, and neither fails loudly if forgotten:
    That 404 means the proxy is off, not that the path is wrong. The backend logs
    which it did at startup: *"LANTMATERIET_DETALJPLAN_ACTIVE is set to … Enabling
    Lantmateriet Detaljplan proxy for API V2"*.
-2. **A styled WMS layer configured and referenced by `wmsLayerId`.** The
+2. **A styled WMS layer, in the map, referenced by `wmsLayerId`.** The
    söktjänst renders nothing, so the WMS is the whole visual half of the tool.
+   Note that a layer in `layers.json` is not enough — `layerLoader.flatten()`
+   builds the map's layers from the LayerSwitcher's `baselayers` and `groups`
+   alone, and the backend strips unreferenced layers from the config before it
+   reaches the browser. A layer not placed in the LayerSwitcher tree is never
+   added to the map at all.
+
+### The plugin never touches layer visibility
+
+Switching layers on and off is the user's business. The tool watches the plan
+layer instead of commanding it, and says so when something is wrong:
+
+| State | What the user sees |
+| --- | --- |
+| Layer missing from the map | A warning naming the configured id, pointing at Lagerhanteraren and the tool's setting |
+| Layer present but switched off | A note that the layer is off and where to light it, making clear the search still works |
+| Layer present and visible | Nothing |
+
+The check subscribes to the layer's `change:visible`, so lighting the layer
+clears the notice immediately rather than at the next click. Absence is only
+concluded after retrying for about five seconds, because layers load
+asynchronously and a layer missing at first render usually is not.
 
 ### Example configuration
 
@@ -112,15 +133,13 @@ Two things, and neither fails loudly if forgotten:
   "type": "planchecker",
   "index": 1,
   "options": {
-    "title": "Planbesked",
+    "title": "Detaljplan",
     "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
     "proxyPath": "detaljplanproxy", // Path below mapserviceBase where the backend proxy sits.
     "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
     "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
-    "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer to switch
-                                // on with the tool. Effectively required: the söktjänst has no
-                                // rendering, so without it results refer to plans the user
-                                // cannot see. A warning is logged if the id matches no layer.
+    "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer the tool
+                                // watches. Leave empty and no layer check happens at all.
     "visibleAtStart": false,
     "target": "control",
     "position": "right",
