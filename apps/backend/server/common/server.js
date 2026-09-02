@@ -378,12 +378,34 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
             ? "sent by each client, as none are configured in .env"
             : "from .env"
         );
-      } else
-        logger.info(
-          "LANTMATERIET_DETALJPLAN_ACTIVE is set to %o in .env. Not enabling Lantmateriet Detaljplan proxy for API V%s",
-          process.env.LANTMATERIET_DETALJPLAN_ACTIVE,
-          v
-        );
+      } else {
+        // Configuring the credentials but leaving ACTIVE commented out is an
+        // easy mistake and an entirely silent one: the route is never mounted,
+        // and the request ends up at Express' own 404 ("Cannot POST /api/v2/
+        // detaljplanproxy/..."), which reads like a wrong path rather than a
+        // disabled feature. Say so plainly instead.
+        const configuredButInactive = [
+          "LANTMATERIET_DETALJPLAN_BASE_URL",
+          "LANTMATERIET_DETALJPLAN_USER",
+          "LANTMATERIET_DETALJPLAN_PASSWORD",
+        ].filter((key) => process.env[key] !== undefined);
+
+        if (configuredButInactive.length > 0) {
+          logger.warn(
+            "Lantmateriet Detaljplan proxy is NOT enabled for API V%s, but %s %s set in .env. Did you forget to uncomment LANTMATERIET_DETALJPLAN_ACTIVE=true? Until you do, requests to /api/v%s/detaljplanproxy answer with a 404 from Express, not from the service.",
+            v,
+            configuredButInactive.join(", "),
+            configuredButInactive.length === 1 ? "is" : "are",
+            v
+          );
+        } else {
+          logger.info(
+            "LANTMATERIET_DETALJPLAN_ACTIVE is set to %o in .env. Not enabling Lantmateriet Detaljplan proxy for API V%s",
+            process.env.LANTMATERIET_DETALJPLAN_ACTIVE,
+            v
+          );
+        }
+      }
     }
   }
 

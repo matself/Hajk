@@ -117,6 +117,7 @@ layer instead of commanding it, and says so when something is wrong:
 
 | State | What the user sees |
 | --- | --- |
+| `wmsLayerId` not configured | A warning that no plan layer is connected, naming the setting |
 | Layer missing from the map | A warning naming the configured id, pointing at Lagerhanteraren and the tool's setting |
 | Layer present but switched off | A note that the layer is off and where to light it, making clear the search still works |
 | Layer present and visible | Nothing |
@@ -139,7 +140,8 @@ asynchronously and a layer missing at first render usually is not.
     "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
     "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
     "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer the tool
-                                // watches. Leave empty and no layer check happens at all.
+                                // watches. Leaving it empty is itself reported, so a tool that
+                                // was never configured does not look like a working one.
     "visibleAtStart": false,
     "target": "control",
     "position": "right",

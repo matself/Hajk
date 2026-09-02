@@ -48,7 +48,13 @@ function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
   }, [localObserver]);
 
   const layerWarning =
-    layerStatus === "missing" ? (
+    layerStatus === "unconfigured" ? (
+      <Alert severity="warning">
+        Inget planlager är kopplat till verktyget, så planerna kan inte visas i
+        kartan. Sökningen fungerar ändå. Ange lagrets id i verktygets
+        inställning <code>wmsLayerId</code>.
+      </Alert>
+    ) : layerStatus === "missing" ? (
       <Alert severity="warning">
         Planlagret ({wmsLayerId}) finns inte i den här kartan, så planerna kan
         inte visas grafiskt. Kontrollera lagret i Lagerhanteraren, eller

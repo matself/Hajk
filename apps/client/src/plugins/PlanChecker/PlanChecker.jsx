@@ -72,8 +72,14 @@ const PlanChecker = (props) => {
   const [layerStatus, setLayerStatus] = React.useState("ok");
   React.useEffect(() => {
     const layerId = props.options.wmsLayerId;
-    if (!layerId || !pluginShown) {
+    if (!pluginShown) {
       setLayerStatus("ok");
+      return;
+    }
+    // An unset id used to mean "say nothing", which made a tool that had simply
+    // never been configured indistinguishable from a working one.
+    if (!layerId) {
+      setLayerStatus("unconfigured");
       return;
     }
 
