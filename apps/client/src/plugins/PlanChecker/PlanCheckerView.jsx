@@ -40,10 +40,17 @@ function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
       setError(null);
       setPlans(plans);
     });
+    localObserver.subscribe("planChecker.reset", () => {
+      setPlans(null);
+      setError(null);
+      setLoading(false);
+      setShowAll(false);
+    });
     return () => {
       localObserver.unsubscribe("planChecker.loading");
       localObserver.unsubscribe("planChecker.error");
       localObserver.unsubscribe("planChecker.result");
+      localObserver.unsubscribe("planChecker.reset");
     };
   }, [localObserver]);
 

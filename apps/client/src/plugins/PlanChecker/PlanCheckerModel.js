@@ -59,6 +59,17 @@ export default class PlanCheckerModel {
   }
 
   /**
+   * Forget the current result and drop anything in flight. The window is only
+   * hidden, not unmounted, so without this the previous answer is still on
+   * screen the next time the tool is opened - and a search started just before
+   * closing would arrive afterwards and fill the list back in.
+   */
+  reset = () => {
+    this.#api.abort();
+    this.#localObserver.publish("planChecker.reset");
+  };
+
+  /**
    * Drop the subscription and abort anything in flight. Without this the model
    * would keep answering draw events after the plugin is gone.
    */

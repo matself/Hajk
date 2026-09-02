@@ -179,6 +179,15 @@ The raw shape is below.
 }
 ```
 
+### Closing the window clears the result
+
+`BaseWindowPlugin` hides the plugin rather than unmounting it, so component
+state survives a close. Without clearing it the previous answer is still on
+screen the next time the tool is opened, which reads as a result for wherever
+the user has since panned to. Closing therefore resets the view and aborts any
+search still in flight — one that returned afterwards would otherwise refill a
+list the user had dismissed.
+
 ### Known gaps
 
 - **Presentation is deliberately plain.** The plan's documents are linked and

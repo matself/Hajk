@@ -59,11 +59,12 @@ const PlanChecker = (props) => {
     if (!pluginShown) {
       drawModel.toggleDrawInteraction("");
       drawModel.removeDrawnFeatures();
+      planCheckerModel.reset();
       return;
     }
     drawModel.toggleDrawInteraction("Point");
     return () => drawModel.toggleDrawInteraction("");
-  }, [drawModel, pluginShown]);
+  }, [drawModel, planCheckerModel, pluginShown]);
 
   // Watch the styled plan layer rather than commanding it. Turning layers on
   // and off is the user's business, so the tool only reports when the layer it
