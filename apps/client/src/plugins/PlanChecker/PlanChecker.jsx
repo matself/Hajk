@@ -49,6 +49,10 @@ const PlanChecker = (props) => {
       })
   );
 
+  // The model subscribes to the DrawModel in its constructor, so it has to be
+  // let go of explicitly when the plugin unmounts.
+  React.useEffect(() => () => planCheckerModel.destroy(), [planCheckerModel]);
+
   // Only listen for clicks while the window is open, and clear the drawn point
   // when it closes, so a stale marker isn't left behind in the map.
   React.useEffect(() => {
@@ -61,15 +65,48 @@ const PlanChecker = (props) => {
     return () => drawModel.toggleDrawInteraction("");
   }, [drawModel, pluginShown]);
 
-  // Switch the styled plan layer on with the tool, if one is configured. The
-  // WMS is what the user actually sees; the queried layer is invisible.
+  // Switch the styled plan layer on with the tool. The WMS is the only thing
+  // the user actually sees - the söktjänst has no rendering of its own - so a
+  // PlanChecker without it shows results for plans that are invisible on the
+  // map. Whatever the layer's visibility was before is restored on close, so
+  // the tool does not switch off a layer the user had turned on themselves.
+  const previousVisibility = React.useRef(null);
   React.useEffect(() => {
     const layerId = props.options.wmsLayerId;
     if (!layerId) return;
-    const layer = props.map
-      .getAllLayers()
-      .find((l) => l.get("name") === layerId);
-    layer?.setVisible(pluginShown);
+
+    // Layers load asynchronously, so the layer may not exist on first render.
+    // Retry briefly rather than silently doing nothing.
+    let cancelled = false;
+    let attempts = 0;
+    const apply = () => {
+      if (cancelled) return;
+      const layer = props.map
+        .getAllLayers()
+        .find((l) => l.get("name") === layerId);
+
+      if (!layer) {
+        if (attempts++ < 20) return void setTimeout(apply, 250);
+        console.warn(
+          `PlanChecker: no layer with id "${layerId}" is present in this map, so the plan layer cannot be switched on. Check the plugin's wmsLayerId against layers.json.`
+        );
+        return;
+      }
+
+      if (pluginShown) {
+        if (previousVisibility.current === null) {
+          previousVisibility.current = layer.getVisible();
+        }
+        layer.setVisible(true);
+      } else if (previousVisibility.current !== null) {
+        layer.setVisible(previousVisibility.current);
+        previousVisibility.current = null;
+      }
+    };
+    apply();
+    return () => {
+      cancelled = true;
+    };
   }, [props.map, props.options.wmsLayerId, pluginShown]);
 
   return (
@@ -88,7 +125,7 @@ const PlanChecker = (props) => {
         onWindowShow: () => setPluginShown(true),
       }}
     >
-      <PlanCheckerView model={planCheckerModel} localObserver={localObserver} />
+      <PlanCheckerView localObserver={localObserver} />
     </BaseWindowPlugin>
   );
 };

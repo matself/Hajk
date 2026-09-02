@@ -662,6 +662,27 @@ paths:
         200:
           description: Result will vary depending on response from the API.
           content: {}
+    post:
+      tags:
+        - Lantmateriet Detaljplan Proxy
+      parameters:
+        - name: query
+          in: path
+          description: >
+            Path corresponding to an endpoint that accepts POST, in practice "search" - the
+            catalog's item-search, which takes a GeoJSON `intersects` geometry and a `query`
+            filter object in the request body. Note that this endpoint is not advertised by
+            the service's /conformance, which lists only the OGC API Features classes, but it
+            is what Lantmateriet's own viewer uses and it is the only way to get an exact
+            point-in-polygon test rather than a bounding-box one.
+          required: true
+          schema:
+            type: string
+      description: Same as the GET variant, but for the endpoints that take a request body.
+      responses:
+        200:
+          description: Result will vary depending on response from the API.
+          content: {}
   /admin-auth/login:
     post:
       tags:

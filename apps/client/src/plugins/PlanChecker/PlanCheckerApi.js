@@ -23,14 +23,19 @@ const readErrorDetail = (body) => {
  * @summary Talks to Lantmateriet's Geodatakatalog for detaljplan (NGP) through
  * Hajk's backend proxy.
  *
- * @description The service is OGC API Features, not WFS, despite being widely
- * described as the latter: its /conformance lists only the Features core,
- * oas30 and geojson classes plus Part 2 (crs). Two consequences shape this
- * class. There is no `intersects` operator, so a click has to be expressed as
- * a small bbox and narrowed afterwards; and `bbox` is read in the collection's
- * storage CRS unless `bbox-crs` says otherwise, returning an empty
- * FeatureCollection rather than an error when it is wrong - so both CRS
- * parameters are always sent explicitly.
+ * @description Everything goes through one endpoint: `POST /search`, the
+ * catalog's item-search. It takes a GeoJSON `intersects` geometry and a `query`
+ * filter object, and it is what gives an exact point-in-polygon test.
+ *
+ * Worth knowing, because it is not discoverable: the service's own
+ * `/conformance` advertises only the OGC API Features classes and says nothing
+ * about item-search, so from the documentation alone you would conclude that
+ * `bbox` is the only spatial filter available and that hits have to be narrowed
+ * client-side. `POST /search` with `intersects` nevertheless works, and is what
+ * Lantmateriet's own viewer uses.
+ *
+ * Geometries travel in the collections' storage CRS, SWEREF 99 TM, in both
+ * directions - the caller transforms.
  */
 export default class PlanCheckerApi {
   #baseUrl;
@@ -40,47 +45,21 @@ export default class PlanCheckerApi {
     this.#baseUrl = baseUrl.replace(/\/+$/, "");
   }
 
-  static crsUri(epsgCode) {
-    return `http://www.opengis.net/def/crs/EPSG/0/${epsgCode}`;
-  }
-
+  /** Abort whatever is in flight; a new click makes the old answer irrelevant. */
   abort() {
     this.#controller?.abort();
     this.#controller = null;
   }
 
-  /**
-   * Fetch the plan regulations whose bounding box overlaps `bbox`.
-   *
-   * @param {object} params
-   * @param {string} params.kommunkod Four-digit code; one collection per municipality.
-   * @param {number[]} params.bbox [minX, minY, maxX, maxY] in `epsgCode`.
-   * @param {string} params.epsgCode Numeric EPSG code, without the "EPSG:" prefix.
-   * @param {number} params.limit
-   * @returns {Promise<object>} The GeoJSON FeatureCollection.
-   */
-  async getItemsByBbox({ kommunkod, bbox, epsgCode, limit }) {
-    // One click at a time: a new one makes the previous answer irrelevant.
-    this.abort();
-    this.#controller = new AbortController();
-
-    const crs = PlanCheckerApi.crsUri(epsgCode);
-    const params = new URLSearchParams({
-      bbox: bbox.join(","),
-      "bbox-crs": crs,
-      // Ask for the geometries back in the map's own projection, so nothing
-      // needs reprojecting before the hit test.
-      crs: crs,
-      limit: String(limit),
-    });
-
-    const url = `${this.#baseUrl}/collections/${encodeURIComponent(
-      kommunkod
-    )}/items?${params.toString()}`;
-
-    const response = await fetch(url, {
-      signal: this.#controller.signal,
-      headers: { Accept: "application/geo+json" },
+  async #search(body, signal) {
+    const response = await fetch(`${this.#baseUrl}/search`, {
+      method: "POST",
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/geo+json",
+      },
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -93,5 +72,50 @@ export default class PlanCheckerApi {
     }
 
     return response.json();
+  }
+
+  /** Start a new round of searches, cancelling any previous one. */
+  beginRequest() {
+    this.abort();
+    this.#controller = new AbortController();
+    return this.#controller.signal;
+  }
+
+  /**
+   * The plans covering a point. These are the "huvudobjekt" - `feature.typ` is
+   * "detaljplan" - carrying the plan's name, dates and document assets, but no
+   * regulation of their own.
+   */
+  findPlansAtPoint({ coordinate, statuses, collections, signal }) {
+    const query = { "feature.typ": { eq: "detaljplan" } };
+    if (statuses?.length) {
+      query["detaljplan.status"] = { in: statuses };
+    }
+    return this.#search(
+      {
+        intersects: { type: "Point", coordinates: coordinate },
+        query,
+        ...(collections?.length ? { collections } : {}),
+      },
+      signal
+    );
+  }
+
+  /**
+   * The regulations belonging to one plan. Pass a coordinate to get only those
+   * that actually cover it; omit it for every regulation in the plan, which is
+   * what the "show all" view needs and what makes an "N of M" count possible.
+   */
+  findRegulations({ planId, coordinate, limit, signal }) {
+    return this.#search(
+      {
+        query: { "detaljplan.objektidentitet": { eq: planId } },
+        limit,
+        ...(coordinate
+          ? { intersects: { type: "Point", coordinates: coordinate } }
+          : {}),
+      },
+      signal
+    );
   }
 }

@@ -17,8 +17,7 @@ each click and supplies the text.
 
 ### What the söktjänst actually is
 
-It is **OGC API Features**, not WFS, despite being widely described as the
-latter. Its `/conformance` lists only:
+Its `/conformance` advertises only the OGC API Features classes:
 
 ```
 ogcapi-features-1/1.0/conf/core
@@ -27,22 +26,42 @@ ogcapi-features-1/1.0/conf/geojson
 ogcapi-features-2/1.0/conf/crs
 ```
 
-Three consequences shape this plugin:
+From that alone you would conclude there is no `intersects` operator, only
+`bbox`, and that a click has to be sent as a small square and narrowed with a
+point-in-polygon test client-side. **That conclusion is wrong.** The catalog
+also serves `POST /search` — an item-search taking a GeoJSON `intersects`
+geometry and a `query` filter object — which it never mentions in
+`/conformance`. It is what Lantmäteriet's own viewer uses, and it gives an
+exact hit test server-side. This plugin uses it.
 
-1. **There is no `intersects`, only `bbox`.** A click is sent as a small square
-   (`clickBufferMeters`) and the result is then narrowed with
-   `geometry.intersectsCoordinate()`. Without that second step the tool would
-   report regulations whose *bounding box* merely overlaps the click.
-2. **`bbox` is read in the collection's storage CRS unless `bbox-crs` says
-   otherwise**, and a wrong CRS returns an empty `FeatureCollection` rather than
-   an error. Both `bbox-crs` and `crs` are therefore always sent explicitly.
-3. **EPSG:3857 is not among the accepted CRS** (the SWEREF 99 zones, RT90 and
-   CRS84 are), and a Hajk map is quite likely to be in it. When the map's
-   projection is not accepted, the plugin asks in SWEREF 99 TM and lets
-   OpenLayers transform both ways — which requires `EPSG:3006` under
-   `projections` in the map config. It says so plainly when that is missing.
+Data is **one collection per municipality**, keyed by the four-digit kommunkod,
+but `/search` spans all of them unless `collections` narrows it — so a click
+near a municipal boundary does not miss the plan on the other side.
 
-Data is **one collection per municipality**, keyed by the four-digit kommunkod.
+Geometries travel in **SWEREF 99 TM (EPSG:3006)**, the collections' storage CRS,
+in both directions. When the map runs in something else — EPSG:3857 is the
+common case, and is *not* among the CRS the service accepts — the plugin
+transforms, which requires `EPSG:3006` under `projections` in the map config.
+It says so plainly when that is missing.
+
+### Three searches per click
+
+Mirroring Lantmäteriet's viewer:
+
+| # | Body | Answers |
+| --- | --- | --- |
+| 1 | `intersects` + `feature.typ = detaljplan` (+ status filter) | Which plans cover the point. These "huvudobjekt" carry the plan's name, dates and documents, but no regulation of their own. |
+| 2 | `detaljplan.objektidentitet = <id>` + `intersects` | That plan's regulations **at the point**. |
+| 3 | `detaljplan.objektidentitet = <id>` | **All** of that plan's regulations. |
+
+2 and 3 run in parallel per plan. The pair is what lets each heading read
+"Egenskapsbestämmelser — 1 av 8 st" and lets the user widen from the clicked
+point to the whole plan.
+
+Note that the plan's `assets` are read from the **raw STAC item**, not through
+OpenLayers. A STAC item keeps `assets` beside `properties` rather than inside
+it, and `ol/format/GeoJSON` lifts only `properties` — parse the response as
+OpenLayers features and the plan's documents vanish silently.
 
 ### Coverage is partial, and the UI must say so
 
@@ -62,6 +81,7 @@ metadata repeated on it, so grouping needs no second request:
 | Plan heading | `detaljplan.namn`, `detaljplan.beteckning` |
 | Plan status | `detaljplan.status`, `detaljplan.datumLagakraft` |
 | Regulation grouping | `feature.typ` |
+| Documents | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
 | Regulation text | `planbestammelse.bestammelseformulering` |
 | Regulation detail | `planbestammelse.anvandningsform` / `kategori` / `underkategori` |
 
@@ -71,8 +91,17 @@ Planbestämmelsekatalogen is needed, though each carries a
 
 ### Requirements
 
-The backend's NGP proxy must be enabled (`LANTMATERIET_DETALJPLAN_ACTIVE`); see
-`apps/backend/.env.example`. Credentials stay on the server.
+Two things, and neither fails loudly if forgotten:
+
+1. **The backend's NGP proxy must be enabled** — `LANTMATERIET_DETALJPLAN_ACTIVE=true`
+   in `apps/backend/.env`, plus credentials; see `.env.example`. When it is not
+   enabled nothing is mounted at the route, and the request falls through to
+   `express-openapi-validator`, which answers **404 "Not Found: not found"**.
+   That 404 means the proxy is off, not that the path is wrong. The backend logs
+   which it did at startup: *"LANTMATERIET_DETALJPLAN_ACTIVE is set to … Enabling
+   Lantmateriet Detaljplan proxy for API V2"*.
+2. **A styled WMS layer configured and referenced by `wmsLayerId`.** The
+   söktjänst renders nothing, so the WMS is the whole visual half of the tool.
 
 ### Example configuration
 
@@ -83,11 +112,14 @@ The backend's NGP proxy must be enabled (`LANTMATERIET_DETALJPLAN_ACTIVE`); see
   "options": {
     "title": "Planbesked",
     "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
-    "kommunkod": "1281",        // Four-digit code; one NGP collection per municipality.
     "proxyPath": "detaljplanproxy", // Path below mapserviceBase where the backend proxy sits.
-    "clickBufferMeters": 1,     // Half the side of the bbox a click becomes.
-    "maxItems": 200,            // Upper bound per click. A dense plan carries many regulations.
-    "wmsLayerId": "",           // Hajk id of the styled WMS layer to switch on with the tool.
+    "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
+    "kommunkoder": [],          // Optional four-digit codes to narrow to. Empty searches the whole country.
+    "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
+    "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer to switch
+                                // on with the tool. Effectively required: the söktjänst has no
+                                // rendering, so without it results refer to plans the user
+                                // cannot see. A warning is logged if the id matches no layer.
     "visibleAtStart": false,
     "target": "control",
     "position": "right",

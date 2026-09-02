@@ -4,23 +4,31 @@ import {
   Box,
   CircularProgress,
   Divider,
+  FormControlLabel,
+  Link,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
+
+import { REGULATION_TYPE_HEADINGS } from "./constants";
+
+const heading = (type) => REGULATION_TYPE_HEADINGS[type?.toLowerCase()] ?? type;
 
 /**
  * @summary Lists the detaljplan regulations that apply at the clicked point.
  *
- * @description Deliberately plain for now - the readable report format is a
- * separate piece of work. What matters here is that every field NGP returns
- * has somewhere to land, so the shape of the data is visible while the
- * presentation is still being decided.
+ * @description Presentation is still plain - the readable report format is a
+ * separate piece of work. What the structure does carry is the distinction that
+ * matters when reading a plan: what applies at this exact point, versus what
+ * the plan contains as a whole, with the counts to move between them.
  */
-function PlanCheckerView({ model, localObserver }) {
+function PlanCheckerView({ localObserver }) {
   const [plans, setPlans] = React.useState(null);
-  const [truncated, setTruncated] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
+  const [showAll, setShowAll] = React.useState(false);
 
   React.useEffect(() => {
     localObserver.subscribe("planChecker.loading", setLoading);
@@ -28,10 +36,9 @@ function PlanCheckerView({ model, localObserver }) {
       setError(message);
       setPlans(null);
     });
-    localObserver.subscribe("planChecker.result", ({ plans, truncated }) => {
+    localObserver.subscribe("planChecker.result", ({ plans }) => {
       setError(null);
       setPlans(plans);
-      setTruncated(truncated);
     });
     return () => {
       localObserver.unsubscribe("planChecker.loading");
@@ -48,9 +55,7 @@ function PlanCheckerView({ model, localObserver }) {
     );
   }
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  if (error) return <Alert severity="error">{error}</Alert>;
 
   if (plans === null) {
     return (
@@ -62,60 +67,97 @@ function PlanCheckerView({ model, localObserver }) {
 
   if (plans.length === 0) {
     // The distinction that matters most in this tool: no digital plan is not
-    // the same as no regulations. NGP only holds plans delivered under the
-    // national specification.
+    // the same as no plan. NGP holds only plans delivered under the national
+    // specification, which is a minority of those in force.
     return (
       <Alert severity="info">
-        Ingen digital detaljplan hittades på den klickade punkten i kommun{" "}
-        {model.getOptions().kommunkod}. Det betyder inte att platsen saknar
-        detaljplan — bara att det inte finns någon registrerad i den nationella
-        geodataplattformen.
+        Ingen digital detaljplan hittades på den klickade punkten. Det betyder
+        inte att platsen saknar detaljplan — bara att det inte finns någon
+        registrerad i den nationella geodataplattformen.
       </Alert>
     );
   }
 
   return (
     <Stack spacing={2}>
-      {truncated && (
-        <Alert severity="warning">
-          Träfflistan kan vara ofullständig, gränsen för antal hämtade
-          bestämmelser nåddes.
-        </Alert>
-      )}
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={showAll}
+            onChange={(e) => setShowAll(e.target.checked)}
+          />
+        }
+        label="Visa alla bestämmelser i planen"
+      />
 
-      {plans.map(({ key, plan, types }) => (
+      {plans.map(({ key, plan, documents, types, truncated }) => (
         <Box key={key}>
-          <Typography variant="subtitle1">{plan.namn || key}</Typography>
+          <Typography variant="subtitle1">{plan.namn}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {plan.beteckning} · {plan.status}
-            {plan.datumLagakraft ? ` ${plan.datumLagakraft}` : ""}
+            Beteckning {plan.beteckning} · {plan.status}
+            {plan.datumLagakraft ? ` (${plan.datumLagakraft})` : ""}
           </Typography>
 
-          {types.map(({ type, regulations }) => (
-            <Box key={type} sx={{ mt: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                {type}
-              </Typography>
-              {regulations.map((r) => (
-                <Box key={r.id} sx={{ mb: 1 }}>
-                  <Typography variant="body2">
-                    {r.regulation.bestammelseformulering || r.label}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {[
-                      r.regulation.anvandningsform,
-                      r.regulation.kategori,
-                      r.regulation.underkategori,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </Typography>
-                </Box>
+          {documents.length > 0 && (
+            <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: "wrap" }}>
+              {documents.map((d) => (
+                <Link
+                  key={d.href}
+                  href={d.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  variant="body2"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <DownloadIcon fontSize="inherit" />
+                  {d.title}
+                </Link>
               ))}
-            </Box>
-          ))}
+            </Stack>
+          )}
 
-          <Divider sx={{ mt: 1 }} />
+          {truncated && (
+            <Alert severity="warning" sx={{ mt: 1 }}>
+              Planen har fler bestämmelser än som hämtats; listan kan vara
+              ofullständig.
+            </Alert>
+          )}
+
+          {types.map(
+            ({ type, regulations, all, countAtPoint, countInPlan }) => {
+              const shown = showAll ? all : regulations;
+              if (shown.length === 0) return null;
+              return (
+                <Box key={type} sx={{ mt: 1.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    {heading(type)} — {countAtPoint} av {countInPlan} st
+                  </Typography>
+                  {shown.map((r) => (
+                    <Box key={r.id} sx={{ mt: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {r.anvandningsform || r.label}
+                      </Typography>
+                      <Typography variant="body2">
+                        {r.text || r.label}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {[r.kategori, r.underkategori]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              );
+            }
+          )}
+
+          <Divider sx={{ mt: 2 }} />
         </Box>
       ))}
     </Stack>

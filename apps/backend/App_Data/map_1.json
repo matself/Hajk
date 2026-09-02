@@ -777,10 +777,12 @@
       "options": {
         "title": "Planbesked",
         "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
-        "kommunkod": "1281",
         "proxyPath": "detaljplanproxy",
-        "clickBufferMeters": 1,
-        "maxItems": 200,
+        "planStatuses": [
+          "laga kraft"
+        ],
+        "kommunkoder": [],
+        "maxItems": 1000,
         "wmsLayerId": "",
         "visibleAtStart": false,
         "target": "control",
