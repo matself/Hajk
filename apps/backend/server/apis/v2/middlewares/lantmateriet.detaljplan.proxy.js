@@ -27,11 +27,13 @@ function buildAuthHeader() {
  *   credentials, so the asset route passes that base instead of the search one.
  */
 export default function lantmaterietDetaljplanProxy(options = {}) {
+  const target =
+    options.target ||
+    process.env.LANTMATERIET_DETALJPLAN_BASE_URL ||
+    "https://api.lantmateriet.se/distribution/geodatakatalog/sokning/v1/detaljplan/v2";
+
   return createProxyMiddleware({
-    target:
-      options.target ||
-      process.env.LANTMATERIET_DETALJPLAN_BASE_URL ||
-      "https://api.lantmateriet.se/distribution/geodatakatalog/sokning/v1/detaljplan/v2",
+    target,
     logger: logger,
     changeOrigin: true,
     // No pathRewrite here: Express strips the mount path (/api/v2/detaljplanproxy)
@@ -55,7 +57,38 @@ export default function lantmaterietDetaljplanProxy(options = {}) {
           })`
         );
       },
-      proxyRes: (proxyRes) => {
+      proxyRes: (proxyRes, req) => {
+        // Keep redirects inside the proxy. Asking the download endpoint for
+        // /asset/<uuid> does not return the file - it answers 302 to the real
+        // location, /data/detaljplan/<uuid>, as an absolute URL back at
+        // Lantmateriet. Relayed as-is, the browser follows it out of here and
+        // arrives at the service unauthenticated, which is what produced the
+        // login dialog. Rewriting it to our own mount path means the second
+        // request comes back through and gets the credentials attached too.
+        //
+        // Only redirects that stay within the proxied service are rewritten. A
+        // redirect somewhere else - a CDN or a pre-signed link - is left alone,
+        // since it is not ours to proxy and generally needs no credentials.
+        const location = proxyRes.headers["location"];
+        if (location) {
+          try {
+            const targetUrl = new URL(target);
+            const locationUrl = new URL(location, target);
+            if (
+              locationUrl.origin === targetUrl.origin &&
+              locationUrl.pathname.startsWith(targetUrl.pathname)
+            ) {
+              const rest = locationUrl.pathname.slice(
+                targetUrl.pathname.length
+              );
+              proxyRes.headers["location"] =
+                `${req.baseUrl}${rest}${locationUrl.search}`;
+            }
+          } catch {
+            // An unparseable Location is left untouched rather than mangled.
+          }
+        }
+
         // Never let the upstream's auth challenge reach the browser. The plan
         // documents are opened as ordinary links, so a relayed
         // "WWW-Authenticate: Basic" makes the browser put up a login dialog no

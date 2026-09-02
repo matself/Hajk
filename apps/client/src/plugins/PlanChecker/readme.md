@@ -85,7 +85,18 @@ metadata repeated on it, so grouping needs no second request:
 | Regulation grouping | `feature.typ` |
 | Documents | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
 
-The proxy also strips any `WWW-Authenticate` header the upstream sends back.
+Two things the proxy has to do beyond attaching credentials.
+
+It **rewrites redirects back onto itself**. Asking the download endpoint for
+`asset/<uuid>` does not return the file — it answers `302` to the real location,
+`data/detaljplan/<uuid>?r=1`, as an absolute URL at Lantmäteriet. Relayed
+unchanged, the browser follows it straight out of the proxy and arrives
+unauthenticated. Redirects that stay within the proxied service are rewritten to
+the proxy's own mount path so the second request comes back through and gets the
+credentials too; a redirect anywhere else is left alone, since it is not ours to
+proxy and generally needs no credentials.
+
+It also strips any `WWW-Authenticate` header the upstream sends back.
 Without that, a 401 turns into a browser login dialog that nobody can answer —
 the credentials belong to the server, and typing them into that box would
 defeat the point of proxying — and the browser then remembers the realm and
