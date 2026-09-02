@@ -85,6 +85,12 @@ metadata repeated on it, so grouping needs no second request:
 | Regulation grouping | `feature.typ` |
 | Documents | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
 
+The proxy also strips any `WWW-Authenticate` header the upstream sends back.
+Without that, a 401 turns into a browser login dialog that nobody can answer —
+the credentials belong to the server, and typing them into that box would
+defeat the point of proxying — and the browser then remembers the realm and
+keeps asking. Stripped, a failed request simply fails, visibly.
+
 The document links need proxying of their own. Their `href` points at
 Lantmäteriet's **download** endpoint — a sibling path to the söktjänst, not
 below it — behind the same credentials, so following one directly puts up a

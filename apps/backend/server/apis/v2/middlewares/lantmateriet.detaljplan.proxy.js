@@ -55,6 +55,16 @@ export default function lantmaterietDetaljplanProxy(options = {}) {
           })`
         );
       },
+      proxyRes: (proxyRes) => {
+        // Never let the upstream's auth challenge reach the browser. The plan
+        // documents are opened as ordinary links, so a relayed
+        // "WWW-Authenticate: Basic" makes the browser put up a login dialog no
+        // user can answer - the credentials belong to the server, and typing
+        // them into that box would defeat the point of proxying at all. Worse,
+        // the browser then remembers the realm and keeps asking. Without the
+        // header the failed request simply fails, visibly.
+        delete proxyRes.headers["www-authenticate"];
+      },
       error: (err, _req, res) => {
         if (err) {
           logger.error(err);
