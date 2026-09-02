@@ -781,7 +781,6 @@
         "planStatuses": [
           "laga kraft"
         ],
-        "kommunkoder": [],
         "maxItems": 1000,
         "wmsLayerId": "",
         "visibleAtStart": false,

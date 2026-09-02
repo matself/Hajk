@@ -86,7 +86,7 @@ export default class PlanCheckerApi {
    * "detaljplan" - carrying the plan's name, dates and document assets, but no
    * regulation of their own.
    */
-  findPlansAtPoint({ coordinate, statuses, collections, signal }) {
+  findPlansAtPoint({ coordinate, statuses, signal }) {
     const query = { "feature.typ": { eq: "detaljplan" } };
     if (statuses?.length) {
       query["detaljplan.status"] = { in: statuses };
@@ -95,7 +95,6 @@ export default class PlanCheckerApi {
       {
         intersects: { type: "Point", coordinates: coordinate },
         query,
-        ...(collections?.length ? { collections } : {}),
       },
       signal
     );

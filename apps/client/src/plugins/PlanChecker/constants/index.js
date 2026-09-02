@@ -14,10 +14,6 @@ export const DEFAULT_OPTIONS = Object.freeze({
   // "laga kraft" alone, which is the honest default: a plan that has not
   // gained legal force does not regulate anything yet.
   planStatuses: ["laga kraft"],
-  // Optional four-digit kommunkod(s). The search spans the whole country when
-  // empty, which is usually what you want - a click near a municipal boundary
-  // should not miss the plan on the other side of it.
-  kommunkoder: [],
   // Upper bound on regulations fetched per plan. Lantmateriet's viewer sends
   // 1000; a plan with more regulations than this is reported as truncated.
   maxItems: 1000,

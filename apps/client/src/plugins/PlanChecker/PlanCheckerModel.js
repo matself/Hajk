@@ -174,12 +174,11 @@ export default class PlanCheckerModel {
     try {
       const signal = this.#api.beginRequest();
       const serviceCoordinate = this.#toServiceCoordinate(coordinate);
-      const { kommunkoder, planStatuses, maxItems } = this.#options;
+      const { planStatuses, maxItems } = this.#options;
 
       const planCollection = await this.#api.findPlansAtPoint({
         coordinate: serviceCoordinate,
         statuses: planStatuses,
-        collections: kommunkoder,
         signal,
       });
       const planItems = this.#itemsOf(planCollection);

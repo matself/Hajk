@@ -34,9 +34,11 @@ geometry and a `query` filter object — which it never mentions in
 `/conformance`. It is what Lantmäteriet's own viewer uses, and it gives an
 exact hit test server-side. This plugin uses it.
 
-Data is **one collection per municipality**, keyed by the four-digit kommunkod,
-but `/search` spans all of them unless `collections` narrows it — so a click
-near a municipal boundary does not miss the plan on the other side.
+Data is stored as **one collection per municipality**, keyed by the four-digit
+kommunkod, but `/search` is purely locational — it spans every collection and
+takes no kommunkod. That is a feature, not a gap: a click near a municipal
+boundary finds the plan on the other side of it, and nothing has to know which
+municipality it is looking at.
 
 Geometries travel in **SWEREF 99 TM (EPSG:3006)**, the collections' storage CRS,
 in both directions. When the map runs in something else — EPSG:3857 is the
@@ -114,7 +116,6 @@ Two things, and neither fails loudly if forgotten:
     "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
     "proxyPath": "detaljplanproxy", // Path below mapserviceBase where the backend proxy sits.
     "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
-    "kommunkoder": [],          // Optional four-digit codes to narrow to. Empty searches the whole country.
     "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
     "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer to switch
                                 // on with the tool. Effectively required: the söktjänst has no
