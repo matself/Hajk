@@ -134,6 +134,10 @@ clears the notice immediately rather than at the next click. Absence is only
 concluded after retrying for about five seconds, because layers load
 asynchronously and a layer missing at first render usually is not.
 
+Configured in Admin under Kartor → Verktyg → **Detaljplan**; see
+[`docs/admin-tool-planchecker.md`](../../../../../docs/admin-tool-planchecker.md).
+The raw shape is below.
+
 ### Example configuration
 
 ```jsonc
@@ -160,11 +164,13 @@ asynchronously and a layer missing at first render usually is not.
 
 ### Known gaps
 
-- **No Admin editor yet.** The options above are edited by hand in the map
-  config; there is no `apps/admin/src/views/tools/planchecker.jsx`.
-- **Presentation is deliberately plain.** The readable report format, and any
-  use of the plan's `assets` (Planbeskrivning, Plankarta, Beslutsprotokoll),
-  are still to come.
-- **Only the first page is read.** The service pages with an `afterId` cursor;
-  a click hitting more than `maxItems` regulations is reported as truncated
-  rather than followed.
+- **Presentation is deliberately plain.** The plan's documents are linked and
+  the regulations are grouped and counted, but the readable report format is
+  still to come, and nothing is done with the machine-readable plan payload
+  (`application/vnd.lm.detaljplan.v4+json`) that each item also carries.
+- **Only the first page is read.** A plan holding more than `maxItems`
+  regulations is reported as truncated rather than paged through. (The
+  `collections/…/items` endpoint pages with an `afterId` cursor; whether
+  `POST /search` does the same has not been checked.)
+- **The regulation geometries are discarded.** Highlighting the area a
+  regulation covers would mean parsing them and reprojecting.

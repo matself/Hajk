@@ -25,7 +25,6 @@ import {
  */
 export default class PlanCheckerModel {
   #map;
-  #app;
   #localObserver;
   #options;
   #api;
@@ -33,7 +32,6 @@ export default class PlanCheckerModel {
 
   constructor(settings) {
     this.#map = settings.map;
-    this.#app = settings.app;
     this.#localObserver = settings.localObserver;
 
     // Drop empty admin fields so they don't shadow the defaults.
@@ -59,8 +57,6 @@ export default class PlanCheckerModel {
       this.#handleFeatureAdded
     );
   }
-
-  getOptions = () => this.#options;
 
   /**
    * Drop the subscription and abort anything in flight. Without this the model
@@ -241,7 +237,4 @@ export default class PlanCheckerModel {
       this.#localObserver.publish("planChecker.loading", false);
     }
   };
-
-  getMap = () => this.#map;
-  getApp = () => this.#app;
 }

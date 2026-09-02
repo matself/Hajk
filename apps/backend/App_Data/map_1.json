@@ -778,6 +778,7 @@
         "title": "Detaljplan",
         "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
         "proxyPath": "detaljplanproxy",
+        "assetProxyPath": "detaljplanassetproxy",
         "planStatuses": [
           "laga kraft"
         ],

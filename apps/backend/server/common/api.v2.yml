@@ -647,7 +647,10 @@ paths:
           in: path
           description: >
             Path corresponding to an endpoint on Lantmateriet's Geodatakatalog for detaljplan,
-            e.g. "collections" or "collections/1281/items?bbox=389400,6176950,389600,6177200".
+            e.g. "collections" or "collections/1281". Note that PlanChecker itself
+            uses the POST variant below rather than this one; a bbox passed here is
+            read in the collection's storage CRS unless "bbox-crs" says otherwise,
+            and one in the wrong CRS returns an empty result rather than an error.
           required: true
           schema:
             type: string
