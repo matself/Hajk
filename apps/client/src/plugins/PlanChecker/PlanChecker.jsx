@@ -36,6 +36,9 @@ const PlanChecker = (props) => {
         map: props.map,
         measurementSettings: DEFAULT_MEASUREMENT_SETTINGS,
         observer: localObserver,
+        // The point we draw marks where the user clicked - it is not work of
+        // theirs to lose, so it must not trigger the "leave site?" warning.
+        reportUnsavedChanges: false,
       })
   );
 

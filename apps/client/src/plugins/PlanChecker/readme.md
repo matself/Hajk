@@ -188,6 +188,15 @@ the user has since panned to. Closing therefore resets the view and aborts any
 search still in flight — one that returned afterwards would otherwise refill a
 list the user had dismissed.
 
+### The click marker is not the user's work
+
+The point is drawn with a `DrawModel`, and a DrawModel reports its features to
+Hajk's public API as unsaved changes, which is what makes the browser ask
+"leave site?" before a reload or a map switch. That is right for Sketch or Mät,
+where the geometry *is* the user's work — but our point only marks where they
+clicked, so the plugin passes `reportUnsavedChanges: false` and is left out of
+that count. Tools that draw on the user's behalf keep the warning, unchanged.
+
 ### Known gaps
 
 - **Presentation is deliberately plain.** The plan's documents are linked and

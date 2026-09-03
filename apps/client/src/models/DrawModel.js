@@ -67,6 +67,7 @@ class DrawModel {
   #drawTooltip;
   #currentPointerCoordinate;
   #showDrawTooltip;
+  #reportUnsavedChanges;
   #measurementSettings;
   #drawStyleSettings;
   #textStyleSettings;
@@ -134,6 +135,12 @@ class DrawModel {
     this.#keepTranslateActive = settings.translateDefaultEnabled ?? true;
     this.#selectInteraction = null;
     this.#featureChosenForEdit = null;
+    // Should drawn features count as unsaved user work? They do by default,
+    // which is what makes Hajk warn before the window is closed. A tool that
+    // draws for its own purposes - a marker showing where the user clicked,
+    // say - should pass false: that geometry is not the user's work, and
+    // warning about losing it only puzzles them.
+    this.#reportUnsavedChanges = settings.reportUnsavedChanges ?? true;
     // We're also keeping track of the tooltip-settings
     this.#showDrawTooltip = settings.showDrawTooltip ?? true;
     this.#drawTooltip = null;
@@ -209,7 +216,7 @@ class DrawModel {
     // as feature add/remove. We check if there are any features in the draw
     // layer and save that information in the Public API. This is later
     // read in a handler for "onbeforeunload". See #1403.
-    if (this.getAllDrawnFeatures().length > 0) {
+    if (this.#reportUnsavedChanges && this.getAllDrawnFeatures().length > 0) {
       window.hajkPublicApi.dirtyLayers[this.#layerName] = true;
     } else {
       delete window.hajkPublicApi.dirtyLayers[this.#layerName];
