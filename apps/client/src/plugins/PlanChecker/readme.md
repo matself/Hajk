@@ -197,6 +197,33 @@ where the geometry *is* the user's work — but our point only marks where they
 clicked, so the plugin passes `reportUnsavedChanges: false` and is left out of
 that count. Tools that draw on the user's behalf keep the warning, unchanged.
 
+### Highlighting the clicked regulations, not a marker
+
+Lantmäteriet's own viewer marks the clicked point with a pin and fills the
+matching bestämmelseyta with a solid colour. This plugin does neither: the
+click marker is removed the instant its coordinate has been read (see above),
+and in its place the regulation geometries at that point are drawn as a plain
+outline (`pluginPlanCheckerHighlight`, a small `Vector` layer the model owns
+and adds to the map itself) — stroke only, no fill, so the WMS underneath,
+which already carries the plan's official styling, is not painted over.
+
+The geometry rides along for free: every NGP feature already carries its own
+GeoJSON `geometry`, in the same storage CRS as everything else. It is read
+with `GeoJSON#readGeometry` rather than `#readFeatures` — deliberately, since
+`#itemsOf` already established that a STAC item's `assets` live beside
+`properties` and get dropped if the item is parsed as an OpenLayers feature;
+extracting only the geometry sidesteps that without needing two parses.
+
+One outline per regulation *at the point*, not per plan — a click covered by
+an administrativ, an användnings- and an egenskapsbestämmelse draws three
+outlines, which may coincide or differ depending on how the plan's polygons
+are cut. The layer is cleared and redrawn on every click, and cleared outright
+when the window closes or a search errs, so a highlight never survives past
+the state it describes. Colour and width are constants
+(`HIGHLIGHT_STROKE_COLOR`, `HIGHLIGHT_STROKE_WIDTH`) rather than an Admin
+option — deliberately, to keep the surface small until there is a reason to
+need per-map styling.
+
 ### Known gaps
 
 - **Presentation is deliberately plain.** The plan's documents are linked and

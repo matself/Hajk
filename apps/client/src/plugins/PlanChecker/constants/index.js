@@ -43,3 +43,9 @@ export const REGULATION_TYPE_HEADINGS = Object.freeze({
 // The CRS every geometry travels in, in both directions. It is the
 // collections' own storage CRS, and what Lantmateriet's viewer uses.
 export const SERVICE_PROJECTION = "EPSG:3006";
+
+// Style for the regulation geometries at the clicked point. An outline rather
+// than a filled area, so the WMS underneath - which already carries the
+// official styling - stays legible instead of being painted over.
+export const HIGHLIGHT_STROKE_COLOR = "#e64a19";
+export const HIGHLIGHT_STROKE_WIDTH = 3;

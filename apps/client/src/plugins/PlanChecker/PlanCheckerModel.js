@@ -1,8 +1,15 @@
 import { get as getProjection, transform } from "ol/proj";
+import Feature from "ol/Feature";
+import GeoJSON from "ol/format/GeoJSON";
+import Vector from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import { Stroke, Style } from "ol/style";
 
 import PlanCheckerApi from "./PlanCheckerApi";
 import {
   DEFAULT_OPTIONS,
+  HIGHLIGHT_STROKE_COLOR,
+  HIGHLIGHT_STROKE_WIDTH,
   REGULATION_TYPE_ORDER,
   SERVICE_PROJECTION,
 } from "./constants";
@@ -29,10 +36,17 @@ export default class PlanCheckerModel {
   #options;
   #api;
   #assetProxyBase;
+  #drawModel;
+  #highlightSource;
+  #highlightLayer;
 
   constructor(settings) {
     this.#map = settings.map;
     this.#localObserver = settings.localObserver;
+    // Only used to clear the click marker the instant it has served its
+    // purpose - see #handleFeatureAdded. The model does not otherwise touch
+    // the draw interaction; that stays the entry component's job.
+    this.#drawModel = settings.drawModel;
 
     // Drop empty admin fields so they don't shadow the defaults.
     const configured = Object.fromEntries(
@@ -52,6 +66,25 @@ export default class PlanCheckerModel {
     );
     this.#assetProxyBase = `${mapServiceBase}/${this.#options.assetProxyPath}`;
 
+    // A plain outline, not a filled area: the WMS underneath already carries
+    // the plan's official styling, and painting over it with a solid colour
+    // was explicitly what this was built to avoid.
+    this.#highlightSource = new VectorSource();
+    this.#highlightLayer = new Vector({
+      source: this.#highlightSource,
+      layerType: "system",
+      name: "pluginPlanCheckerHighlight",
+      caption: "Detaljplan - markerad bestämmelse",
+      zIndex: 5000,
+      style: new Style({
+        stroke: new Stroke({
+          color: HIGHLIGHT_STROKE_COLOR,
+          width: HIGHLIGHT_STROKE_WIDTH,
+        }),
+      }),
+    });
+    this.#map.addLayer(this.#highlightLayer);
+
     this.#localObserver.subscribe(
       "drawModel.featureAdded",
       this.#handleFeatureAdded
@@ -66,16 +99,19 @@ export default class PlanCheckerModel {
    */
   reset = () => {
     this.#api.abort();
+    this.#highlightSource.clear();
     this.#localObserver.publish("planChecker.reset");
   };
 
   /**
-   * Drop the subscription and abort anything in flight. Without this the model
-   * would keep answering draw events after the plugin is gone.
+   * Drop the subscription, abort anything in flight, and remove the layer this
+   * model added to the map. Without this the model would keep answering draw
+   * events after the plugin is gone, and its highlight layer would outlive it.
    */
   destroy = () => {
     this.#localObserver.unsubscribe("drawModel.featureAdded");
     this.#api.abort();
+    this.#map.removeLayer(this.#highlightLayer);
   };
 
   #getViewProjection = () => this.#map.getView().getProjection().getCode();
@@ -192,8 +228,37 @@ export default class PlanCheckerModel {
     return match ? `${this.#assetProxyBase}/${match[1]}` : href;
   };
 
+  /**
+   * Draw the regulation geometries that cover the clicked point, replacing
+   * whatever was shown for the previous click. NGP hands back a plain GeoJSON
+   * geometry per item, already in the service's own CRS, so only a transform
+   * is needed - no feature parsing, which is what would drop the assets (see
+   * #itemsOf).
+   */
+  #showHighlight = (geoJsonGeometries) => {
+    this.#highlightSource.clear();
+    if (geoJsonGeometries.length === 0) return;
+
+    const reader = new GeoJSON();
+    const viewProjection = this.#getViewProjection();
+    const features = geoJsonGeometries.map(
+      (geometry) =>
+        new Feature({
+          geometry: reader.readGeometry(geometry, {
+            dataProjection: SERVICE_PROJECTION,
+            featureProjection: viewProjection,
+          }),
+        })
+    );
+    this.#highlightSource.addFeatures(features);
+  };
+
   #handleFeatureAdded = async (feature) => {
     const coordinate = feature.getGeometry().getCoordinates();
+    // The point only ever existed to carry this coordinate - once read, it
+    // would just be a marker sitting on top of the highlight outline below,
+    // which is exactly what this was built to not have.
+    this.#drawModel.removeDrawnFeatures();
     this.#localObserver.publish("planChecker.loading", true);
 
     try {
@@ -208,7 +273,7 @@ export default class PlanCheckerModel {
       });
       const planItems = this.#itemsOf(planCollection);
 
-      const plans = await Promise.all(
+      const results = await Promise.all(
         planItems.map(async (planItem) => {
           const props = planItem.properties ?? {};
           const planId = props.detaljplan?.objektidentitet;
@@ -225,24 +290,34 @@ export default class PlanCheckerModel {
             this.#api.findRegulations({ planId, limit: maxItems, signal }),
           ]);
 
-          const atPoint = this.#itemsOf(atPointCollection).map(
-            this.#toRegulation
-          );
+          const atPointItems = this.#itemsOf(atPointCollection);
+          const atPoint = atPointItems.map(this.#toRegulation);
           const all = this.#itemsOf(allCollection).map(this.#toRegulation);
 
           return {
-            key: planId,
-            plan: props.detaljplan ?? {},
-            documents: this.#readDocuments(planItem),
-            types: this.#groupByType(atPoint, all),
-            truncated: all.length >= Number(maxItems),
+            plan: {
+              key: planId,
+              plan: props.detaljplan ?? {},
+              documents: this.#readDocuments(planItem),
+              types: this.#groupByType(atPoint, all),
+              truncated: all.length >= Number(maxItems),
+            },
+            // Kept separate from the plan object above: the view has no use
+            // for raw geometry, only #showHighlight does.
+            geometries: atPointItems
+              .map((item) => item.geometry)
+              .filter(Boolean),
           };
         })
       );
 
+      const plans = results.map((r) => r.plan);
+      this.#showHighlight(results.flatMap((r) => r.geometries));
+
       this.#localObserver.publish("planChecker.result", { plans });
     } catch (error) {
       if (error.name === "AbortError") return;
+      this.#highlightSource.clear();
       this.#localObserver.publish("planChecker.error", error.message);
     } finally {
       this.#localObserver.publish("planChecker.loading", false);

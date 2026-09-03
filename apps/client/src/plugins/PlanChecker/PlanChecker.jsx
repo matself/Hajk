@@ -46,6 +46,7 @@ const PlanChecker = (props) => {
     () =>
       new PlanCheckerModel({
         app: props.app,
+        drawModel: drawModel,
         localObserver: localObserver,
         map: props.map,
         options: props.options,
