@@ -434,6 +434,84 @@ class Manager extends Component {
     }
   }
 
+  // Prefills the WMS form with everything from an existing layer except
+  // its identity (id/caption/internalLayerName) and its picked sublayer(s)
+  // (addedLayers/addedLayersInfo), so the admin can pick a *different*
+  // layer from the same already-configured source without retyping the
+  // connection/auth/rendering settings.
+  copyLayer(e, layer) {
+    e.stopPropagation();
+
+    this.setState({
+      mode: "add",
+      layerType: "WMS",
+    });
+
+    setTimeout(() => {
+      this.refs["WMSLayerForm"].setState({
+        id: "",
+        caption: "",
+        internalLayerName: "",
+        content: layer.content,
+        date: layer.date,
+        legend: layer.legend,
+        legendIcon: layer.legendIcon,
+        owner: layer.owner,
+        url: layer.url,
+        customGetMapUrl: layer.customGetMapUrl || "",
+        opacity: layer.opacity,
+        minZoom: layer.minZoom,
+        maxZoom: layer.maxZoom,
+        infoClickSortProperty: layer.infoClickSortProperty || "",
+        infoClickSortType: layer.infoClickSortType || "string",
+        rotateMap: layer.rotateMap || "n",
+        infoClickSortDesc: layer.infoClickSortDesc ?? true,
+        tiled: layer.tiled,
+        showAttributeTableButton: layer.showAttributeTableButton || false,
+        hasLabelStyle: layer.hasLabelStyle || false,
+        singleTile: layer.singleTile,
+        hidpi: layer.hidpi,
+        customRatio: layer.customRatio,
+        imageFormat: layer.imageFormat,
+        version: layer.version,
+        serverType: layer.serverType,
+        drawOrder: layer.drawOrder,
+        addedLayers: [],
+        layerType: layer.type,
+        attribution: layer.attribution,
+        searchUrl: layer.searchUrl || "",
+        searchPropertyName: layer.searchPropertyName || "",
+        searchDisplayName: layer.searchDisplayName || "",
+        searchShortDisplayName: layer.searchShortDisplayName || "",
+        searchOutputFormat: layer.searchOutputFormat || "",
+        searchGeometryField: layer.searchGeometryField || "",
+        authUsername: layer.auth?.username || "",
+        authPassword: layer.auth?.password || "",
+        authToken: layer.auth?.token || "",
+        infoVisible: layer.infoVisible,
+        infoTitle: layer.infoTitle,
+        infoText: layer.infoText,
+        infoUrl: layer.infoUrl,
+        infoUrlText: layer.infoUrlText,
+        infoOpenDataLink: layer.infoOpenDataLink,
+        infoOwner: layer.infoOwner,
+        timeSliderVisible: layer.timeSliderVisible,
+        timeSliderStart: layer.timeSliderStart,
+        timeSliderEnd: layer.timeSliderEnd,
+      });
+
+      // Re-fetch capabilities for the picker, but with no sublayer
+      // pre-checked - copying the previous layer selection would defeat
+      // the purpose of picking a different one.
+      this.refs["WMSLayerForm"].loadLayers(
+        { ...layer, layers: [], layersInfo: [] },
+        () => {
+          this.refs["WMSLayerForm"].validate();
+        },
+      );
+    }, 0);
+  }
+
   describeLayer(e, layerName) {
     this.props.model.getLayerDescription(
       this.refs.input_url.value,
@@ -588,6 +666,13 @@ class Manager extends Component {
               onClick={(e) => this.infoAboutLayer(e, layer)}
               className="fa fa-info"
             />
+            {layer.type === "WMS" && (
+              <i
+                title="Kopiera lager (för att lägga till ett annat lager från samma källa)"
+                onClick={(e) => this.copyLayer(e, layer)}
+                className="fa fa-clone"
+              />
+            )}
             <i
               title="Radera lager"
               onClick={(e) => this.removeLayer(e, layer)}
