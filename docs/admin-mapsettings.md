@@ -48,7 +48,6 @@ Om LayerSwitcher-verktyget överhuvudtaget ska vara aktivt i kartan.
 | Visa brödsmulor | Visar små kort längst ner på skärmen, ett per aktivt lager. |
 | Visa en flik med ritordning | Lägger till en flik i lagerhanterarens gränssnitt (i Klienten) för att låta slutanvändaren själv ändra ritordning på tända lager — se egen sektion nedan. |
 | Visa filter | Visar ett textfilter i lagerhanteraren. |
-| Visa en grupp med teman | Visar temagruppen i lagerhanteraren — se "Teman" nedan. |
 | Försök göra teckenförklaring transparent (Experimentell) | Försöker göra GetLegendGraphic transparent och lägger till bakgrund; text blir vit i dark mode för GeoServer. |
 | Försök hämta teckenförklaring i 180dpi (Experimentell) | Begär legend-bilder i högre upplösning. |
 | Visa transparensreglage | Global på/av-switch. Måste vara ikryssad för att transparensreglage ska kunna visas för *något* lager, oavsett per-lager-inställning. |
@@ -64,13 +63,6 @@ Gäller "Visa en flik med ritordning" ovan — en flik i Klientens lagerhanterar
 - **Visa reglage för systemlager** — visar en switch för att slå på/av visning av systemlager i listan.
 - **Lås ritordning för bakgrundskartor** — bakgrundslager hamnar alltid underst och kan inte flyttas; en lås-ikon visas.
 - **Infotext Flik med ritordning** — instruktionstext överst i den fliken.
-
-### Inställningar för grupp med teman
-
-- **Färdiga teman** — om användaren får ladda administratörens fördefinierade teman (se "Teman" nedan) till temagruppen.
-- **Infotext Färdiga teman** — instruktionstext i den panelen.
-- **Mina teman** — om användaren får spara sina egna lager-/bakgrundsval som teman, för att kunna ladda dem senare. Sparas lokalt i webbläsaren, inte i Hajks backend.
-- **Infotext Mina teman** — instruktionstext i den panelen.
 
 ### Kartinställningar (temakarta)
 
@@ -115,6 +107,18 @@ Röda minus-ikonen (till vänster om namnet) tar bort noden — för en grupp ta
 
 ## Teman
 
+### Inställningar för grupp med teman
+
+- **Visa en grupp med teman** — visar temagruppen i lagerhanteraren i Klienten. Utan denna är resten av panelen utan effekt.
+- **Färdiga teman** — om användaren får ladda administratörens fördefinierade teman (se "Hantera teman för temagruppen" nedan) till temagruppen.
+- **Infotext Färdiga teman** — instruktionstext i den panelen.
+- **Mina teman** — om användaren får spara sina egna lager-/bakgrundsval som teman, för att kunna ladda dem senare. Sparas lokalt i webbläsaren, inte i Hajks backend.
+- **Infotext Mina teman** — instruktionstext i den panelen.
+
+Dessa fem fält flyttades hit från Lagerväljare-panelen för att samla alla temarelaterade inställningar på ett ställe. De sparas med en egen **Spara**-knapp (`saveQuickAccessSettings`), fristående från både Lagerväljarens och nedanstående temaformulärs egna Spara-knappar — ett medvetet val, eftersom Lagerväljarens allmänna spara-funktion bygger om grupper/bakgrundslager genom att läsa av menyträdets DOM, vilket annars skulle nollställa kartans lagerträd om det utlöstes från den här panelen.
+
+### Hantera teman för temagruppen
+
 Hanterar färdiga teman — administratörsdefinierade uppsättningar av tända/släckta lager plus bakgrund — som slutanvändare kan ladda via temagruppen i lagerhanteraren (se kryssrutan "Färdiga teman" ovan). Skiljer sig från slutanvändarens egna "Mina teman", som sparas lokalt i webbläsaren och inte redigeras här.
 
 - **JSON-fil\*** — en exporterad temafil (lagerdefinitioner) att importera.
@@ -127,4 +131,4 @@ Listan till vänster visar befintliga teman (filtrerbar); klick på ett tema vä
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-08-04. Om `mapsettings.jsx` ändras bör denna guide uppdateras i samma PR. Verktyg (`tooloptions.jsx` + `views/tools/*`) är inte täckt här — hör av dig om det behövs som egna dokument.*
+*Detta dokument beskriver läget i koden per 2026-08-11. Om `mapsettings.jsx` ändras bör denna guide uppdateras i samma PR. Verktyg (`tooloptions.jsx` + `views/tools/*`) är inte täckt här — hör av dig om det behövs som egna dokument.*
