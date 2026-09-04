@@ -52,3 +52,7 @@ Att det behövs två beror på att planhandlingarna (Plankarta, Planhandling, Be
 NGP innehåller bara planer som levererats enligt den nationella specifikationen, vilket i praktiken betyder övervägande nya planer. Merparten av en kommuns gällande detaljplaner finns alltså inte där.
 
 Det här är ingen brist i verktyget utan i underlaget, men det påverkar hur svaret ska läsas — och därför säger verktyget uttryckligen "ingen **digital** detaljplan hittades" i stället för att bara visa en tom lista. En tom lista skulle läsas som "inga bestämmelser här", vilket vore fel och potentiellt dyrt.
+
+---
+
+*Detta dokument beskriver läget i koden per 2026-09-04.*

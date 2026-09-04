@@ -70,4 +70,4 @@ Namnet på geometri-kolumnen i den underliggande datakällan, så att sök-/info
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-08-04. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-09-02. Om fälten ändras i `wmslayerform.jsx` bör denna guide uppdateras i samma PR.*

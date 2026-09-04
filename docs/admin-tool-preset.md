@@ -11,4 +11,4 @@ Administratörsdefinierade genvägar (till skillnad från [Platser](admin-tool-b
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30.*
+*Detta dokument beskriver läget i koden per 2026-08-24.*

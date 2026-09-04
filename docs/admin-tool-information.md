@@ -17,4 +17,4 @@ Visar en enkel informationsruta med en stängningsknapp, öppningsbar via en inf
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30.*
+*Detta dokument beskriver läget i koden per 2026-08-24.*
