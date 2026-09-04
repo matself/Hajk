@@ -29,6 +29,9 @@ Textfältet överst filtrerar listan på Visningsnamn, Visningsnamn Admin eller 
 **Info-ikonen (i)**
 Visar vilka kartkonfigurationer (`map_*.json`) lagret används i — söker igenom samtliga kartors bakgrundslager och grupper (rekursivt). Om lagret inte används i någon karta visas det tydligt. Detta är ofta det snabbaste sättet att se om ett lager i katalogen är "dött" eller fortfarande i bruk innan man tar bort det, se [[project_layers_catalogue]].
 
+**Kopiera lager-ikonen (endast WMS)**
+Öppnar formuläret i **tillägg**-läge (inte redigeringsläge), förifyllt med det klickade lagrets samtliga inställningar — url, autentisering, bildformat, projektion, hidpi, sök-/infoklickfält och så vidare — utom dess identitet (Visningsnamn, Visningsnamn Admin) och dess valda underlager. "Tillgängliga lager" hämtas om från samma källa men visas helt oikryssat, redo att kryssa i ett *annat* lager. Finns till för fallet att man redan har registrerat en WMS-källa i listan och vill lägga till ytterligare ett fristående lager från samma källa: att kryssa fler underlager i ett befintligt lager slår i stället ihop dem till en grupp (`LAYERS=a,b`) i det lagret, vilket sällan är vad man vill. Sparar man utan att ändra urvalet skapas ett nytt, till synes identiskt lager — id:t genereras alltid slumpmässigt av backend vid tillägg, så det uppstår ingen kollision, men det blir heller ingen mening i det: byt underlager och/eller Visningsnamn innan du sparar. Endast WMS har knappen; övriga lagertyper redigeras sällan på det här sättet.
+
 **Radera-ikonen (papperskorg)**
 Tar bort lagret ur `layers.json`, efter bekräftelse. **OBS:** raderingen kollar inte om lagret används i någon karta — kontrollera med Info-ikonen först, annars riskerar man att en karta pekar på ett lager som inte längre finns.
 
@@ -59,4 +62,4 @@ Både Vektor/WFS- och ArcGIS-formulären har en egen `describeLayer`-funktion (i
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-08-04. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-09-04. Om `layermanager.jsx` ändras bör denna guide uppdateras i samma PR.*
