@@ -541,10 +541,27 @@ class ToolOptions extends Component {
                 <input
                   name="presetUrl"
                   type="text"
-                  placeholder="ex: ?m=map_1&x=147325.273544&y=6398754.167358001&z=4&l=10"
+                  placeholder="Länk från Dela-verktyget, t.ex. https://karta.kommun.se/?m=map_1&x=147325.27&y=6398754.17&z=4&l=abc123,def456"
                   required
                   ref="preset_url"
                 />
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: "4px",
+                    fontSize: "0.8rem",
+                    color: "#767676",
+                  }}
+                >
+                  Klistra in hela länken som Dela-verktyget skapar. Både
+                  <code> ?parametrar</code> och <code>#parametrar</code> i
+                  länken fungerar. <code>x</code>/<code>y</code>/<code>z</code>{" "}
+                  styr kartläget, <code>l</code> vilka lager som tänds och
+                  <code> gl</code> vilka dellager i grupplager som visas.
+                  <code> l</code> ska vara lager-id:n (t.ex.
+                  <code> abc123,def456</code>), inte siffror som <code>10</code>
+                  .
+                </span>
               </div>
               <ColorButtonGreen
                 variant="contained"

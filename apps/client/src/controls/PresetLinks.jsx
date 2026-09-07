@@ -51,41 +51,49 @@ class Preset extends React.PureComponent {
     this.setState({ anchorEl: null });
   };
 
-  // A map-link must contain an x-, y-, and z-position to be valid. This function
-  // checks wether that is true or not.
-  isValidMapLink = (mapLink) => {
-    return (
-      (mapLink.includes("x=") && mapLink.includes("y=")) ||
-      mapLink.includes("l=")
-    );
-  };
-
   // Extracts map-information from the provided link and returns the
-  // information as an object.
+  // information as an object. A preset link may be a full URL from the Dela
+  // tool (https://host/path?m=map_1&x=…&l=…&gl=…), the same link with the state
+  // carried in the hash (…#m=map_1&x=…), or just the query string (?m=map_1&x=…).
+  // The layer ids are case-sensitive, so the string must not be lower-cased.
   getMapInfoFromMapLink = (mapLink) => {
-    const queryParams = new URLSearchParams(mapLink);
+    let paramString = mapLink;
+    try {
+      const url = new URL(mapLink, document.location.href);
+      // Prefer the search part; fall back to the hash for hash-based app state.
+      // If the link carried neither (e.g. a bare "m=..&x=.." parameter string),
+      // keep the original string and let URLSearchParams parse it directly.
+      const fromUrl = url.search.length > 1 ? url.search : url.hash;
+      if (fromUrl) paramString = fromUrl;
+    } catch {
+      // Not a resolvable URL - treat the whole string as the parameter part.
+    }
+    const queryParams = new URLSearchParams(paramString.replace(/^[#?]/, ""));
     const x = queryParams.get("x");
     const y = queryParams.get("y");
     const z = queryParams.get("z");
     const l = queryParams.get("l");
+    const gl = queryParams.get("gl");
 
     // If the animate method on the view class is called with x and y as integers the app completely hangs without any error thrown from OL.
     // the '* 1.0' is a workaround until OL has fixed the issue.
     const location = x && y ? [x * 1.0, y * 1.0] : null;
     const zoom = location ? z : null; // no need to zoom if we don't have a position.
-    return { location, zoom, layers: l };
+    return { location, zoom, layers: l, groupLayers: gl };
   };
 
   handleItemClick = (event, item) => {
-    const url = item.presetUrl.toLowerCase();
-    // Let's make sure that the provided url is a valid map-link
-    if (this.isValidMapLink(url)) {
+    const { location, zoom, layers, groupLayers } = this.getMapInfoFromMapLink(
+      item.presetUrl
+    );
+    // A usable preset link must carry a position (x/y) or a layer selection.
+    if (location || layers) {
       this.handleClose(); // Ensure that popup menu is closed
-      const { location, zoom, layers } = this.getMapInfoFromMapLink(url);
       this.location = location;
       this.zoom = location ? zoom || this.map.getView().getZoom() : null;
 
       this.layers = layers;
+      this.groupLayers = groupLayers;
 
       // If the link contains layers we open the dialog where the user can choose to
       // proceed.
@@ -148,11 +156,19 @@ class Preset extends React.PureComponent {
   };
 
   closeDialog = () => {
-    const visibleLayers = this.layers.split(",");
     this.setState({
       dialogOpen: false,
     });
-    this.toggleMapLayers(visibleLayers);
+    // Apply the preset's layer selection through the same mechanism the map
+    // uses for the l=/gl= URL parameters. It handles regular layers, group
+    // (WMS) layers and their sublayer selection, background layers and label
+    // styles - none of which the tool's earlier hand-rolled toggling did, so
+    // a preset that included a WMS group layer would switch the layer on with
+    // no active sublayers and the map server would reject the GetMap request.
+    this.appModel.setLayerVisibilityFromParams(
+      this.layers,
+      this.groupLayers ?? undefined
+    );
     this.flyTo(this.map.getView(), this.location, this.zoom);
   };
 
@@ -160,29 +176,6 @@ class Preset extends React.PureComponent {
     this.setState({
       dialogOpen: false,
     });
-  };
-
-  layerShouldBeVisible = (layer, visibleLayers) => {
-    return visibleLayers.some(
-      (layerId) => layerId === layer.getProperties()["name"]
-    );
-  };
-
-  toggleMapLayers = (visibleLayers) => {
-    const layerSwitcherLayers = this.map
-      .getLayers()
-      .getArray()
-      .filter((layer) => layer.get("layerInfo"));
-
-    for (const l of layerSwitcherLayers) {
-      if (this.layerShouldBeVisible(l, visibleLayers)) {
-        this.globalObserver.publish("layerswitcher.showLayer", l);
-        l.setVisible(true);
-      } else {
-        this.globalObserver.publish("layerswitcher.hideLayer", l);
-        l.setVisible(false);
-      }
-    }
   };
 
   renderDialog() {
