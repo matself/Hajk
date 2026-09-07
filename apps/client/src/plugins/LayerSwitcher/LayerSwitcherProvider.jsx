@@ -513,6 +513,58 @@ const LayerSwitcherProvider = ({
     };
   }, [globalObserver, map]);
 
+  // Bridge for the legacy `layerswitcher.showLayer` / `layerswitcher.hideLayer`
+  // global events. The pre-rewrite LayerSwitcher subscribed to these; the
+  // rewrite (#1574) dropped the subscriber, which silently broke every caller
+  // that relied on them to switch a WMS *group* layer on with its sublayers -
+  // e.g. Informative map-links and Search's `showCorrespondingWMSLayers`. A
+  // plain `setVisible(true)` is not enough for a group layer: its GetMap
+  // request is built from the active sublayer set, so it must go through
+  // `setOLSubLayers`. Payload is either a bare OL layer or
+  // `{ layer, subLayersToShow }`.
+  useEffect(() => {
+    const resolveOlLayer = (payload) => {
+      const olLayer = payload?.layer ?? payload;
+      return olLayer && typeof olLayer.get === "function" ? olLayer : undefined;
+    };
+
+    const showListener = globalObserver.subscribe(
+      "layerswitcher.showLayer",
+      (payload) => {
+        const olLayer = resolveOlLayer(payload);
+        if (olLayer === undefined) return;
+
+        if (olLayer.get("layerType") === "group") {
+          const allSubLayers = olLayer.get("allSubLayers") || [];
+          const requested =
+            Array.isArray(payload?.subLayersToShow) &&
+            payload.subLayersToShow.length > 0
+              ? new Set(payload.subLayersToShow)
+              : new Set(allSubLayers);
+          // Keep the admin-defined sublayer order; STYLES must line up with it.
+          const ordered = allSubLayers.filter((s) => requested.has(s));
+          setOLSubLayers(olLayer, ordered.length > 0 ? ordered : allSubLayers);
+        } else {
+          olLayer.setVisible(true);
+        }
+      }
+    );
+
+    const hideListener = globalObserver.subscribe(
+      "layerswitcher.hideLayer",
+      (payload) => {
+        const olLayer = resolveOlLayer(payload);
+        if (olLayer === undefined) return;
+        olLayer.setVisible(false);
+      }
+    );
+
+    return () => {
+      showListener.unsubscribe();
+      hideListener.unsubscribe();
+    };
+  }, [globalObserver, map]);
+
   const dispatcher = useRef(
     createDispatch(map, staticLayerConfigMap, layerTreeData)
   );

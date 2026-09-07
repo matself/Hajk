@@ -6,12 +6,6 @@ import { backupBeforeWrite } from "../utils/backupConfig.js";
 
 const logger = log4js.getLogger("service.settings.v2");
 
-// Keys inside the layerswitcher tool's options that describe the map's layer
-// tree and admin-defined themes. They are only ever edited through the
-// "layermenu" endpoint, never through a tool editor, so a PUT to
-// "toolsettings" must not be allowed to change them - see updateMapFile().
-const LAYER_TREE_KEYS = ["groups", "baselayers", "quickAccessPresets"];
-
 class SettingsService {
   /**
    * @summary Helper that returns a unique ID, used e.g. to
@@ -366,36 +360,36 @@ class SettingsService {
           break;
         case "toolsettings": {
           // The Admin tool editors load the whole tools array once, when a map
-          // is opened, and never refresh it. The map's layer tree and themes
-          // live inside the layerswitcher tool's options; if they were saved
-          // (through the "layermenu" endpoint) after the map was opened, the
-          // array in this request carries a stale copy of them. Assigning it
-          // verbatim would silently revert the layer tree - layers.json is a
-          // separate store and would still list the layers, so the loss is
-          // easy to miss. Carry the layer-tree keys over from what is on disk;
-          // everything else in the tools array is written as sent.
+          // is opened, and never refresh it. The LayerSwitcher's options - the
+          // layer tree (groups/baselayers), the themes (quickAccessPresets) and
+          // every other LayerSwitcher setting - live inside that array but are
+          // only ever edited through the "layermenu" endpoint, never through a
+          // tool editor (there is no tool editor for LayerSwitcher). If they
+          // were saved via "layermenu" after the map was opened, the array in
+          // this request carries a stale copy, and assigning it verbatim would
+          // silently revert them - layers.json is a separate store and would
+          // still list every layer, so the loss is easy to miss. Keep the
+          // LayerSwitcher entry's options exactly as they are on disk; write
+          // the rest of the tools array as sent.
           const diskLs = mapConfig.tools?.find(
             (t) => t.type === "layerswitcher"
           );
           const incomingLs = Array.isArray(lscObject)
             ? lscObject.find((t) => t.type === "layerswitcher")
             : undefined;
-          if (diskLs?.options && incomingLs?.options) {
-            for (const key of LAYER_TREE_KEYS) {
-              if (!(key in diskLs.options)) continue;
-              if (
-                JSON.stringify(incomingLs.options[key]) !==
-                JSON.stringify(diskLs.options[key])
-              ) {
-                logger.warn(
-                  `Ignoring '${key}' from a toolsettings PUT for ${mapFile}: ` +
-                    `the layerswitcher layer tree is only editable via the layermenu endpoint. ` +
-                    `Keeping the version on disk. This usually means the Admin session that ` +
-                    `sent this had a stale copy of the tools array.`
-                );
-              }
-              incomingLs.options[key] = diskLs.options[key];
+          if (diskLs?.options && incomingLs && "options" in incomingLs) {
+            if (
+              JSON.stringify(incomingLs.options) !==
+              JSON.stringify(diskLs.options)
+            ) {
+              logger.warn(
+                `Ignoring layerswitcher options from a toolsettings PUT for ${mapFile}: ` +
+                  `they are only editable via the layermenu endpoint. Keeping the version on ` +
+                  `disk. This usually means the Admin session that sent this had a stale copy ` +
+                  `of the tools array.`
+              );
             }
+            incomingLs.options = diskLs.options;
           }
           mapConfig.tools = lscObject;
           break;

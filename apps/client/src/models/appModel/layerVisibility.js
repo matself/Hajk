@@ -59,8 +59,6 @@ function showLayers(map, lToShow, wantedGl) {
       }
       // On the other hand, if the layer to be shown does not exist in 'wantedGl',
       // it means that we should show ALL the sublayers.
-      // For that we must publish the event slightly differently. (Also, see
-      // where we subscribe to layerswitcher.showLayer for further understanding.)
       else {
         const allSubLayers = olLayer.get("allSubLayers");
         setOLSubLayers(olLayer, allSubLayers);
@@ -173,6 +171,28 @@ export function setLayerVisibilityFromParams(
     // console.log("No changes");
   } else {
     const wantedL = l.split(",");
+
+    // If the caller named specific layers but none of them exist in this map -
+    // a link built against a different map, or from before a layer-id change -
+    // stop here instead of falling through to hideLayers(), which would turn
+    // off everything currently visible and leave the map blank. Keep the
+    // current visibility. An empty `l` ("" -> [""]) is a deliberate "hide all"
+    // and is left alone.
+    const wantedBaseIds = wantedL
+      .map((id) => parseLayerId(id).baseId)
+      .filter((id) => id !== "");
+    if (
+      wantedBaseIds.length > 0 &&
+      !wantedBaseIds.some((baseId) => findOLLayer(appModel.map, baseId))
+    ) {
+      console.warn(
+        `setLayerVisibilityFromParams: none of the requested layers (${wantedBaseIds.join(
+          ", "
+        )}) exist in the current map - keeping current layer visibility.`
+      );
+      return;
+    }
+
     const wantedGl = JSON.parse(gl);
     const currentL = visibleLayers.split(",");
     const currentGl = partlyToggledGroupLayers;
