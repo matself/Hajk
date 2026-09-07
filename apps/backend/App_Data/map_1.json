@@ -846,6 +846,7 @@
     "drawerVisibleMobile": false,
     "activeDrawerOnStart": "plugins",
     "showThemeToggler": true,
+    "showWeatherControl": true,
     "colors": {
       "primaryColor": "#1976d2",
       "secondaryColor": "#ffa000",
