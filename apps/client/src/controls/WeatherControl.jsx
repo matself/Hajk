@@ -11,10 +11,14 @@ import ControlButton from "components/ControlButton";
 
 // SMHI's open forecast API (MetFcst), takes lon/lat directly, no API key required.
 // https://opendata.smhi.se/apidocs/metfcst/
+// Note: SMHI retired the old "pmp3g" forecast API on 2026-03-31 in favor of
+// "snow1g" - same URL shape and symbol codes, but the response nests each
+// parameter under a flat "data" object instead of a "parameters" array, and
+// uses human-readable parameter names and "time" instead of "validTime".
 const FORECAST_ENDPOINT =
-  "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point";
+  "https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point";
 
-// Wsymb2 weather symbol codes, see SMHI's MetFcst documentation
+// symbol_code values, same numbering as the old API's Wsymb2 (1-27), see SMHI's MetFcst documentation
 const WEATHER_SYMBOLS = {
   1: "Klart",
   2: "Nästan klart",
@@ -57,10 +61,6 @@ function renderWeatherIcon(code) {
   if (CLOUDY_CODES.has(code)) return <CloudIcon />;
   if (code === 7) return <BlurOnIcon />;
   return <GrainIcon />;
-}
-
-function extractParameterValue(parameters, name) {
-  return parameters?.find((p) => p.name === name)?.values?.[0];
 }
 
 // Refetching on every pixel of panning would hammer SMHI's API, so we only
@@ -112,16 +112,17 @@ const WeatherControl = (props) => {
           throw new Error("No forecast data returned");
         }
         setWeather({
-          validTime: series.validTime,
-          temperature: extractParameterValue(series.parameters, "t"),
-          windSpeed: extractParameterValue(series.parameters, "ws"),
-          precipitation: extractParameterValue(series.parameters, "pmean"),
-          symbol: extractParameterValue(series.parameters, "Wsymb2"),
+          validTime: series.time,
+          temperature: series.data?.air_temperature,
+          windSpeed: series.data?.wind_speed,
+          precipitation: series.data?.precipitation_amount_mean,
+          symbol: series.data?.symbol_code,
         });
         setLoading(false);
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
+        console.error("WeatherControl: failed to fetch SMHI forecast", err);
         setError(true);
         setLoading(false);
       });
