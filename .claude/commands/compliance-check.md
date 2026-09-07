@@ -97,11 +97,70 @@ JS/TS/JSON/MD file, and there is no `.gitattributes`. So Prettier's
 mean the change itself introduced CRLF (usually an editor writing them), and are
 a real defect to fix — not pre-existing repo noise to wave through.
 
-## 6 — Report
+## 6 — Codebase footgun patterns (scan the diff, flag hits)
+
+These are classes of latent bug found in this tree (audit 2026-09-07 + the
+Genvägar work). They're not policy violations, but a diff that reintroduces one
+should be called out with a ⚠️ in the report. Grep the **added** lines only.
+
+```bash
+ADD() { git diff $BASE...HEAD -- "$@" | grep -nE '^\+' | grep -v '^\+\+\+'; }
+```
+
+- **Blind full-slice map-config writes.** `apps/backend/.../settings.service.js`
+  `updateMapFile()` assigns whole slices (`mapConfig.tools = …`, `mapConfig.map = …`,
+  `layerswitcher … .options = …`) from the request body. The `toolsettings` branch
+  is guarded (it re-reads the `layerswitcher` options from disk) — a diff that
+  removes/weakens that guard, or adds a new blind slice assignment, is a ⚠️.
+  ```bash
+  ADD 'apps/backend/server/apis/v2/services/settings.service.js' | grep -nE 'mapConfig\.(tools|map)\s*=|\.options\s*=\s*lscObject'
+  ```
+- **Admin tool save sends the whole array.** Tool editors PUT the entire
+  `toolConfig` array via `updateToolConfig` → `/settings/toolsettings`, which is
+  the stale-copy hazard. A safer per-tool endpoint exists (`PUT
+  /settings/update/:map/:tool`, `updateMapTool`). A *new* tool editor should use
+  the per-tool route; flag one that copies the `updateToolConfig` pattern.
+  ```bash
+  ADD 'apps/admin/src/views/tools/*.jsx' | grep -n 'updateToolConfig'
+  ```
+- **Hand-rolled layer visibility.** Toggling user-facing map layers by iterating
+  `map.getLayers()/getAllLayers()` + `.setVisible(` instead of
+  `appModel.setLayerVisibilityFromParams(l, gl)`. A bare `setVisible(true)` on a
+  WMS **group** layer is wrong — it needs `setOLSubLayers`. This was the Genvägar
+  bug (`8c647c7b6`) and is still latent in `Informative/InformativeModel.js`.
+  ```bash
+  ADD 'apps/client/src/**/*.js' 'apps/client/src/**/*.jsx' | grep -nE 'getLayers\(\)|getAllLayers\(\)' | grep -i visible
+  ```
+- **`layerswitcher.showLayer` / `hideLayer` events.** One subscriber only
+  (`LayerSwitcherProvider`, restored in `fbba74c2f`; it was dead between #1574 and
+  that commit). New publishers are tolerable but prefer
+  `setLayerVisibilityFromParams`; a diff that removes the subscriber silently
+  breaks Informative map-links and Search `showCorrespondingWMSLayers`.
+  ```bash
+  ADD 'apps/client/src' | grep -nE 'layerswitcher\.(showLayer|hideLayer)'
+  ```
+- **Ad-hoc map-link parsing.** No shared `parseHajkMapLink` helper yet — each
+  consumer improvises. Flag a new `new URLSearchParams(<non-location string>)` or
+  `.toLowerCase()` on a URL/link/id (case-sensitive layer ids). Cross-check
+  against `PresetLinks.jsx` (handles full URL / `#…` / bare) and
+  `DocumentHandler/MapViewModel.js` (does not).
+  ```bash
+  ADD 'apps/client/src' | grep -nE 'new URLSearchParams\(|\.toLowerCase\(\)'
+  ```
+- **`"true"`/`"false"` string→boolean.** `settings.service.js` regex-coerces the
+  serialised config; a new Admin field that emits the strings `"true"`/`"false"`
+  instead of real booleans rides on that hack and corrupts any string value equal
+  to those literals. Flag new `value === "true"` / `checked ? "true" : "false"`
+  in `apps/admin`.
+  ```bash
+  ADD 'apps/admin/src' | grep -nE '"(true|false)"'
+  ```
+
+## 7 — Report
 
 One table per policy: `Requirement | Status | Evidence`. Separate **fork** vs
 **upstream** sections — the fork legitimately deviates on issue numbers
 (fork-only work often has no upstream issue) and commit signing; those are ❌
 only for upstream. Branch base is *not* a deviation: fork and upstream both
-branch from `develop`. Lead with the headline verdict. Surface real issues;
-don't pad.
+branch from `develop`. Add a short **Footguns** line from §6 (hits or "none").
+Lead with the headline verdict. Surface real issues; don't pad.
