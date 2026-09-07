@@ -52,7 +52,6 @@ class ToolOptions extends Component {
       //z target: "toolbar",
       //z instruction: "",
       visibleAtStart: false,
-      applyLayers: true,
       visibleForGroups: [],
       editing: null,
       showResults: false,
@@ -74,7 +73,6 @@ class ToolOptions extends Component {
         //z instruction: tool.options.instruction,
         presetList: tool.options.presetList || [],
         visibleAtStart: tool.options.visibleAtStart,
-        applyLayers: tool.options.applyLayers !== false,
         visibleForGroups: tool.options.visibleForGroups
           ? tool.options.visibleForGroups
           : [],
@@ -140,7 +138,6 @@ class ToolOptions extends Component {
         //z width: this.state.width,
         //z height: this.state.height,
         presetList: this.state.presetList,
-        applyLayers: this.state.applyLayers,
         //z instruction: this.state.instruction,
         visibleForGroups: this.state.visibleForGroups.map(
           Function.prototype.call,
@@ -525,32 +522,6 @@ class ToolOptions extends Component {
             &nbsp;
             <label htmlFor="visibleAtStart">Synlig vid start</label>
           </div>*/}
-          <div>
-            <input
-              id="applyLayers"
-              name="applyLayers"
-              type="checkbox"
-              onChange={(e) => {
-                this.handleInputChange(e);
-              }}
-              checked={this.state.applyLayers}
-            />
-            &nbsp;
-            <label htmlFor="applyLayers">Tillämpa genvägens lagerval</label>
-            <span
-              style={{
-                display: "block",
-                marginTop: "4px",
-                fontSize: "0.8rem",
-                color: "#767676",
-              }}
-            >
-              När detta är på ändras kartans tända lager efter genvägens
-              <code> l=</code>-parameter, och en varningsruta visas först. Stäng
-              av för att låta genvägarna enbart flytta kartan till en plats utan
-              att röra lager eller bakgrundskarta — då visas ingen varning.
-            </span>
-          </div>
           {this.renderVisibleForGroups()}
           <div>
             <div>

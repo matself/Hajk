@@ -37,12 +37,6 @@ class Preset extends React.PureComponent {
     this.map = props.appModel.getMap();
     this.title = this.options.title || "Genvägar";
 
-    // When false, the tool never touches layer visibility: the `l=` part of a
-    // preset URL is ignored and clicking a preset only pans/zooms to the place.
-    // No layer-change warning is shown because no layers are changed. Defaults
-    // to true to preserve the original behaviour.
-    this.applyLayers = this.options.applyLayers !== false;
-
     this.location = null;
     this.zoom = null;
     this.layers = null;
@@ -93,12 +87,12 @@ class Preset extends React.PureComponent {
 
       this.layers = layers;
 
-      // If the link contains layers - and this tool is allowed to alter loaded
-      // layers - we open the dialog where the user can choose to proceed.
-      if (layers && this.applyLayers) {
+      // If the link contains layers we open the dialog where the user can choose to
+      // proceed.
+      if (layers) {
         this.openDialog();
-      } // Otherwise (no layers in the link, or layer changes disabled for this
-      // map) we simply fly to the new location without toggling layers.
+      } // If the link does not contain layers, we can simply fly to the new location
+      // without toggling layers and so on.
       else {
         this.flyTo(this.map.getView(), this.location, this.zoom);
       }
