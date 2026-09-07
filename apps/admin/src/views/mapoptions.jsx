@@ -67,6 +67,7 @@ class MapOptions extends Component {
         mapcleaner: config.mapcleaner,
         mapresetter: config.mapresetter,
         showThemeToggler: config.showThemeToggler,
+        showWeatherControl: config.showWeatherControl,
         showUserAvatar: config.showUserAvatar,
         showRecentlyUsedPlugins: config.showRecentlyUsedPlugins,
         introductionEnabled: config.introductionEnabled || false,
@@ -179,6 +180,7 @@ class MapOptions extends Component {
       mapcleaner: mapConfig.mapcleaner,
       mapresetter: mapConfig.mapresetter,
       showThemeToggler: mapConfig.showThemeToggler,
+      showWeatherControl: mapConfig.showWeatherControl,
       showUserAvatar: mapConfig.showUserAvatar,
       showRecentlyUsedPlugins: mapConfig.showRecentlyUsedPlugins,
       introductionEnabled: mapConfig.introductionEnabled || false,
@@ -384,6 +386,7 @@ class MapOptions extends Component {
       case "mapcleaner":
       case "mapresetter":
       case "showThemeToggler":
+      case "showWeatherControl":
       case "showUserAvatar":
       case "showRecentlyUsedPlugins":
       case "introductionEnabled":
@@ -460,6 +463,7 @@ class MapOptions extends Component {
         config.mapcleaner = this.getValue("mapcleaner");
         config.mapresetter = this.getValue("mapresetter");
         config.showThemeToggler = this.getValue("showThemeToggler");
+        config.showWeatherControl = this.getValue("showWeatherControl");
         config.showUserAvatar = this.getValue("showUserAvatar");
         config.showRecentlyUsedPlugins = this.getValue(
           "showRecentlyUsedPlugins"
@@ -1408,6 +1412,26 @@ class MapOptions extends Component {
                   className="fa fa-question-circle"
                   data-toggle="tooltip"
                   title="Om aktiv kommer en knapp som möjliggör temaväxling att visas"
+                />
+              </label>
+            </div>
+            <div>
+              <input
+                id="input_showWeatherControl"
+                type="checkbox"
+                ref="input_showWeatherControl"
+                onChange={(e) => {
+                  this.setState({ showWeatherControl: e.target.checked });
+                }}
+                checked={this.state.showWeatherControl}
+              />
+              &nbsp;
+              <label className="long-label" htmlFor="input_showWeatherControl">
+                Visa väder för kartans centrumpunkt{" "}
+                <i
+                  className="fa fa-question-circle"
+                  data-toggle="tooltip"
+                  title="Om aktiv visas en knapp bland kartkontrollerna med aktuell väderprognos (SMHI) för kartans centrumpunkt, som uppdateras när kartan panoreras"
                 />
               </label>
             </div>
