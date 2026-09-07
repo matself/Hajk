@@ -66,6 +66,7 @@ Styr OpenLayers standardinteraktioner direkt, se [OpenLayers-dokumentationen](ht
 | Visa knapp för att rensa kartan | Knapp som nollställer allt användaren ritat/lagt till. |
 | Visa en hemknapp som återställer kartans innehåll till startläge | Återställer zoom och centrumkoordinat till administratörens konfigurerade standardvärden ovan — oavsett hur kartan öppnades (t.ex. via en länk med `x`/`y`/`z`, se [client-url-parameters.md](client-url-parameters.md)). Återställer **inte** vilka lager som är synliga. |
 | Visa knapp för att byta mellan ljust och mörkt tema | — |
+| Visa väder för kartans centrumpunkt | Visar en knapp med aktuell väderikon och temperatur, hämtad från SMHI:s öppna prognos-API för kartans centrumkoordinat. Uppdateras när kartan panoreras (avrundat till ungefär en kilometers förflyttning, för att inte överbelasta SMHI:s API). En klick på knappen öppnar en ruta med vindstyrka, nederbörd och en textbeskrivning av vädret. Kräver ingen nyckel eller bakomliggande proxy — anropet går direkt från webbläsaren till SMHI. |
 | Visa en knapp med användarens initialer intill zoomknapparna | Kräver att AD-koppling är aktiv. |
 | Visa en snabbväljare med de senast använda verktygen | En liten kontroll som vid hover/touch visar senast använda verktyg — särskilt användbar i mobilläge. |
 
@@ -97,4 +98,4 @@ Styr den huvudsakliga sidopanelen (drawer) där verktyg med `target: "toolbar"` 
 
 ---
 
-*Detta dokument beskriver läget i koden per 2026-07-30. Om `mapoptions.jsx` ändras bör denna guide uppdateras i samma PR.*
+*Detta dokument beskriver läget i koden per 2026-09-07. Om `mapoptions.jsx` ändras bör denna guide uppdateras i samma PR.*
