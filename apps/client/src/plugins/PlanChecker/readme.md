@@ -159,6 +159,16 @@ Two things, and neither fails loudly if forgotten:
    reaches the browser. A layer not placed in the LayerSwitcher tree is never
    added to the map at all.
 
+### The two services fail independently
+
+Confirmed live, not just architecturally: the visningstjänst (WMS) and söktjänst
+are separate services with separate uptime. When Lantmäteriet's WMS was down —
+no map image, 200 OK with a blank tile, reproduced on Lantmäteriet's own
+`detaljplaner.lantmateriet.se` viewer too, so nothing to fix in this proxy or
+plugin — clicking a known point still returned its regulations correctly. A
+blank map is not evidence the tool itself is broken; check whether the click
+answer still comes back before suspecting the proxy or the WMS layer config.
+
 ### The plugin never touches layer visibility
 
 Switching layers on and off is the user's business. The tool watches the plan
