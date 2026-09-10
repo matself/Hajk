@@ -64,12 +64,27 @@ silent empty result. (An earlier version of this note, and the OpenAPI
 description on the backend's own detaljplanproxy route, assumed the opposite
 from a single ambiguous live response; that assumption was never confirmed
 against this exact case and turned out to be wrong — corrected here and there.)
+The API's own reference docs confirm this independently of support: `/collections`
+lists the full set of CRS the service accepts — CRS84 and EPSG:3006, 3007,
+3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3016, 3017, 3018, 3021 and
+4619 — and 3857 is not among them.
+
 Support's own examples default to CRS84 (plain WGS84 lon/lat) rather than
 SWEREF 99 TM, which OpenLayers understands natively with no `projections`
 entry required — a genuine simplification this plugin does not currently take
 advantage of, since EPSG:3006 was chosen to match what Lantmäteriet's viewer
 sends. Switching would drop the "EPSG:3006 missing from projections" failure
 mode entirely, at the cost of reprojecting through WGS84 instead.
+
+One more thing the reference docs settle: `intersects` only exists on `/search`
+(`GET` as a URL-encoded query parameter, `POST` as this plugin sends it, in the
+body). `GET /collections/{collectionId}/items` — the plain item listing, no
+relation to `/search` — takes only `bbox`/`bbox-crs`, nothing spatial beyond
+that. There is no third spatial filtering path hiding anywhere in the API.
+Coordinates inside `intersects` are ordinary GeoJSON `[x, y]` (Easting,
+Northing for EPSG:3006), regardless of the CRS registry's own N,E axis order
+for that code — unrelated to, and not to be confused with, the axis order a
+WMS 1.3.0 `BBOX` parameter must use for the same CRS.
 
 ### Three searches per click
 
