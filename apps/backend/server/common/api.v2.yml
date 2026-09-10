@@ -649,8 +649,11 @@ paths:
             Path corresponding to an endpoint on Lantmateriet's Geodatakatalog for detaljplan,
             e.g. "collections" or "collections/1281". Note that PlanChecker itself
             uses the POST variant below rather than this one; a bbox passed here is
-            read in the collection's storage CRS unless "bbox-crs" says otherwise,
-            and one in the wrong CRS returns an empty result rather than an error.
+            read in the collection's storage CRS unless "bbox-crs" says otherwise. Lantmateriet's
+            own support confirmed that an unimplemented CRS (EPSG:3857, for one) answers with a
+            400 and "Reference system not supported: <code>" - a plain 200 with no features is
+            what a CRS the service does support returns for a location that just has no plan,
+            not a signal that the CRS itself was wrong.
           required: true
           schema:
             type: string

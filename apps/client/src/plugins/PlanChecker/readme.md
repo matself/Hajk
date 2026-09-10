@@ -34,6 +34,17 @@ geometry and a `query` filter object — which it never mentions in
 `/conformance`. It is what Lantmäteriet's own viewer uses, and it gives an
 exact hit test server-side. This plugin uses it.
 
+Lantmäteriet's own support later pointed to a human-readable page that does
+document this, once you know where to look: the [detaljplan product
+page](https://www.lantmateriet.se/sv/nationella-geodataplattformen/datamangder/detaljplan/)
+links an "API-dokumentation" section to a
+[detaljplan-api-2.2.html](https://namespace.lantmateriet.se/distribution/geodatakatalog/sokning/v1/detaljplan/v2/detaljplan-api-2.2.html)
+reference. Its own worked examples use `GET /search?intersects=...&bbox-crs=...`
+with the geometry URL-encoded, rather than the `POST` this plugin sends — both
+work, but `GET` is the one the documentation actually shows, so it is the
+better-supported choice if this is ever rewritten. `/conformance` still says
+nothing about either.
+
 Data is stored as **one collection per municipality**, keyed by the four-digit
 kommunkod, but `/search` is purely locational — it spans every collection and
 takes no kommunkod. That is a feature, not a gap: a click near a municipal
@@ -45,6 +56,20 @@ in both directions. When the map runs in something else — EPSG:3857 is the
 common case, and is *not* among the CRS the service accepts — the plugin
 transforms, which requires `EPSG:3006` under `projections` in the map config.
 It says so plainly when that is missing.
+
+Lantmäteriet's support confirmed both halves of that: EPSG:3857 genuinely
+"inte implementerat i tjänsten", and asking for it anyway — `bbox-crs=EPSG:3857`
+— answers with a **400** and `"Reference system not supported: 3857"`, not a
+silent empty result. (An earlier version of this note, and the OpenAPI
+description on the backend's own detaljplanproxy route, assumed the opposite
+from a single ambiguous live response; that assumption was never confirmed
+against this exact case and turned out to be wrong — corrected here and there.)
+Support's own examples default to CRS84 (plain WGS84 lon/lat) rather than
+SWEREF 99 TM, which OpenLayers understands natively with no `projections`
+entry required — a genuine simplification this plugin does not currently take
+advantage of, since EPSG:3006 was chosen to match what Lantmäteriet's viewer
+sends. Switching would drop the "EPSG:3006 missing from projections" failure
+mode entirely, at the cost of reprojecting through WGS84 instead.
 
 ### Three searches per click
 
