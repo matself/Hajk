@@ -61,6 +61,7 @@ function normalizeLayersConfig(appModel, layers) {
   layers.vectorlayers = appModel.config.layersConfig.vectorlayers || [];
   layers.arcgislayers = appModel.config.layersConfig.arcgislayers || [];
   layers.xyzlayers = appModel.config.layersConfig.xyzlayers || [];
+  layers.pmtileslayers = appModel.config.layersConfig.pmtileslayers || [];
 
   layers.wmslayers.forEach((l) => (l.type = "wms"));
   layers.wmtslayers.forEach((l) => (l.type = "wmts"));
@@ -68,6 +69,7 @@ function normalizeLayersConfig(appModel, layers) {
   layers.vectorlayers.forEach((l) => (l.type = "vector"));
   layers.arcgislayers.forEach((l) => (l.type = "arcgis"));
   layers.xyzlayers.forEach((l) => (l.type = "xyz"));
+  layers.pmtileslayers.forEach((l) => (l.type = "pmtiles"));
 
   const allLayers = [
     ...layers.wmslayers,
@@ -76,6 +78,7 @@ function normalizeLayersConfig(appModel, layers) {
     ...layers.wfstlayers,
     ...layers.arcgislayers,
     ...layers.xyzlayers,
+    ...layers.pmtileslayers,
   ];
 
   appModel.config.layersConfig = allLayers;

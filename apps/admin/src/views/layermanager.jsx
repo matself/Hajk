@@ -7,6 +7,7 @@ import WMTSLayerForm from "./layerforms/wmtslayerform.jsx";
 import ArcGISLayerForm from "./layerforms/arcgislayerform.jsx";
 import VectorLayerForm from "./layerforms/vectorlayerform.jsx";
 import XYZLayerForm from "./layerforms/xyzlayerform.jsx";
+import PMTilesLayerForm from "./layerforms/pmtileslayerform.jsx";
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/SaveSharp";
 import AddIcon from "@material-ui/icons/Add";
@@ -374,6 +375,36 @@ class Manager extends Component {
       }, 0);
     }
 
+    if (layer.type === "PMTiles") {
+      this.setState({
+        mode: "edit",
+        layerType: "PMTiles",
+      });
+
+      setTimeout(() => {
+        this.refs["PMTilesLayerForm"].setState({
+          id: layer.id,
+          caption: layer.caption,
+          internalLayerName: layer.internalLayerName || "",
+          content: layer.content || "",
+          date: layer.date,
+          url: layer.url,
+          attribution: layer.attribution || "",
+          opacity: layer.opacity ?? 1,
+          minZoom: layer.minZoom ?? -1,
+          maxZoom: layer.maxZoom ?? -1,
+          layerType: "PMTiles",
+          infoVisible: layer.infoVisible || false,
+          infoTitle: layer.infoTitle || "",
+          infoText: layer.infoText || "",
+          infoUrl: layer.infoUrl || "",
+          infoUrlText: layer.infoUrlText || "",
+          infoOpenDataLink: layer.infoOpenDataLink || "",
+          infoOwner: layer.infoOwner || "",
+        });
+      }, 0);
+    }
+
     if (layer.type === "WMTS") {
       this.setState({
         mode: "edit",
@@ -645,6 +676,9 @@ class Manager extends Component {
         case "XYZ":
           displayType = "(XYZ)";
           break;
+        case "PMTiles":
+          displayType = "(PMTiles)";
+          break;
         default:
           break;
       }
@@ -838,6 +872,15 @@ class Manager extends Component {
             parent={this}
           />
         );
+      case "PMTiles":
+        return (
+          <PMTilesLayerForm
+            ref="PMTilesLayerForm"
+            model={this.props.model}
+            layer={this.state.layer}
+            parent={this}
+          />
+        );
       default:
         return <WMSLayerForm model={this.props.model} parent={this} />;
     }
@@ -970,6 +1013,7 @@ class Manager extends Component {
                 <option>ArcGIS</option>
                 <option value="Vector">Vektor</option>
                 <option>XYZ</option>
+                <option>PMTiles</option>
               </select>
             </p>
             {this.state.mode === "edit" ? (

@@ -151,6 +151,8 @@ var manager = Model.extend({
         return this.get("config").url_vectorlayer_settings;
       case "XYZ":
         return this.get("config").url_xyzlayer_settings;
+      case "PMTiles":
+        return this.get("config").url_pmtileslayer_settings;
       default:
         break;
     }
@@ -189,6 +191,12 @@ var manager = Model.extend({
             l.type = "XYZ";
           });
           layers = layers.concat(data.xyzlayers);
+        }
+        if (data && Array.isArray(data.pmtileslayers)) {
+          data.pmtileslayers.forEach((l) => {
+            l.type = "PMTiles";
+          });
+          layers = layers.concat(data.pmtileslayers);
         }
 
         layers.sort((a, b) => {

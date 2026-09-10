@@ -801,11 +801,15 @@ class Menu extends Component {
             (data.xyzlayers || []).forEach((l) => {
               l.type = "XYZ";
             });
+            (data.pmtileslayers || []).forEach((l) => {
+              l.type = "PMTiles";
+            });
             layers = data.wmslayers
               .concat(data.wmtslayers)
               .concat(data.arcgislayers)
               .concat(data.vectorlayers)
-              .concat(data.xyzlayers || []);
+              .concat(data.xyzlayers || [])
+              .concat(data.pmtileslayers || []);
             layers.sort((a, b) => {
               var d1 = parseInt(a.date, 10),
                 d2 = parseInt(b.date, 10);

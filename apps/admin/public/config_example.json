@@ -10,6 +10,8 @@
     "url_wmtslayer_settings": "https://YOUR_DOMAIN.COM/mapservice/settings/wmtslayer",
     "url_arcgislayer_settings": "https://YOUR_DOMAIN.COM/mapservice/settings/arcgislayer",
     "url_vectorlayer_settings": "https://YOUR_DOMAIN.COM/mapservice/settings/vectorlayer",
+    "url_xyzlayer_settings": "https://YOUR_DOMAIN.COM/mapservice/settings/xyzlayer",
+    "url_pmtileslayer_settings": "https://YOUR_DOMAIN.COM/mapservice/settings/pmtileslayer",
     "default_server_type": "geoserver",
     "url_default_server": "https://YOUR_MAP_SERVER.COM/geoserver/wms"
   },

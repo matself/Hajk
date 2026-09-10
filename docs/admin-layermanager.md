@@ -5,10 +5,11 @@ Det här dokumentet beskriver skalet runt lagerformulären i Admin — fliken **
 - [admin-wms-layer-form.md](admin-wms-layer-form.md) + [admin-wms-layer-settings.md](admin-wms-layer-settings.md) (WMS)
 - [admin-wmts-layer-form.md](admin-wmts-layer-form.md) (WMTS)
 - [admin-xyz-layer-form.md](admin-xyz-layer-form.md) (XYZ)
+- [admin-pmtiles-layer-form.md](admin-pmtiles-layer-form.md) (PMTiles)
 - [admin-vector-layer-form.md](admin-vector-layer-form.md) (Vektor)
 - [admin-arcgis-layer-form.md](admin-arcgis-layer-form.md) (ArcGIS)
 
-Alla fem delar samma skal och samma Metadata/Infodokument-mönster (Tidslinjedatum finns bara för WMS/Vektor).
+Alla sex delar samma skal och samma Metadata/Infodokument-mönster (Tidslinjedatum finns bara för WMS/Vektor).
 
 ## Layout
 

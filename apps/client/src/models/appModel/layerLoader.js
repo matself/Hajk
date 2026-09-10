@@ -3,6 +3,7 @@ import WMSLayer from "../layers/WMSLayer";
 import WMTSLayer from "../layers/WMTSLayer";
 import WFSVectorLayer from "../layers/VectorLayer";
 import XYZLayer from "../layers/XYZLayer";
+import PMTilesLayer from "../layers/PMTilesLayer";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Icon, Fill, Stroke, Style } from "ol/style";
@@ -78,6 +79,12 @@ export function addMapLayer(appModel, layer) {
       // XYZ bypasses ConfigMapper, so map visibleAtStart → visible here as ConfigMapper does for other types.
       layer.visible = layer.visibleAtStart;
       layerItem = new XYZLayer(layer);
+      appModel.map.addLayer(layerItem.layer);
+      break;
+    case "pmtiles":
+      // Like XYZ, PMTiles bypasses ConfigMapper, so map visibleAtStart → visible here.
+      layer.visible = layer.visibleAtStart;
+      layerItem = new PMTilesLayer(layer);
       appModel.map.addLayer(layerItem.layer);
       break;
     // case "arcgis":
