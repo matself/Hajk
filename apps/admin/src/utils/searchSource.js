@@ -72,6 +72,21 @@ export function fromWfsLayer(raw) {
     geometryField: raw.geometryField || "",
     outputFormat: raw.outputFormat || "GML3",
     serverType: raw.serverType || "geoserver",
+    // WFS request version. Defaults to "1.1.0" - the same default
+    // ol/format/WFS and every existing source has always used - so this
+    // field being absent on every wfslayer saved before it existed changes
+    // nothing. Only needed when a server rejects 1.1.0's stricter typeName
+    // grammar (no dots allowed) for a typeName that has them, e.g.
+    // "ps-nvr:PS.ProtectedSites.NR" - confirmed live: this exact server
+    // accepts that typeName under 2.0.0 and rejects it under 1.1.0 with a
+    // cvc-pattern-valid error.
+    wfsVersion: raw.wfsVersion || "1.1.0",
+    // XML namespace URI for the prefix used in `layers` (e.g. "ps-nvr" in
+    // "ps-nvr:PS.ProtectedSites.NR"). Only needed for a strict server that
+    // rejects a request using an undeclared prefix - most GeoServer/QGIS
+    // instances resolve a well-known workspace prefix without this. Empty
+    // by default; see SearchModel.js#lookup for where it's used.
+    featureNS: raw.featureNS || "",
     infobox: raw.infobox || "",
     // Not part of the disk wfslayer shape - present so the form can render
     // one input regardless of source kind. See toWfsLayer(): omitted from
@@ -121,6 +136,12 @@ export function toWfsLayer(canonical, raw) {
     geometryField: canonical.geometryField,
     outputFormat: canonical.outputFormat,
     serverType: canonical.serverType,
+    // Omit when it's the default, same reasoning as pid above - a source
+    // that never needed this still looks exactly like it did before this
+    // field existed.
+    wfsVersion:
+      canonical.wfsVersion !== "1.1.0" ? canonical.wfsVersion : undefined,
+    featureNS: canonical.featureNS || undefined,
     infobox: canonical.infobox,
     infoclickIcon: canonical.infoclickIcon || undefined,
     aliasDict: canonical.aliasDict,
@@ -184,6 +205,8 @@ export function fromWmsSublayer(wmsLayer, sublayer) {
     layers: [sublayer.id],
     geometryField: sublayer.searchGeometryField || "",
     outputFormat: sublayer.searchOutputFormat || "GML3",
+    wfsVersion: sublayer.searchWfsVersion || "1.1.0",
+    featureNS: sublayer.searchFeatureNS || "",
     serverType: wmsLayer.serverType || "geoserver", // inherited, read-only here
     infobox: sublayer.infobox || "",
     infoclickIcon: sublayer.infoclickIcon || "",
@@ -218,6 +241,11 @@ export function toWmsSublayer(canonical, wmsLayer, sublayerId) {
             searchShortDisplayName: canonical.shortDisplayFields.join(","),
             searchGeometryField: canonical.geometryField,
             searchOutputFormat: canonical.outputFormat,
+            searchWfsVersion:
+              canonical.wfsVersion !== "1.1.0"
+                ? canonical.wfsVersion
+                : undefined,
+            searchFeatureNS: canonical.featureNS || undefined,
             infobox: canonical.infobox,
             infoclickIcon: canonical.infoclickIcon,
           }
@@ -248,6 +276,8 @@ export function clearWmsSublayerSearchConfig(wmsLayer, sublayerId) {
             searchShortDisplayName: "",
             searchGeometryField: "",
             searchOutputFormat: "",
+            searchWfsVersion: "",
+            searchFeatureNS: "",
           }
         : sl
     ),

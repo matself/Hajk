@@ -141,6 +141,8 @@ function buildSearchSources(searchTool, layers) {
               : [],
           geometryField: sl.searchGeometryField || "geom",
           outputFormat: sl.searchOutputFormat || "GML3",
+          wfsVersion: sl.searchWfsVersion || "1.1.0",
+          featureNS: sl.searchFeatureNS || "",
           serverType: layer.serverType || "geoserver",
         };
       });

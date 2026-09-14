@@ -481,6 +481,30 @@ export default function SearchSourceForm({
             </TextField>
           )}
         </Grid>
+        <Grid item xs={6}>
+          <TextField
+            select
+            fullWidth
+            required
+            label="WFS-version"
+            helperText="Endast vid behov: en del tjänster kräver 2.0.0 för att acceptera ett lagernamn med punkt i, t.ex. Namnrymd.Lagernamn."
+            value={canonical.wfsVersion}
+            onChange={(e) => setField("wfsVersion", e.target.value)}
+          >
+            <MenuItem value="1.1.0">1.1.0 (standard)</MenuItem>
+            <MenuItem value="2.0.0">2.0.0</MenuItem>
+            <MenuItem value="1.0.0">1.0.0</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Namnrymd (endast vid behov)"
+            helperText="Fylls bara i om Lager ovan har ett prefix (t.ex. ps-nvr:PS.ProtectedSites.NR) OCH tjänsten kräver att prefixet är deklarerat i anropet - annars lämnas tomt. Ange den fullständiga URI:n som prefixet står för (t.ex. https://miljodatasamverkan.se/so/PS/ProtectedSites)."
+            value={canonical.featureNS}
+            onChange={(e) => setField("featureNS", e.target.value)}
+          />
+        </Grid>
       </Grid>
 
       {featureTypesError && (

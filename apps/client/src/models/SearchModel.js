@@ -36,7 +36,21 @@ class SearchModel {
   #app;
 
   #controllers = []; // Holder Array for Promises' AbortControllers
-  #wfsParser = new WFS();
+  // ol/format/WFS#writeGetFeature reads the version baked into the format
+  // instance at construction time (`this.version_`) - it never looks at
+  // `options.version`, unlike writeTransaction, which does accept a
+  // per-call override. That asymmetry means a single shared WFS instance
+  // can't serve sources that need different WFS versions (some servers
+  // reject a dotted typeName like "ps-nvr:PS.ProtectedSites.NR" under the
+  // 1.1.0 default and require 2.0.0 - confirmed against a live service).
+  // Cache one instance per version instead of constructing one up front.
+  #wfsParsers = new Map();
+  #getWfsParser = (version) => {
+    if (!this.#wfsParsers.has(version)) {
+      this.#wfsParsers.set(version, new WFS({ version }));
+    }
+    return this.#wfsParsers.get(version);
+  };
   #possibleSearchCombinations = new Map(); // Will hold a set of possible search combinations, so we don't have to re-create them for each source
 
   lastSearchPhrase = "";
@@ -529,17 +543,59 @@ class SearchModel {
       return { promise: null, controller: null };
     }
 
+    const wfsVersion = searchSource.wfsVersion || "1.1.0";
+
     // Prepare the options for the upcoming request.
     const options = {
       featureTypes: searchSource.layers,
       srsName: srsName,
       outputFormat: searchSource.outputFormat,
       geometryName: geometryName,
-      maxFeatures: maxFeatures,
       filter: finalFilters,
+      // WFS 2.0.0 renamed this attribute from maxFeatures to count and
+      // rejects a request carrying the old name outright ("Attribute
+      // 'maxFeatures' is not allowed to appear in element 'GetFeature'") -
+      // confirmed live. ol/format/WFS writes whichever attribute matches
+      // whichever option key is set; it does not translate one into the
+      // other based on version, so the caller has to pick.
+      ...(wfsVersion === "2.0.0"
+        ? { count: maxFeatures }
+        : { maxFeatures: maxFeatures }),
     };
 
-    const node = this.#wfsParser.writeGetFeature(options);
+    // ol/format/WFS defaults to 1.1.0 - fine for almost every WFS, but
+    // 1.1.0's typeName grammar rejects a dot (e.g.
+    // "ps-nvr:PS.ProtectedSites.NR"), which some servers' typeNames
+    // require. searchSource.wfsVersion lets a per-source override opt into
+    // 2.0.0 (or 1.0.0) without changing the default for every other
+    // source. See configTranslator.js#buildSearchSources and
+    // apps/admin/src/utils/searchSource.js for where this is set. Must be
+    // baked into the format instance via #getWfsParser(), not passed in
+    // `options` - writeGetFeature() ignores `options.version` (see
+    // #getWfsParser's own comment for why).
+    const node = this.#getWfsParser(wfsVersion).writeGetFeature(options);
+
+    // A prefixed typeName (e.g. "ps-nvr:PS.ProtectedSites.NR") needs its
+    // namespace declared in the request document, or a strict server can't
+    // resolve the prefix and rejects the whole request ("is not a valid
+    // value of union type 'TypeNamesType'") - confirmed live against
+    // geodata.naturvardsverket.se's INSPIRE service. ol/format/WFS only
+    // adds that declaration when told the URI via options.featureNS, which
+    // would require restructuring featureTypes to NOT already include the
+    // prefix (it otherwise double-prefixes via featurePrefix) - a bigger
+    // change than justified here, since most configured sources' servers
+    // are lenient about an undeclared prefix and don't need this at all.
+    // Instead, declare it directly on the already-built node, only when a
+    // source opts in with featureNS.
+    if (searchSource.featureNS && searchSource.layers[0]?.includes(":")) {
+      const prefix = searchSource.layers[0].split(":")[0];
+      node.setAttributeNS(
+        "http://www.w3.org/2000/xmlns/",
+        `xmlns:${prefix}`,
+        searchSource.featureNS
+      );
+    }
+
     const xmlSerializer = new XMLSerializer();
     const xmlString = xmlSerializer.serializeToString(node);
     const controller = new AbortController();
