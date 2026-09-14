@@ -335,7 +335,51 @@
     {
       "type": "layerswitcher",
       "options": {
-        "groups": [],
+        "groups": [
+          {
+            "id": "cbec7599-ab07-777e-b9b0-638ae2ee2b6b",
+            "type": "group",
+            "name": "Lager",
+            "toggled": false,
+            "expanded": true,
+            "exclusive": false,
+            "infogroupvisible": false,
+            "infogrouptitle": "",
+            "infogrouptext": "",
+            "infogroupurl": "",
+            "infogroupurltext": "",
+            "infogroupopendatalink": "",
+            "infogroupowner": "",
+            "parent": "-1",
+            "layers": [
+              {
+                "id": "bjou26",
+                "drawOrder": 0,
+                "visibleAtStart": false,
+                "infobox": ""
+              },
+              {
+                "id": "pdwtc7",
+                "drawOrder": 0,
+                "visibleAtStart": false,
+                "infobox": ""
+              },
+              {
+                "id": "bcasqg",
+                "drawOrder": 1000,
+                "visibleAtStart": false,
+                "infobox": ""
+              },
+              {
+                "id": "h57dqd",
+                "drawOrder": 1000,
+                "visibleAtStart": false,
+                "infobox": ""
+              }
+            ],
+            "groups": []
+          }
+        ],
         "baselayers": [
           {
             "id": "osmxyz1",
@@ -350,7 +394,7 @@
             "infobox": ""
           },
           {
-            "id": "h747so",
+            "id": "jupop6",
             "visibleAtStart": false,
             "drawOrder": 0,
             "infobox": ""
@@ -370,34 +414,34 @@
         "backgroundSwitcherWhite": false,
         "enableOSM": false,
         "OSMVisibleAtStart": false,
-        "showBreadcrumbs": true,
-        "showDrawOrderView": true,
-        "showFilter": true,
-        "showQuickAccess": true,
+        "showBreadcrumbs": false,
+        "showDrawOrderView": false,
+        "showFilter": false,
+        "showQuickAccess": false,
         "legendForceTransparency": false,
-        "legendTryHiDPI": false,
-        "enableSystemLayersSwitch": true,
+        "legendTryHiDPI": true,
+        "enableSystemLayersSwitch": false,
         "lockDrawOrderBaselayer": true,
-        "drawOrderViewInfoText": "Här kan du ändra ritordning på tända lager i kartan. Dra lagret upp eller ner i listan och släpp på önskad plats.",
+        "drawOrderViewInfoText": "Ändra ritordning genom att dra lagret i listan och släpp på önskad plats.",
         "enableQuickAccessPresets": true,
-        "quickAccessTopicsInfoText": "Här kan du ladda färdiga teman till temagruppen. Teman innehåller tända och släckta lager, samt bakgrund.",
+        "quickAccessTopicsInfoText": "Ladda färdiga teman till snabbåtkomst. Teman innehåller tända och släckta lager, samt bakgrund.",
         "enableUserQuickAccessFavorites": true,
-        "userQuickAccessFavoritesInfoText": "Här kan du hantera och redigera dina sparade favoriter. Observera att favoriter endast sparas tillfälligt.",
+        "userQuickAccessFavoritesInfoText": "Hantera och redigera dina sparade favoriter. Observera att favoriter endast sparas tillfälligt.",
         "enableTransparencySlider": true,
         "instruction": "",
         "minMaxZoomAlertOnToggleOnly": false,
         "cqlFilterVisible": false,
-        "showLegendByDefault": false,
-        "renderSpecialBackgroundsAtBottom": true,
+        "showLegendByDefault": true,
+        "renderSpecialBackgroundsAtBottom": false,
         "dropdownThemeMaps": true,
-        "themeMapHeaderCaption": "Standardkartan",
+        "themeMapHeaderCaption": "@ work for search",
         "visibleForGroups": [],
         "target": "left",
         "position": "left",
         "width": "",
         "height": "",
-        "title": "Lagerhanterare",
-        "description": "Välj vad du vill visa i kartan."
+        "title": "Kartinnehåll",
+        "description": "Välj vilka lager du vill visa i kartan."
       },
       "index": 1
     },
@@ -433,7 +477,7 @@
       "index": 2
     },
     {
-      "type": "measurer",
+      "type": "measure",
       "options": {
         "target": "control",
         "position": "right",
@@ -441,17 +485,6 @@
         "icons": ""
       },
       "index": 4
-    },
-    {
-      "type": "streetview",
-      "options": {
-        "target": "control",
-        "position": "right",
-        "apiKey": "AIzaSyCb-bvLmybNb4QSERR43eGlvvQyUrBAQG4",
-        "instruction": "",
-        "visibleForGroups": []
-      },
-      "index": 5
     },
     {
       "type": "anchor",
@@ -466,87 +499,38 @@
     {
       "type": "mailform",
       "options": {
-        "target": "toolbar",
-        "title": "Tyck till",
-        "description": "Skicka en synpunkt om kartan",
-        "recipientEmail": "kontakt@example.com",
-        "subject": "Synpunkt från kartan",
-        "instructions": "Fyll i din e-postadress och din synpunkt. Ett e-postmeddelande med en länk till den aktuella vyn öppnas i ditt e-postprogram.",
+        "target": "right",
+        "position": "left",
+        "height": "dynamic",
+        "title": "Synpunkter",
+        "description": "Skicka en synpunkt eller fråga om kartan",
+        "instructions": "Fyll i din e-postadress och din synpunkt eller fråga. \nEtt e-postmeddelande med en länk till den aktuella vyn öppnas i ditt e-postprogram.",
+        "recipientEmail": "mats.elfstrom@gmail.com",
+        "subject": "Synpunkt från demokartan",
+        "visibleAtStart": false,
         "visibleForGroups": []
       },
       "index": 8
-    },
-    {
-      "type": "search",
-      "options": {
-        "layers": [
-          {
-            "id": "4",
-            "visibleForGroups": []
-          }
-        ],
-        "visibleForGroups": [],
-        "maxResultsPerDataset": 100,
-        "anchor": [
-          "",
-          ""
-        ],
-        "scale": "",
-        "markerImg": "",
-        "delayBeforeAutoSearch": 300,
-        "searchBarPlaceholder": "Sök...",
-        "autocompleteWildcardAtStart": false,
-        "enablePolygonSearch": true,
-        "enableRadiusSearch": true,
-        "enableSelectSearch": true,
-        "enableExtentSearch": true,
-        "enableResultsFiltering": true,
-        "enableResultsSorting": true,
-        "enableResultsSelectionClearing": true,
-        "enableResultsDownloading": true,
-        "enableFeaturePreview": true,
-        "enableLabelOnHighlight": true,
-        "enableSelectedFeaturesCollection": true,
-        "showResultFeaturesInMap": true,
-        "enableFeatureToggler": true,
-        "drawFillColor": "rgba(255,255,255,0.07)",
-        "drawStrokeColor": "rgba(74,74,74,0.5)",
-        "displayFillColor": "rgba(74,144,226,0.15)",
-        "displayStrokeColor": "rgba(74,144,226,0.4)",
-        "selectionTextStroke": "rgba(255,255,255,1)",
-        "selectionTextFill": "rgba(63,122,190,1)",
-        "selectionFillColor": "rgba(74,144,226,0.7)",
-        "selectionStrokeColor": "rgba(74,144,226,0.8)",
-        "highlightTextStroke": "rgba(255,255,255,1)",
-        "highlightTextFill": "rgba(214,143,28,1)",
-        "highlightFillColor": "rgba(245,166,35,0.7)",
-        "highlightStrokeColor": "rgba(245,166,35,0.8)"
-      },
-      "index": 11
-    },
-    {
-      "type": "routing",
-      "options": {
-        "target": "toolbar",
-        "apiKey": "AIzaSyCb-bvLmybNb4QSERR43eGlvvQyUrBAQG4",
-        "instruction": "",
-        "visibleForGroups": []
-      },
-      "index": 12
     },
     {
       "type": "location",
       "options": {
         "target": "control",
         "position": "right",
-        "visibleForGroups": []
+        "visibleForGroups": [],
+        "zoomScale": 0.9
       },
       "index": 13
     },
     {
       "type": "preset",
       "options": {
-        "presetList": [],
+        "presetList": [
+          {
+            "name": "Färgelanda",
+            "presetUrl": "https://test.webkarta.se/#m=demo&x=326058.81894885655&y=6496084.4866760485&z=14&l=q4hj6j&p=osmsearch"
+          }
+        ],
         "visibleForGroups": []
       },
       "index": 14
@@ -593,9 +577,10 @@
     {
       "type": "bookmarks",
       "options": {
-        "target": "control",
+        "target": "left",
         "position": "right",
-        "instruction": "",
+        "instruction": "U3BhcmEgYm9rbeRya2VuIHRpbGwgZW4gZmlsIGb2ciBhdHQgYmV2YXJhIGRlbSB2aWQgYnJvd3NlcmJ5dGUu",
+        "visibleAtStart": false,
         "visibleForGroups": []
       },
       "index": 16
@@ -606,6 +591,8 @@
         "target": "left",
         "position": "left",
         "copyright": "",
+        "textFontSize": 8,
+        "textFontWeight": "normal",
         "disclaimer": "",
         "date": "Utskriftsdatum: {date}",
         "scales": "200, 400, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 200000, 400000, 800000, 1000000, 5000000, 10000000",
@@ -631,108 +618,12 @@
         "includeNorthArrow": true,
         "northArrowPlacement": "topLeft",
         "includeImageBorder": false,
+        "allowLegendsInPdfOutput": false,
+        "generateLegendsByDefault": false,
         "useCustomTileLoaders": true,
         "maxTileSize": 4096
       },
       "index": 5
-    },
-    {
-      "type": "documenthandler",
-      "index": 0,
-      "options": {
-        "title": "Visa informationsruta",
-        "target": "hidden",
-        "showScrollButtonLimit": 400,
-        "dynamicImportUrls": {
-          "iconFonts": "https://fonts.googleapis.com/icon?family=Material+Icons",
-          "customFont": "https://fonts.googleapis.com/css?family=Open+Sans"
-        },
-        "iconLibraryLink": "https://material.io/resources/icons/?style=baseline",
-        "customThemeUrl": "/documentHandlerTheme.json",
-        "width": 600,
-        "height": "90vh",
-        "searchImplemented": true,
-        "enablePrint": true,
-        "closePanelOnMapLinkOpen": false,
-        "displayLoadingOnMapLinkOpen": false,
-        "documentOnStart": "",
-        "drawerTitle": "",
-        "drawerButtonTitle": "Meny",
-        "tableOfContents": {
-          "active": false,
-          "expanded": false,
-          "chapterLevelsToShow": 2,
-          "title": "Innehållsförteckning"
-        },
-        "defaultDocumentColorSettings": {
-          "textAreaBackgroundColor": "#ccc",
-          "textAreaDividerColor": "#6A0DAD"
-        },
-        "menuConfig": {
-          "menu": [
-            {
-              "title": "Exempeldokument",
-              "folder": "",
-              "document": "exempeldokument",
-              "color": "",
-              "icon": {
-                "materialUiIconName": "",
-                "fontSize": "large"
-              },
-              "maplink": "",
-              "link": "",
-              "menu": []
-            },
-            {
-              "title": "Exempeldokument2",
-              "folder": "",
-              "document": "exempeldokument2",
-              "color": "",
-              "icon": {
-                "materialUiIconName": "",
-                "fontSize": "large"
-              },
-              "maplink": "",
-              "link": "",
-              "menu": []
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "infodialog",
-      "index": 3,
-      "options": [
-        {
-          "target": "control",
-          "name": "help",
-          "icon": "helpcenter",
-          "headerText": "Example: InfoDialog with complex MarkDown",
-          "text": "# H1\n## H2\n### H3\n#### H4\n##### H5\n###### H6\n\nAlternatively, for H1 and H2, an underline-ish style:\n\nAlt-H1\n======\n\nAlt-H2\n------\n\nEmphasis, aka italics, with *asterisks* or _underscores_.\n\nStrong emphasis, aka bold, with **asterisks** or __underscores__.\n\nCombined emphasis with **asterisks and _underscores_**.\n\nStrikethrough uses two tildes. ~~Scratch this.~~\n\n# Lists\n\n1. First ordered list item\n2. Another item\n  * Unordered sub-list.\n1. Actual numbers don't matter, just that it's a number\n  1. Ordered sub-list\n4. And another item.\n\n    You can have properly indented paragraphs within list items. Notice the blank line above, and the leading spaces (at least one, but we'll use three here to also align the raw Markdown).\n\n    To have a line break without a paragraph, you will need to use two trailing spaces.\n    Note that this line is separate, but within the same paragraph.\n    (This is contrary to the typical GFM line break behaviour, where trailing spaces are not required.)\n\n* Unordered list can use asterisks\n- Or minuses\n+ Or pluses\n\n# Links\n[I'm an inline-style link](https://www.google.com)\n\n[I'm an inline-style link with title](https://www.google.com \"Google's Homepage\")\n\n[I'm a reference-style link][Arbitrary case-insensitive reference text]\n\n[I'm a relative reference to a repository file](../blob/master/LICENSE)\n\n[You can use numbers for reference-style link definitions][1]\n\nOr leave it empty and use the [link text itself].\n\nURLs and URLs in angle brackets will automatically get turned into links.\nhttp://www.example.com or <http://www.example.com> and sometimes\nexample.com (but not on Github, for example).\n\nSome text to show that the reference links can follow later.\n\n[arbitrary case-insensitive reference text]: https://www.mozilla.org\n[1]: http://slashdot.org\n[link text itself]: http://www.reddit.com\n\n# Images\nHere's our logo (hover to see the title text):\n\nInline-style:\n![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 1\")\n\nReference-style:\n![alt text][logo]\n\n[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 2\"\n\n# Code\nInline `code` has `back-ticks around` it.\n\nYou can have blocks of code too, just use ``` and ``` on new lines.\n\n\n# Tables\nColons can be used to align columns.\n\n| Tables        | Are           | Cool  |\n| ------------- |:-------------:| -----:|\n| col 3 is      | right-aligned | $1600 |\n| col 2 is      | centered      |   $12 |\n| zebra stripes | are neat      |    $1 |\n\nThere must be at least 3 dashes separating each header cell.\nThe outer pipes (|) are optional, and you don't need to make the\nraw Markdown line up prettily. You can also use inline Markdown.\n\nMarkdown | Less | Pretty\n--- | --- | ---\n*Still* | `renders` | **nicely**\n1 | 2 | 3\n\n# Quotes\n> Blockquotes are very handy in email to emulate reply text.\n> This line is part of the same quote.\n\nQuote break.\n\n> This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **Markdown** into a blockquote.\n\n# Breakes\nThree or more...\n\n---\n\nHyphens\n\n***\n\nAsterisks\n\n___\n\nUnderscores",
-          "allowDangerousHtml": false,
-          "useLegacyNonMarkdownRenderer": false,
-          "buttonText": "Stäng",
-          "title": "Visa hjälp",
-          "visibleAtStart": false,
-          "showOnlyOnce": true,
-          "visibleForGroups": []
-        },
-        {
-          "target": "right",
-          "name": "announcements",
-          "headerText": "Nyheter i Hajk",
-          "icon": "announcement",
-          "text": "This release includes _[205 commits](https://github.com/hajkmap/Hajk/compare/v4.1.0...v4.2.0) and changes across 173 files since Hajk 4.1. Packaged by @Hallbergs and @jacobwod, with contributions from the community. See the commit list for all contributors._\n\n## Summary\n\nHajk 4.2 combines stabilization efforts following the 4.0 update with a suite of new features and optimizations.\n\nFor an overview of planned development, refer to the [project roadmap](https://github.com/hajkmap/Hajk/blob/master/ROADMAP.md).\n\nScroll down for a comprehensive list of changes! 🚀\n\n---\n\n## Changelog highlights\n\nFor a complete list of changes, see the [project changelog](https://github.com/hajkmap/Hajk/blob/master/CHANGELOG.md).\n\nFor a full list of commits, visit [this link](https://github.com/hajkmap/Hajk/compare/v4.1.0...v4.2.0-rc.1).\n\n### Added\n\n- Support for **cookie-less Matomo tracking**. [PR#1691](https://github.com/hajkmap/Hajk/pull/1691)\n- **OpenStreetMap** is now a selectable **default background layer** in map config. See [commit](https://github.com/hajkmap/Hajk/commit/e1b5f59c69b8985a498efee27aa76ea11ca4afbb) and [commit](https://github.com/hajkmap/Hajk/commit/4040c7c11367620040efc7609a56e1b3b436cc67). Admin UI option added in [commit](https://github.com/hajkmap/Hajk/commit/06c52b0cd863022f7c9a58e5103168627ac41172).\n- Updated **default projection** (in `simpleMapConfig.json` and `map_1.json`) to **EPSG:3857**. This improves rendering for the new OpenStreetMap background. [commit](https://github.com/hajkmap/Hajk/commit/6f5a5dc89a5c18d49f5af2d26353036d35945b82)\n\n### Changed\n\n- **FmeServer plugin:** Select Tool now supports multi-feature selection/deselection. [PR#1708](https://github.com/hajkmap/Hajk/pull/1708)\n- Upgraded Material UI (MUI) to v7. [PR#1658](https://github.com/hajkmap/Hajk/pull/1658)\n- **OpenStreetMap**, white, and black backgrounds are now standard layers in LayerSwitcher, allowing visibility initialization via configuration. [PR#1680](https://github.com/hajkmap/Hajk/pull/1680)\n- Replaced legacy `react-smooth-dnd` with `dnd-kit`. [PR#1689](https://github.com/hajkmap/Hajk/pull/1689)\n- Updated **Introduction module** for Hajk 4 compatibility, introducing two tour modes (Full and LayerSwitcher). [PR#1664](https://github.com/hajkmap/Hajk/pull/1664)\n- Refactored the **Anchor tool** into a dialog component. [PR#1711](https://github.com/hajkmap/Hajk/pull/1711)\n- QuickAccess: LayerGroups are now shown as breadcrumbs, with each group’s layers displayed beneath it. [PR#1726](https://github.com/hajkmap/Hajk/pull/1726)\n\n### Fixed\n\n- **Bookmarks:** Corrected button state logic. [PR#1609](https://github.com/hajkmap/Hajk/pull/1609)\n- **Bookmarks:** \"Add\" button is now conditionally enabled based on input presence. [PR#1657](https://github.com/hajkmap/Hajk/pull/1657)\n- **WFS:** Resolved URL parsing inconsistencies that hindered layer loading from certain services. [PR#1677](https://github.com/hajkmap/Hajk/pull/1677)\n- **DialogWindowPlugin:** Fixed toolbar button visibility issues during state toggling. [issue](https://github.com/hajkmap/Hajk/issues/1687)\n- **LayerSwitcher:** Prevented duplicate legend graphics when a custom group legend is defined. [issue](https://github.com/hajkmap/Hajk/issues/1644)\n- **LayerSwitcher:** Hidden Quick Access Presets when functionality is disabled in Admin. [PR](https://github.com/hajkmap/Hajk/pull/1693)\n- **LayerSwitcher:** Standardized info buttons for groups to match regular/group layers (backward compatible). [PR](https://github.com/hajkmap/Hajk/pull/1699)\n- **LayerSwitcher:** Enabled searching by LayerGroup name. GroupLayer search now expands to reveal sublayers. Closes [issue](https://github.com/hajkmap/Hajk/issues/1722)\n- **Infoclick:** Fixed boolean value inversion occurring under specific database conditions. [issue](https://github.com/hajkmap/Hajk/issues/1698)\n- **Client:** Added \"Access Denied\" UI feedback for 403 Backend responses. Closes [issue](https://github.com/hajkmap/Hajk/issues/1705)\n\n### Security\n\n- Upgraded dependencies in Client and Backend. [commit](https://github.com/hajkmap/Hajk/commit/2bee79696a66413749fb70c32b5c0b1cb7d4835f) and [commit](https://github.com/hajkmap/Hajk/commit/6f8f1741cfba6cb7eb57bf65943a8af192af7bc2)\n\n---\n\n## Downloads\n\nHajk can be deployed using pre-built release packages or via Docker.\n\n### Pre-built packages\n\nThere are two versions of the downloadable package:\n\n- **Simple Edition:** Static files only (no backend/admin). Configuration relies on JSON files.\n- **NodeJS Edition:** Full stack, including Backend, Frontend, and Admin.\n\n1. [Hajk 4.2 NodeJS edition](https://github.com/hajkmap/Hajk/releases/download/v4.2.0/hajk-v4.2.0-nodejs.zip)\n2. [Hajk 4.2 Simple edition](https://github.com/hajkmap/Hajk/releases/download/v4.2.0/hajk-v4.2.0-simple.zip)\n\n### Docker container\n\nThe container is available on Docker Hub: [hallbergs/hajk](https://hub.docker.com/r/hallbergs/hajk).\n\n---\n\n## Installation\n\nRefer to the [installation guide](https://github.com/hajkmap/Hajk/wiki/Installation-guide-%28for-pre-packaged-releases%29).\n\n**Full Changelog**: https://github.com/hajkmap/Hajk/compare/v4.1.0...v4.2.0",
-          "allowDangerousHtml": true,
-          "useLegacyNonMarkdownRenderer": false,
-          "buttonText": "Ok, uppfattat!",
-          "title": "Visa nyheter",
-          "visibleAtStart": true,
-          "showOnlyOnce": true,
-          "visibleForGroups": []
-        }
-      ]
     },
     {
       "type": "layercomparer",
@@ -743,66 +634,154 @@
         "instruction": "",
         "visibleAtStart": false,
         "visibleForGroups": [],
-        "chosenLayers": [],
-        "selectChosenLayers": true
-      }
-    },
-    {
-      "type": "measurer",
-      "index": 4,
-      "options": {
-        "target": "left",
-        "position": "left",
-        "visibleAtStart": false,
-        "icons": ""
+        "chosenLayers": [
+          {
+            "id": "ex8e3x",
+            "caption": "Open Topo Map"
+          },
+          {
+            "id": "q4hj6j",
+            "caption": "Topowebbkarta översiktlig"
+          },
+          {
+            "id": "c8r1n0",
+            "caption": "Google satellite"
+          },
+          {
+            "id": "a0kzxb",
+            "caption": "Ortofoto ref. år 1960"
+          },
+          {
+            "id": "osmxyz1",
+            "caption": "OpenStreetMap Tileserver"
+          },
+          {
+            "id": "jupop6",
+            "caption": "Thunderforest Landscape"
+          },
+          {
+            "id": "u3ly93",
+            "caption": "Topowebbkarta nedtonad"
+          }
+        ],
+        "selectChosenLayers": true,
+        "startCompareMode": "sideBySide"
       }
     },
     {
       "type": "osmsearch",
       "index": 5,
       "options": {
-        "target": "control",
+        "target": "right",
         "position": "right",
-        "instruction": "",
         "endpoint": "https://nominatim.openstreetmap.org/search",
         "limit": 10,
-        "countrycodes": "",
+        "countrycodes": "se,dk,no",
         "zoomToBoundingBox": true,
         "visibleForGroups": []
       }
     },
     {
-      "type": "planchecker",
-      "index": 1,
+      "type": "information",
+      "index": 0,
       "options": {
-        "title": "Detaljplan",
-        "description": "Klicka i kartan och se vilka planbestämmelser som gäller",
-        "proxyPath": "detaljplanproxy",
-        "assetProxyPath": "detaljplanassetproxy",
-        "planStatuses": [
-          "laga kraft"
-        ],
-        "maxItems": 1000,
-        "wmsLayerId": "",
-        "visibleAtStart": false,
-        "target": "control",
-        "position": "right",
-        "height": "dynamic",
+        "headerText": "HAJK Experimental",
+        "text": "Det här är en utgåva av HAJK som bygger på aktuell kodbas plus ett antal buggrättningar, förbättrade funktioner och nya plugins.\nDetta är en enkel standardkarta. Välj Demokarta i kartväljaren för mer innehåll.",
+        "buttonText": "Ha så kul!",
+        "title": "Visa informationsruta",
+        "visibleAtStart": true,
+        "showInfoOnce": false,
         "visibleForGroups": []
+      }
+    },
+    {
+      "type": "search",
+      "index": 0,
+      "options": {
+        "layers": [
+          {
+            "id": "617f08e2-81ba-c636-c032-72cbb2c28afa",
+            "visibleForGroups": [
+              "kommun-anstallda"
+            ]
+          },
+          {
+            "id": "13cc09bc-f2ca-326f-5a5e-84a7de3ead7f",
+            "visibleForGroups": []
+          },
+          {
+            "id": "cdb82b65-c88e-b397-6b96-dbea94daeb75",
+            "visibleForGroups": []
+          }
+        ],
+        "selectedSources": [],
+        "visibleForGroups": [],
+        "maxResultsPerDataset": 100,
+        "anchor": [
+          "",
+          ""
+        ],
+        "scale": "",
+        "markerImg": "",
+        "delayBeforeAutoSearch": 500,
+        "disableAutocomplete": true,
+        "disableSearchCombinations": false,
+        "searchBarPlaceholder": "Sök...",
+        "excelColumnFilter": "",
+        "autocompleteWildcardAtStart": true,
+        "autofocusOnStart": false,
+        "enablePolygonSearch": true,
+        "showCorrespondingWMSLayers": true,
+        "enableRadiusSearch": true,
+        "enableSelectSearch": true,
+        "enableExtentSearch": true,
+        "enableResultsFiltering": true,
+        "enableResultsSorting": true,
+        "enableResultsSelectionClearing": true,
+        "enableResultsDownloading": true,
+        "enableFeaturePreview": true,
+        "enableLabelOnHighlight": true,
+        "enableSelectedFeaturesCollection": true,
+        "showResultFeaturesInMap": true,
+        "searchInVisibleLayers": false,
+        "wildcardAtStart": true,
+        "wildcardAtEnd": true,
+        "matchCase": false,
+        "activeSpatialFilter": "intersects",
+        "enabledSearchOptions": [
+          "enableLabelOnHighlight",
+          "wildcardAtEnd",
+          "wildcardAtStart"
+        ],
+        "showResultsLimitReachedWarning": true,
+        "enableFeatureToggler": true,
+        "fitToResultMaxZoom": -1,
+        "drawFillColor": "rgba(255,255,255,0.07)",
+        "drawStrokeColor": "rgba(74,74,74,0.5)",
+        "displayFillColor": "rgba(74,144,226,0.15)",
+        "displayStrokeColor": "rgba(74,144,226,0.4)",
+        "selectionTextStroke": "rgba(255,255,255,1)",
+        "selectionTextFill": "rgba(63,122,190,1)",
+        "selectionFillColor": "rgba(74,144,226,0.7)",
+        "selectionStrokeColor": "rgba(74,144,226,0.8)",
+        "highlightTextStroke": "rgba(255,255,255,1)",
+        "highlightTextFill": "rgba(214,143,28,1)",
+        "highlightFillColor": "rgba(245,166,35,0.7)",
+        "highlightStrokeColor": "rgba(245,166,35,0.8)"
       }
     }
   ],
   "map": {
     "target": "map",
     "center": [
-      1325000,
-      7900000
+      398745,
+      6415813
     ],
-    "title": "Hajk - open source webGIS",
-    "projection": "EPSG:3857",
-    "zoom": 6,
-    "maxZoom": 18,
-    "minZoom": 0,
+    "title": "Hajk - Experimental",
+    "projection": "EPSG:3006",
+    "zoom": 8,
+    "maxZoom": 20,
+    "minZoom": 2,
     "resolutions": [
       156543.03392804097,
       78271.51696402048,
@@ -838,24 +817,23 @@
     "constrainResolution": false,
     "logo": "/logoLight.png",
     "geoserverLegendOptions": "",
-    "mapselector": false,
+    "mapselector": true,
     "mapcleaner": true,
     "showUserAvatar": false,
     "drawerVisible": false,
     "drawerPermanent": false,
     "drawerVisibleMobile": false,
     "activeDrawerOnStart": "plugins",
-    "showThemeToggler": true,
-    "showWeatherControl": true,
+    "showThemeToggler": false,
     "colors": {
-      "primaryColor": "#1976d2",
-      "secondaryColor": "#ffa000",
+      "primaryColor": "#7ed321",
+      "secondaryColor": "#f8e71c",
       "preferredColorScheme": "user"
     },
     "defaultCookieNoticeMessage": "Vi använder cookies för att följa upp användandet och ge en bra upplevelse av kartan. Du kan blockera cookies i webbläsaren men då visas detta meddelande igen.",
     "defaultCookieNoticeUrl": "https://pts.se/sv/bransch/regler/lagar/lag-om-elektronisk-kommunikation/kakor-cookies/",
     "crossOrigin": "anonymous",
-    "showRecentlyUsedPlugins": true,
+    "showRecentlyUsedPlugins": false,
     "logoLight": "logoLight.png",
     "logoDark": "logoDark.png",
     "extraPrintResolutions": [],
@@ -874,7 +852,7 @@
     "pinchZoom": true,
     "zoomDelta": null,
     "zoomDuration": null,
-    "mapresetter": false,
+    "mapresetter": true,
     "introductionEnabled": false,
     "introductionShowControlButton": false,
     "introductionSteps": [],
@@ -884,6 +862,7 @@
     "drawerButtonIcon": "MapIcon",
     "showCookieNotice": true,
     "showCookieNoticeButton": true,
-    "cookieUse3dPart": false
+    "cookieUse3dPart": false,
+    "mapSelectorStyle": "button"
   }
 }

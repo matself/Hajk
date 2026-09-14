@@ -8,6 +8,7 @@ import MapSettings from "../views/mapsettings.jsx";
 import Info from "../views/info.jsx";
 import Release from "../views/release.jsx";
 import Search from "../views/search.jsx";
+import SearchSources from "../views/searchsources.jsx";
 import DocumentEditor from "../views/documenteditor.jsx";
 import Manual from "../views/manual.jsx";
 
@@ -129,6 +130,8 @@ class Application extends Component {
         return Release;
       case "search":
         return Search;
+      case "searchsources":
+        return SearchSources;
       case "documenthandler":
         return DocumentEditor;
       case "manual":

@@ -21,6 +21,15 @@
     "url_layer_settings": "http://localhost:3002/api/v2/settings/wfslayer",
     "url_default_server": ""
   },
+  "searchsources": {
+    "url_proxy": "",
+    "url_layers": "http://localhost:3002/api/v2/mapconfig/layers",
+    "url_layer_settings": "http://localhost:3002/api/v2/settings/wfslayer",
+    "url_wmslayer_settings": "http://localhost:3002/api/v2/settings/wmslayer",
+    "url_map_list": "http://localhost:3002/api/v2/mapconfig/list",
+    "url_map": "http://localhost:3002/api/v2/mapconfig",
+    "url_default_server": ""
+  },
   "edit": {
     "url_proxy": "",
     "url_layers": "http://localhost:3002/api/v2/mapconfig/layers",
@@ -88,8 +97,9 @@
       "default": true
     },
     {
-      "name": "search",
-      "title": "Söktjänster"
+      "_comment": "Söktjänster (name: search) tab hidden in favor of Söklager below, which supersedes it - kept commented rather than removed so it's a one-line revert if the Söklager console needs to be backed out. views/search.jsx and its application.jsx wiring are untouched.",
+      "name": "searchsources",
+      "title": "Söklager"
     },
     {
       "name": "edit",

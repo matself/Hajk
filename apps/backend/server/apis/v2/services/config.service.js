@@ -268,11 +268,19 @@ class ConfigServiceV2 {
     const layerIds =
       lsOptions?.groups.flatMap((g) => getLayerIdsFromGroup(g)) || [];
 
-    // Grab layers from Search
+    // Grab layers from Search. "layers" holds WFS-layer search sources,
+    // "selectedSources" holds IDs of WMS layers whose sublayers are exposed
+    // as search sources (see configTranslator.js#buildSearchSources on the
+    // client) - both must be kept or a WMS layer that's only referenced for
+    // search, and not placed in the layer tree, gets pruned here and silently
+    // disappears as a search source (client just logs a warning and drops it).
     const searchOptions = mapConfig.tools.find(
       (t) => t.type === "search"
     )?.options;
-    const searchLayerIds = searchOptions?.layers.map((l) => l.id) || [];
+    const searchLayerIds = [
+      ...(searchOptions?.layers.map((l) => l.id) || []),
+      ...(searchOptions?.selectedSources || []),
+    ];
 
     // Grab layers from Edit
     const editOptions = mapConfig.tools.find((t) => t.type === "edit")?.options;

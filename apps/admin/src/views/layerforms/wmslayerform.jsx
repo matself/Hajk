@@ -711,204 +711,24 @@ class WMSLayerForm extends Component {
           </div>
         </div>
 
-        <div className="separator">Infoklick och sökning</div>
-
-        <div className="form-row split50">
-          <div>
-            <label>
-              Visningsfält (i resultatlistan){" "}
-              <abbr title="Visas i sökresultatlistan. Dessutom kan visas som etikett i kartan när användaren selekterat ett sökresultat, om 'Visa resultat i kartan' är aktivt för sökverktyget. Anges som kommaseparerad lista.">
-                (?)
-              </abbr>
-            </label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchDisplayName}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchDisplayName =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-row split50">
-          <div>
-            <label>
-              Sekundära visningsfält (i resultatlistan){" "}
-              <abbr title="Visas i sökresultatlistan som en andra rad med något mindre textstorlek under den första raden (Visningsfält). ">
-                (?)
-              </abbr>
-            </label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.secondaryLabelFields}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].secondaryLabelFields =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-row split50">
-          <div>
-            <label>
-              Kort visningsfält{" "}
-              <abbr title="Visas som etikett bredvid sökresultat i ett första läge, om 'Visa resultat i kartan' är aktivt för sökverktyget. Anges som kommaseparerad lista.">
-                (?)
-              </abbr>
-            </label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchShortDisplayName}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchShortDisplayName =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-
         <div className="separator">Sökning</div>
 
-        <div className="form-row split3070">
+        {/* The entire search config for this sublayer (url, sökfält,
+            visningsfält i alla varianter, utdataformat, geometrifält -
+            searchUrl/searchPropertyName/searchDisplayName/
+            secondaryLabelFields/searchShortDisplayName/searchOutputFormat/
+            searchGeometryField) moved to the Söklager Console
+            (Söklager-fliken), which edits the exact same underlying fields
+            on this sublayer plus attribute-backed pickers and a WFS
+            DescribeFeatureType lookup this plain-text dialog never had.
+            Editing search config in two places risked the admin not finding
+            the right one. Existing values on this sublayer are untouched -
+            this is a UI-only removal, see searchsources.jsx. */}
+        <div className="form-row">
           <div>
-            <label>Url</label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchUrl}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchUrl = e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-row split3070">
-          <div>
-            <label>
-              Sökfält{" "}
-              <abbr title="Styr vilka attribut (kolumner i tabellen) som sökning sker mot. Anges som kommaseparerad lista.">
-                (?)
-              </abbr>
-            </label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchPropertyName}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchPropertyName =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="form-row split3070">
-          <div>
-            <label>Utdataformat</label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchOutputFormat}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchOutputFormat =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-row split3070">
-          <div>
-            <label>Geometrifält</label>
-          </div>
-          <div>
-            <input
-              style={{ width: "100%" }}
-              type="text"
-              value={layerInfo.searchGeometryField}
-              onChange={(e) => {
-                let addedLayersInfo = this.state.addedLayersInfo;
-                addedLayersInfo[layerInfo.id].searchGeometryField =
-                  e.target.value;
-                this.setState(
-                  {
-                    addedLayersInfo: addedLayersInfo,
-                  },
-                  () => {
-                    this.renderLayerInfoDialog(layerInfo);
-                  }
-                );
-              }}
-            />
+            Sökkonfigurationen för det här underlagret (url, sökfält,
+            visningsfält, utdataformat, geometrifält) redigeras i
+            Söklager-konsolen.
           </div>
         </div>
       </div>

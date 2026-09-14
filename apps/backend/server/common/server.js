@@ -619,6 +619,26 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     }
   }
 
+  async setupSearchProxy() {
+    // Each API version gets its own search proxy middleware. It reads the
+    // whitelist of proxyable WFS urls from App_Data/layers.json at request
+    // time, so it's always mounted; requests for a URL that isn't a known
+    // wfslayer are rejected. See search.proxy.js for why this exists (some
+    // WFS providers never answer CORS preflight, on any path).
+    for await (const v of app.get("apiVersions")) {
+      try {
+        const { default: searchProxy, SEARCH_PROXY_PATH } = await import(
+          `../apis/v${v}/middlewares/search.proxy.js`
+        );
+        app.use(`/api/v${v}/${SEARCH_PROXY_PATH}`, searchProxy());
+        logger.info("Enabling search proxy for API V%s", v);
+      } catch {
+        // The middleware only exists for API versions that support it (v2+).
+        logger.debug("Search proxy not available for API V%s, skipping.", v);
+      }
+    }
+  }
+
   // Since we have to await the setup of the proxies (so that the JSON-parser etc. initiates after the proxies),
   // we'll gather the all the setups here so they are easy to call.
   async setupProxies() {
@@ -629,6 +649,7 @@ built-it compression by setting the ENABLE_GZIP_COMPRESSION option to "true" in 
     await this.setupDetaljplanProxy();
     await this.setupWmtsAuthProxy();
     await this.setupWmsAuthProxy();
+    await this.setupSearchProxy();
     this.setupGenericProxy();
   }
 

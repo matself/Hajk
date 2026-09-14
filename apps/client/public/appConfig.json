@@ -1,5 +1,6 @@
 {
-  "mapserviceBase": "",
+  "mapserviceBase": "http://localhost:3002/api/v2",
+  "searchProxy": "http://localhost:3002/api/v2/searchproxy/",
   "defaultMap": "map_1",
   "availableTools": [
     "AddressSearch",

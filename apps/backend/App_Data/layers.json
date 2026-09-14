@@ -1,31 +1,461 @@
 {
-  "wmtslayers": [],
-  "xyzlayers": [
+  "wmtslayers": [
     {
-      "id": "osmxyz1",
-      "caption": "OpenStreetMap (XYZ)",
-      "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
-      "opacity": 1
-    },
-    {
-      "id": "ex8e3x",
-      "caption": "Open Topo Map",
-      "internalLayerName": "",
+      "id": "q4hj6j",
+      "caption": "Topowebbkarta översiktlig",
+      "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+      "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
+      "date": "1784046495631",
       "content": "",
-      "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-      "attribution": "© <a href=\"https://opentopomap.org\">OpenTopoMap</a> contributors",
-      "opacity": 1,
-      "minZoom": -1,
-      "maxZoom": -1,
+      "legend": "",
+      "legendIcon": "",
+      "layer": "topowebb",
+      "matrixSet": "3006",
+      "style": "default",
+      "requestEncoding": "REST",
+      "imageFormat": "image/png",
+      "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
+      "origins": [
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ]
+      ],
+      "resolutions": [
+        "4096",
+        "2048",
+        "1024",
+        "512",
+        "256",
+        "128",
+        "64",
+        "32",
+        "16",
+        "8"
+      ],
+      "matrixIds": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "sizes": [
+        [
+          4,
+          4
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          2048,
+          2048
+        ]
+      ],
+      "tileSize": 256,
+      "attribution": "",
       "infoVisible": false,
       "infoTitle": "",
       "infoText": "",
       "infoUrl": "",
       "infoUrlText": "",
       "infoOpenDataLink": "",
-      "infoOwner": ""
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "maxZoom": -1,
+      "minZoom": -1
     },
+    {
+      "id": "u3ly93",
+      "caption": "Topowebbkarta nedtonad",
+      "url": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0/topowebb_nedtonad/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+      "capabilitiesUrl": "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts?request=GetCapabilities&version=1.0.0&service=wmts",
+      "date": "1784494102209",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "layer": "topowebb_nedtonad",
+      "matrixSet": "3006",
+      "style": "default",
+      "requestEncoding": "REST",
+      "imageFormat": "image/png",
+      "projection": "urn:ogc:def:crs:EPSG:6.3:3006",
+      "origins": [
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ]
+      ],
+      "resolutions": [
+        "4096",
+        "2048",
+        "1024",
+        "512",
+        "256",
+        "128",
+        "64",
+        "32",
+        "16",
+        "8"
+      ],
+      "matrixIds": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "sizes": [
+        [
+          4,
+          4
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          2048,
+          2048
+        ]
+      ],
+      "tileSize": 256,
+      "attribution": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "maxZoom": -1,
+      "minZoom": -1
+    },
+    {
+      "id": "qtom37",
+      "caption": "Topowebb nedtonad",
+      "url": "https://maps.lantmateriet.se/topowebb/v1.1/wmts/1.0.0/topowebb_nedtonad/default/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+      "capabilitiesUrl": "https://detaljplaner.lantmateriet.se/map/topowebbcache?layer=topowebb_nedtonad&style=default&tilematrixset=3006&Service=WMTS",
+      "date": "1789074065741",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "layer": "topowebb_nedtonad",
+      "matrixSet": "3006",
+      "style": "default",
+      "requestEncoding": "REST",
+      "imageFormat": "image/png",
+      "projection": "EPSG:3006",
+      "origins": [
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ],
+        [
+          "-1200000.000000",
+          "8500000.000000"
+        ]
+      ],
+      "resolutions": [
+        "4096",
+        "2048",
+        "1024",
+        "512",
+        "256",
+        "128",
+        "64",
+        "32",
+        "16",
+        "8",
+        "4",
+        "2",
+        "1",
+        "0.5"
+      ],
+      "matrixIds": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13"
+      ],
+      "sizes": [
+        [
+          4,
+          4
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          512,
+          512
+        ],
+        [
+          1024,
+          1024
+        ],
+        [
+          2048,
+          2048
+        ],
+        [
+          4096,
+          4096
+        ],
+        [
+          8192,
+          8192
+        ],
+        [
+          16384,
+          16384
+        ],
+        [
+          32768,
+          32768
+        ]
+      ],
+      "tileSize": 256,
+      "attribution": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "maxZoom": -1,
+      "minZoom": -1
+    }
+  ],
+  "xyzlayers": [
     {
       "id": "c8r1n0",
       "caption": "Google satellite",
@@ -46,13 +476,51 @@
       "infoOwner": ""
     },
     {
-      "id": "h747so",
-      "caption": "Google hybrid",
+      "id": "ex8e3x",
+      "caption": "Open Topo Map",
       "internalLayerName": "",
       "content": "",
-      "date": "1783452304658",
-      "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      "date": "1784024102051",
+      "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "attribution": "© <a href=\"https://opentopomap.org\">OpenTopoMap</a> contributors",
+      "opacity": 1,
+      "minZoom": -1,
+      "maxZoom": -1,
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": ""
+    },
+    {
+      "id": "jupop6",
+      "caption": "Thunderforest Landscape",
+      "internalLayerName": "",
+      "content": "",
+      "date": "1784046232415",
+      "url": "https://api.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=4a5e39798b584d1294dd047075c8f68d",
       "attribution": "",
+      "opacity": 1,
+      "minZoom": -1,
+      "maxZoom": -1,
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": ""
+    },
+    {
+      "id": "osmxyz1",
+      "caption": "OpenStreetMap Tileserver",
+      "internalLayerName": "",
+      "content": "",
+      "date": "1784046648550",
+      "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
       "opacity": 1,
       "minZoom": -1,
       "maxZoom": -1,
@@ -65,9 +533,1223 @@
       "infoOwner": ""
     }
   ],
-  "pmtileslayers": [],
-  "wmslayers": [],
-  "wfslayers": [],
+  "wmslayers": [
+    {
+      "id": "a0kzxb",
+      "caption": "Ortofoto ref. år 1960",
+      "internalLayerName": "",
+      "url": "https://maps.lantmateriet.se/historiska-ortofoton/wms/v1?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1784635180161",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "OI.Histortho_60"
+      ],
+      "layersInfo": [
+        {
+          "id": "OI.Histortho_60",
+          "caption": "",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": false,
+          "infoclickIcon": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": true,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "6xedvu",
+      "caption": "Topografiska Webbkartan",
+      "internalLayerName": "",
+      "url": "https://geoportal.klippan.se/map_proxy/lmtopo?SERVICE=WMS",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1785327897925",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "topowebbkartan"
+      ],
+      "layersInfo": [
+        {
+          "id": "topowebbkartan",
+          "caption": "",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": false,
+          "infoclickIcon": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": true,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "Lantmäteriets Topografiska Webbkarta",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "sr2xmc",
+      "caption": "Sjökort",
+      "internalLayerName": "",
+      "url": "https://geokatalog.sjofartsverket.se/mapservice/wms.axd/FyrenBakgrund?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1787907496195",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "HPD_TRP"
+      ],
+      "layersInfo": [
+        {
+          "id": "HPD_TRP",
+          "caption": "",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": false,
+          "infoclickIcon": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "Sjöfartsverket",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/json",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": false,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "pv57lt",
+      "caption": "NGP Detaljplan",
+      "internalLayerName": "",
+      "url": "https://api.lantmateriet.se/distribution/geodatakatalog/visning/v1/capabilities/detaljplan/v1/wms",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1788452869883",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "detaljplan"
+      ],
+      "layersInfo": [
+        {
+          "id": "detaljplan",
+          "caption": "detaljplan",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": false,
+          "infoclickIcon": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": true,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "94jwm3",
+      "caption": "Fornlämning",
+      "internalLayerName": "",
+      "url": "https://pub.raa.se/visning/lamningar_v1/ows?SERVICE=WMS&",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1788985947166",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "fornlamning"
+      ],
+      "layersInfo": [
+        {
+          "id": "fornlamning",
+          "caption": "Fornlämning",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "fornlamning_standard",
+              "Title": "Fornlämning, standard",
+              "Abstract": "Standardstil för fornlämning",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://pub.raa.se/visning/lamningar_v1/ows?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=fornlamning"
+                },
+                "width": "142",
+                "height": "60"
+              }
+            },
+            {
+              "Name": "fornlamning_symb",
+              "Title": "Fornlämning, symbol",
+              "Abstract": "Symbol för fornlämning",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://pub.raa.se/visning/lamningar_v1/ows?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=fornlamning&style=fornlamning_symb"
+                },
+                "width": "20",
+                "height": "20"
+              }
+            }
+          ]
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "Fornlämningar skyddade enligt 2 kap. i kulturmiljölagen (1988:950).",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/json",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "y4djjx",
+      "caption": "Nyckelbiotoper",
+      "internalLayerName": "",
+      "url": "https://geodpags.skogsstyrelsen.se/arcgis/services/Geodataportal/GeodataportalVisaNaturkultur/MapServer/WMSServer?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1788986175399",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Nyckelbiotoper"
+      ],
+      "layersInfo": [
+        {
+          "id": "Nyckelbiotoper",
+          "caption": "Nyckelbiotoper",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "default",
+              "Title": "Nyckelbiotoper",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:href": "https://geodpags.skogsstyrelsen.se/arcgis/services/Geodataportal/GeodataportalVisaNaturkultur/MapServer/WMSServer?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=Nyckelbiotoper",
+                  "xlink:type": "simple"
+                },
+                "width": "18",
+                "height": "18"
+              }
+            }
+          ]
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "Nyckelbiotop_Skogsstyrelsen",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/vnd.esri.wms_raw_xml",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "6zjgk5",
+      "caption": "Berggrund",
+      "internalLayerName": "",
+      "url": "https://resource.sgu.se/service/wms/130/berggrund-50-250-tusen",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1788986235769",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "SE.GOV.SGU.BERG.GEOLOGISK_ENHET.YTA.50K",
+        "SE.GOV.SGU.BERG.BERGARTSETIKETT.50K"
+      ],
+      "layersInfo": [
+        {
+          "id": "SE.GOV.SGU.BERG.GEOLOGISK_ENHET.YTA.50K",
+          "caption": "Geologisk enhet, yta",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "BERG_50K_geologisk_enhet_yta",
+              "Title": "Geologisk enhet, yta",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://maps3.sgu.se/geoserver/berg/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=SE.GOV.SGU.BERG.GEOLOGISK_ENHET.YTA.50K"
+                },
+                "width": "1212",
+                "height": "14400"
+              }
+            }
+          ]
+        },
+        {
+          "id": "SE.GOV.SGU.BERG.BERGARTSETIKETT.50K",
+          "caption": "Bergartsetikett",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": false,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "BERG_50K_bergartsetikett",
+              "Title": "Bergartsetikett",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://maps3.sgu.se/geoserver/berg/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=SE.GOV.SGU.BERG.BERGARTSETIKETT.50K"
+                },
+                "width": "375",
+                "height": "1240"
+              }
+            }
+          ]
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": true,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "Geologisk enhet, yta",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/json",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "1udw5s",
+      "caption": "Naturreservat",
+      "internalLayerName": "",
+      "url": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1788986272175",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Naturreservat"
+      ],
+      "layersInfo": [
+        {
+          "id": "Naturreservat",
+          "caption": "Naturreservat",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "default",
+              "Title": "Naturreservat",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:href": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=Naturreservat",
+                  "xlink:type": "simple"
+                },
+                "width": "18",
+                "height": "18"
+              }
+            }
+          ]
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "NVR.GV_OMRADE_YTA",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/vnd.esri.wms_raw_xml",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "pdwtc7",
+      "caption": "Nationalpark",
+      "internalLayerName": "",
+      "url": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1789317284235",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Nationalpark"
+      ],
+      "layersInfo": [
+        {
+          "id": "Nationalpark",
+          "caption": "Nationalpark",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "default",
+              "Title": "Nationalpark",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:href": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=Nationalpark",
+                  "xlink:type": "simple"
+                },
+                "width": "18",
+                "height": "18"
+              }
+            }
+          ]
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": true,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "NVR.GV_OMRADE_YTA",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/vnd.esri.wms_raw_xml",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "bjou26",
+      "caption": "Naturreservat",
+      "internalLayerName": "",
+      "url": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1789317276250",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Naturreservat"
+      ],
+      "layersInfo": [
+        {
+          "id": "Naturreservat",
+          "caption": "Naturreservat",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "<p><br></p>",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "default",
+              "Title": "Naturreservat",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:href": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=Naturreservat",
+                  "xlink:type": "simple"
+                },
+                "width": "18",
+                "height": "18"
+              }
+            }
+          ],
+          "searchUrl": "",
+          "searchPropertyName": "",
+          "searchDisplayName": "",
+          "secondaryLabelFields": "",
+          "searchShortDisplayName": "",
+          "searchGeometryField": "",
+          "searchOutputFormat": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": true,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "NVR.GV_OMRADE_YTA",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/vnd.esri.wms_raw_xml",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "bcasqg",
+      "caption": "RegSO_2025",
+      "internalLayerName": "",
+      "url": "https://geodata.scb.se/geoserver/stat/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1789286988233",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "RegSO_2025"
+      ],
+      "layersInfo": [
+        {
+          "id": "RegSO_2025",
+          "caption": "RegSO_2025",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "<p>{regsonamn}{regsokod}</p>",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "searchUrl": "",
+          "searchPropertyName": "",
+          "styles": [
+            {
+              "Name": "RegSO",
+              "Title": "RegSO",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://geodata.scb.se/geoserver/stat/ows?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=RegSO_2025"
+                },
+                "width": "20",
+                "height": "20"
+              }
+            }
+          ],
+          "searchDisplayName": "",
+          "secondaryLabelFields": "",
+          "searchShortDisplayName": "",
+          "searchGeometryField": "",
+          "searchOutputFormat": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": true,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "Regionala statistikområden (RegSO) med referensår 2025.",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/json",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "h57dqd",
+      "caption": "Verksamhetsområden 2020",
+      "internalLayerName": "",
+      "url": "https://geodata.scb.se/geoserver/stat/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1789312995578",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Verksamhetsomraden_2020"
+      ],
+      "layersInfo": [
+        {
+          "id": "Verksamhetsomraden_2020",
+          "caption": "Verksamhetsområden_2020",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "<p>{omradestyp}{storstabransch}</p>",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "styles": [
+            {
+              "Name": "Verksamhetsområden",
+              "Title": "Verksamhetsomraden",
+              "Abstract": "Verksamhetsomraden",
+              "LegendURL": {
+                "Format": "image/png",
+                "OnlineResource": {
+                  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+                  "xlink:type": "simple",
+                  "xlink:href": "https://geodata.scb.se/geoserver/stat/ows?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=Verksamhetsomraden_2020"
+                },
+                "width": "20",
+                "height": "20"
+              }
+            }
+          ],
+          "searchPropertyName": "",
+          "searchUrl": "",
+          "searchDisplayName": "",
+          "secondaryLabelFields": "",
+          "searchShortDisplayName": "",
+          "searchGeometryField": "",
+          "searchOutputFormat": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": -1,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": true,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "SCBs öppna geodata över verksamhetsområden 2020.",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/json",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    },
+    {
+      "id": "r66yg3",
+      "caption": "Skyddad natur",
+      "internalLayerName": "",
+      "url": "https://geodata.naturvardsverket.se/naturvardsregistret/wms?",
+      "customGetMapUrl": "",
+      "owner": "",
+      "date": "1785224753650",
+      "content": "",
+      "legend": "",
+      "legendIcon": "",
+      "projection": "EPSG:3006",
+      "layers": [
+        "Naturreservat_kommunalt",
+        "Naturreservat",
+        "Nationalpark"
+      ],
+      "layersInfo": [
+        {
+          "id": "Naturreservat_kommunalt",
+          "caption": "Kommunalt naturreservat",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "searchUrl": "",
+          "searchPropertyName": "",
+          "searchDisplayName": "",
+          "secondaryLabelFields": "",
+          "searchShortDisplayName": "",
+          "searchGeometryField": "",
+          "searchOutputFormat": ""
+        },
+        {
+          "id": "Naturreservat",
+          "caption": "Naturreservat",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": ""
+        },
+        {
+          "id": "Nationalpark",
+          "caption": "Nationalpark",
+          "legend": "",
+          "legendIcon": "",
+          "infobox": "",
+          "style": "",
+          "queryable": true,
+          "infoclickIcon": "",
+          "searchUrl": "",
+          "searchPropertyName": "",
+          "searchDisplayName": "",
+          "secondaryLabelFields": "",
+          "searchShortDisplayName": "",
+          "searchGeometryField": "",
+          "searchOutputFormat": ""
+        }
+      ],
+      "searchFields": null,
+      "displayFields": null,
+      "visibleAtStart": false,
+      "tiled": false,
+      "showAttributeTableButton": false,
+      "opacity": 1,
+      "maxZoom": -1,
+      "minZoom": 11,
+      "minMaxZoomAlertOnToggleOnly": false,
+      "singleTile": false,
+      "hidpi": false,
+      "useCustomDpiList": false,
+      "customDpiList": [],
+      "customRatio": 0,
+      "imageFormat": "image/png",
+      "serverType": "geoserver",
+      "attribution": "",
+      "searchUrl": "",
+      "searchPropertyName": "",
+      "searchDisplayName": "",
+      "secondaryLabelFields": "",
+      "searchShortDisplayName": "",
+      "searchOutputFormat": "",
+      "searchGeometryField": "",
+      "infoVisible": false,
+      "infoTitle": "",
+      "infoText": "",
+      "infoUrl": "",
+      "infoUrlText": "",
+      "infoOpenDataLink": "",
+      "infoOwner": "",
+      "timeSliderVisible": false,
+      "timeSliderStart": "",
+      "timeSliderEnd": "",
+      "version": "1.3.0",
+      "infoFormat": "application/vnd.esri.wms_raw_xml",
+      "infoClickSortProperty": "",
+      "infoClickSortDesc": true,
+      "infoClickSortType": "string",
+      "rotateMap": "n",
+      "hideExpandArrow": false,
+      "zIndex": null
+    }
+  ],
+  "wfslayers": [
+    {
+      "id": "13cc09bc-f2ca-326f-5a5e-84a7de3ead7f",
+      "caption": "RegSO 2025",
+      "internalLayerName": "",
+      "url": "https://geodata.scb.se/geoserver/stat/wfs?",
+      "layers": [
+        "stat:RegSO_2025"
+      ],
+      "searchFields": [
+        "regsonamn"
+      ],
+      "infobox": "<p>{lanskod} : {kommunkod}</p>\n<p>{regsonamn}</p>",
+      "aliasDict": "",
+      "displayFields": [
+        "regsonamn"
+      ],
+      "secondaryLabelFields": [
+        "lanskod"
+      ],
+      "shortDisplayFields": [],
+      "geometryField": "sp_geometry",
+      "outputFormat": "application/json",
+      "serverType": "geoserver",
+      "pid": "bcasqg"
+    },
+    {
+      "id": "617f08e2-81ba-c636-c032-72cbb2c28afa",
+      "caption": "Verksamhetsområden 2020",
+      "internalLayerName": "Verksamhetsområden 2020",
+      "url": "https://geodata.scb.se/geoserver/stat/wfs",
+      "layers": [
+        "stat:Verksamhetsomraden_2020"
+      ],
+      "searchFields": [
+        "omradestyp"
+      ],
+      "infobox": "<p>{omradestyp}</p>\n<p>{kommunkod}</p>\n<p>Anställda: {anstallda}</p>",
+      "aliasDict": "",
+      "displayFields": [
+        "kommunkod"
+      ],
+      "secondaryLabelFields": [],
+      "shortDisplayFields": [],
+      "geometryField": "sp_geometry",
+      "outputFormat": "application/json",
+      "serverType": "geoserver",
+      "pid": "h57dqd"
+    },
+    {
+      "id": "cdb82b65-c88e-b397-6b96-dbea94daeb75",
+      "caption": "Skyddade områden",
+      "internalLayerName": "Skyddade områden",
+      "url": "https://geodata.naturvardsverket.se/naturvardsregistret/wfs?",
+      "layers": [
+        "Naturvardsregistret_WFS:SkyddadeOmraden"
+      ],
+      "searchFields": [
+        "NAMN",
+        "KOMMUN"
+      ],
+      "infobox": "<p>{NVRID} {NAMN}</p>\n<p>{SKYDDSTYP}</p>\n<p>{FORVALTARE}</p>",
+      "aliasDict": "",
+      "displayFields": [
+        "NAMN"
+      ],
+      "secondaryLabelFields": [
+        "SKYDDSTYP"
+      ],
+      "shortDisplayFields": [],
+      "geometryField": "SHAPE",
+      "outputFormat": "GML3",
+      "serverType": "geoserver",
+      "pid": "r66yg3"
+    }
+  ],
   "vectorlayers": [],
   "wfstlayers": [],
   "arcgislayers": []

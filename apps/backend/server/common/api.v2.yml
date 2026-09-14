@@ -813,6 +813,34 @@ paths:
         502:
           description: The upstream request failed
           content: {}
+  /searchproxy/{url}:
+    post:
+      tags:
+        - Search Proxy
+      parameters:
+        - name: url
+          in: path
+          description: >
+            The upstream WFS URL to forward the GetFeature request to, verbatim
+            (not URL-encoded - the client builds this by string concatenation,
+            see SearchModel.js). Only forwarded when it exactly matches the
+            `url` of a wfslayer in App_Data/layers.json; anything else is
+            rejected.
+          required: true
+          schema:
+            type: string
+      description: >
+        Proxy a WFS GetFeature request server-side, for söklager whose upstream
+        never answers CORS preflight (so the browser can't call it directly,
+        regardless of the request being otherwise valid). No credentials are
+        involved; this exists purely to sidestep missing CORS support.
+      responses:
+        200:
+          description: The proxied GetFeature response from the upstream service
+          content: {}
+        502:
+          description: The upstream request failed
+          content: {}
   /spec:
     get:
       tags:
