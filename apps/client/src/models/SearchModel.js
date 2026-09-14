@@ -267,7 +267,9 @@ class SearchModel {
           } else if (r.source.outputFormat === "GML32") {
             parser = new GML32();
           }
-          const olFeatures = parser.readFeatures(r.value);
+          const olFeatures = parser.readFeatures(
+            this.#normalizeWfsMemberWrapper(r.value, parser)
+          );
           r.value = { features: olFeatures };
           break;
         }
@@ -281,6 +283,64 @@ class SearchModel {
     rawResults = { featureCollections: successfulResponses, errors };
 
     return rawResults;
+  };
+
+  // GML2/GML3/GML32's own readFeatures() only recognizes a FeatureCollection
+  // whose members are wrapped in <gml:featureMember> or <gml:featureMembers>
+  // (see ol/format/GMLBase.js#FEATURE_COLLECTION_PARSERS) - the strict WFS
+  // 2.0 standard envelope wraps each feature in <wfs:member> instead, which
+  // isn't a registered key there at all, so it silently parses to zero
+  // features. Confirmed directly: a wfs:member-wrapped response fed to
+  // GML32.readFeatures() returns [] with no error, indistinguishable from a
+  // genuine empty result. ol/format/WFS's own reader handles wfs:member
+  // correctly when configured for version 2.0.0, but ONLY that shape - it
+  // does not, in turn, understand featureMember/featureMembers, so
+  // switching readers by configured wfsVersion would break any 2.0.0
+  // source (like the one this was found against) whose server still
+  // answers in the legacy shape. Neither of OL's two reading strategies is
+  // a superset of the other, so this normalizes the response into the one
+  // shape the existing, working reader already understands, only when
+  // necessary - a source using the legacy envelope (every source
+  // configured before this fix) takes the returned-unchanged path below
+  // and is completely unaffected.
+  #normalizeWfsMemberWrapper = (xmlText, parser) => {
+    const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+    const root = doc.documentElement;
+    const memberEls = root
+      ? Array.from(root.children).filter((el) => el.localName === "member")
+      : [];
+
+    if (memberEls.length === 0) {
+      // Already featureMember/featureMembers-wrapped (or a genuinely empty
+      // result, or unparseable) - nothing to do, hand the original string
+      // to the parser exactly as before this method existed.
+      return xmlText;
+    }
+
+    // parser.namespace is the exact GML namespace that parser's own
+    // FEATURE_COLLECTION_PARSERS is keyed by (GML2/GML3: gml 3.1.1's
+    // "http://www.opengis.net/gml"; GML32: "http://www.opengis.net/gml/3.2")
+    // - reading it off the parser instance, rather than hardcoding either
+    // URI here, guarantees the synthetic wrapper always matches whichever
+    // reader is actually about to be used.
+    const featureMembers = doc.createElementNS(
+      parser.namespace,
+      "gml:featureMembers"
+    );
+    memberEls.forEach((memberEl) => {
+      // Each <wfs:member> wraps exactly one feature element - unwrap it
+      // directly into the synthetic featureMembers, dropping the member
+      // layer itself.
+      Array.from(memberEl.children).forEach((featureEl) =>
+        featureMembers.appendChild(featureEl)
+      );
+      root.removeChild(memberEl);
+    });
+    root.appendChild(featureMembers);
+
+    // readFeatures() accepts a Document directly, so no re-serialization
+    // round trip is needed.
+    return doc;
   };
 
   #getOrFilter = (word, searchSource, searchOptions) => {
