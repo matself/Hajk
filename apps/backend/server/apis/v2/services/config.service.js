@@ -277,9 +277,27 @@ class ConfigServiceV2 {
     const searchOptions = mapConfig.tools.find(
       (t) => t.type === "search"
     )?.options;
+    const searchWfsLayerIds = searchOptions?.layers.map((l) => l.id) || [];
+
+    // A wfslayer söklager can optionally be paired with a WMS layer purely so
+    // that "Tänd motsvarande WMS-lager automatiskt vid klick i resultatlistan"
+    // has something to light up (Söklager console's "Kopplat kartlager", see
+    // searchSource.js#toWfsLayer on the admin side) - that WMS layer need not
+    // appear anywhere else in the map config (not in the layer tree, not in
+    // selectedSources), so without this it gets pruned here and the toggle
+    // silently does nothing: SearchResultsContainer's #getLayerById finds no
+    // such layer in the client's OL map at all, and quits early with no error.
+    const wfslayerById = new Map(
+      (layersConfig.wfslayers || []).map((l) => [l.id, l])
+    );
+    const pairedWmsIds = searchWfsLayerIds
+      .map((id) => wfslayerById.get(id)?.pid)
+      .filter(Boolean);
+
     const searchLayerIds = [
-      ...(searchOptions?.layers.map((l) => l.id) || []),
+      ...searchWfsLayerIds,
       ...(searchOptions?.selectedSources || []),
+      ...pairedWmsIds,
     ];
 
     // Grab layers from Edit
