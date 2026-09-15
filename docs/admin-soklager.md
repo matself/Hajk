@@ -55,8 +55,12 @@ Listar id:n i en kartas sökverktygsinställningar (`options.layers[].id` och
 inte längre finns i `layers.json`. Sådana referenser syns i dag annars bara
 som en `console.warn` i webbläsaren när kartan laddas — konsolen gör dem
 synliga utan att behöva öppna varje karta och webbläsarens konsol för sig.
-Beräknas mot samtliga kartor (`map_*.json`), inte bara den karta som råkar
-vara vald i Kartor-fliken.
+Beräknas mot samtliga kartor i `App_Data` — det finns ingen namnkonvention
+(`map_*.json` är bara en vanlig stil, inget krav): backend accepterar varje
+`.json`-fil i mappen utom `layers.json` själv som en möjlig karta, så länge
+den har formen av en kartkonfiguration (`getAvailableMaps()` i
+`config.service.js`) — inte bara den karta som råkar vara vald i
+Kartor-fliken.
 
 ## Lägga till/redigera en sökkälla
 
