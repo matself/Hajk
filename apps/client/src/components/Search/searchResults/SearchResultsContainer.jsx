@@ -209,11 +209,14 @@ class SearchResultsContainer extends React.PureComponent {
       : true;
 
     if (shouldSetActiveFeatureOrCollection) {
-      this.setState({
-        activeFeatureCollection: activeFeatureCollection,
-        activeFeature: activeFeature,
-        sumOfResults: sumOfResults,
-      });
+      this.setState(
+        {
+          activeFeatureCollection: activeFeatureCollection,
+          activeFeature: activeFeature,
+          sumOfResults: sumOfResults,
+        },
+        () => this.#showCorrespondingWMSLayers(activeFeatureCollection)
+      );
     } else {
       this.setState({
         sumOfResults: sumOfResults,
@@ -703,6 +706,7 @@ class SearchResultsContainer extends React.PureComponent {
       },
       () => {
         !nextCollection && this.handleFilterUpdate();
+        this.#showCorrespondingWMSLayers(nextCollection);
       }
     );
     if (nextFeature) {
@@ -739,16 +743,22 @@ class SearchResultsContainer extends React.PureComponent {
       },
       () => {
         this.handleFilterUpdate();
-        // If FC comes from a DocumentHandler document, there is never a corresponding
-        // WMS layer - so don't bother
-        featureCollection?.origin !== "DOCUMENT" &&
-          this.#showCorrespondingWMSLayers(featureCollection);
+        this.#showCorrespondingWMSLayers(featureCollection);
       }
     );
   };
   #showCorrespondingWMSLayers = (featureCollection) => {
     // Respect the setting from admin
     if (this.props.options.showCorrespondingWMSLayers !== true) return;
+    // Nothing to show when there is no active collection (e.g. navigating
+    // back to the full results list), and a DocumentHandler-origin
+    // collection never has a corresponding WMS layer - so don't bother.
+    // This guard lives here (rather than at each call site) because every
+    // place that puts a collection in front of the user - explicitly
+    // selecting one, the single-collection auto-select on mount, and
+    // stepping between features - should light up its WMS layer the same
+    // way, not only the explicit-selection path.
+    if (!featureCollection || featureCollection.origin === "DOCUMENT") return;
     const layer = this.#getLayerById(featureCollection.source.pid);
     // There is a possibility that no layer was found, if so, quit early
     if (layer === undefined) return;
