@@ -24,7 +24,7 @@ export function isGeometryType(type) {
 
 const REQUEST_TIMEOUT = 20000;
 
-function withTimeout(promise, ms) {
+export function withTimeout(promise, ms) {
   return Promise.race([
     promise,
     new Promise((_resolve, reject) =>
@@ -33,7 +33,7 @@ function withTimeout(promise, ms) {
   ]);
 }
 
-function appendQuery(url, params) {
+export function appendQuery(url, params) {
   const qs = new URLSearchParams(params).toString();
   if (!qs) return url;
   const trimmed = url.trim();
@@ -41,7 +41,7 @@ function appendQuery(url, params) {
   return trimmed.includes("?") ? trimmed + sep + qs : trimmed + "?" + qs;
 }
 
-function localName(el) {
+export function localName(el) {
   return el.localName || el.tagName;
 }
 
@@ -56,7 +56,7 @@ function firstChildText(parent, names) {
 // Covers both the OWS-style root (WFS 1.1/2.0, ExceptionReport/Exception/
 // ExceptionText) and the older WMS-style one some WFS 1.0 servers still
 // answer with (ServiceExceptionReport/ServiceException).
-function throwIfExceptionReport(doc) {
+export function throwIfExceptionReport(doc) {
   const root = doc.documentElement;
   if (!root || !/ExceptionReport$/.test(localName(root))) return;
   const exceptionEl = Array.from(doc.getElementsByTagName("*")).find((el) =>

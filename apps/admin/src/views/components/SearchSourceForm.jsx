@@ -10,6 +10,7 @@ import Divider from "@material-ui/core/Divider";
 import RefreshIcon from "@material-ui/icons/Refresh";
 
 import InfoclickEditor from "./InfoclickEditor";
+import SearchSourceTest from "./SearchSourceTest";
 import {
   fromWfsLayer,
   toWfsLayer,
@@ -180,6 +181,8 @@ function FieldListEditor({ label, help, values, attributeOptions, onChange }) {
  * @param {string} defaultUrl - prefilled for a new wfslayer (config.url_default_server)
  * @param {string} urlProxy - config.url_proxy, forwarded to every WFS request
  * @param {Array} wmsLayers - layersStore.wmslayers, for the "Kopplat kartlager" picker
+ * @param {() => object} getTestContext - the map and search proxy "Testa
+ *   söklager" runs against, see SearchSourceTest
  * @param {(payload: object) => void} onSave - called with a ready-to-send
  *   payload (a wfslayer, or a full wmslayer with one sublayer patched) once
  *   validation passes
@@ -189,6 +192,7 @@ export default function SearchSourceForm({
   defaultUrl,
   urlProxy,
   wmsLayers,
+  getTestContext,
   onSave,
 }) {
   const kind = editTarget?.kind || "wfslayer";
@@ -736,6 +740,13 @@ export default function SearchSourceForm({
           ))}
         </TextField>
       )}
+
+      <Divider style={{ margin: "16px 0" }} />
+      <SearchSourceTest
+        source={canonical}
+        urlProxy={urlProxy}
+        getTestContext={getTestContext}
+      />
     </form>
   );
 }

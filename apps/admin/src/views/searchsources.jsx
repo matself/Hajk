@@ -173,6 +173,45 @@ export default class SearchSources extends Component {
     this.setState({ dangling: perMap.flat() });
   }
 
+  // What "Testa söklager" runs against: the first map whose Search tool
+  // uses this source (so the test gets that map's projection, extent and
+  // projection list, exactly what the client would search with), else the
+  // first map at all - a new, unsaved source isn't used anywhere yet - plus
+  // the backend's search proxy, derived from url_layers since both live
+  // under the same /api/vN base.
+  testContext(target) {
+    const config = this.props.config || {};
+    const proxyPath = (config.url_layers || "").replace(
+      /\/mapconfig\/layers\/?$/,
+      "/searchproxy/"
+    );
+    const searchProxy =
+      proxyPath && proxyPath !== config.url_layers
+        ? prepareProxyUrl(proxyPath, config.url_proxy)
+        : null;
+
+    const maps = this.mapConfigsCache || [];
+    const usesSource = ([, mapConfig]) => {
+      const options = (mapConfig.tools || []).find(
+        (t) => t.type === "search"
+      )?.options;
+      if (!options || !target) return false;
+      return target.kind === "wmssublayer"
+        ? (options.selectedSources || []).includes(target.wmsLayer.id)
+        : (options.layers || []).some((l) => l.id === target.raw?.id);
+    };
+    const entry = maps.find(usesSource) || maps[0];
+    if (!entry) return { searchProxy };
+    const [mapName, mapConfig] = entry;
+    return {
+      mapName,
+      projection: mapConfig.map?.projection,
+      projections: mapConfig.projections || [],
+      usesSource: usesSource(entry),
+      searchProxy,
+    };
+  }
+
   findRawWfsLayer(id) {
     return (this.state.layersStore?.wfslayers || []).find((l) => l.id === id);
   }
@@ -461,6 +500,7 @@ export default class SearchSources extends Component {
             defaultUrl={config.url_default_server}
             urlProxy={config.url_proxy}
             wmsLayers={this.state.layersStore?.wmslayers}
+            getTestContext={() => this.testContext(target)}
             onSave={(payload) => this.handleSave(payload)}
           />
         </DialogContent>

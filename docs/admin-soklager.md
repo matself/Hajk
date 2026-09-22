@@ -141,6 +141,49 @@ Fylls i automatiskt från attributlistan när ett geometriattribut hittas,
 annars anges det för hand. Ett expliciplt val i attributlistan skriver över
 det autoifyllda värdet.
 
+### Testa söklager
+
+Längst ned i dialogen. **Testa** gör en riktig sökning mot tjänsten med
+formulärets nuvarande värden, på samma sätt som kartan gör, och listar vad
+som skulle gå fel. Inget sparas. Ett sökord kan anges (valfritt). Det söks
+då mot Sökfält, annars hämtas några objekt utan filter.
+
+Varför testet behövs: i kartan visas nästan alla fel som "Sökningen gav
+inget resultat", eller som träffar på fel plats. Tjänstens egna
+felmeddelanden syns aldrig för användaren.
+
+Testet körs mot den första karta vars sökverktyg använder söklagret, eller
+mot den första kartan om söklagret inte används någonstans ännu. Därifrån
+hämtas kartans projektion, utbredning och projektionslista. Testet
+kontrollerar:
+
+- **CORS**: om tjänsten tillåter sökanrop direkt från webbläsaren. Gör den
+  inte det fungerar sökningen i kartan bara om klientens `appConfig.json`
+  har `searchProxy` satt till backendens sökproxy
+  (`https://<server>/api/v2/searchproxy/`). Testet provar då samma anrop via
+  sökproxyn. Sökproxyn tar bara emot url:er från sparade söklager, så för
+  ett nytt söklager faller testet tillbaka på ett GET-anrop. Fel som bara
+  gäller kartans POST-anrop syns då inte.
+- **Tjänstens felmeddelanden** (ExceptionReport) i klartext, t.ex. en
+  responstyp som tjänsten inte stöder.
+- **Lagernamn med punkt** kräver WFS-version 2.0.0.
+- **GML-version**: svarar tjänsten med GML 3.2 måste responstypen vara GML32,
+  och tvärtom. Annars kan kartan inte läsa geometrierna.
+- **Koordinaternas läge** mot kartans utbredning, inklusive **omvänd
+  axelordning** (nord först). Det går inte att ställa in i Hajk; använd en
+  annan tjänst med samma data. Så är det t.ex. med Naturvårdsverkets
+  `naturvardsregistret/wfs`, där INSPIRE-tjänsten `inspire/ps-nvr/ows`
+  fungerar.
+- **Okänt `srsName`**: anger tjänsten geometrierna i ett koordinatsystem som
+  kartan saknar projektion för, misslyckas sökningen.
+- **GeoJSON utan crs** tolkas av kartan som WGS84 (grader).
+- **Fält** i Sökfält och Visningsfält som inte finns i svaret (stora och små
+  bokstäver spelar roll).
+- **Sökning med ritad yta, radie och i kartans vy**: när läget är bekräftat
+  görs också en rumslig sökning med en liten yta runt första träffen, på
+  samma sätt som kartan gör. Den visar om Geometrifält är rätt och om
+  tjänsten godtar kartans rumsliga filter.
+
 ## Radera / Ta bort sökkonfiguration
 
 **Radera** (söklager) tar bort hela WFS-lagret ur `layers.json` permanent,

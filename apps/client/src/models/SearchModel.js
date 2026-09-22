@@ -17,6 +17,23 @@ const ESCAPE_CHAR = "!";
 const SINGLE_CHAR = ".";
 const WILDCARD_CHAR = "*";
 
+const GML32_NS = "http://www.opengis.net/gml/3.2";
+// GML 3.2 elements derived from AbstractGML, which require a gml:id
+const GML32_GEOMETRIES = new Set([
+  "Point",
+  "LineString",
+  "Curve",
+  "Polygon",
+  "Surface",
+  "MultiPoint",
+  "MultiLineString",
+  "MultiCurve",
+  "MultiPolygon",
+  "MultiSurface",
+]);
+// GML 3.2 rings are not geometries and may not carry a srsName
+const GML32_RINGS = new Set(["LinearRing", "Ring"]);
+
 class SearchModel {
   // Public field declarations (why? https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Defining_classes)
 
@@ -50,6 +67,20 @@ class SearchModel {
       this.#wfsParsers.set(version, new WFS({ version }));
     }
     return this.#wfsParsers.get(version);
+  };
+  // See the call site in #lookup for why this is needed.
+  #makeGml32FilterValid = (node) => {
+    let i = 0;
+    Array.from(node.getElementsByTagNameNS(GML32_NS, "*")).forEach((el) => {
+      if (
+        GML32_GEOMETRIES.has(el.localName) &&
+        !el.hasAttributeNS(GML32_NS, "id")
+      ) {
+        el.setAttributeNS(GML32_NS, "gml:id", `hajk-search-geom-${i++}`);
+      } else if (GML32_RINGS.has(el.localName)) {
+        el.removeAttribute("srsName");
+      }
+    });
   };
   #possibleSearchCombinations = new Map(); // Will hold a set of possible search combinations, so we don't have to re-create them for each source
 
@@ -654,6 +685,16 @@ class SearchModel {
         `xmlns:${prefix}`,
         searchSource.featureNS
       );
+    }
+
+    // Under WFS 2.0.0, ol/format/WFS puts a spatial filter's geometry in the
+    // GML 3.2 namespace but writes it by GML 3.1 rules: no gml:id on the
+    // geometry, and a srsName on every ring. Both are schema violations in
+    // GML 3.2, and a validating server rejects the whole request - confirmed
+    // live against geodata.naturvardsverket.se's INSPIRE service, where every
+    // radius, extent and polygon search failed while text search worked.
+    if (wfsVersion === "2.0.0") {
+      this.#makeGml32FilterValid(node);
     }
 
     const xmlSerializer = new XMLSerializer();
