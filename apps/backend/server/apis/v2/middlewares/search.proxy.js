@@ -119,7 +119,16 @@ function upstreamUrlFromReq(req) {
   // arrives verbatim, exactly as configured in layers.json (minus a
   // trailing "?", which never survives onto the wire - see
   // stripTrailingQuestionMark).
-  const candidate = stripTrailingQuestionMark(match[1]);
+  //
+  // A reverse proxy in front of the backend may also collapse the "//" in
+  // the embedded scheme (nginx does by default, see its merge_slashes), so
+  // "https://host/..." arrives as "https:/host/..." and would never match
+  // the whitelist. Restore it before comparing (seen behind nginx, where every
+  // search through this proxy failed with "Must provide a proper URL as
+  // target").
+  const candidate = stripTrailingQuestionMark(
+    match[1].replace(/^(https?:)\/+/i, "$1//")
+  );
   return getAllowedUrls().has(candidate) ? candidate : null;
 }
 
