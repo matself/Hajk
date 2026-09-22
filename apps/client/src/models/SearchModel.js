@@ -68,6 +68,19 @@ class SearchModel {
     }
     return this.#wfsParsers.get(version);
   };
+  // The text of a WFS ExceptionReport (OWS 1.1/2.0, or the older
+  // ServiceExceptionReport), or null if the body isn't one.
+  #getWfsExceptionText = (body) => {
+    if (!/ExceptionReport/.test(body.slice(0, 1000))) return null;
+    const doc = new DOMParser().parseFromString(body, "application/xml");
+    const root = doc.documentElement;
+    if (!root || !/ExceptionReport$/.test(root.localName)) return null;
+    const texts = Array.from(doc.getElementsByTagName("*"))
+      .filter((el) => /^(ExceptionText|ServiceException)$/.test(el.localName))
+      .map((el) => el.textContent.trim())
+      .filter(Boolean);
+    return texts.join(" ") || "ExceptionReport";
+  };
   // See the call site in #lookup for why this is needed.
   #makeGml32FilterValid = (node) => {
     let i = 0;
@@ -188,8 +201,13 @@ class SearchModel {
       searchSources = this.getSources();
     }
 
-    // Will hold our Promises, one for each search source
+    // Will hold our Promises, one for each search source that actually
+    // sends a request - and, at the same index, that source. #lookup skips
+    // a source it has nothing to send for (e.g. a text search on a source
+    // without searchFields), so indexing searchSources by response position
+    // would pin every later response, and error, on the wrong source.
     const promises = [];
+    const requestedSources = [];
 
     // Will hold the end results
     let rawResults = null;
@@ -214,6 +232,7 @@ class SearchModel {
       if (promise !== null && controller !== null) {
         // Push promises to local Array so we can act when all Promises have resolved
         promises.push(promise);
+        requestedSources.push(searchSource);
 
         // Also, put AbortController to the global collection of controllers, so we can abort searches at any time
         this.#controllers.push(controller);
@@ -226,25 +245,26 @@ class SearchModel {
     // fetchedResponses will be an array of Promises in object form.
     // Each object will have a "status" and a "value" property.
     const responsePromises = await Promise.allSettled(
-      fetchResponses.map((fetchResponse, i) => {
+      fetchResponses.map(async (fetchResponse, i) => {
         // We look at the status and filter out only those that fulfilled.
-        if (fetchResponse.status === "rejected")
-          return Promise.reject("Could not fetch");
-        // If we requested GeoJSON, we can try parsing it with
-        // the Promise's body's .json() method.
-        switch (searchSources[i].outputFormat) {
-          case "application/json":
-          case "application/vnd.geo+json":
-            return fetchResponse.value.json();
-          // Otherwise we should expect XML, which needs to be parsed
-          // as text
-          case "GML2":
-          case "GML3":
-          case "GML32":
-            return fetchResponse.value.text();
-          default:
-            return Promise.reject("Output format now allowed");
+        if (fetchResponse.status === "rejected") throw "Could not fetch";
+        const format = requestedSources[i].outputFormat;
+        const isJson =
+          format === "application/json" ||
+          format === "application/vnd.geo+json";
+        if (!isJson && !["GML2", "GML3", "GML32"].includes(format)) {
+          throw "Output format now allowed";
         }
+        // A WFS reports a failed request (unsupported outputFormat, invalid
+        // filter, unknown property...) as an ExceptionReport, often with
+        // HTTP 200. Parsed as GML, that used to come out as zero features -
+        // a broken source looked exactly like a search with no hits.
+        const body = await fetchResponse.value.text();
+        const exceptionText = this.#getWfsExceptionText(body);
+        if (exceptionText !== null) throw exceptionText;
+        if (!fetchResponse.value.ok) throw `HTTP ${fetchResponse.value.status}`;
+        // GeoJSON is parsed here; GML stays text for the XML parsers below.
+        return isJson ? JSON.parse(body) : body;
       })
     );
 
@@ -257,13 +277,14 @@ class SearchModel {
     // depending on if it succeeded or failed.
     responsePromises.forEach((r, i) => {
       if (r.status === "fulfilled") {
-        r.source = searchSources[i];
+        r.source = requestedSources[i];
         r.origin = "WFS";
         successfulResponses.push(r);
       } else if (r.status === "rejected") {
-        r.source = searchSources[i];
+        r.source = requestedSources[i];
         r.origin = "WFS";
         errors.push(r);
+        console.error(`Search source "${r.source.caption}" failed:`, r.reason);
       }
     });
 

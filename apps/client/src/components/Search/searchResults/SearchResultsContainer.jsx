@@ -1055,6 +1055,26 @@ class SearchResultsContainer extends React.PureComponent {
     );
   };
 
+  // A search where a source failed must not read as "no hits": that is what
+  // made broken söklager so hard to spot. The technical reason per source is
+  // logged to the console by SearchModel; "Testa söklager" in Admin explains it.
+  renderNoResultsAlert = () => {
+    const errors = this.props.searchResults?.errors || [];
+    const failed = [
+      ...new Set(errors.map((e) => e.source?.caption).filter(Boolean)),
+    ];
+    if (failed.length === 0) {
+      return <Alert severity="warning">Sökningen gav inget resultat.</Alert>;
+    }
+    return (
+      <Alert severity="error">
+        Sökningen kunde inte genomföras mot {failed.join(", ")}. Tjänsten
+        svarade med ett fel eller gick inte att nå. Kontakta kartans
+        administratör om felet kvarstår.
+      </Alert>
+    );
+  };
+
   render() {
     const {
       app,
@@ -1098,7 +1118,7 @@ class SearchResultsContainer extends React.PureComponent {
       <Collapse in={!panelCollapsed}>
         {sumOfResults === null ? null : sumOfResults === 0 ? (
           <StyledPaper onMouseDown={handleFocus}>
-            <Alert severity="warning">Sökningen gav inget resultat.</Alert>
+            {this.renderNoResultsAlert()}
           </StyledPaper>
         ) : (
           <StyledPaper onMouseDown={handleFocus}>
