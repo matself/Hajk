@@ -84,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Client: `appConfig.json` and `appConfig.docker.json` now ship `searchProxy: "/api/v2/searchproxy/"`, so a client deployed from the repo keeps routing WFS search through the backend's search proxy instead of silently losing it - on test.webkarta.se that is the only way Naturvårdsverket's WFS (no CORS on preflight) can be searched at all. Relative, so it only works where the client is served from the same host as the backend; a local Vite dev server on :3000 or a static setup without a backend needs it overridden or cleared locally. This deliberately reverses the searchProxy half of `5bb2c10a2`, which removed a machine-specific absolute URL; `mapserviceBase` stays empty in `appConfig.json`.
 - Client: InfoDialog - Refactored to use LocalStorageHelper for visibility state management, enabling multiple named dialog instances with per-instance "show only once" tracking. Existing dialogs configured with `visibleAtStart` and `showOnlyOnce` will appear once more on next load, then persist correctly thereafter. No dialog content is lost; users require no action.
 
 ### Fixed

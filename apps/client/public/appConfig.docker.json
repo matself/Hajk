@@ -1,5 +1,6 @@
 {
   "mapserviceBase": "/api/v2",
+  "searchProxy": "/api/v2/searchproxy/",
   "defaultMap": "map_1",
   "availableTools": [
     "Anchor",
