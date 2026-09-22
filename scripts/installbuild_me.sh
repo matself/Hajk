@@ -298,14 +298,28 @@ rm -rf "$DEST_DIR/static/client"
 mkdir -p "$DEST_DIR/static/client"
 cp -r "$CLIENT_BUILD_DIR/." "$DEST_DIR/static/client"
 
-# Patch mapserviceBase in appConfig.json so the deployed client always points
-# to the correct backend, regardless of what was committed in the repo.
+# Patch mapserviceBase and searchProxy in appConfig.json so the deployed
+# client always points to the correct backend, regardless of what was
+# committed in the repo. searchProxy is the backend's WFS search proxy
+# (needed for search against WFS services without CORS support), so it
+# follows mapserviceBase - and is left empty when mapserviceBase is.
 APPCONFIG="$DEST_DIR/static/client/appConfig.json"
+if [ -n "$MAPSERVICE_BASE" ]; then
+    SEARCH_PROXY="${MAPSERVICE_BASE}/searchproxy/"
+else
+    SEARCH_PROXY=""
+fi
 if [ -f "$APPCONFIG" ]; then
     sed -i "s|\"mapserviceBase\":.*|\"mapserviceBase\": \"${MAPSERVICE_BASE}\",|" "$APPCONFIG"
     echo "Patched mapserviceBase to: ${MAPSERVICE_BASE}"
+    if grep -q '"searchProxy"' "$APPCONFIG"; then
+        sed -i "s|\"searchProxy\":.*|\"searchProxy\": \"${SEARCH_PROXY}\",|" "$APPCONFIG"
+    else
+        sed -i "/\"mapserviceBase\":/a\  \"searchProxy\": \"${SEARCH_PROXY}\"," "$APPCONFIG"
+    fi
+    echo "Patched searchProxy to: ${SEARCH_PROXY}"
 else
-    echo "WARNING: appConfig.json not found at ${APPCONFIG} - mapserviceBase not patched."
+    echo "WARNING: appConfig.json not found at ${APPCONFIG} - mapserviceBase and searchProxy not patched."
 fi
 
 # =============================================================================

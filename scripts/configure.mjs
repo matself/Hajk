@@ -279,7 +279,9 @@ async function collectConfig(rl) {
 // ---------------------------------------------------------------------------
 
 /**
- * Updates appConfig.json with the correct mapserviceBase.
+ * Updates appConfig.json with the correct mapserviceBase, and the matching
+ * searchProxy (the backend's WFS search proxy, needed for search against WFS
+ * services without CORS support).
  *
  * @param {string} mapserviceBase - The new mapserviceBase URL.
  */
@@ -293,8 +295,10 @@ function updateAppConfig(mapserviceBase) {
   }
 
   config.mapserviceBase = mapserviceBase;
+  config.searchProxy = mapserviceBase ? `${mapserviceBase}/searchproxy/` : "";
   writeJsonFile(CONFIG_PATHS.appConfig, config);
   console.log(`  ✓ Updated appConfig.json: mapserviceBase = ${mapserviceBase}`);
+  console.log(`  ✓ Updated appConfig.json: searchProxy = ${config.searchProxy}`);
 }
 
 /**

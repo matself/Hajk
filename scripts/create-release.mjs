@@ -145,6 +145,10 @@ async function updateMapserviceBase(configPath, mapserviceBase) {
   const rawConfig = await readFile(configPath, "utf8");
   const config = JSON.parse(rawConfig);
   config.mapserviceBase = mapserviceBase;
+  // searchProxy is the backend's WFS search proxy (needed for search against
+  // WFS services without CORS support), so it follows mapserviceBase - and is
+  // left empty when mapserviceBase is (a client-only release has no backend).
+  config.searchProxy = mapserviceBase ? `${mapserviceBase}/searchproxy/` : "";
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 

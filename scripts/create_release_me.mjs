@@ -276,8 +276,11 @@ async function zipDirectory(sourceDir) {
 // ---------------------------------------------------------------------------
 
 /**
- * Reads appConfig.json at the given path, sets the mapserviceBase field, and
- * writes the result back to disk with consistent formatting.
+ * Reads appConfig.json at the given path, sets the mapserviceBase field (and
+ * the matching searchProxy - the backend's WFS search proxy, needed for
+ * search against WFS services without CORS support - or "" when
+ * mapserviceBase is empty), and writes the result back to disk with
+ * consistent formatting.
  *
  * The file must exist and contain valid JSON with a mapserviceBase key;
  * if either condition is not met a descriptive error is thrown rather than
@@ -312,6 +315,7 @@ async function updateMapserviceBase(configPath, mapserviceBase) {
   }
 
   config.mapserviceBase = mapserviceBase;
+  config.searchProxy = mapserviceBase ? `${mapserviceBase}/searchproxy/` : "";
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 

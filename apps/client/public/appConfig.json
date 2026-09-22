@@ -1,6 +1,6 @@
 {
   "mapserviceBase": "",
-  "searchProxy": "/api/v2/searchproxy/",
+  "searchProxy": "",
   "defaultMap": "map_1",
   "availableTools": [
     "AddressSearch",
