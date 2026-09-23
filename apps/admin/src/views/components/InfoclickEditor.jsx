@@ -16,6 +16,10 @@ import { stateFromHTML } from "draft-js-import-html";
 const TOKEN_REGEX = /\{[^{}]+\}/g;
 // Matches a {{if ...}} ... {{/if}} conditional block, see FeaturePropsParsing.jsx on the client.
 const CONDITIONAL_REGEX = /\{\{if\b[\s\S]*?\{\{\/if\}\}/;
+// Matches a whole HTML tag, including quoted attribute values that may
+// contain ">". Used to keep placeholders inside attributes (e.g.
+// href="...?id={ID}") out of the token wrapping below.
+const TAG_REGEX = /(<(?:"[^"]*"|'[^']*'|[^'">])*>)/;
 
 function containsConditional(html) {
   return CONDITIONAL_REGEX.test(html || "");
@@ -23,15 +27,25 @@ function containsConditional(html) {
 
 // Wraps every {...} placeholder in a marker <span> so that stateFromHTML's
 // customInlineFn (below) can turn it into a protected, atomic Draft.js entity
-// instead of plain, freely-editable text.
+// instead of plain, freely-editable text. Only text between tags is touched:
+// wrapping a placeholder inside an attribute value would inject markup into
+// the attribute and break the tag.
 function wrapTokens(html) {
-  return (html || "").replace(TOKEN_REGEX, (match) => {
-    const escaped = match
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    return `<span data-ic-token="1">${escaped}</span>`;
-  });
+  return (html || "")
+    .split(TAG_REGEX)
+    .map((part, i) =>
+      // split() with a capture group puts the matched tags at odd indexes
+      i % 2 === 1
+        ? part
+        : part.replace(TOKEN_REGEX, (match) => {
+            const escaped = match
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+            return `<span data-ic-token="1">${escaped}</span>`;
+          })
+    )
+    .join("");
 }
 
 function customInlineFn(element, { Entity }) {
