@@ -4,6 +4,7 @@ import { styled } from "@mui/material/styles";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import {
+  Box,
   Table,
   TableContainer,
   CircularProgress,
@@ -16,6 +17,7 @@ import {
 } from "@mui/material";
 
 import FeaturePropsParsing from "./FeaturePropsParsing";
+import CopyTemplateStubButton from "./CopyTemplateStubButton";
 import { getInfoClickInfoFromLayerConfig } from "../../utils/InfoClickHelpers";
 
 const InfoContainer = styled(Grid)(() => ({
@@ -194,6 +196,7 @@ class FeatureInfoContainer extends React.PureComponent {
         caption: caption,
         selectedIndex: newIndex,
         markdown: markdown,
+        properties: properties,
       },
       () => {
         this.showFeatureInMap();
@@ -217,13 +220,28 @@ class FeatureInfoContainer extends React.PureComponent {
   };
 
   renderFeatureInformation = () => {
-    const { caption, value } = this.state;
+    const { caption, value, markdown, properties } = this.state;
 
     return (
       <Grid sx={{ width: "100%" }}>
-        <Typography variant="button" align="center" component="h6" gutterBottom>
-          {caption}
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            mb: 0.5,
+          }}
+        >
+          <Typography variant="button" align="center" component="h6">
+            {caption}
+          </Typography>
+          {/* No template means the default table is shown - offer its
+              attributes as a starter template for Admin. */}
+          {!markdown && properties && (
+            <CopyTemplateStubButton properties={properties} />
+          )}
+        </Box>
         {value}
       </Grid>
     );
