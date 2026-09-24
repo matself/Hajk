@@ -6,6 +6,11 @@ import { backupBeforeWrite } from "../utils/backupConfig.js";
 
 const logger = log4js.getLogger("service.settings.v2");
 
+// Layer types added after the original layers.json format. A store written
+// before they existed (App_Data survives redeploys, so deployed stores often
+// do) lacks their array, and saving the first such layer would otherwise fail.
+const CREATABLE_LAYER_TYPES = ["xyzlayers", "pmtileslayers"];
+
 class SettingsService {
   /**
    * @summary Helper that returns a unique ID, used e.g. to
@@ -86,7 +91,11 @@ class SettingsService {
 
       // Store contains multiple layer types (wmslayers, wfslayers, etc).
       // We're only interested in one type.
-      const layersType = layersStore[type];
+      let layersType = layersStore[type];
+      if (layersType === undefined && CREATABLE_LAYER_TYPES.includes(type)) {
+        logger.info(`Creating missing "${type}" array in layers.json.`);
+        layersType = [];
+      }
       if (layersType === undefined) {
         throw new Error(`Layer type "${type}" not found in layers database.`);
       }

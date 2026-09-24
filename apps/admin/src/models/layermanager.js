@@ -251,7 +251,9 @@ var manager = Model.extend({
       body: JSON.stringify(layer),
     })
       .then((response) => {
-        callback(true);
+        // fetch only rejects on network failure, so a 4xx/5xx from the
+        // backend must be reported as a failure here.
+        callback(response.ok);
       })
       .catch((error) => {
         callback(false);
