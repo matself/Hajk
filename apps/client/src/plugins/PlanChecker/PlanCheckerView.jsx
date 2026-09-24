@@ -133,6 +133,12 @@ function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
         label="Visa alla bestämmelser i planen"
       />
 
+      <Typography variant="caption" color="text.secondary">
+        Bestämmelsetexten är läst ur referensobjektet i Lantmäteriets
+        sökkatalog, inte domänobjektet (den antagna handlingen). Vid osäkerhet,
+        öppna plandokumenten för den rättsligt bindande texten.
+      </Typography>
+
       {plans.map(({ key, plan, documents, types, truncated }) => (
         <Box key={key}>
           <Typography variant="subtitle1">{plan.namn}</Typography>
