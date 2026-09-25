@@ -113,6 +113,45 @@ not there. A tool that returned nothing would be read as "no restrictions here",
 which is wrong and potentially costly, so the empty state says explicitly that
 no *digital* plan was found and that this is not the same as no plan.
 
+### Referensobjekt, not domänobjekt — and neither does Lantmäteriet's own viewer
+
+Everything this plugin reads is a **referensobjekt**, never the **domänobjekt**
+it points at. The API's own reference docs draw this line explicitly: the item
+endpoints are literally named "Hämta referensobjekt" / "Hämta enstaka
+referensobjekt", and a referensobjekt's `id` is defined as "densamma som
+domänobjektets objektidentitet" — two distinct things, linked by an id, not
+the same object. The domänobjekt is the formal entity as defined by the
+national specification for detaljplan (Detaljplan, Planbestämmelse per the
+HMK application schema) — the canonical, legally relevant record. The
+referensobjekt is Geodatakatalog Sökning's catalog/search representation of
+it: a STAC-shaped, queryable copy carrying a working subset of attributes
+(`properties.planbestammelse.bestammelseformulering` and the rest of what
+this plugin reads), built to be found and filtered, not to be the primary
+source.
+
+This is not a limitation specific to this plugin. `intersects` — the only way
+to ask "what covers this point" without already knowing which municipality or
+which domänobjekt to look at — exists solely on `/search`, and `/search`
+answers with referensobjekt by definition (same `application/geo+json`
+`FeatureCollection` of `item` objects as the plain item listing). Lantmäteriet's
+own viewer reaches the data through the identical `POST /search` call this
+plugin's three-search pattern was built from — captured directly off its own
+network traffic — so it is reading referensobjekt too, not domänobjekt.
+Neither tool is more authoritative than the other on that axis; both sit on
+the same side of the referensobjekt/domänobjekt line for the click-lookup
+itself.
+
+What this means for anyone relying on the result: the inline regulation text
+is a screening aid, sourced from the catalog's copy of the data, not a
+substitute for the antagna handlingen. The actual path to that — today,
+already built — is the linked documents (Plankarta, Planhandling,
+Beslutsprotokoll, see Data shape below); a handläggare who needs to rely on
+the result formally should open the linked handling rather than cite the
+inline text. The item also carries a machine-readable
+`application/vnd.lm.detaljplan.v4+json` asset, closer to domänobjektsnivå
+than the referensobjekt's own `properties` — currently unused, see Known
+gaps.
+
 ### Data shape
 
 Each feature is one *(plan, regulation, geometry)* triple with the plan's own
