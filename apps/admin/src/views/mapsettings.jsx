@@ -1081,6 +1081,14 @@ class Menu extends Component {
 
         this.props.model.set({ layerMenuConfig: settings });
 
+        // The layer tree lives inside the layerswitcher tool's options, and the
+        // tool editors on the Verktyg tab save the whole toolConfig array.
+        // Keep that array in step, or the next tool save reverts the tree.
+        const layerSwitcherTool = (
+          this.props.model.get("toolConfig") || []
+        ).find((tool) => tool.type === "layerswitcher");
+        if (layerSwitcherTool) layerSwitcherTool.options = settings;
+
         this.setState({
           reset: false,
         });
