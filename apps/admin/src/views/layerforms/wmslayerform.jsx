@@ -1776,7 +1776,7 @@ class WMSLayerForm extends Component {
           >
             <option>{SERVERTYPE_GEOSERVER}</option>
             <option>{SERVERTYPE_MAPSERVER}</option>
-            <option>{SERVERTYPE_QGIS}</option>
+            <option value={SERVERTYPE_QGIS}>QGIS server</option>
             <option>{SERVERTYPE_GWC_STANDALONE}</option>
             <option>{SERVERTYPE_ARCGIS}</option>
           </select>

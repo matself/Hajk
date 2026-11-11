@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Client + Admin: Legends (LayerSwitcher and Print) now load for QGIS Server layers. GetLegendGraphic was sent with a hardcoded `VERSION=1.0.0`, which QGIS Server rejects with 400 Bad Request; QGIS layers now use `VERSION=1.3.0`. Admin's server type dropdown now shows "QGIS server" instead of "qgis" (stored value unchanged).
+
 - Client: Fixed a crash (`Cannot read properties of undefined (reading 'lastSearchPhrase')`) when `enableAppStateInHash` is on and the map config has no `search` tool configured — the hashchange handler now guards against a missing `searchModel`.
 - App_Data: `map_1.json` had the Measurer tool's `type` misspelled as `measure` instead of `measurer`, so the client's config check flagged it as an unavailable plugin on load.
 - Client: DocumentHandler - Fixed relative image/video/audio paths (`../Upload/...`) resolving incorrectly whenever `mapserviceBase` had no trailing slash, e.g. `/api/v2Upload/...` instead of `/api/v2/Upload/...`. Also fixed the Audio component ignoring its own corrected URL in favor of the raw `src` attribute. [#1759](https://github.com/hajkmap/Hajk/discussions/1759)
