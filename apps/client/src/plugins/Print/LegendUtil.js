@@ -85,7 +85,9 @@ export const getLegendInfoForLayer = (layer) => {
   const source = layer.getSource();
   const params = source.getParams?.() ?? {};
   const baseUrl = getSourceUrl(source);
-  const version = params.VERSION || "1.0.0";
+  // QGIS Server rejects GetLegendGraphic with VERSION=1.0.0 (400), so use 1.3.0 there.
+  const version =
+    params.VERSION || (source.serverType_ === "qgis" ? "1.3.0" : "1.0.0");
 
   const visibleSublayers = paramToList(params.LAYERS).filter(Boolean);
   // Keep style indexes aligned with layer indexes.

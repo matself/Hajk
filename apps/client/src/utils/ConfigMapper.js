@@ -56,7 +56,10 @@ export default class ConfigMapper {
         // Let's check if there is a custom url, and if there is we'll use that one instead of the 'ordinary' url:
         const baseUrl = args.customGetMapUrl || args.url;
         // Then we can create the legend-url by combining all the necessary search-params end so on...
-        legendUrl = `${proxy}${baseUrl}${theGlue}SERVICE=WMS&REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${layer}&STYLE=${style}${geoserverLegendOptions}`;
+        // GeoServer accepts any version for GetLegendGraphic, but QGIS Server
+        // rejects 1.0.0 with 400 Bad Request and requires 1.1.1 or 1.3.0.
+        const legendVersion = args.serverType === "qgis" ? "1.3.0" : "1.0.0";
+        legendUrl = `${proxy}${baseUrl}${theGlue}SERVICE=WMS&REQUEST=GetLegendGraphic&VERSION=${legendVersion}&FORMAT=image/png&LAYER=${layer}&STYLE=${style}${geoserverLegendOptions}`;
       }
       // If there's a legend URL specified in admin, use it as is
       else {
