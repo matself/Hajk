@@ -40,6 +40,10 @@ Kommaseparerad lista över vilka planstatusar som ska tas med. Standard är `lag
 **Max antal bestämmelser**
 Övre gräns för hur många planbestämmelser som hämtas per plan. Lantmäteriets egen tjänst använder 1000. Nås gränsen visas en varning om att listan kan vara ofullständig; verktyget hämtar i dagsläget bara första sidan och bläddrar inte vidare.
 
+## Dockad panel
+
+Som standard öppnas verktyget i ett flytande fönster ovanpå kartan. Det kan dölja det kartan zoomar till när användaren väljer en bestämmelse. Sätt `"dockInDrawer": true` i verktygets inställningar i kartfilen för att i stället visa det i Hajks verktygspanel, som kan låsas fast bredvid kartan (hänglåset i panelens huvud). Kartan krymper då och zoomar till det valda området utan att något ligger ovanpå. Panelen görs 500 px bred för att texten ska vara läsbar; `"drawerWidth": 600` (i pixlar) ändrar det. I kartinställningarna kan `drawerVisible`, `drawerPermanent` och `activeDrawerOnStart` (sätt det till `planchecker`) göra att panelen står öppen och låst från start. Alternativet finns ännu inte i Admin-formuläret, så ett sparande där kan ta bort det. Läget är avsett för dator; på skärmar smalare än 600 px visar Hajk verktyg som bottenark och det dockade läget är inte provat där.
+
 ## Avancerat
 
 **Sökproxy** och **Dokumentproxy**

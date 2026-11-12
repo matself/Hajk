@@ -1001,6 +1001,16 @@ class App extends React.PureComponent {
     return this.state.drawerPermanent && clean === false;
   }
 
+  /**
+   * The drawer is DRAWER_WIDTH wide unless the content it is showing asks for
+   * more: a drawer button may carry a `drawerWidth` (px), for content such as a
+   * long read that is cramped at 250.
+   */
+  getDrawerWidth = () =>
+    this.state.drawerButtons.find(
+      (db) => db.value === this.state.activeDrawerContent
+    )?.drawerWidth ?? DRAWER_WIDTH;
+
   renderDrawerHeader = () => {
     const { config } = this.props;
     const drawerTitle = this.state.drawerButtons.find(
@@ -1162,8 +1172,8 @@ class App extends React.PureComponent {
             }}
             variant={this.state.drawerPermanent ? "permanent" : "temporary"}
             sx={(theme) => ({
-              "& .MuiPaper-root": {
-                width: DRAWER_WIDTH,
+              "& > .MuiPaper-root": {
+                width: this.getDrawerWidth(),
                 height: "auto",
                 maxHeight: "100%",
                 backgroundColor: theme.palette.background.default,
@@ -1263,7 +1273,7 @@ class App extends React.PureComponent {
           <AppBox
             id="appBox"
             sx={{
-              left: this.drawerIsLocked() ? DRAWER_WIDTH : 0,
+              left: this.drawerIsLocked() ? this.getDrawerWidth() : 0,
             }}
           >
             <StyledHeader
@@ -1428,7 +1438,7 @@ class App extends React.PureComponent {
             tabIndex="0"
             role="application"
             sx={{
-              left: this.drawerIsLocked() ? DRAWER_WIDTH : 0,
+              left: this.drawerIsLocked() ? this.getDrawerWidth() : 0,
             }}
           ></MapContainer>
           {clean === false && (
