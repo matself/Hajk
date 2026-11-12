@@ -33,6 +33,13 @@ export const REGULATION_TYPE_ORDER = Object.freeze([
   "administrativ bestämmelse",
 ]);
 
+// The item asset holding the plan's domänobjekt (media type
+// application/vnd.lm.detaljplan.v4+json). Not a document to hand a user.
+export const DOMAIN_ASSET_ROLE = "detaljplan";
+
+// The regulation type that the others hang under, in the domänobjekt.
+export const USE_REGULATION_TYPE = "användningsbestämmelse";
+
 // Swedish headings for the regulation types, matching Lantmateriet's viewer.
 export const REGULATION_TYPE_HEADINGS = Object.freeze({
   användningsbestämmelse: "Användningsbestämmelser",

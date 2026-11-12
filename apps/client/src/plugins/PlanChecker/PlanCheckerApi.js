@@ -74,6 +74,23 @@ export default class PlanCheckerApi {
     return response.json();
   }
 
+  /**
+   * The plan's domänobjekt, from the item's asset link (already pointed at the
+   * asset proxy). The proxy follows the download endpoint's redirect itself. The
+   * body is parsed here as text because its media type is
+   * `application/vnd.lm.detaljplan.v4+json`, not plain JSON.
+   */
+  async fetchDomainObject(url, signal) {
+    const response = await fetch(url, {
+      signal,
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(`Planens domänobjekt svarade ${response.status}.`);
+    }
+    return JSON.parse(await response.text());
+  }
+
   /** Start a new round of searches, cancelling any previous one. */
   beginRequest() {
     this.abort();

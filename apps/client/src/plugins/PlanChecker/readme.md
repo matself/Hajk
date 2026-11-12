@@ -86,7 +86,7 @@ Northing for EPSG:3006), regardless of the CRS registry's own N,E axis order
 for that code — unrelated to, and not to be confused with, the axis order a
 WMS 1.3.0 `BBOX` parameter must use for the same CRS.
 
-### Three searches per click
+### Three searches and a fetch per click
 
 Mirroring Lantmäteriet's viewer:
 
@@ -94,11 +94,20 @@ Mirroring Lantmäteriet's viewer:
 | --- | --- | --- |
 | 1 | `intersects` + `feature.typ = detaljplan` (+ status filter) | Which plans cover the point. These "huvudobjekt" carry the plan's name, dates and documents, but no regulation of their own. |
 | 2 | `detaljplan.objektidentitet = <id>` + `intersects` | That plan's regulations **at the point**. |
-| 3 | `detaljplan.objektidentitet = <id>` | **All** of that plan's regulations. |
+| 3 | `detaljplan.objektidentitet = <id>` | **All** of that plan's regulations: labels (`anvandningsform`, `kategori`) and each one's geometry in EPSG:3006. |
+| 4 | `GET detaljplanassetproxy/asset/<uuid>` (the item's asset with role `detaljplan`) | The plan's **domänobjekt**: purpose, decision details and which användningsbestämmelse each regulation regulates. |
 
-2 and 3 run in parallel per plan. The pair is what lets each heading read
-"Egenskapsbestämmelser — 1 av 8 st" and lets the user widen from the clicked
-point to the whole plan.
+2, 3 and 4 run in parallel per plan. 4 is an enhancement: if it fails the plan
+is still shown, with a notice, and every regulation is simply listed without
+the use it regulates. Its size is no argument against it - for a 410-regulation
+plan it is smaller than search 3 (741 kB against 1.35 MB, 34 kB gzipped).
+
+The view lists the regulations that apply at the point under the
+användningsbestämmelse they regulate, with the rest of the plan folded away
+under "Övriga bestämmelser". A use counts as being at the point when it, or
+anything regulating it, is; a regulation drawn as a line can miss the point and
+still belong to the use the user clicked. Clicking a regulation draws its
+geometry and zooms to it; clicking it again returns to the point's own.
 
 Note that the plan's `assets` are read from the **raw STAC item**, not through
 OpenLayers. A STAC item keeps `assets` beside `properties` rather than inside
@@ -147,10 +156,17 @@ substitute for the antagna handlingen. The actual path to that — today,
 already built — is the linked documents (Plankarta, Planhandling,
 Beslutsprotokoll, see Data shape below); a handläggare who needs to rely on
 the result formally should open the linked handling rather than cite the
-inline text. The item also carries a machine-readable
-`application/vnd.lm.detaljplan.v4+json` asset, closer to domänobjektsnivå
-than the referensobjekt's own `properties` — currently unused, see Known
-gaps.
+inline text. The item also carries the plan's domänobjekt as an
+`application/vnd.lm.detaljplan.v4+json` asset; it is fetched (search 4 above)
+for the purpose, the decision details and the hierarchy between regulations.
+
+Two things about that domänobjekt are not what you would expect, and are why
+the catalog's items are still needed. It carries **no** `anvandningsform`,
+`kategori` or `underkategori` - the "Kvartersmark" / "Takvinkel" labels exist
+only on the referensobjekt - and its geometry is in the plan's own CRS
+(`koordinatsystemPlan`, e.g. EPSG:3011), not EPSG:3006. The two are joined on
+`objektidentitet` = the referensobjekt's `id`; checked on a 410-regulation plan,
+every id matched. The geometry is therefore taken from search 3.
 
 ### Data shape
 
@@ -315,13 +331,12 @@ need per-map styling.
 
 ### Known gaps
 
-- **Presentation is deliberately plain.** The plan's documents are linked and
-  the regulations are grouped and counted, but the readable report format is
-  still to come, and nothing is done with the machine-readable plan payload
-  (`application/vnd.lm.detaljplan.v4+json`) that each item also carries.
+- **Presentation is plain.** There is no printable report format, and a use
+  that many regulations point at (77 in one real plan) is a long list.
 - **Only the first page is read.** A plan holding more than `maxItems`
   regulations is reported as truncated rather than paged through. (The
   `collections/…/items` endpoint pages with an `afterId` cursor; whether
   `POST /search` does the same has not been checked.)
-- **The regulation geometries are discarded.** Highlighting the area a
-  regulation covers would mean parsing them and reprojecting.
+- **Verified on one plan.** The domänobjekt parser was checked against a single
+  real plan and its fallback path; the national specification says every plan
+  has the same shape, but older plans have not been looked at.

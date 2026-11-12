@@ -133,6 +133,7 @@ const PlanChecker = (props) => {
     >
       <PlanCheckerView
         localObserver={localObserver}
+        model={planCheckerModel}
         layerStatus={layerStatus}
         wmsLayerId={props.options.wmsLayerId}
       />

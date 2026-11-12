@@ -1,34 +1,29 @@
 import React from "react";
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  Divider,
-  FormControlLabel,
-  Link,
-  Stack,
-  Switch,
-  Typography,
-} from "@mui/material";
-import DownloadIcon from "@mui/icons-material/Download";
+import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 
-import { REGULATION_TYPE_HEADINGS } from "./constants";
-
-const heading = (type) => REGULATION_TYPE_HEADINGS[type?.toLowerCase()] ?? type;
+import PlanCheckerPlan from "./PlanCheckerPlan";
 
 /**
- * @summary Lists the detaljplan regulations that apply at the clicked point.
- *
- * @description Presentation is still plain - the readable report format is a
- * separate piece of work. What the structure does carry is the distinction that
- * matters when reading a plan: what applies at this exact point, versus what
- * the plan contains as a whole, with the counts to move between them.
+ * @summary Shows the detaljplan regulations that apply at the clicked point,
+ * with the rest of each plan one fold away. See PlanCheckerPlan for the layout.
  */
-function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
+function PlanCheckerView({ localObserver, model, layerStatus, wmsLayerId }) {
   const [plans, setPlans] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
-  const [showAll, setShowAll] = React.useState(false);
+  const [selectedKey, setSelectedKey] = React.useState(null);
+
+  // Clicking the selected item again lets go of it and returns to marking what
+  // applies at the clicked point.
+  const onSelect = (ids, key) => {
+    if (key === selectedKey) {
+      setSelectedKey(null);
+      model.showAtPoint();
+    } else {
+      setSelectedKey(key);
+      model.highlightRegulations(ids);
+    }
+  };
 
   React.useEffect(() => {
     localObserver.subscribe("planChecker.loading", setLoading);
@@ -38,13 +33,14 @@ function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
     });
     localObserver.subscribe("planChecker.result", ({ plans }) => {
       setError(null);
+      setSelectedKey(null);
       setPlans(plans);
     });
     localObserver.subscribe("planChecker.reset", () => {
       setPlans(null);
       setError(null);
       setLoading(false);
-      setShowAll(false);
+      setSelectedKey(null);
     });
     return () => {
       localObserver.unsubscribe("planChecker.loading");
@@ -122,91 +118,21 @@ function PlanCheckerView({ localObserver, layerStatus, wmsLayerId }) {
   return (
     <Stack spacing={2}>
       {layerWarning}
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={showAll}
-            onChange={(e) => setShowAll(e.target.checked)}
-          />
-        }
-        label="Visa alla bestämmelser i planen"
-      />
 
       <Typography variant="caption" color="text.secondary">
-        Bestämmelsetexten är läst ur referensobjektet i Lantmäteriets
-        sökkatalog, inte domänobjektet (den antagna handlingen). Vid osäkerhet,
-        öppna plandokumenten för den rättsligt bindande texten.
+        Klicka på en bestämmelse för att se var den gäller i kartan. Texterna är
+        lästa ur Lantmäteriets sökkatalog (referensobjekt); syfte, beslut och
+        kopplingen mellan bestämmelser ur planens domänobjekt. Rättsligt
+        bindande är plandokumenten.
       </Typography>
 
-      {plans.map(({ key, plan, documents, types, truncated }) => (
-        <Box key={key}>
-          <Typography variant="subtitle1">{plan.namn}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Beteckning {plan.beteckning} · {plan.status}
-            {plan.datumLagakraft ? ` (${plan.datumLagakraft})` : ""}
-          </Typography>
-
-          {documents.length > 0 && (
-            <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: "wrap" }}>
-              {documents.map((d) => (
-                <Link
-                  key={d.href}
-                  href={d.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  variant="body2"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                  }}
-                >
-                  <DownloadIcon fontSize="inherit" />
-                  {d.title}
-                </Link>
-              ))}
-            </Stack>
-          )}
-
-          {truncated && (
-            <Alert severity="warning" sx={{ mt: 1 }}>
-              Planen har fler bestämmelser än som hämtats; listan kan vara
-              ofullständig.
-            </Alert>
-          )}
-
-          {types.map(
-            ({ type, regulations, all, countAtPoint, countInPlan }) => {
-              const shown = showAll ? all : regulations;
-              if (shown.length === 0) return null;
-              return (
-                <Box key={type} sx={{ mt: 1.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                    {heading(type)} — {countAtPoint} av {countInPlan} st
-                  </Typography>
-                  {shown.map((r) => (
-                    <Box key={r.id} sx={{ mt: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {r.anvandningsform || r.label}
-                      </Typography>
-                      <Typography variant="body2">
-                        {r.text || r.label}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {[r.kategori, r.underkategori]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              );
-            }
-          )}
-
-          <Divider sx={{ mt: 2 }} />
-        </Box>
+      {plans.map((plan) => (
+        <PlanCheckerPlan
+          key={plan.key}
+          plan={plan}
+          selectedKey={selectedKey}
+          onSelect={onSelect}
+        />
       ))}
     </Stack>
   );

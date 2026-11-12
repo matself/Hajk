@@ -1,17 +1,20 @@
 import { get as getProjection, transform } from "ol/proj";
 import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
 import GeoJSON from "ol/format/GeoJSON";
 import Vector from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { Stroke, Style } from "ol/style";
+import { Circle, Fill, Stroke, Style } from "ol/style";
 
 import PlanCheckerApi from "./PlanCheckerApi";
+import { parseDomainObject, stripPlaceholders } from "./domainObject";
 import {
   DEFAULT_OPTIONS,
+  DOMAIN_ASSET_ROLE,
   HIGHLIGHT_STROKE_COLOR,
   HIGHLIGHT_STROKE_WIDTH,
-  REGULATION_TYPE_ORDER,
   SERVICE_PROJECTION,
+  USE_REGULATION_TYPE,
 } from "./constants";
 
 /**
@@ -24,11 +27,15 @@ import {
  *   1. which plans cover the point (the "huvudobjekt", carrying name, dates
  *      and the plan's documents);
  *   2. that plan's regulations at the point;
- *   3. all of that plan's regulations, so each heading can say "N of M" and
- *      the user can widen from the point to the whole plan.
+ *   3. all of that plan's regulations, which carry the labels
+ *      (användningsform, kategori) and the geometry (EPSG:3006) that a click
+ *      on any of them lights up in the map.
  *
- * 2 and 3 run together per plan. Every NGP feature repeats its plan's metadata,
- * so nothing needs joining afterwards.
+ * 2 and 3 run together per plan, and with them a fourth request: the plan's
+ * domänobjekt, which adds the purpose, the decision details and which
+ * användningsbestämmelse each regulation regulates (see domainObject.js). The
+ * domänobjekt is an enhancement: if it cannot be had, the plan is still shown,
+ * just without that structure.
  */
 export default class PlanCheckerModel {
   #map;
@@ -39,6 +46,11 @@ export default class PlanCheckerModel {
   #drawModel;
   #highlightSource;
   #highlightLayer;
+  // Regulation id -> GeoJSON geometry (EPSG:3006), for the current click only.
+  // Kept out of the view's state: it has no use for raw geometry, only the
+  // highlight does.
+  #geometries = new Map();
+  #atPointGeometries = [];
 
   constructor(settings) {
     this.#map = settings.map;
@@ -81,6 +93,16 @@ export default class PlanCheckerModel {
           color: HIGHLIGHT_STROKE_COLOR,
           width: HIGHLIGHT_STROKE_WIDTH,
         }),
+        // A regulation can be a point (a symbol, a marked tree), which a
+        // stroke alone would not draw at all.
+        image: new Circle({
+          radius: 7,
+          fill: new Fill({ color: "rgba(230, 74, 25, 0.35)" }),
+          stroke: new Stroke({
+            color: HIGHLIGHT_STROKE_COLOR,
+            width: HIGHLIGHT_STROKE_WIDTH,
+          }),
+        }),
       }),
     });
     this.#map.addLayer(this.#highlightLayer);
@@ -100,6 +122,8 @@ export default class PlanCheckerModel {
   reset = () => {
     this.#api.abort();
     this.#highlightSource.clear();
+    this.#geometries.clear();
+    this.#atPointGeometries = [];
     this.#localObserver.publish("planChecker.reset");
   };
 
@@ -144,15 +168,6 @@ export default class PlanCheckerModel {
   #itemsOf = (collection) =>
     Array.isArray(collection?.features) ? collection.features : [];
 
-  #compareRegulationTypes = (a, b) => {
-    const rank = (value) => {
-      const i = REGULATION_TYPE_ORDER.indexOf((value || "").toLowerCase());
-      return i === -1 ? REGULATION_TYPE_ORDER.length : i;
-    };
-    const diff = rank(a) - rank(b);
-    return diff !== 0 ? diff : a.localeCompare(b, "sv");
-  };
-
   /** Shape one regulation item for the view. */
   #toRegulation = (item) => {
     const props = item.properties ?? {};
@@ -160,44 +175,126 @@ export default class PlanCheckerModel {
       id: item.id,
       type: props.feature?.typ || "Övrigt",
       label: props.feature?.etikett || props.title || "",
-      text: props.planbestammelse?.bestammelseformulering || "",
+      text: stripPlaceholders(
+        props.planbestammelse?.bestammelseformulering || ""
+      ),
       anvandningsform: props.planbestammelse?.anvandningsform || "",
       kategori: props.planbestammelse?.kategori || "",
       underkategori: props.planbestammelse?.underkategori || "",
+      atPoint: false,
     };
   };
 
   /**
-   * Group regulations by type, and count how many of each type the whole plan
-   * holds, so a heading can read "Egenskapsbestämmelser - 1 av 8 st".
+   * Arrange a plan's regulations under the användningsbestämmelse they regulate
+   * (`regulates` comes from the domänobjekt; without it every use simply has no
+   * children). A use is "here" when it, or anything regulating it, applies at
+   * the clicked point - a regulation drawn as a line or a small area can miss
+   * the point while still belonging to the use the user clicked on.
+   *
+   * Regulations that regulate no use go in `looseHere` / `looseRest`.
    */
-  #groupByType = (atPoint, all) => {
-    const totals = new Map();
-    for (const r of all) {
-      totals.set(r.type, (totals.get(r.type) ?? 0) + 1);
+  #arrange = (all, regulates) => {
+    const isUse = (r) => r.type.toLowerCase() === USE_REGULATION_TYPE;
+    const nodes = new Map(
+      all.filter(isUse).map((use) => [use.id, { use, children: [] }])
+    );
+    const loose = [];
+
+    for (const r of all.filter((r) => !isUse(r))) {
+      const parents = (regulates?.get(r.id) ?? []).filter((id) =>
+        nodes.has(id)
+      );
+      if (parents.length === 0) loose.push(r);
+      parents.forEach((id) => nodes.get(id).children.push(r));
     }
 
-    const grouped = new Map();
-    for (const r of atPoint) {
-      if (!grouped.has(r.type)) grouped.set(r.type, []);
-      grouped.get(r.type).push(r);
-    }
+    const isHere = (n) => n.use.atPoint || n.children.some((c) => c.atPoint);
+    return {
+      here: [...nodes.values()].filter(isHere),
+      rest: [...nodes.values()].filter((n) => !isHere(n)),
+      looseHere: loose.filter((r) => r.atPoint),
+      looseRest: loose.filter((r) => !r.atPoint),
+    };
+  };
 
-    // Types present in the plan but not at the point still deserve a heading,
-    // so the "show all" view can reveal them.
-    for (const type of totals.keys()) {
-      if (!grouped.has(type)) grouped.set(type, []);
+  /**
+   * The plan's domänobjekt, or null. It only adds structure, so a failed fetch
+   * must not take the rest of the answer with it - except an abort, which means
+   * the user has clicked elsewhere and the whole answer is moot.
+   */
+  #fetchDomain = async (planItem, signal) => {
+    const asset = Object.values(planItem.assets ?? {}).find(
+      (a) => a?.href && a.roles?.[0] === DOMAIN_ASSET_ROLE
+    );
+    if (!asset) return null;
+    try {
+      return parseDomainObject(
+        await this.#api.fetchDomainObject(
+          this.#toProxiedAssetUrl(asset.href),
+          signal
+        )
+      );
+    } catch (error) {
+      if (error.name === "AbortError") throw error;
+      return null;
     }
+  };
 
-    return [...grouped.entries()]
-      .sort(([a], [b]) => this.#compareRegulationTypes(a, b))
-      .map(([type, regulations]) => ({
-        type,
-        regulations,
-        all: all.filter((r) => r.type === type),
-        countAtPoint: regulations.length,
-        countInPlan: totals.get(type) ?? regulations.length,
-      }));
+  /**
+   * Light up the given regulations (by id) and move the map to them. Called
+   * when the user clicks a regulation in the list.
+   */
+  highlightRegulations = (ids) => {
+    const geometries = ids
+      .map((id) => this.#geometries.get(id))
+      .filter(Boolean);
+    this.#showHighlight(geometries);
+    this.#fitToHighlight();
+  };
+
+  /** Go back to marking what applies at the clicked point. */
+  showAtPoint = () => this.#showHighlight(this.#atPointGeometries);
+
+  /**
+   * Room to leave round the highlight when zooming to it. Hajk's tool windows
+   * float over the map, and this tool's is tall; without allowing for that the
+   * highlight is centred in the whole map, i.e. right behind the window. Only
+   * a window beside the map's middle is allowed for, and never if that would
+   * leave next to no map visible.
+   */
+  #fitPadding = () => {
+    const padding = [60, 60, 60, 60];
+    const map = this.#map.getTargetElement()?.getBoundingClientRect();
+    if (!map) return padding;
+
+    for (const element of document.querySelectorAll(".hajk-window")) {
+      const rect = element.getBoundingClientRect();
+      // A minimised window is only its title bar and covers next to nothing.
+      if (rect.height < map.height / 3) continue;
+      const covered =
+        rect.left + rect.width / 2 > map.left + map.width / 2
+          ? [1, map.right - rect.left]
+          : [3, rect.right - map.left];
+      if (map.width - covered[1] < 250) continue;
+      padding[covered[0]] = Math.max(padding[covered[0]], covered[1] + 20);
+    }
+    return padding;
+  };
+
+  #fitToHighlight = () => {
+    const extent = this.#highlightSource.getExtent();
+    if (!extent.every(Number.isFinite)) return;
+    const [minX, minY, maxX, maxY] = extent;
+    // A single point has no extent to fit; fitting the point itself lets
+    // OpenLayers pick the zoom from maxZoom instead.
+    const target =
+      minX === maxX && minY === maxY ? new Point([minX, minY]) : extent;
+    this.#map.getView().fit(target, {
+      padding: this.#fitPadding(),
+      maxZoom: 19,
+      duration: 250,
+    });
   };
 
   /**
@@ -208,7 +305,7 @@ export default class PlanCheckerModel {
   #readDocuments = (item) => {
     const assets = item.assets ?? {};
     return Object.values(assets)
-      .filter((a) => a?.href && a.title && a.roles?.[0] !== "detaljplan")
+      .filter((a) => a?.href && a.title && a.roles?.[0] !== DOMAIN_ASSET_ROLE)
       .map((a) => ({
         title: a.title,
         href: this.#toProxiedAssetUrl(a.href),
@@ -263,6 +360,8 @@ export default class PlanCheckerModel {
 
     try {
       const signal = this.#api.beginRequest();
+      this.#geometries.clear();
+      this.#atPointGeometries = [];
       const serviceCoordinate = this.#toServiceCoordinate(coordinate);
       const { planStatuses, maxItems } = this.#options;
 
@@ -278,9 +377,10 @@ export default class PlanCheckerModel {
           const props = planItem.properties ?? {};
           const planId = props.detaljplan?.objektidentitet;
 
-          // At-the-point and whole-plan in parallel: the second is what turns
-          // each heading into "N of M" and backs the "show all" toggle.
-          const [atPointCollection, allCollection] = await Promise.all([
+          // At the point, the whole plan, and the plan's domänobjekt, all in
+          // parallel. The whole plan supplies labels and geometry for every
+          // regulation; the domänobjekt supplies the structure between them.
+          const [atPointCollection, allCollection, domain] = await Promise.all([
             this.#api.findRegulations({
               planId,
               coordinate: serviceCoordinate,
@@ -288,22 +388,34 @@ export default class PlanCheckerModel {
               signal,
             }),
             this.#api.findRegulations({ planId, limit: maxItems, signal }),
+            this.#fetchDomain(planItem, signal),
           ]);
 
           const atPointItems = this.#itemsOf(atPointCollection);
-          const atPoint = atPointItems.map(this.#toRegulation);
-          const all = this.#itemsOf(allCollection).map(this.#toRegulation);
+          const allItems = this.#itemsOf(allCollection);
+          const atPointIds = new Set(atPointItems.map((item) => item.id));
+
+          for (const item of allItems) {
+            if (item.geometry) this.#geometries.set(item.id, item.geometry);
+          }
+          const all = allItems.map(this.#toRegulation);
+          all.forEach((r) => (r.atPoint = atPointIds.has(r.id)));
 
           return {
             plan: {
               key: planId,
               plan: props.detaljplan ?? {},
               documents: this.#readDocuments(planItem),
-              types: this.#groupByType(atPoint, all),
+              // null when the domänobjekt was not available.
+              domain: domain && {
+                purpose: domain.purpose,
+                decisions: domain.decisions,
+              },
+              ...this.#arrange(all, domain?.regulates),
+              total: all.length,
+              countAtPoint: atPointIds.size,
               truncated: all.length >= Number(maxItems),
             },
-            // Kept separate from the plan object above: the view has no use
-            // for raw geometry, only #showHighlight does.
             geometries: atPointItems
               .map((item) => item.geometry)
               .filter(Boolean),
@@ -312,7 +424,8 @@ export default class PlanCheckerModel {
       );
 
       const plans = results.map((r) => r.plan);
-      this.#showHighlight(results.flatMap((r) => r.geometries));
+      this.#atPointGeometries = results.flatMap((r) => r.geometries);
+      this.#showHighlight(this.#atPointGeometries);
 
       this.#localObserver.publish("planChecker.result", { plans });
     } catch (error) {
