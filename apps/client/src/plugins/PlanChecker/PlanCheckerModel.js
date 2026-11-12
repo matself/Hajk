@@ -254,34 +254,17 @@ export default class PlanCheckerModel {
   };
 
   /** Go back to marking what applies at the clicked point. */
-  showAtPoint = () => this.#showHighlight(this.#atPointGeometries);
-
-  /**
-   * Room to leave round the highlight when zooming to it. Hajk's tool windows
-   * float over the map, and this tool's is tall; without allowing for that the
-   * highlight is centred in the whole map, i.e. right behind the window. Only
-   * a window beside the map's middle is allowed for, and never if that would
-   * leave next to no map visible.
-   */
-  #fitPadding = () => {
-    const padding = [60, 60, 60, 60];
-    const map = this.#map.getTargetElement()?.getBoundingClientRect();
-    if (!map) return padding;
-
-    for (const element of document.querySelectorAll(".hajk-window")) {
-      const rect = element.getBoundingClientRect();
-      // A minimised window is only its title bar and covers next to nothing.
-      if (rect.height < map.height / 3) continue;
-      const covered =
-        rect.left + rect.width / 2 > map.left + map.width / 2
-          ? [1, map.right - rect.left]
-          : [3, rect.right - map.left];
-      if (map.width - covered[1] < 250) continue;
-      padding[covered[0]] = Math.max(padding[covered[0]], covered[1] + 20);
-    }
-    return padding;
+  showAtPoint = () => {
+    this.#showHighlight(this.#atPointGeometries);
+    this.#fitToHighlight();
   };
 
+  /**
+   * Zoom to what is highlighted. Nothing here allows for tool windows floating
+   * over the map: that would mean reading Hajk's window DOM, which is not an
+   * interface. The docked drawer (`dockInDrawer`) is the supported way to keep
+   * the map free of the tool.
+   */
   #fitToHighlight = () => {
     const extent = this.#highlightSource.getExtent();
     if (!extent.every(Number.isFinite)) return;
@@ -291,7 +274,7 @@ export default class PlanCheckerModel {
     const target =
       minX === maxX && minY === maxY ? new Point([minX, minY]) : extent;
     this.#map.getView().fit(target, {
-      padding: this.#fitPadding(),
+      padding: [60, 60, 60, 60],
       maxZoom: 19,
       duration: 250,
     });
@@ -426,6 +409,7 @@ export default class PlanCheckerModel {
       const plans = results.map((r) => r.plan);
       this.#atPointGeometries = results.flatMap((r) => r.geometries);
       this.#showHighlight(this.#atPointGeometries);
+      this.#fitToHighlight();
 
       this.#localObserver.publish("planChecker.result", { plans });
     } catch (error) {

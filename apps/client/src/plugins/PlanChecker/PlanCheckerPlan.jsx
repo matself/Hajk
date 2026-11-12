@@ -44,7 +44,8 @@ function Selectable({ selected, onClick, children }) {
         width: "100%",
         textAlign: "left",
         px: 1,
-        py: 0.75,
+        py: 0.5,
+        mt: 0.5,
         borderLeft: 3,
         borderColor: selected ? "warning.main" : "transparent",
         bgcolor: selected ? "action.selected" : "transparent",
@@ -56,10 +57,19 @@ function Selectable({ selected, onClick, children }) {
   );
 }
 
-function RegulationRow({ regulation: r, selected, onSelect }) {
-  const detail = [r.kategori, r.underkategori].filter(Boolean).join(" · ");
+const detailOf = (r) =>
+  [r.kategori, r.underkategori].filter(Boolean).join(" · ");
+
+/** Form, wording and category, laid out as the plain list used to show them. */
+function RegulationText({ regulation: r }) {
+  const detail = detailOf(r);
   return (
-    <Selectable selected={selected} onClick={() => onSelect([r.id], r.id)}>
+    <>
+      {r.anvandningsform && (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {r.anvandningsform}
+        </Typography>
+      )}
       <Typography variant="body2">{r.text || r.label}</Typography>
       {(detail || r.atPoint) && (
         <Typography variant="caption" color="text.secondary">
@@ -68,49 +78,56 @@ function RegulationRow({ regulation: r, selected, onSelect }) {
             .join(" · ")}
         </Typography>
       )}
-    </Selectable>
+    </>
   );
 }
 
 /** One användningsbestämmelse with what regulates it, or - with no `use` - a loose group. */
 function UseNode({ node, title, selectedKey, onSelect }) {
   const { use, children } = node;
-  const useTitle = use
-    ? [use.anvandningsform, use.text || use.label].filter(Boolean).join(" – ")
-    : title;
   return (
-    <Box sx={{ mt: 1.5 }}>
+    <Box sx={{ mt: 2 }}>
       {use ? (
         <Selectable
           selected={selectedKey === use.id}
           onClick={() => onSelect([use.id], use.id)}
         >
-          <Typography variant="subtitle2">{useTitle}</Typography>
+          <Typography variant="subtitle2">
+            {use.anvandningsform || "Användning"}
+          </Typography>
+          <Typography variant="body2">{use.text || use.label}</Typography>
+          {detailOf(use) && detailOf(use) !== use.text && (
+            <Typography variant="caption" color="text.secondary">
+              {detailOf(use)}
+            </Typography>
+          )}
         </Selectable>
       ) : (
         <Typography variant="subtitle2" sx={{ px: 1 }}>
-          {useTitle}
+          {title}
         </Typography>
       )}
-      {groupByType(children).map(([type, items]) => (
-        <Box key={type} sx={{ pl: 1 }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", mt: 0.5, px: 1 }}
-          >
-            {heading(type)}
-          </Typography>
-          {items.map((r) => (
-            <RegulationRow
-              key={r.id}
-              regulation={r}
-              selected={selectedKey === r.id}
-              onSelect={onSelect}
-            />
-          ))}
-        </Box>
-      ))}
+      <Box
+        sx={{ ml: 1, pl: 1, borderLeft: 1, borderColor: "divider", mt: 0.5 }}
+      >
+        {groupByType(children).map(([type, items]) => (
+          <Box key={type} sx={{ mt: 1.5 }}>
+            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+              {heading(type)} — {items.filter((r) => r.atPoint).length} av{" "}
+              {items.length} st
+            </Typography>
+            {items.map((r) => (
+              <Selectable
+                key={r.id}
+                selected={selectedKey === r.id}
+                onClick={() => onSelect([r.id], r.id)}
+              >
+                <RegulationText regulation={r} />
+              </Selectable>
+            ))}
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }
