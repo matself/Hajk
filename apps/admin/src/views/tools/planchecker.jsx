@@ -23,6 +23,7 @@ var defaultState = {
   position: "right",
   height: "dynamic",
   visibleAtStart: false,
+  dockInDrawer: false,
   title: "Detaljplan",
   description: "Klicka i kartan och se vilka planbestämmelser som gäller",
   wmsLayerId: "",
@@ -54,6 +55,8 @@ class ToolOptions extends Component {
         width: tool.options.width,
         height: tool.options.height || defaultState.height,
         visibleAtStart: tool.options.visibleAtStart,
+        dockInDrawer: tool.options.dockInDrawer === true,
+        drawerWidth: tool.options.drawerWidth,
         title: tool.options.title || defaultState.title,
         description: tool.options.description || defaultState.description,
         wmsLayerId: tool.options.wmsLayerId || "",
@@ -139,6 +142,10 @@ class ToolOptions extends Component {
         width: this.state.width,
         height: this.state.height,
         visibleAtStart: this.state.visibleAtStart,
+        dockInDrawer: this.state.dockInDrawer,
+        // An emptied field comes back as "", which would be saved as such.
+        drawerWidth:
+          this.state.drawerWidth === "" ? undefined : this.state.drawerWidth,
         title: this.state.title,
         description: this.state.description,
         wmsLayerId: this.state.wmsLayerId,
@@ -361,6 +368,47 @@ class ToolOptions extends Component {
                 this.handleInputChange(e);
               }}
               value={this.state.height}
+            />
+          </div>
+          <div>
+            <input
+              id="dockInDrawer"
+              name="dockInDrawer"
+              type="checkbox"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              checked={this.state.dockInDrawer}
+            />
+            &nbsp;
+            <label htmlFor="dockInDrawer">
+              Visa i dockad panel{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Visar verktyget i Hajks verktygspanel i stället för i ett flytande fönster. Panelen kan låsas fast bredvid kartan, så att inget ligger över det kartan zoomar till. Fönsterinställningarna ovan gäller då inte. För att panelen ska stå öppen och låst från start sätts drawerVisible, drawerPermanent och activeDrawerOnStart (planchecker) i kartinställningarna."
+              />
+            </label>
+          </div>
+          <div>
+            <label htmlFor="drawerWidth">
+              Panelbredd{" "}
+              <i
+                className="fa fa-question-circle"
+                data-toggle="tooltip"
+                title="Bredd i pixlar på den dockade panelen. Lämna tomt för 500. Gäller bara när Visa i dockad panel är ikryssad."
+              />
+            </label>
+            <input
+              id="drawerWidth"
+              name="drawerWidth"
+              type="number"
+              min="250"
+              className="control-fixed-width"
+              onChange={(e) => {
+                this.handleInputChange(e);
+              }}
+              value={this.state.drawerWidth}
             />
           </div>
           <div className="separator">Detaljplan</div>
