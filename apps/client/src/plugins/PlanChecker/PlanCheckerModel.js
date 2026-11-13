@@ -260,10 +260,9 @@ export default class PlanCheckerModel {
   };
 
   /**
-   * Zoom to what is highlighted. Nothing here allows for tool windows floating
-   * over the map: that would mean reading Hajk's window DOM, which is not an
-   * interface. The docked drawer (`dockInDrawer`) is the supported way to keep
-   * the map free of the tool.
+   * Zoom to what is highlighted. Nothing here allows for the tool's window
+   * floating over the map: that would mean reading Hajk's window DOM, which is
+   * not an interface. The window can be moved, or the scale changed.
    */
   #fitToHighlight = () => {
     const extent = this.#highlightSource.getExtent();
