@@ -8,7 +8,6 @@ import PlanCheckerModel from "./PlanCheckerModel";
 import PlanCheckerView from "./PlanCheckerView";
 import { DEFAULT_MEASUREMENT_SETTINGS } from "./constants";
 
-import { Box } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 
 /**
@@ -23,33 +22,9 @@ import MapIcon from "@mui/icons-material/Map";
  * Clicks are captured with a DrawModel point interaction rather than a raw map
  * listener, so the tool does not fight the app's own infoclick.
  */
-
-const DRAWER_VALUE = "planchecker";
-
-/** What the drawer is showing when the app starts (App.jsx seeds localStorage for a locked drawer). */
-const drawerShowsPlanCheckerAtStart = (props) => {
-  let stored = null;
-  try {
-    stored = window.localStorage.getItem("activeDrawerContent");
-  } catch {
-    // Storage can be blocked; the map config below is the fallback anyway.
-  }
-  return (
-    ((stored && stored !== "plugins" ? stored : null) ??
-      props.app.config.mapConfig.map.activeDrawerOnStart) === DRAWER_VALUE
-  );
-};
-
 const PlanChecker = (props) => {
-  // With `dockInDrawer` the view lives in Hajk's drawer instead of a floating
-  // window. Locked, the drawer sits beside the map rather than over it, so
-  // what the map zooms to is never hidden behind the tool.
-  const docked = props.options.dockInDrawer === true;
-
   const [pluginShown, setPluginShown] = React.useState(
-    docked
-      ? drawerShowsPlanCheckerAtStart(props)
-      : (props.options.visibleAtStart ?? false)
+    props.options.visibleAtStart ?? false
   );
 
   const [localObserver] = React.useState(Observer());
@@ -140,60 +115,6 @@ const PlanChecker = (props) => {
     };
   }, [props.map, props.options.wmsLayerId, pluginShown]);
 
-  // A docked view is rendered by the drawer, which does not re-render when
-  // this component does - so the layer status reaches the view as an event.
-  React.useEffect(() => {
-    localObserver.publish("planChecker.layerStatus", layerStatus);
-  }, [localObserver, layerStatus]);
-
-  // Docked mode: register a drawer button whose content is the view, and listen
-  // for clicks only while the drawer is showing it.
-  const globalObserver = props.app.globalObserver;
-  const viewElement = (
-    <PlanCheckerView
-      localObserver={localObserver}
-      model={planCheckerModel}
-      layerStatus={layerStatus}
-      wmsLayerId={props.options.wmsLayerId}
-    />
-  );
-  const renderDrawerContent = () => (
-    <Box sx={{ p: 2, boxSizing: "border-box", minWidth: 0 }}>{viewElement}</Box>
-  );
-  // The drawer calls this on every render, so keep it pointing at the latest view.
-  const renderDrawerContentRef = React.useRef(renderDrawerContent);
-  renderDrawerContentRef.current = renderDrawerContent;
-
-  React.useEffect(() => {
-    if (!docked) return;
-    globalObserver.publish("core.addDrawerToggleButton", {
-      value: DRAWER_VALUE,
-      ButtonIcon: MapIcon,
-      caption: props.options.title || "Detaljplan",
-      drawerTitle: props.options.title || "Detaljplan",
-      order: 100,
-      // The text is long; the default 250 px drawer is too narrow to read it.
-      drawerWidth: Number(props.options.drawerWidth) || 500,
-      renderDrawerContent: () => renderDrawerContentRef.current(),
-    });
-    const onChanged = globalObserver.subscribe(
-      "core.drawerContentChanged",
-      (value) => setPluginShown(value === DRAWER_VALUE)
-    );
-    const onHidden = globalObserver.subscribe("core.hideDrawer", () =>
-      setPluginShown(false)
-    );
-    // unsubscribe() on the listener, not on the observer by name: the observer
-    // is shared with the whole app, and removing by name would drop its own
-    // subscribers too.
-    return () => {
-      onChanged.unsubscribe();
-      onHidden.unsubscribe();
-    };
-  }, [docked, globalObserver, props.options.title, props.options.drawerWidth]);
-
-  if (docked) return null;
-
   return (
     <BaseWindowPlugin
       {...props}
@@ -210,7 +131,12 @@ const PlanChecker = (props) => {
         onWindowShow: () => setPluginShown(true),
       }}
     >
-      {viewElement}
+      <PlanCheckerView
+        localObserver={localObserver}
+        model={planCheckerModel}
+        layerStatus={layerStatus}
+        wmsLayerId={props.options.wmsLayerId}
+      />
     </BaseWindowPlugin>
   );
 };

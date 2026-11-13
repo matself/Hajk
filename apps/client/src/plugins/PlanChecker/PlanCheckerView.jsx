@@ -7,13 +7,7 @@ import PlanCheckerPlan from "./PlanCheckerPlan";
  * @summary Shows the detaljplan regulations that apply at the clicked point,
  * with the rest of each plan one fold away. See PlanCheckerPlan for the layout.
  */
-function PlanCheckerView({
-  localObserver,
-  model,
-  layerStatus: initialLayerStatus,
-  wmsLayerId,
-}) {
-  const [layerStatus, setLayerStatus] = React.useState(initialLayerStatus);
+function PlanCheckerView({ localObserver, model, layerStatus, wmsLayerId }) {
   const [plans, setPlans] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -32,7 +26,6 @@ function PlanCheckerView({
   };
 
   React.useEffect(() => {
-    localObserver.subscribe("planChecker.layerStatus", setLayerStatus);
     localObserver.subscribe("planChecker.loading", setLoading);
     localObserver.subscribe("planChecker.error", (message) => {
       setError(message);
@@ -50,7 +43,6 @@ function PlanCheckerView({
       setSelectedKey(null);
     });
     return () => {
-      localObserver.unsubscribe("planChecker.layerStatus");
       localObserver.unsubscribe("planChecker.loading");
       localObserver.unsubscribe("planChecker.error");
       localObserver.unsubscribe("planChecker.result");
