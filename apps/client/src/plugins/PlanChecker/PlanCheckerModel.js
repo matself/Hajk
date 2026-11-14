@@ -188,11 +188,17 @@ export default class PlanCheckerModel {
   /**
    * Arrange a plan's regulations under the användningsbestämmelse they regulate
    * (`regulates` comes from the domänobjekt; without it every use simply has no
-   * children). A use is "here" when it, or anything regulating it, applies at
-   * the clicked point - a regulation drawn as a line or a small area can miss
-   * the point while still belonging to the use the user clicked on.
+   * children). A use is "here" only when its own area covers the clicked
+   * point, as in Lantmateriet's viewer. Being regulated by something at the
+   * point is not enough: a plan-wide regulation points at dozens of uses, and
+   * counting them all buries the one use the user actually clicked on.
    *
-   * Regulations that regulate no use go in `looseHere` / `looseRest`.
+   * Under each use, what applies at the point comes first.
+   *
+   * Regulations at the point that are not shown under a use that is at the
+   * point (they regulate no use, or only uses elsewhere) go in `otherHere`.
+   * Regulations that regulate no use and are not at the point go in
+   * `looseRest`.
    */
   #arrange = (all, regulates) => {
     const isUse = (r) => r.type.toLowerCase() === USE_REGULATION_TYPE;
@@ -209,11 +215,17 @@ export default class PlanCheckerModel {
       parents.forEach((id) => nodes.get(id).children.push(r));
     }
 
-    const isHere = (n) => n.use.atPoint || n.children.some((c) => c.atPoint);
+    // Array#sort is stable: the plan's own order is kept within each group.
+    nodes.forEach((n) => n.children.sort((a, b) => b.atPoint - a.atPoint));
+
+    const here = [...nodes.values()].filter((n) => n.use.atPoint);
+    const shownHere = new Set(here.flatMap((n) => n.children.map((c) => c.id)));
     return {
-      here: [...nodes.values()].filter(isHere),
-      rest: [...nodes.values()].filter((n) => !isHere(n)),
-      looseHere: loose.filter((r) => r.atPoint),
+      here,
+      rest: [...nodes.values()].filter((n) => !n.use.atPoint),
+      otherHere: all.filter(
+        (r) => r.atPoint && !isUse(r) && !shownHere.has(r.id)
+      ),
       looseRest: loose.filter((r) => !r.atPoint),
     };
   };

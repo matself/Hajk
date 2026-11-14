@@ -104,10 +104,15 @@ plan it is smaller than search 3 (741 kB against 1.35 MB, 34 kB gzipped).
 
 The view lists the regulations that apply at the point under the
 användningsbestämmelse they regulate, with the rest of the plan folded away
-under "Övriga bestämmelser". A use counts as being at the point when it, or
-anything regulating it, is; a regulation drawn as a line can miss the point and
-still belong to the use the user clicked. Clicking a regulation draws its
-geometry and zooms to it; clicking it again returns to the point's own.
+under "Övriga bestämmelser". A use counts as being at the point only when its
+own area covers it, as in Lantmäteriet's viewer. Counting a use as soon as
+something at the point regulates it does not work: a plan-wide regulation
+points at dozens of uses (28 in one real plan, where one use covers the
+point), and the use actually clicked ended up 25th. Under a use, what applies
+at the point is listed first, and regulations at the point that sit under no
+use at the point are gathered in "Övriga bestämmelser i punkten". Clicking a
+regulation draws its geometry and zooms to it; clicking it again returns to
+the point's own.
 
 Note that the plan's `assets` are read from the **raw STAC item**, not through
 OpenLayers. A STAC item keeps `assets` beside `properties` rather than inside

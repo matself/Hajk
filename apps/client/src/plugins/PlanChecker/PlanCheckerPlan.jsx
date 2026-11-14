@@ -140,7 +140,7 @@ const looseNode = (regulations) => ({ use: null, children: regulations });
  * and moves the map to it.
  */
 function PlanCheckerPlan({ plan: p, selectedKey, onSelect }) {
-  const { plan, documents, domain, here, rest, looseHere, looseRest } = p;
+  const { plan, documents, domain, here, rest, otherHere, looseRest } = p;
   const restCount =
     rest.reduce((n, node) => n + 1 + node.children.length, 0) +
     looseRest.length;
@@ -212,7 +212,7 @@ function PlanCheckerPlan({ plan: p, selectedKey, onSelect }) {
       <Typography variant="subtitle2" sx={{ mt: 2 }}>
         På platsen
       </Typography>
-      {here.length + looseHere.length === 0 && (
+      {here.length + otherHere.length === 0 && (
         <Typography variant="body2" color="text.secondary">
           Ingen bestämmelse träffar den klickade punkten.
         </Typography>
@@ -225,10 +225,10 @@ function PlanCheckerPlan({ plan: p, selectedKey, onSelect }) {
           onSelect={onSelect}
         />
       ))}
-      {looseHere.length > 0 && (
+      {otherHere.length > 0 && (
         <UseNode
-          node={looseNode(looseHere)}
-          title="Utan särskild användning"
+          node={looseNode(otherHere)}
+          title="Övriga bestämmelser i punkten"
           selectedKey={selectedKey}
           onSelect={onSelect}
         />
