@@ -53,7 +53,7 @@ municipality it is looking at.
 
 Geometries travel in **SWEREF 99 TM (EPSG:3006)**, the collections' storage CRS,
 in both directions. When the map runs in something else — EPSG:3857 is the
-common case, and is *not* among the CRS the service accepts — the plugin
+common case, and is _not_ among the CRS the service accepts — the plugin
 transforms, which requires `EPSG:3006` under `projections` in the map config.
 It says so plainly when that is missing.
 
@@ -90,12 +90,12 @@ WMS 1.3.0 `BBOX` parameter must use for the same CRS.
 
 Mirroring Lantmäteriet's viewer:
 
-| # | Body | Answers |
-| --- | --- | --- |
-| 1 | `intersects` + `feature.typ = detaljplan` (+ status filter) | Which plans cover the point. These "huvudobjekt" carry the plan's name, dates and documents, but no regulation of their own. |
-| 2 | `detaljplan.objektidentitet = <id>` + `intersects` | That plan's regulations **at the point**. |
-| 3 | `detaljplan.objektidentitet = <id>` | **All** of that plan's regulations: labels (`anvandningsform`, `kategori`) and each one's geometry in EPSG:3006. |
-| 4 | `GET detaljplanassetproxy/asset/<uuid>` (the item's asset with role `detaljplan`) | The plan's **domänobjekt**: purpose, decision details and which användningsbestämmelse each regulation regulates. |
+| #   | Body                                                                              | Answers                                                                                                                                                                              |
+| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | `intersects` + `feature.typ = detaljplan` (+ status filter)                       | Which plans cover the point. These "huvudobjekt" carry the plan's name, dates and documents, but no regulation of their own.                                                         |
+| 2   | `detaljplan.objektidentitet = <id>` + `feature.typ != detaljplan` + `intersects`  | That plan's regulations **at the point**. The `!= detaljplan` leaves out the plan's own huvudobjekt, which shares the id but is not a regulation and has the whole plan as geometry. |
+| 3   | `detaljplan.objektidentitet = <id>` + `feature.typ != detaljplan`                 | **All** of that plan's regulations: labels (`anvandningsform`, `kategori`) and each one's geometry in EPSG:3006.                                                                     |
+| 4   | `GET detaljplanassetproxy/asset/<uuid>` (the item's asset with role `detaljplan`) | The plan's **domänobjekt**: purpose, decision details and which användningsbestämmelse each regulation regulates.                                                                    |
 
 2, 3 and 4 run in parallel per plan. 4 is an enhancement: if it fails the plan
 is still shown, with a notice, and every regulation is simply listed without
@@ -125,7 +125,7 @@ NGP holds only plans delivered under the national specification — overwhelming
 recent ones. Most municipalities' gällande detaljplaner are older and simply are
 not there. A tool that returned nothing would be read as "no restrictions here",
 which is wrong and potentially costly, so the empty state says explicitly that
-no *digital* plan was found and that this is not the same as no plan.
+no _digital_ plan was found and that this is not the same as no plan.
 
 ### Referensobjekt, not domänobjekt — and neither does Lantmäteriet's own viewer
 
@@ -175,15 +175,15 @@ every id matched. The geometry is therefore taken from search 3.
 
 ### Data shape
 
-Each feature is one *(plan, regulation, geometry)* triple with the plan's own
+Each feature is one _(plan, regulation, geometry)_ triple with the plan's own
 metadata repeated on it, so grouping needs no second request:
 
-| Shown as | NGP path |
-| --- | --- |
-| Plan heading | `detaljplan.namn`, `detaljplan.beteckning` |
-| Plan status | `detaljplan.status`, `detaljplan.datumLagakraft` |
-| Regulation grouping | `feature.typ` |
-| Documents | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
+| Shown as            | NGP path                                                  |
+| ------------------- | --------------------------------------------------------- |
+| Plan heading        | `detaljplan.namn`, `detaljplan.beteckning`                |
+| Plan status         | `detaljplan.status`, `detaljplan.datumLagakraft`          |
+| Regulation grouping | `feature.typ`                                             |
+| Documents           | item `assets` (Plankarta, Planhandling, Beslutsprotokoll) |
 
 Two things the proxy has to do beyond attaching credentials.
 
@@ -224,8 +224,8 @@ Two things, and neither fails loudly if forgotten:
    enabled nothing is mounted at the route, and the request falls through to
    `express-openapi-validator`, which answers **404 "Not Found: not found"**.
    That 404 means the proxy is off, not that the path is wrong. The backend logs
-   which it did at startup: *"LANTMATERIET_DETALJPLAN_ACTIVE is set to … Enabling
-   Lantmateriet Detaljplan proxy for API V2"*.
+   which it did at startup: _"LANTMATERIET_DETALJPLAN_ACTIVE is set to … Enabling
+   Lantmateriet Detaljplan proxy for API V2"_.
 2. **A styled WMS layer, in the map, referenced by `wmsLayerId`.** The
    söktjänst renders nothing, so the WMS is the whole visual half of the tool.
    Note that a layer in `layers.json` is not enough — `layerLoader.flatten()`
@@ -249,12 +249,12 @@ answer still comes back before suspecting the proxy or the WMS layer config.
 Switching layers on and off is the user's business. The tool watches the plan
 layer instead of commanding it, and says so when something is wrong:
 
-| State | What the user sees |
-| --- | --- |
-| `wmsLayerId` not configured | A warning that no plan layer is connected, naming the setting |
-| Layer missing from the map | A warning naming the configured id, pointing at Lagerhanteraren and the tool's setting |
+| State                          | What the user sees                                                                      |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| `wmsLayerId` not configured    | A warning that no plan layer is connected, naming the setting                           |
+| Layer missing from the map     | A warning naming the configured id, pointing at Lagerhanteraren and the tool's setting  |
 | Layer present but switched off | A note that the layer is off and where to light it, making clear the search still works |
-| Layer present and visible | Nothing |
+| Layer present and visible      | Nothing                                                                                 |
 
 The check subscribes to the layer's `change:visible`, so lighting the layer
 clears the notice immediately rather than at the next click. Absence is only
@@ -277,15 +277,15 @@ The raw shape is below.
     "proxyPath": "detaljplanproxy", // Path below mapserviceBase where the backend proxy sits.
     "assetProxyPath": "detaljplanassetproxy", // …and where the document proxy sits.
     "planStatuses": ["laga kraft"], // Which plan statuses count. A plan not in force regulates nothing.
-    "maxItems": 1000,           // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
-    "wmsLayerId": "abc123",     // Hajk id (from layers.json) of the styled WMS layer the tool
-                                // watches. Leaving it empty is itself reported, so a tool that
-                                // was never configured does not look like a working one.
+    "maxItems": 1000, // Upper bound per plan. Lantmäteriet's own viewer sends 1000.
+    "wmsLayerId": "abc123", // Hajk id (from layers.json) of the styled WMS layer the tool
+    // watches. Leaving it empty is itself reported, so a tool that
+    // was never configured does not look like a working one.
     "visibleAtStart": false,
     "target": "control",
     "position": "right",
-    "height": "dynamic"
-  }
+    "height": "dynamic",
+  },
 }
 ```
 
@@ -303,7 +303,7 @@ list the user had dismissed.
 The point is drawn with a `DrawModel`, and a DrawModel reports its features to
 Hajk's public API as unsaved changes, which is what makes the browser ask
 "leave site?" before a reload or a map switch. That is right for Sketch or Mät,
-where the geometry *is* the user's work — but our point only marks where they
+where the geometry _is_ the user's work — but our point only marks where they
 clicked, so the plugin passes `reportUnsavedChanges: false` and is left out of
 that count. Tools that draw on the user's behalf keep the warning, unchanged.
 
@@ -324,7 +324,7 @@ with `GeoJSON#readGeometry` rather than `#readFeatures` — deliberately, since
 `properties` and get dropped if the item is parsed as an OpenLayers feature;
 extracting only the geometry sidesteps that without needing two parses.
 
-One outline per regulation *at the point*, not per plan — a click covered by
+One outline per regulation _at the point_, not per plan — a click covered by
 an administrativ, an användnings- and an egenskapsbestämmelse draws three
 outlines, which may coincide or differ depending on how the plan's polygons
 are cut. The layer is cleared and redrawn on every click, and cleared outright
@@ -339,9 +339,9 @@ need per-map styling.
 - **Presentation is plain.** There is no printable report format, and a use
   that many regulations point at (77 in one real plan) is a long list.
 - **Only the first page is read.** A plan holding more than `maxItems`
-  regulations is reported as truncated rather than paged through. (The
-  `collections/…/items` endpoint pages with an `afterId` cursor; whether
-  `POST /search` does the same has not been checked.)
+  regulations is reported as truncated rather than paged through. Truncation is
+  read from the `next` link in the response's `links`, which `POST /search`
+  does return (checked with a small `limit`).
 - **Verified on one plan.** The domänobjekt parser was checked against a single
   real plan and its fallback path; the national specification says every plan
   has the same shape, but older plans have not been looked at.

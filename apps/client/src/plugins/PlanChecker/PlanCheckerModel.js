@@ -168,6 +168,15 @@ export default class PlanCheckerModel {
   #itemsOf = (collection) =>
     Array.isArray(collection?.features) ? collection.features : [];
 
+  /**
+   * Whether the service held back results. When a search has more hits than
+   * `limit`, the response carries a link with rel "next"; its absence is what
+   * means the answer is complete.
+   */
+  #hasMore = (collection) =>
+    Array.isArray(collection?.links) &&
+    collection.links.some((link) => link?.rel === "next");
+
   /** Shape one regulation item for the view. */
   #toRegulation = (item) => {
     const props = item.properties ?? {};
@@ -408,7 +417,9 @@ export default class PlanCheckerModel {
               ...this.#arrange(all, domain?.regulates),
               total: all.length,
               countAtPoint: atPointIds.size,
-              truncated: all.length >= Number(maxItems),
+              truncated:
+                this.#hasMore(allCollection) ||
+                this.#hasMore(atPointCollection),
             },
             geometries: atPointItems
               .map((item) => item.geometry)

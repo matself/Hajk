@@ -121,11 +121,18 @@ export default class PlanCheckerApi {
    * The regulations belonging to one plan. Pass a coordinate to get only those
    * that actually cover it; omit it for every regulation in the plan, which is
    * what the "show all" view needs and what makes an "N of M" count possible.
+   *
+   * The plan's own huvudobjekt shares `detaljplan.objektidentitet` with its
+   * regulations, so it is excluded: it is not a regulation, and its geometry is
+   * the whole plan area, which would otherwise be outlined and zoomed to.
    */
   findRegulations({ planId, coordinate, limit, signal }) {
     return this.#search(
       {
-        query: { "detaljplan.objektidentitet": { eq: planId } },
+        query: {
+          "detaljplan.objektidentitet": { eq: planId },
+          "feature.typ": { neq: "detaljplan" },
+        },
         limit,
         ...(coordinate
           ? { intersects: { type: "Point", coordinates: coordinate } }
